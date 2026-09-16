@@ -1,0 +1,302 @@
+[
+  {
+    "card_id": "llanowar_elves",
+    "name": "Llanowar Elves",
+    "mana_cost": "{G}",
+    "type_line": "Creature — Elf Druid",
+    "oracle_text": "{T}: Add {G}.",
+    "cluster": "mana_dork",
+    "role": "target",
+    "scryfall_id": "6a0b230b-d391-4998-a3f7-7b158a0ec2cd"
+  },
+  {
+    "card_id": "elvish_mystic",
+    "name": "Elvish Mystic",
+    "mana_cost": "{G}",
+    "type_line": "Creature — Elf Druid",
+    "oracle_text": "{T}: Add {G}.",
+    "cluster": "mana_dork",
+    "role": "target",
+    "scryfall_id": "08b9a296-3b76-4f8f-9d71-7c9af92bb3b4"
+  },
+  {
+    "card_id": "birds_of_paradise",
+    "name": "Birds of Paradise",
+    "mana_cost": "{G}",
+    "type_line": "Creature — Bird",
+    "oracle_text": "Flying\n{T}: Add one mana of any color.",
+    "cluster": "mana_dork",
+    "role": "target",
+    "scryfall_id": "492c2f9a-51e7-4e0f-9899-23bf43ea988b"
+  },
+  {
+    "card_id": "fyndhorn_elves",
+    "name": "Fyndhorn Elves",
+    "mana_cost": "{G}",
+    "type_line": "Creature — Elf Druid",
+    "oracle_text": "{T}: Add {G}.",
+    "cluster": "mana_dork",
+    "role": "target",
+    "scryfall_id": "450744cf-7eba-491b-97b0-ca80c6368bbb"
+  },
+  {
+    "card_id": "avacyns_pilgrim",
+    "name": "Avacyn's Pilgrim",
+    "mana_cost": "{G}",
+    "type_line": "Creature — Human Monk",
+    "oracle_text": "{T}: Add {W}.",
+    "cluster": "mana_dork",
+    "role": "target",
+    "scryfall_id": "a390a7df-b8da-41aa-93e5-2c0db938a27e"
+  },
+  {
+    "card_id": "noble_hierarch",
+    "name": "Noble Hierarch",
+    "mana_cost": "{G}",
+    "type_line": "Creature — Human Druid",
+    "oracle_text": "Exalted (Whenever a creature you control attacks alone, that creature gets +1/+1 until end of turn.)\n{T}: Add {G}, {W}, or {U}.",
+    "cluster": "mana_dork",
+    "role": "target",
+    "scryfall_id": "400382a4-aea2-4827-b06a-1b0b3745908b"
+  },
+  {
+    "card_id": "nykthos",
+    "name": "Nykthos, Shrine to Nyx",
+    "mana_cost": "",
+    "type_line": "Legendary Land",
+    "oracle_text": "{T}: Add {C}.\n{2}, {T}: Choose a color. Add an amount of mana of that color equal to your devotion to that color. (Your devotion to a color is the number of mana symbols of that color in the mana costs of permanents you control.)",
+    "cluster": "mana_dork",
+    "role": "distractor",
+    "scryfall_id": "834b27a0-dfd7-4f96-8cde-cacac4b24acc"
+  },
+  {
+    "card_id": "chromatic_lantern",
+    "name": "Chromatic Lantern",
+    "mana_cost": "{3}",
+    "type_line": "Artifact",
+    "oracle_text": "Lands you control have \"{T}: Add one mana of any color.\"\n{T}: Add one mana of any color.",
+    "cluster": "mana_dork",
+    "role": "distractor",
+    "scryfall_id": "9b29492a-8bdd-4806-8d1b-3058ed277cc1"
+  },
+  {
+    "card_id": "mana_reflection",
+    "name": "Mana Reflection",
+    "mana_cost": "{4}{G}{G}",
+    "type_line": "Enchantment",
+    "oracle_text": "If you tap a permanent for mana, it produces twice as much of that mana instead.",
+    "cluster": "mana_dork",
+    "role": "distractor",
+    "scryfall_id": "81e0d739-990f-4ba5-b456-165c033014cf"
+  },
+  {
+    "card_id": "gilded_lotus",
+    "name": "Gilded Lotus",
+    "mana_cost": "{5}",
+    "type_line": "Artifact",
+    "oracle_text": "{T}: Add three mana of any one color.",
+    "cluster": "mana_dork",
+    "role": "distractor",
+    "scryfall_id": "28e619e6-ecc1-49c3-8fa9-ce42becdb9ba"
+  },
+  {
+    "card_id": "wrath_of_god",
+    "name": "Wrath of God",
+    "mana_cost": "{2}{W}{W}",
+    "type_line": "Sorcery",
+    "oracle_text": "Destroy all creatures. They can't be regenerated.",
+    "cluster": "board_wipe",
+    "role": "target",
+    "scryfall_id": "537d2b05-3f52-45d6-8fe3-26282085d0c6"
+  },
+  {
+    "card_id": "damnation",
+    "name": "Damnation",
+    "mana_cost": "{2}{B}{B}",
+    "type_line": "Sorcery",
+    "oracle_text": "Destroy all creatures. They can't be regenerated.",
+    "cluster": "board_wipe",
+    "role": "target",
+    "scryfall_id": "d3c0aac5-b9f1-4446-bfea-3e1dd1cf1f2f"
+  },
+  {
+    "card_id": "day_of_judgment",
+    "name": "Day of Judgment",
+    "mana_cost": "{2}{W}{W}",
+    "type_line": "Sorcery",
+    "oracle_text": "Destroy all creatures.",
+    "cluster": "board_wipe",
+    "role": "target",
+    "scryfall_id": "96e84bdc-8a9a-4c58-ba8b-9f052fd60069"
+  },
+  {
+    "card_id": "fumigate",
+    "name": "Fumigate",
+    "mana_cost": "{3}{W}{W}",
+    "type_line": "Sorcery",
+    "oracle_text": "Destroy all creatures. You gain 1 life for each creature destroyed this way.",
+    "cluster": "board_wipe",
+    "role": "target",
+    "scryfall_id": "976f6850-e646-4b51-a103-25240658672d"
+  },
+  {
+    "card_id": "toxic_deluge",
+    "name": "Toxic Deluge",
+    "mana_cost": "{2}{B}",
+    "type_line": "Sorcery",
+    "oracle_text": "As an additional cost to cast this spell, pay X life.\nAll creatures get -X/-X until end of turn.",
+    "cluster": "board_wipe",
+    "role": "target",
+    "scryfall_id": "de5afccc-8d42-4bd6-b068-b9ea2361655e"
+  },
+  {
+    "card_id": "blasphemous_act",
+    "name": "Blasphemous Act",
+    "mana_cost": "{8}{R}",
+    "type_line": "Sorcery",
+    "oracle_text": "This spell costs {1} less to cast for each creature on the battlefield.\nBlasphemous Act deals 13 damage to each creature.",
+    "cluster": "board_wipe",
+    "role": "target",
+    "scryfall_id": "7d4b1d44-126e-4987-9a9f-f0f9627a09cb"
+  },
+  {
+    "card_id": "doom_blade",
+    "name": "Doom Blade",
+    "mana_cost": "{1}{B}",
+    "type_line": "Instant",
+    "oracle_text": "Destroy target nonblack creature.",
+    "cluster": "board_wipe",
+    "role": "distractor",
+    "scryfall_id": "5dcd0c4e-4047-47a2-8969-c62616d457c2"
+  },
+  {
+    "card_id": "giant_growth",
+    "name": "Giant Growth",
+    "mana_cost": "{G}",
+    "type_line": "Instant",
+    "oracle_text": "Target creature gets +3/+3 until end of turn.",
+    "cluster": "board_wipe",
+    "role": "control",
+    "scryfall_id": "fd1f95bf-48ea-455a-8a6c-0249b11c8900"
+  },
+  {
+    "card_id": "counterspell",
+    "name": "Counterspell",
+    "mana_cost": "{U}{U}",
+    "type_line": "Instant",
+    "oracle_text": "Counter target spell.",
+    "cluster": "board_wipe",
+    "role": "control",
+    "scryfall_id": "4f616706-ec97-4923-bb1e-11a69fbaa1f8"
+  },
+  {
+    "card_id": "ponder",
+    "name": "Ponder",
+    "mana_cost": "{U}",
+    "type_line": "Sorcery",
+    "oracle_text": "Look at the top three cards of your library, then put them back in any order. You may shuffle.\nDraw a card.",
+    "cluster": "board_wipe",
+    "role": "control",
+    "scryfall_id": "dc69f960-68ba-4315-8146-6a7a82047503"
+  },
+  {
+    "card_id": "clone",
+    "name": "Clone",
+    "mana_cost": "{3}{U}",
+    "type_line": "Creature — Shapeshifter",
+    "oracle_text": "You may have this creature enter as a copy of any creature on the battlefield.",
+    "cluster": "clone",
+    "role": "target",
+    "scryfall_id": "5e648262-3b9b-4c58-8e29-48356e3cb064"
+  },
+  {
+    "card_id": "phantasmal_image",
+    "name": "Phantasmal Image",
+    "mana_cost": "{1}{U}",
+    "type_line": "Creature — Illusion",
+    "oracle_text": "You may have this creature enter as a copy of any creature on the battlefield, except it's an Illusion in addition to its other types and it has \"When this creature becomes the target of a spell or ability, sacrifice it.\"",
+    "cluster": "clone",
+    "role": "target",
+    "scryfall_id": "c1c080cf-a5e8-4d9d-af49-f78588971e87"
+  },
+  {
+    "card_id": "clever_impersonator",
+    "name": "Clever Impersonator",
+    "mana_cost": "{2}{U}{U}",
+    "type_line": "Creature — Shapeshifter",
+    "oracle_text": "You may have this creature enter as a copy of any nonland permanent on the battlefield.",
+    "cluster": "clone",
+    "role": "target",
+    "scryfall_id": "c0516453-3e6a-4b7f-8df6-72a6e207169a"
+  },
+  {
+    "card_id": "spark_double",
+    "name": "Spark Double",
+    "mana_cost": "{3}{U}",
+    "type_line": "Creature — Illusion",
+    "oracle_text": "You may have this creature enter as a copy of a creature or planeswalker you control, except it enters with an additional +1/+1 counter on it if it's a creature, it enters with an additional loyalty counter on it if it's a planeswalker, and it isn't legendary.",
+    "cluster": "clone",
+    "role": "target",
+    "scryfall_id": "c41b9ba2-0006-4d8e-b600-efe81ff5e0cc"
+  },
+  {
+    "card_id": "mirror_image",
+    "name": "Mirror Image",
+    "mana_cost": "{2}{U}",
+    "type_line": "Creature — Shapeshifter",
+    "oracle_text": "You may have this creature enter as a copy of a creature you control.",
+    "cluster": "clone",
+    "role": "target",
+    "scryfall_id": "5b3ffc69-f21b-410e-8993-8c1b4669fc19"
+  },
+  {
+    "card_id": "cackling_counterpart",
+    "name": "Cackling Counterpart",
+    "mana_cost": "{1}{U}{U}",
+    "type_line": "Instant",
+    "oracle_text": "Create a token that's a copy of target creature you control.\nFlashback {5}{U}{U} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "cluster": "clone",
+    "role": "target",
+    "scryfall_id": "a865fdc5-955a-4c4a-90c0-342c15fd7bbc"
+  },
+  {
+    "card_id": "parallel_lives",
+    "name": "Parallel Lives",
+    "mana_cost": "{3}{G}",
+    "type_line": "Enchantment",
+    "oracle_text": "If an effect would create one or more tokens under your control, it creates twice that many of those tokens instead.",
+    "cluster": "clone",
+    "role": "distractor",
+    "scryfall_id": "01033dae-fec1-41f2-b7f2-cc6a43331790"
+  },
+  {
+    "card_id": "doubling_season",
+    "name": "Doubling Season",
+    "mana_cost": "{4}{G}",
+    "type_line": "Enchantment",
+    "oracle_text": "If an effect would create one or more tokens under your control, it creates twice that many of those tokens instead.\nIf an effect would put one or more counters on a permanent you control, it puts twice that many of those counters on that permanent instead.",
+    "cluster": "clone",
+    "role": "distractor",
+    "scryfall_id": "f2c4f80e-84a0-463b-82c3-5c6503809351"
+  },
+  {
+    "card_id": "lightning_bolt",
+    "name": "Lightning Bolt",
+    "mana_cost": "{R}",
+    "type_line": "Instant",
+    "oracle_text": "Lightning Bolt deals 3 damage to any target.",
+    "cluster": "clone",
+    "role": "control",
+    "scryfall_id": "7673784e-db4b-43a1-8d55-1bb9fc1e284f"
+  },
+  {
+    "card_id": "divination",
+    "name": "Divination",
+    "mana_cost": "{2}{U}",
+    "type_line": "Sorcery",
+    "oracle_text": "Draw two cards.",
+    "cluster": "clone",
+    "role": "control",
+    "scryfall_id": "cb3b35b8-f321-46d8-a441-6b9a6efa9021"
+  }
+]

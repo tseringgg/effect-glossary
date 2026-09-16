@@ -1,0 +1,56 @@
+{
+  "cards_ingested": 38753,
+  "cards_with_oracle_text": 35788,
+  "effect_chunks_extracted": 70206,
+  "card_effect_occurrences": 70059,
+  "unique_effects": 42445,
+  "singleton_effects": 38456,
+  "singleton_effects_naming_own_card": 3645,
+  "effects_only_on_non_traditional_layouts": 1496,
+  "authored_plain_text_carried_over": 31,
+  "authored_plain_text_in_small_sample": 31,
+  "zones_unique": {
+    "library": 7288,
+    "hand": 8309,
+    "battlefield": 34800,
+    "battlefield:enters": 10638,
+    "battlefield:leaves": 8430,
+    "battlefield:static": 18330,
+    "graveyard": 12339,
+    "exile": 3930,
+    "stack": 6394,
+    "command zone": 451,
+    "mana pool": 1363
+  },
+  "zones_occurrence_weighted": {
+    "library": 9328,
+    "hand": 10692,
+    "battlefield": 56560,
+    "battlefield:enters": 14085,
+    "battlefield:leaves": 10543,
+    "battlefield:static": 35189,
+    "graveyard": 15708,
+    "exile": 4691,
+    "stack": 9021,
+    "command zone": 651,
+    "mana pool": 3064
+  },
+  "zone_less_unique": 2408,
+  "top_level_zone_count_histogram": {
+    "0": 2408,
+    "1": 17960,
+    "2": 12355,
+    "3": 7039,
+    "4": 2358,
+    "5": 295,
+    "6": 30
+  },
+  "battlefield_subtag_combinations": {
+    "battlefield:static": 18330,
+    "battlefield:enters": 8040,
+    "battlefield:leaves": 5832,
+    "battlefield:enters+battlefield:leaves": 2598
+  },
+  "build_seconds": 1.2,
+  "total_seconds": 5.4
+}

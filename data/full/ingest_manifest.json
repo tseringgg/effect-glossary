@@ -1,0 +1,37 @@
+{
+  "bulk_type": "oracle_cards",
+  "source": {
+    "uri": "https://data.scryfall.io/oracle-cards/oracle-cards-20260913090151.jsonl.gz",
+    "updated_at": "2026-09-13T09:01:51.468+00:00"
+  },
+  "raw_file": "oracle-cards-20260913090151.jsonl.gz",
+  "cards": 38753,
+  "cards_without_oracle_text": 2965,
+  "cards_with_joined_faces": 968,
+  "layouts": {
+    "normal": 33442,
+    "art_series": 2243,
+    "token": 913,
+    "transform": 401,
+    "front_card": 291,
+    "planar": 207,
+    "saga": 194,
+    "adventure": 170,
+    "split": 137,
+    "vanguard": 107,
+    "scheme": 102,
+    "modal_dfc": 100,
+    "emblem": 87,
+    "double_faced_token": 80,
+    "prepare": 64,
+    "class": 38,
+    "mutate": 34,
+    "flip": 26,
+    "leveler": 26,
+    "meld": 21,
+    "prototype": 21,
+    "host": 20,
+    "case": 15,
+    "augment": 14
+  }
+}

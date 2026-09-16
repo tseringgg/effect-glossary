@@ -1,0 +1,120 @@
+# Effect glossary -- deduplicated by normalized raw_text.
+# plain_text is HAND-AUTHORED. Empty plain_text => effect is
+# NOT indexed and its card is unreachable by search (by design).
+effects:
+- effect_id: eff_3b48c12159
+  raw_text: '{T}: Add {G}.'
+  plain_text: ''
+  occurrence_count: 2
+  card_ids:
+  - llanowar_elves
+  - elvish_mystic
+- effect_id: eff_0974abfe45
+  raw_text: Flying
+  plain_text: ''
+  occurrence_count: 1
+  card_ids:
+  - birds_of_paradise
+- effect_id: eff_b711c42e82
+  raw_text: '{T}: Add one mana of any color.'
+  plain_text: ''
+  occurrence_count: 2
+  card_ids:
+  - birds_of_paradise
+  - chromatic_lantern
+- effect_id: eff_7d99ccfccd
+  raw_text: '{T}: Add {C}.'
+  plain_text: ''
+  occurrence_count: 1
+  card_ids:
+  - nykthos
+- effect_id: eff_84a90976db
+  raw_text: '{2}, {T}: Choose a color. Add an amount of mana of that color equal to your devotion to that
+    color. (Your devotion to a color is the number of mana symbols of that color in the mana costs of
+    permanents you control.)'
+  plain_text: ''
+  occurrence_count: 1
+  card_ids:
+  - nykthos
+- effect_id: eff_98db4267ea
+  raw_text: 'Lands you control have "{T}: Add one mana of any color."'
+  plain_text: ''
+  occurrence_count: 1
+  card_ids:
+  - chromatic_lantern
+- effect_id: eff_086b340da2
+  raw_text: If you tap a permanent for mana, it produces twice as much of that mana instead.
+  plain_text: ''
+  occurrence_count: 1
+  card_ids:
+  - mana_reflection
+- effect_id: eff_938d0cc426
+  raw_text: Destroy all creatures. They can't be regenerated.
+  plain_text: ''
+  occurrence_count: 2
+  card_ids:
+  - wrath_of_god
+  - damnation
+- effect_id: eff_f9b49aade0
+  raw_text: Destroy all creatures.
+  plain_text: ''
+  occurrence_count: 1
+  card_ids:
+  - day_of_judgment
+- effect_id: eff_d34b58ccf5
+  raw_text: Target creature gets +3/+3 until end of turn.
+  plain_text: ''
+  occurrence_count: 1
+  card_ids:
+  - giant_growth
+- effect_id: eff_0c8995549c
+  raw_text: Counter target spell.
+  plain_text: ''
+  occurrence_count: 1
+  card_ids:
+  - counterspell
+- effect_id: eff_d165f247e4
+  raw_text: Look at the top three cards of your library, then put them back in any order. You may shuffle.
+  plain_text: ''
+  occurrence_count: 1
+  card_ids:
+  - ponder
+- effect_id: eff_84c96ff95b
+  raw_text: Draw a card.
+  plain_text: ''
+  occurrence_count: 1
+  card_ids:
+  - ponder
+- effect_id: eff_ed25a537f6
+  raw_text: You may have this creature enter as a copy of any creature on the battlefield.
+  plain_text: ''
+  occurrence_count: 1
+  card_ids:
+  - clone
+- effect_id: eff_71a59f59ae
+  raw_text: If an effect would create one or more tokens under your control, it creates twice that many
+    of those tokens instead.
+  plain_text: ''
+  occurrence_count: 2
+  card_ids:
+  - parallel_lives
+  - doubling_season
+- effect_id: eff_e824a91695
+  raw_text: If an effect would put one or more counters on a permanent you control, it puts twice that
+    many of those counters on that permanent instead.
+  plain_text: ''
+  occurrence_count: 1
+  card_ids:
+  - doubling_season
+- effect_id: eff_87a7b6018c
+  raw_text: Lightning Bolt deals 3 damage to any target.
+  plain_text: ''
+  occurrence_count: 1
+  card_ids:
+  - lightning_bolt
+- effect_id: eff_7918637ea5
+  raw_text: Draw two cards.
+  plain_text: ''
+  occurrence_count: 1
+  card_ids:
+  - divination

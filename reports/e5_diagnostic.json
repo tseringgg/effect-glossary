@@ -1,0 +1,313 @@
+{
+ "target_effect_id": "eff_3b48c12159",
+ "target_plain_text": "Tap this permanent to produce one green mana.",
+ "target_raw_text": "{T}: Add {G}.",
+ "n_indexed": 31,
+ "glossed_query": "increases available mana, usually by putting extra lands into play or adding mana; a creature that taps to produce mana, accelerating you ahead",
+ "prefixes": {
+  "configured": {
+   "query_prefix": "query: ",
+   "doc_prefix": "passage: "
+  },
+  "encoded_doc_example": "passage: Tap this permanent to produce one green mana.",
+  "encoded_query_example": "query: increases available mana, usually by putting extra lands into play or adding mana; a creature that taps to produce mana, accelerating you ahead",
+  "correct": true,
+  "ablation": {
+   "shipped": {
+    "query_prefix": "query: ",
+    "doc_prefix": "passage: ",
+    "target_rank": 25,
+    "target_cos": 0.7929357886314392,
+    "range": 0.09293806552886963
+   },
+   "none": {
+    "query_prefix": "",
+    "doc_prefix": "",
+    "target_rank": 29,
+    "target_cos": 0.8121844530105591,
+    "range": 0.0774695873260498
+   },
+   "swapped": {
+    "query_prefix": "passage: ",
+    "doc_prefix": "query: ",
+    "target_rank": 12,
+    "target_cos": 0.8222530484199524,
+    "range": 0.07644128799438477
+   }
+  }
+ },
+ "spread": {
+  "tfidf": {
+   "max": 0.3582417711076621,
+   "min": 0.0,
+   "range": 0.3582417711076621,
+   "stdev": 0.09644040416795907,
+   "relative_range": 1.0,
+   "target_rank": 3,
+   "target_score": 0.2335375801487367
+  },
+  "e5-small-v2": {
+   "max": 0.8557320833206177,
+   "min": 0.762794017791748,
+   "range": 0.09293806552886963,
+   "stdev": 0.025195535411088908,
+   "relative_range": 0.10860649885677882,
+   "target_rank": 25,
+   "target_score": 0.7929357886314392
+  },
+  "bge-base-en-v1.5": {
+   "max": 0.6913525462150574,
+   "min": 0.3154422640800476,
+   "range": 0.37591028213500977,
+   "stdev": 0.08792913645030437,
+   "relative_range": 0.5437316810258427,
+   "target_rank": 8,
+   "target_score": 0.5738884806632996
+  }
+ },
+ "e5_top10": [
+  {
+   "pos": 1,
+   "effect_id": "eff_d9e646fb5c",
+   "cos": 0.8557320833206177,
+   "raw_text": "Create a token that's a copy of target creature you control.",
+   "plain_text": "Create a token that is a copy of a creature you already control."
+  },
+  {
+   "pos": 2,
+   "effect_id": "eff_84a90976db",
+   "cos": 0.8505041003227234,
+   "raw_text": "{2}, {T}: Choose a color. Add an amount of mana of that color equal to your devotion to that color. (Your devotion to a color is the number of mana symbols of that color in the mana costs of permanents you control.)",
+   "plain_text": "Pay two generic mana and tap this permanent to produce a large burst of mana in a single color, as much as your devotion to that color."
+  },
+  {
+   "pos": 3,
+   "effect_id": "eff_98db4267ea",
+   "cos": 0.8504419922828674,
+   "raw_text": "Lands you control have \"{T}: Add one mana of any color.\"",
+   "plain_text": "Every land you control gains the ability to tap for one mana of any color."
+  },
+  {
+   "pos": 4,
+   "effect_id": "eff_a836b0d4b1",
+   "cos": 0.8501823544502258,
+   "raw_text": "Exalted (Whenever a creature you control attacks alone, that creature gets +1/+1 until end of turn.)",
+   "plain_text": "This creature has exalted, so whenever a creature you control attacks by itself, that creature gets +1/+1 until end of turn."
+  },
+  {
+   "pos": 5,
+   "effect_id": "eff_086b340da2",
+   "cos": 0.8446657657623291,
+   "raw_text": "If you tap a permanent for mana, it produces twice as much of that mana instead.",
+   "plain_text": "Whenever you tap a permanent for mana, it produces double the mana instead."
+  },
+  {
+   "pos": 6,
+   "effect_id": "eff_974a6041c8",
+   "cos": 0.8382611274719238,
+   "raw_text": "This spell costs {1} less to cast for each creature on the battlefield.",
+   "plain_text": "This spell costs one less generic mana to cast for each creature on the battlefield, so it gets cheaper as the board fills up."
+  },
+  {
+   "pos": 7,
+   "effect_id": "eff_b711c42e82",
+   "cos": 0.837058424949646,
+   "raw_text": "{T}: Add one mana of any color.",
+   "plain_text": "Tap this permanent to produce one mana of whatever color you need."
+  },
+  {
+   "pos": 8,
+   "effect_id": "eff_5c74bbe0be",
+   "cos": 0.8365750312805176,
+   "raw_text": "You may have this creature enter as a copy of a creature or planeswalker you control, except it enters with an additional +1/+1 counter on it if it's a creature, it enters with an additional loyalty counter on it if it's a planeswalker, and it isn't legendary.",
+   "plain_text": "This creature can enter the battlefield as a copy of a creature or planeswalker you already control, arriving with one extra counter on it and never legendary."
+  },
+  {
+   "pos": 9,
+   "effect_id": "eff_c25866cdeb",
+   "cos": 0.8354089260101318,
+   "raw_text": "As an additional cost to cast this spell, pay X life.",
+   "plain_text": "Pay any amount of life as an extra cost when you cast this spell."
+  },
+  {
+   "pos": 10,
+   "effect_id": "eff_0edb5a1fd9",
+   "cos": 0.8349136710166931,
+   "raw_text": "You may have this creature enter as a copy of a creature you control.",
+   "plain_text": "This creature can enter the battlefield as a copy of a creature you already control."
+  }
+ ],
+ "target_vs_field": {
+  "gap_to_top": 0.06279629468917847,
+  "gap_to_one_above": 0.0006383657455444336,
+  "percentile_in_range": 32.43210483042402,
+  "all_sorted": [
+   0.8557,
+   0.8505,
+   0.8504,
+   0.8502,
+   0.8447,
+   0.8383,
+   0.8371,
+   0.8366,
+   0.8354,
+   0.8349,
+   0.8331,
+   0.831,
+   0.8263,
+   0.8248,
+   0.816,
+   0.811,
+   0.8094,
+   0.8094,
+   0.8091,
+   0.8086,
+   0.8073,
+   0.8042,
+   0.8007,
+   0.7936,
+   0.7929,
+   0.7891,
+   0.7807,
+   0.78,
+   0.777,
+   0.7756,
+   0.7628
+  ]
+ },
+ "query_forms": [
+  {
+   "label": "full glossed (both glosses joined)",
+   "query": "increases available mana, usually by putting extra lands into play or adding mana; a creature that taps to produce mana, accelerating you ahead",
+   "tfidf": {
+    "target_rank": 3,
+    "target_cos": 0.2335375801487367,
+    "top_cos": 0.3582417711076621
+   },
+   "e5-small-v2": {
+    "target_rank": 25,
+    "target_cos": 0.7929357886314392,
+    "top_cos": 0.8557320833206177
+   },
+   "bge-base-en-v1.5": {
+    "target_rank": 8,
+    "target_cos": 0.5738884806632996,
+    "top_cos": 0.6913525462150574
+   }
+  },
+  {
+   "label": "mana-dork gloss only",
+   "query": "a creature that taps to produce mana, accelerating you ahead",
+   "tfidf": {
+    "target_rank": 3,
+    "target_cos": 0.25034570016715985,
+    "top_cos": 0.46290740944435227
+   },
+   "e5-small-v2": {
+    "target_rank": 18,
+    "target_cos": 0.81484055519104,
+    "top_cos": 0.856567919254303
+   },
+   "bge-base-en-v1.5": {
+    "target_rank": 4,
+    "target_cos": 0.5878323316574097,
+    "top_cos": 0.6278814077377319
+   }
+  },
+  {
+   "label": "ramp gloss only",
+   "query": "increases available mana, usually by putting extra lands into play or adding mana",
+   "tfidf": {
+    "target_rank": 5,
+    "target_cos": 0.1541624095698634,
+    "top_cos": 0.19172323515774917
+   },
+   "e5-small-v2": {
+    "target_rank": 26,
+    "target_cos": 0.7662167549133301,
+    "top_cos": 0.8401479721069336
+   },
+   "bge-base-en-v1.5": {
+    "target_rank": 9,
+    "target_cos": 0.5467566251754761,
+    "top_cos": 0.6729183197021484
+   }
+  },
+  {
+   "label": "makes mana",
+   "query": "makes mana",
+   "tfidf": {
+    "target_rank": 2,
+    "target_cos": 0.25324461894821415,
+    "top_cos": 0.3008092612385065
+   },
+   "e5-small-v2": {
+    "target_rank": 9,
+    "target_cos": 0.830296516418457,
+    "top_cos": 0.8622519969940186
+   },
+   "bge-base-en-v1.5": {
+    "target_rank": 3,
+    "target_cos": 0.6260732412338257,
+    "top_cos": 0.6385828852653503
+   }
+  },
+  {
+   "label": "a creature that taps for mana",
+   "query": "a creature that taps for mana",
+   "tfidf": {
+    "target_rank": 2,
+    "target_cos": 0.20144507105537707,
+    "top_cos": 0.2392806735873735
+   },
+   "e5-small-v2": {
+    "target_rank": 12,
+    "target_cos": 0.8401343822479248,
+    "top_cos": 0.8799800276756287
+   },
+   "bge-base-en-v1.5": {
+    "target_rank": 4,
+    "target_cos": 0.6435055732727051,
+    "top_cos": 0.6783849000930786
+   }
+  },
+  {
+   "label": "tap this creature for green mana",
+   "query": "tap this creature for green mana",
+   "tfidf": {
+    "target_rank": 1,
+    "target_cos": 0.6950517496792428,
+    "top_cos": 0.6950517496792428
+   },
+   "e5-small-v2": {
+    "target_rank": 2,
+    "target_cos": 0.8951119184494019,
+    "top_cos": 0.9061368703842163
+   },
+   "bge-base-en-v1.5": {
+    "target_rank": 1,
+    "target_cos": 0.7965536117553711,
+    "top_cos": 0.7965536117553711
+   }
+  },
+  {
+   "label": "produces green mana",
+   "query": "produces green mana",
+   "tfidf": {
+    "target_rank": 1,
+    "target_cos": 0.5505482821055611,
+    "top_cos": 0.5505482821055611
+   },
+   "e5-small-v2": {
+    "target_rank": 1,
+    "target_cos": 0.8984822034835815,
+    "top_cos": 0.8984822034835815
+   },
+   "bge-base-en-v1.5": {
+    "target_rank": 1,
+    "target_cos": 0.7407845258712769,
+    "top_cos": 0.7407845258712769
+   }
+  }
+ ]
+}
