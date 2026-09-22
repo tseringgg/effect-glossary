@@ -30,8 +30,10 @@ curl -o data/AtomicCards.json.gz https://mtgjson.com/api/v5/AtomicCards.json.gz
 
 - **Search** across card name + oracle text.
 - **Parse quality** as a top-level filter with live per-result-set percentages:
-  `clean` / `partial` / `unparsed` / `vanilla`, plus a separate overlapping
-  `+ unmodelled node` axis for gaps the clean/partial split misses.
+  `clean` / `partial` / `unparsed` / `vanilla`, plus two separate overlapping
+  axes for what that split misses: `+ unmodelled node` (parser gaps the
+  clean/partial test doesn't catch) and `⚠ has correction` (our own
+  hand-verified findings — see below).
 - **Slot-aware facets** — effect, trigger mode, static mode, replacement event,
   keyword, target/filter, quantity, cost, condition. Each axis matches only nodes
   found in that slot, so `quantity:Fixed` (18,978 cards) and `cost:Fixed`
@@ -52,9 +54,27 @@ curl -o data/AtomicCards.json.gz https://mtgjson.com/api/v5/AtomicCards.json.gz
 - Parse quality is computed from gap nodes only, never from `parse_warnings` —
   that field is not a trust signal. See KNOWN_LIMITATIONS.md §3.
 
+## Corrections overlay
+
+`corrections/corrections.json` is a hand-maintained, evidence-based log of
+phase.rs parses found wrong by direct comparison against Scryfall oracle text —
+never a fork of their engine, never an edit to their file. `build_index.py`
+loads it automatically and applies it at build time, keyed by `oracle_id`.
+Every entry is `kind:"flag"` (documented, structure left untouched) unless a
+correct replacement value has real precedent elsewhere in the corpus in the
+same slot, in which case it's `kind:"patch"`. See
+[corrections/SCHEMA.md](corrections/SCHEMA.md) for why patches are the
+exception, not the default.
+
+This is an ongoing log, not a one-time pass — add to it whenever a card's parse
+looks wrong during real use.
+
 ## Files
 
 - [SCHEMA.md](SCHEMA.md) — the upstream schema, empirically derived + cross-checked
-- [KNOWN_LIMITATIONS.md](KNOWN_LIMITATIONS.md) — the three caveats, with numbers
+- [KNOWN_LIMITATIONS.md](KNOWN_LIMITATIONS.md) — measured caveats, including the
+  corrections overlay (§4)
 - [NAME_COLLISIONS.md](NAME_COLLISIONS.md) — generated: every dropped card
 - [PROVENANCE.md](PROVENANCE.md) — snapshot identity
+- [corrections/corrections.json](corrections/corrections.json) — hand-maintained
+  correction log, [corrections/SCHEMA.md](corrections/SCHEMA.md) for its format

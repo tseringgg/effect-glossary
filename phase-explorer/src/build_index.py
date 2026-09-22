@@ -13,8 +13,12 @@ of effect/condition variants would silently drift out of date.
 """
 import json
 import os
+import sys
 import hashlib
 from collections import Counter, defaultdict
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import corrections as corrections_mod
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(HERE, "data", "card-data.json")
@@ -123,19 +127,30 @@ def main():
         oid = raw[key].get("scryfall_oracle_id")
         by_oid[oid if oid else "noid:" + key].append(key)
 
+    corrections_by_oid = corrections_mod.load()
+
     rows = []
     vocab = {axis: Counter() for axis in SLOTS}
     for extra in ("trigger_mode", "static_mode", "replacement_event", "keyword"):
         vocab[extra] = Counter()
     quality_totals = Counter()
     soft_totals = Counter()
+    correction_totals = Counter()
     chunk_data = defaultdict(dict)
     faces_per_group = Counter()
 
     for oid, keys in sorted(by_oid.items()):
         faces_per_group[len(keys)] += 1
         for face_pos, key in enumerate(keys):
-            entry = raw[key]
+            # Apply our hand-maintained overlay (corrections/corrections.json)
+            # before anything downstream sees this record. `flag`-kind
+            # corrections leave the structure untouched and are only carried
+            # forward for display; `patch`-kind corrections mutate a deep
+            # copy. Either way `applied` is non-empty only for the handful of
+            # cards we have evidence-based findings for.
+            entry, applied = corrections_mod.apply(raw[key], oid, corrections_by_oid)
+            for c in applied:
+                correction_totals[c["kind"]] += 1
             # Stable per-face id. Suffixed only when an oracle_id covers
             # several faces, so single-face ids stay readable.
             eid = oid if len(keys) == 1 else f"{oid}/{face_pos}"
@@ -146,17 +161,21 @@ def main():
             for bucket in BUCKETS:
                 scan(entry.get(bucket), bucket, found, gaps, soft)
 
-            # An externally tagged dict in an enum slot means the parser did not
-            # model that mode/event and stashed the raw text instead.
+            # A trigger `mode` arriving as {"Unknown": "<raw text>"} means the
+            # parser did not model that trigger at all. Static `mode` and
+            # replacement `event` also arrive as externally-tagged dicts, but
+            # those encode legitimate data-carrying variants (e.g.
+            # {"ReduceCost": {...}}), not gaps -- a prior build counted every
+            # dict-valued mode/event as a soft gap and over-reported 2,244
+            # affected entries (1,696 of them "clean") when the true figure,
+            # restricted to actual {"Unknown": ...} trigger modes plus
+            # Unrecognized conditions, is 1,288 (887 "clean"). Verified by
+            # cross-checking a flagged "clean" card (Blasphemous Act) whose
+            # only dict-valued mode was a legitimate {"ReduceCost": {...}}.
             for t in entry.get("triggers") or []:
-                if isinstance(t.get("mode"), dict):
+                mode = t.get("mode")
+                if isinstance(mode, dict) and "Unknown" in mode:
                     soft.append("trigger_mode")
-            for s in entry.get("static_abilities") or []:
-                if isinstance(s.get("mode"), dict):
-                    soft.append("static_mode")
-            for rp in entry.get("replacements") or []:
-                if isinstance(rp.get("event"), dict):
-                    soft.append("replacement_event")
 
             trig = {tag_name(t.get("mode")) for t in entry.get("triggers") or []}
             stat = {tag_name(s.get("mode")) for s in entry.get("static_abilities") or []}
@@ -201,12 +220,13 @@ def main():
                 "warn": len(entry.get("parse_warnings") or []),
                 "gaps": len(gaps),
                 "sg": len(soft),
+                "corr": len(applied),
                 "group": oid if len(keys) > 1 else None,
                 "ch": chunk,
                 "f": found,  # interned below
             })
 
-            chunk_data[chunk][eid] = {
+            chunk_payload = {
                 "name": entry.get("name"),
                 "mana_cost": entry.get("mana_cost"),
                 "card_type": entry.get("card_type"),
@@ -233,6 +253,11 @@ def main():
                 "scryfall_oracle_id": entry.get("scryfall_oracle_id"),
                 "_export_key": key,
             }
+            if applied:
+                # Our own findings, kept distinct from upstream's parse_warnings
+                # (see corrections/SCHEMA.md) -- never merged into that list.
+                chunk_payload["_corrections"] = applied
+            chunk_data[chunk][eid] = chunk_payload
 
     # --- intern facet strings so index.json stays small --------------------
     axes = sorted(vocab)
@@ -267,6 +292,9 @@ def main():
         "quality": dict(quality_totals),
         "soft_gaps_by_quality": dict(soft_totals),
         "soft_gap_entries": sum(soft_totals.values()),
+        "corrections_file": "corrections/corrections.json",
+        "corrections_loaded": sum(len(v) for v in corrections_by_oid.values()),
+        "corrections_applied_by_kind": dict(correction_totals),
         "n_chunks": N_CHUNKS,
         "axis_sizes": {a: len(order[a]) for a in axes},
         "faces_per_oracle_id": dict(faces_per_group),

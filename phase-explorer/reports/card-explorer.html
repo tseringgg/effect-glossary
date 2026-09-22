@@ -8,6 +8,7 @@
     --bg:#fff; --fg:#111; --mut:#666; --line:#d4d4d4; --panel:#f6f6f6;
     --clean:#1a7f37; --partial:#b35c00; --unparsed:#b3261e; --vanilla:#555;
     --warnbg:#fff4e5; --warnline:#e09b3d; --gap:#ffe9e6;
+    --corr:#a4003f; --corrbg:#fde8ef;
   }
   * { box-sizing:border-box; }
   body { margin:0; font:13px/1.45 ui-monospace,SFMono-Regular,Consolas,monospace;
@@ -66,6 +67,13 @@
              margin:0 0 10px; font-size:11px; }
   .nowarn { border:1px dashed var(--line); padding:6px; margin:0 0 10px;
             font-size:11px; color:var(--mut); }
+  .corrbox { background:var(--corrbg); border:2px solid var(--corr); padding:7px 9px;
+             margin:0 0 10px; font-size:11px; }
+  .corrbox b.hdr { color:var(--corr); font-size:12px; display:block; margin-bottom:3px; }
+  .corritem { border-top:1px solid #f0c3d3; margin-top:6px; padding-top:6px; }
+  .corritem:first-child { border-top:none; margin-top:0; padding-top:0; }
+  .kindtag { font-size:9px; text-transform:uppercase; padding:1px 4px; border:1px solid var(--corr);
+             color:var(--corr); margin-left:4px; }
   .pager { padding:9px 12px; display:flex; gap:9px; align-items:center;
            border-top:1px solid var(--line); position:sticky; bottom:0;
            background:var(--panel); }
@@ -86,6 +94,7 @@
     and carries <b>no</b> <code>parse_warnings</code> entry. Only 544 of 34,645 entries carry
     any warning at all, so treat every parse as unverified until you read it.
     <span id="colnote"></span>
+    <span id="corrnote"></span>
   </div>
 </header>
 
@@ -103,6 +112,10 @@
       title="entries holding an unmodelled enum slot, which the clean/partial split does not catch">
       <span>+ unmodelled node</span><small data-c="soft">–</small>
     </button>
+    <button class="qbtn" id="corrbtn" data-q="corr" style="border-left:6px solid var(--corr)"
+      title="entries with a confirmed, evidence-based defect on file in corrections.json -- found by hand, not by any upstream signal">
+      <span>⚠ has correction</span><small data-c="corr">–</small>
+    </button>
   </div>
   <div class="meter" id="meter" title="composition of the current result set"></div>
   <div class="note" style="margin-top:3px">
@@ -113,6 +126,17 @@
     <b>vanilla</b> = no oracle text at all.
     Quality is computed from gap nodes only — <i>not</i> from <code>parse_warnings</code>,
     for the reason in the header.
+    <br><b style="color:#7a4bbd">+ unmodelled node</b> is a separate, overlapping axis, not a
+    fifth quality: an enum slot the parser left unmodelled rather than an effect it failed to
+    build — a <code>{"Unknown": "&lt;raw text&gt;"}</code> trigger mode, or an
+    <code>Unrecognized</code> condition. <b>887 entries labelled <code>clean</code> carry one</b>
+    (1,288 total), so <code>clean</code> means "no Unimplemented/GenericEffect node", not
+    "fully modelled". Filter on it to see what the clean/partial split misses.
+    <br><b style="color:var(--corr)">⚠ has correction</b> is our own hand-maintained overlay
+    (<a href="../corrections/corrections.json">corrections.json</a>), separate again from both
+    signals above: cards where we found and evidenced a real defect that phase.rs's
+    <code>clean</code> label, <code>parse_warnings</code>, and gap nodes <i>all</i> missed. See
+    <a href="../corrections/SCHEMA.md">corrections/SCHEMA.md</a>.
   </div>
 
   <div class="row" id="axes" style="margin-top:9px"></div>
@@ -153,7 +177,7 @@ const AXIS_ORDER = ["effect","trigger_mode","static_mode","replacement_event","k
 
 let META, FACETS, ROWS = [], AXIDX = {}, CHUNKS = new Map();
 let filtered = [], page = 0;
-const state = { q:"", quals:new Set(), axis:{}, soft:false };
+const state = { q:"", quals:new Set(), axis:{}, soft:false, corr:false };
 
 async function boot() {
   const [meta, facets, index] = await Promise.all([
@@ -171,6 +195,7 @@ async function boot() {
 
   renderProv();
   await renderCollisionNote();
+  renderCorrNote();
   renderQBar();
   renderAxes();
   wire();
@@ -206,6 +231,17 @@ async function renderCollisionNote() {
   } catch (e) { /* report not built yet */ }
 }
 
+function renderCorrNote() {
+  const n = META.corrections_loaded || 0;
+  if (!n) return;
+  document.getElementById("corrnote").innerHTML =
+    `<br><b>${n} card${n>1?"s":""} carr${n>1?"y":"ies"} a hand-confirmed correction</b> that ` +
+    `phase.rs's own signals (clean label, gap nodes, parse_warnings) missed entirely — found by ` +
+    `spot-checking cards this project already relies on, not by any automated sweep. Filter with ` +
+    `<b style="color:var(--corr)">⚠ has correction</b> below, or read ` +
+    `<a href="../corrections/corrections.json">corrections.json</a> directly.`;
+}
+
 function renderQBar() {
   const bar = document.getElementById("qbar");
   const sgbtn = document.getElementById("sgbtn");
@@ -223,6 +259,11 @@ function renderQBar() {
   sgbtn.onclick = () => {
     state.soft = !state.soft;
     sgbtn.classList.toggle("on", state.soft);
+    page = 0; apply();
+  };
+  document.getElementById("corrbtn").onclick = () => {
+    state.corr = !state.corr;
+    document.getElementById("corrbtn").classList.toggle("on", state.corr);
     page = 0; apply();
   };
 }
@@ -254,7 +295,7 @@ function wire() {
     t = setTimeout(() => { state.q = e.target.value.trim().toLowerCase(); page = 0; apply(); }, 160);
   };
   document.getElementById("clear").onclick = () => {
-    state.q = ""; state.quals.clear(); state.axis = {}; state.soft = false;
+    state.q = ""; state.quals.clear(); state.axis = {}; state.soft = false; state.corr = false;
     document.getElementById("q").value = "";
     document.querySelectorAll(".qbtn.on").forEach(b=>b.classList.remove("on"));
     document.querySelectorAll("#axes select").forEach(s=>s.value="");
@@ -281,6 +322,7 @@ function apply() {
   filtered = ROWS.filter(r => {
     if (quals.size && !quals.has(r.q)) return false;
     if (state.soft && !r.sg) return false;
+    if (state.corr && !r.corr) return false;
     if (q && !r._s.includes(q)) return false;
     for (const [ax,id] of axf) {
       if (id === undefined) return false;
@@ -300,6 +342,10 @@ function apply() {
   const spct = filtered.length ? (100*nsoft/filtered.length) : 0;
   document.querySelector("small[data-c=soft]").textContent =
     `${nsoft.toLocaleString()} · ${spct.toFixed(1)}%`;
+  const ncorr = filtered.reduce((a,r)=>a+(r.corr?1:0),0);
+  const cpct = filtered.length ? (100*ncorr/filtered.length) : 0;
+  document.querySelector("small[data-c=corr]").textContent =
+    `${ncorr.toLocaleString()} · ${cpct.toFixed(1)}%`;
   const m = document.getElementById("meter");
   m.innerHTML = filtered.length
     ? QUALITIES.filter(k=>tally[k]).map(k=>{
@@ -331,6 +377,7 @@ function draw() {
         (r.gaps?`<br><span class="oid">${r.gaps} gap node${r.gaps>1?"s":""}</span>`:"") +
         (r.warn?`<br><span class="oid">${r.warn} warning${r.warn>1?"s":""}</span>`:"") +
         (r.sg?`<br><span class="oid" style="color:#7a4bbd">${r.sg} unmodelled</span>`:"") +
+        (r.corr?`<br><span class="badge" style="color:var(--corr);border-color:var(--corr)">⚠ ${r.corr} correction${r.corr>1?"s":""}</span>`:"") +
       `</td>` +
       `<td class="txt">${esc(r.text) || '<span class="empty">(no oracle text)</span>'}</td>` +
       `<td>${esc(r.type)}</td>`;
@@ -367,6 +414,25 @@ async function toggle(btn, r, tr) {
 function render(d, r) {
   if (!d) return `<span class="empty">structure missing from chunk ${r.ch}</span>`;
   let h = "";
+
+  if (d._corrections && d._corrections.length) {
+    h += `<div class="corrbox"><b class="hdr">⚠ ${d._corrections.length} correction${d._corrections.length>1?"s":""}
+      on file for this card — confirmed by hand, missed by every phase.rs signal above.</b>` +
+      d._corrections.map(c => `
+        <div class="corritem">
+          <b>${esc(c.name)}</b> <span class="kindtag">${esc(c.kind)}</span>
+          <span class="kindtag">${esc(c.severity)}</span>
+          <span class="oid">added ${esc(c.added)} · field: ${esc(c.field)}</span>
+          <div style="margin:4px 0">${esc(c.issue)}</div>
+          <div class="note"><b>oracle text (evidence):</b></div>
+          <pre>${esc(c.evidence.oracle_text)}</pre>
+          <div class="note"><b>upstream snippet as parsed (evidence, byte-for-byte from the snapshot):</b></div>
+          <pre>${esc(JSON.stringify(c.evidence.upstream_snippet,null,1))}</pre>
+          ${c.patch ? `<div class="note"><b>patch applied:</b></div><pre>${esc(JSON.stringify(c.patch,null,1))}</pre>`
+                    : `<div class="note"><b>no patch applied</b> — ${esc(c.note||"")}</div>`}
+        </div>`).join("") +
+      `</div>`;
+  }
 
   if (d.parse_warnings && d.parse_warnings.length) {
     h += `<div class="warnbox"><b>parse_warnings (${d.parse_warnings.length})</b> — upstream

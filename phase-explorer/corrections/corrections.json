@@ -1,0 +1,158 @@
+[
+ {
+  "oracle_id": "8dcb35e5-ae44-455f-86e3-4a77d496ff34",
+  "name": "Spark Double",
+  "added": "2026-09-22",
+  "kind": "flag",
+  "severity": "silent-major",
+  "field": "replacements",
+  "issue": "The entire copy effect is missing. Oracle text has three clauses (may copy a creature/planeswalker you control; extra +1/+1 counter if creature or extra loyalty counter if planeswalker; isn't legendary) and the parse keeps only the first half of the middle clause -- a bare +1/+1 counter on itself, unconditional, with no copy effect at all. Compare Clone/Phantasmal Image/Clever Impersonator on the same oracle pattern ('may have this creature enter as a copy of X'), which all correctly emit a BecomeCopy effect. Labeled clean, 0 parse_warnings.",
+  "evidence": {
+   "oracle_text": "You may have this creature enter as a copy of a creature or planeswalker you control, except it enters with an additional +1/+1 counter on it if it's a creature, it enters with an additional loyalty counter on it if it's a planeswalker, and it isn't legendary.",
+   "upstream_snippet": {
+    "replacements": [
+     {
+      "event": "Moved",
+      "execute": {
+       "kind": "Spell",
+       "effect": {
+        "type": "PutCounter",
+        "counter_type": "P1P1",
+        "count": { "type": "Fixed", "value": 1 },
+        "target": { "type": "SelfRef" }
+       },
+       "cost": null, "sub_ability": null, "duration": null, "description": null,
+       "target_prompt": null, "sorcery_speed": false, "condition": null,
+       "optional_targeting": false, "optional": false, "forward_result": false
+      },
+      "mode": { "type": "Mandatory" },
+      "valid_card": { "type": "SelfRef" },
+      "description": "You may have this creature enter as a copy of a creature or planeswalker you control, except it enters with an additional +1/+1 counter on it if it's a creature, it enters with an additional loyalty counter on it if it's a planeswalker, and it isn't legendary.",
+      "condition": null
+     }
+    ]
+   }
+  },
+  "patch": null,
+  "note": "Clone's BecomeCopy{target:Typed[Creature]} pattern is directly reusable for the 'may copy' clause, but the type-conditional counter branching (+1/+1 if creature XOR loyalty if planeswalker) and the legendary override have no precedent elsewhere in the corpus to build from safely. A partial patch that fixed only the copy clause while still silently dropping the counter/legendary clauses would trade one silent wrongness for another, so this stays flag-only pending either an upstream fix or a hand-verified full replacement chain."
+ },
+ {
+  "oracle_id": "8e7bd5ae-005a-47d8-90bc-69f48cd8793d",
+  "name": "Bond of Agony",
+  "added": "2026-09-22",
+  "kind": "flag",
+  "severity": "silent-cost",
+  "field": "additional_cost",
+  "issue": "\"As an additional cost to cast this spell, pay X life\" parses to a Fixed cost of 0 life instead of a cost that scales with the X the caster chooses. The spell casts for free on the life-payment axis regardless of X, while its effect still references X. See corrections/CLASS-x-life-cost.md for the shared pattern across all 7 affected cards.",
+  "evidence": {
+   "oracle_text": "As an additional cost to cast this spell, pay X life.\nEach other player loses X life.",
+   "upstream_snippet": {
+    "additional_cost": { "type": "Required", "data": { "type": "PayLife", "amount": { "type": "Fixed", "value": 0 } } }
+   }
+  },
+  "patch": null,
+  "note": "See corrections/CLASS-x-life-cost.md -- zero precedent anywhere in the corpus for a Variable/X node inside any cost's amount field, so the correct shape can't be inferred safely."
+ },
+ {
+  "oracle_id": "025939a0-424a-41bf-8fc9-2ef9ea5485f7",
+  "name": "Fire Covenant",
+  "added": "2026-09-22",
+  "kind": "flag",
+  "severity": "silent-cost",
+  "field": "additional_cost",
+  "issue": "Same defect as Bond of Agony: \"pay X life\" additional cost parses to Fixed 0. See corrections/CLASS-x-life-cost.md.",
+  "evidence": {
+   "oracle_text": "As an additional cost to cast this spell, pay X life.\nFire Covenant deals X damage divided as you choose among any number of target creatures.",
+   "upstream_snippet": {
+    "additional_cost": { "type": "Required", "data": { "type": "PayLife", "amount": { "type": "Fixed", "value": 0 } } }
+   }
+  },
+  "patch": null,
+  "note": "See corrections/CLASS-x-life-cost.md."
+ },
+ {
+  "oracle_id": "7f8f46c0-889a-4c9a-9bfa-2b43db608d55",
+  "name": "Fix What's Broken",
+  "added": "2026-09-22",
+  "kind": "flag",
+  "severity": "silent-cost",
+  "field": "additional_cost",
+  "issue": "Same defect as Bond of Agony: \"pay X life\" additional cost parses to Fixed 0. See corrections/CLASS-x-life-cost.md.",
+  "evidence": {
+   "oracle_text": "As an additional cost to cast this spell, pay X life.\nReturn each artifact and creature card with mana value X from your graveyard to the battlefield.",
+   "upstream_snippet": {
+    "additional_cost": { "type": "Required", "data": { "type": "PayLife", "amount": { "type": "Fixed", "value": 0 } } }
+   }
+  },
+  "patch": null,
+  "note": "See corrections/CLASS-x-life-cost.md."
+ },
+ {
+  "oracle_id": "40601061-1b25-4db8-8b99-33324ce945cf",
+  "name": "Hatred",
+  "added": "2026-09-22",
+  "kind": "flag",
+  "severity": "silent-cost",
+  "field": "additional_cost",
+  "issue": "Same defect as Bond of Agony: \"pay X life\" additional cost parses to Fixed 0. See corrections/CLASS-x-life-cost.md.",
+  "evidence": {
+   "oracle_text": "As an additional cost to cast this spell, pay X life.\nTarget creature gets +X/+0 until end of turn.",
+   "upstream_snippet": {
+    "additional_cost": { "type": "Required", "data": { "type": "PayLife", "amount": { "type": "Fixed", "value": 0 } } }
+   }
+  },
+  "patch": null,
+  "note": "See corrections/CLASS-x-life-cost.md."
+ },
+ {
+  "oracle_id": "925f11c3-fd32-4aa7-a130-6554b81ad3eb",
+  "name": "Necrologia",
+  "added": "2026-09-22",
+  "kind": "flag",
+  "severity": "silent-cost",
+  "field": "additional_cost",
+  "issue": "Same defect as Bond of Agony: \"pay X life\" additional cost parses to Fixed 0. See corrections/CLASS-x-life-cost.md.",
+  "evidence": {
+   "oracle_text": "Cast this spell only during your end step.\nAs an additional cost to cast this spell, pay X life.\nDraw X cards.",
+   "upstream_snippet": {
+    "additional_cost": { "type": "Required", "data": { "type": "PayLife", "amount": { "type": "Fixed", "value": 0 } } }
+   }
+  },
+  "patch": null,
+  "note": "See corrections/CLASS-x-life-cost.md."
+ },
+ {
+  "oracle_id": "afaef788-34d1-460b-b884-9d7ae6ddeb18",
+  "name": "Toxic Deluge",
+  "added": "2026-09-22",
+  "kind": "flag",
+  "severity": "silent-cost",
+  "field": "additional_cost",
+  "issue": "Same defect as Bond of Agony: \"pay X life\" additional cost parses to Fixed 0. See corrections/CLASS-x-life-cost.md. Found via this project's own known-hard-case board-wipe cluster spot-check.",
+  "evidence": {
+   "oracle_text": "As an additional cost to cast this spell, pay X life.\nAll creatures get -X/-X until end of turn.",
+   "upstream_snippet": {
+    "additional_cost": { "type": "Required", "data": { "type": "PayLife", "amount": { "type": "Fixed", "value": 0 } } }
+   }
+  },
+  "patch": null,
+  "note": "See corrections/CLASS-x-life-cost.md."
+ },
+ {
+  "oracle_id": "90898c76-21f9-4597-88fe-dc9179911cde",
+  "name": "Vicious Rivalry",
+  "added": "2026-09-22",
+  "kind": "flag",
+  "severity": "silent-cost",
+  "field": "additional_cost",
+  "issue": "Same defect as Bond of Agony: \"pay X life\" additional cost parses to Fixed 0. See corrections/CLASS-x-life-cost.md.",
+  "evidence": {
+   "oracle_text": "As an additional cost to cast this spell, pay X life.\nDestroy all artifacts and creatures with mana value X or less.",
+   "upstream_snippet": {
+    "additional_cost": { "type": "Required", "data": { "type": "PayLife", "amount": { "type": "Fixed", "value": 0 } } }
+   }
+  },
+  "patch": null,
+  "note": "See corrections/CLASS-x-life-cost.md."
+ }
+]
