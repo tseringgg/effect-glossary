@@ -1,0 +1,645 @@
+"""Build the side-by-side similarity comparison page.
+
+    reports/similarity.html        the page
+    reports/similarity.data.js     the data, loaded by <script src> -- same
+                                   split the zone review uses, so the page
+                                   opens straight off the filesystem
+
+Pick an effect; the page shows its top neighbours under raw overlap and under
+IDF-weighted overlap in two columns, with the shared tokens spelled out under
+every row. The weighted column sizes each shared token by how much of the
+cosine it actually carried, and each row carries the OTHER mode's score too --
+the disagreements are the point, so they are on screen rather than inferred.
+
+Neighbour INDICES are precomputed here; the scores are recomputed in the
+browser from the same token sets and IDF table, so nothing on the page is a
+number this script rounded off. Ranking is exact: every effect is compared
+against all 42k, no candidate pruning (see rank_all), and
+check_page_agreement.py re-derives a sample by brute force to prove it.
+"""
+import html
+import json
+import os
+import time
+
+import numpy as np
+import scipy.sparse as sp
+
+import similarity as S
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+REPORTS = os.path.join(HERE, os.pardir, "reports")
+FULL = os.path.join(HERE, os.pardir, "data", "full")
+HTML_PATH = os.path.join(REPORTS, "similarity.html")
+DATA_PATH = os.path.join(REPORTS, "similarity.data.js")
+CLUSTERS_PATH = os.path.join(FULL, "clusters.json")
+
+TOP_N = 10
+CHUNK = 256
+
+# Opens on a pair that makes the comparison's point immediately.
+DEFAULT_EFFECT = "Blasphemous Act deals 13 damage to each creature."
+
+
+def load_clusters():
+    """cluster_effects.py's output, if it has been run -- {} otherwise, so the
+    page still builds (just without the cluster panel) if clustering hasn't
+    been done yet. Not imported from cluster_effects.py itself: that module
+    pulls in hdbscan/scipy.sparse.csgraph, dead weight for a page builder that
+    only needs to read the JSON it already wrote."""
+    if not os.path.exists(CLUSTERS_PATH):
+        return {}
+    with open(CLUSTERS_PATH, encoding="utf-8") as fh:
+        return json.load(fh)
+
+
+def matrices(corpus):
+    """Binary and L2-normalized IDF matrices over (effects x vocabulary)."""
+    vocab = sorted(corpus.df)
+    col = {w: k for k, w in enumerate(vocab)}
+    indptr, indices = [0], []
+    for s in corpus.sets:
+        indices.extend(sorted(col[w] for w in s))
+        indptr.append(len(indices))
+    indices = np.array(indices, dtype=np.int32)
+    indptr = np.array(indptr, dtype=np.int64)
+    shape = (corpus.n, len(vocab))
+    binary = sp.csr_matrix((np.ones(len(indices), dtype=np.float32), indices, indptr), shape=shape)
+    idf = np.array([corpus.idf[w] for w in vocab], dtype=np.float32)
+    weighted = sp.csr_matrix((idf[indices], indices, indptr), shape=shape)
+    norms = np.sqrt(weighted.multiply(weighted).sum(axis=1)).A.ravel()
+    norms[norms == 0.0] = 1.0
+    weighted = sp.diags(1.0 / norms).astype(np.float32) @ weighted
+    return binary.tocsr(), weighted.tocsr(), vocab, idf
+
+
+def rank_all(binary, weighted, k=TOP_N, chunk=CHUNK, progress=None):
+    """Exact top-k neighbours per effect under both modes.
+
+    One sparse matmul per chunk of rows against the WHOLE corpus -- no df cap,
+    no candidate cutoff, so this is the same ranking a brute-force loop gives,
+    just fast enough to run over 42k x 42k. Ties break on corpus position, to
+    match similarity.Corpus.top.
+    """
+    n = binary.shape[0]
+    sizes = binary.getnnz(axis=1).astype(np.float32)
+    raw_nb = np.zeros((n, k), dtype=np.int32)
+    wtd_nb = np.zeros((n, k), dtype=np.int32)
+    bt, wt = binary.T.tocsr(), weighted.T.tocsr()
+    for start in range(0, n, chunk):
+        stop = min(start + chunk, n)
+        rows = np.arange(start, stop)
+        inter = (binary[start:stop] @ bt).toarray()
+        union = sizes[rows][:, None] + sizes[None, :] - inter
+        np.maximum(union, 1.0, out=union)
+        jac = inter / union
+        cos = (weighted[start:stop] @ wt).toarray()
+        for block, out in ((jac, raw_nb), (cos, wtd_nb)):
+            block[rows - start, rows] = -1.0          # never rank self
+            out[start:stop] = _topk(block, k)
+        if progress:
+            progress(stop, n)
+    return raw_nb, wtd_nb
+
+
+def _topk(block, k):
+    """Top-k column indices per row, ordered by (-score, column index).
+
+    argpartition narrows to a pool first; the pool is sorted exactly, so the
+    order within it is fully determined. A tie straddling the pool boundary is
+    the one place the choice is arbitrary -- and there the two candidates hold
+    the identical score, so the ranking stays correct either way.
+    """
+    pool = min(block.shape[1], max(k * 8, 64))
+    cand = np.argpartition(-block, pool - 1, axis=1)[:, :pool]
+    vals = np.take_along_axis(block, cand, axis=1)
+    order = np.lexsort((cand, -vals), axis=1)
+    return np.take_along_axis(cand, order, axis=1)[:, :k]
+
+
+def build_data(corpus, names, vocab, idf, raw_nb, wtd_nb, clusters=None):
+    col = {w: k for k, w in enumerate(vocab)}
+    eff_cluster = (clusters or {}).get("effect_cluster", {})
+    card_index, card_names = {}, []
+    rows = []
+    for i, e in enumerate(corpus.effects):
+        refs = []
+        for cid in e["card_ids"]:
+            if cid not in card_index:
+                card_index[cid] = len(card_names)
+                card_names.append(names.get(cid, cid))
+            refs.append(card_index[cid])
+        refs.sort(key=lambda r: card_names[r].lower())
+        # index 5: this effect's own-name tokens, excluded before scoring (see
+        # similarity.Corpus -- singleton effects only). Plain words, not vocab
+        # ids: a hapax name token can vanish from the vocabulary entirely once
+        # its only occurrence is masked, so it may have no id to give.
+        # index 6: raw-overlap HDBSCAN cluster id from cluster_effects.py, -1
+        # for noise/excluded/not-yet-clustered.
+        rows.append([e["raw_text"], e["occurrence_count"], refs[:12], len(refs),
+                     sorted(col[w] for w in corpus.sets[i]),
+                     sorted(corpus.own_name_tokens[i]),
+                     eff_cluster.get(e["effect_id"], -1)])
+    default = corpus.exact(DEFAULT_EFFECT)
+    # Cluster members as EFFECT INDICES (not effect_ids), so the page can look
+    # a member up directly without a second id->index pass in JS.
+    cluster_members = {}
+    for cid, eids in (clusters or {}).get("clusters", {}).items():
+        idxs = [corpus.by_id[eid] for eid in eids if eid in corpus.by_id]
+        idxs.sort(key=lambda i: corpus.effects[i]["raw_text"])
+        cluster_members[cid] = idxs
+    return {
+        "vocab": vocab,
+        "idf": [round(float(v), 4) for v in idf],
+        "cards": card_names,
+        "effects": rows,
+        "raw": raw_nb.tolist(),
+        "wtd": wtd_nb.tolist(),
+        "topN": TOP_N,
+        "default": default if default is not None else 0,
+        "stopwords": sorted(S.STOPWORDS),
+        "clusterMembers": cluster_members,
+    }
+
+
+CSS = """
+:root {
+  --paper: #EDF1EF; --surface: #FAFCFB; --surface-2: #E3EAE7;
+  --ink: #141A19; --ink-soft: #4A5754; --ink-faint: #7B8783;
+  --rule: #C8D3CE; --rule-soft: #DCE4E1;
+  --accent: #1F6F5C; --accent-wash: #DCEAE5;
+  --raw: #3F6FB0; --raw-wash: #DEE8F5;
+  --wtd: #9A5B1F; --wtd-wash: #F4E8D9;
+  --cluster: #7A4FB0; --cluster-wash: #E9E0F5;
+  --warn: #A8434A; --warn-wash: #F4E1E2;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0E1413; --surface: #161D1B; --surface-2: #1E2725;
+    --ink: #DFE7E3; --ink-soft: #A3B0AC; --ink-faint: #74827E;
+    --rule: #2C3936; --rule-soft: #222D2B;
+    --accent: #5CC3A4; --accent-wash: #16302A;
+    --raw: #7FA8E0; --raw-wash: #182634;
+    --wtd: #D9A05C; --wtd-wash: #2E2418;
+    --cluster: #B99AE0; --cluster-wash: #241C33;
+    --warn: #E0868C; --warn-wash: #3A1F22;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0E1413; --surface: #161D1B; --surface-2: #1E2725;
+  --ink: #DFE7E3; --ink-soft: #A3B0AC; --ink-faint: #74827E;
+  --rule: #2C3936; --rule-soft: #222D2B;
+  --accent: #5CC3A4; --accent-wash: #16302A;
+  --raw: #7FA8E0; --raw-wash: #182634;
+  --wtd: #D9A05C; --wtd-wash: #2E2418;
+  --cluster: #B99AE0; --cluster-wash: #241C33;
+  --warn: #E0868C; --warn-wash: #3A1F22;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink);
+  font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 1500px; margin: 0 auto; padding: 22px 18px 56px; }
+h1 { font-size: 20px; margin: 0 0 4px; }
+.lede { color: var(--ink-soft); margin: 0 0 14px; max-width: 78ch; }
+.lede code { background: var(--surface-2); padding: 1px 4px; border-radius: 3px; }
+.error { background: var(--warn-wash); color: var(--warn); border: 1px solid var(--warn);
+  padding: 10px 12px; border-radius: 6px; margin: 0 0 16px; }
+.pick { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 0 0 14px; }
+.pick input { font: inherit; color: var(--ink); background: var(--surface);
+  border: 1px solid var(--rule); border-radius: 6px; padding: 7px 10px; flex: 1 1 320px; min-width: 0; }
+.pick .count { color: var(--ink-faint); font-variant-numeric: tabular-nums; }
+#results { list-style: none; margin: 0 0 16px; padding: 0; max-height: 210px; overflow-y: auto;
+  border: 1px solid var(--rule); border-radius: 8px; background: var(--surface); }
+#results:empty { display: none; }
+#results li { padding: 7px 10px; border-bottom: 1px solid var(--rule-soft); cursor: pointer; }
+#results li:last-child { border-bottom: 0; }
+#results li:hover, #results li[aria-selected="true"] { background: var(--accent-wash); }
+#results .occ { color: var(--ink-faint); font-variant-numeric: tabular-nums; margin-left: 6px; }
+.subject { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px;
+  padding: 14px 16px; margin: 0 0 16px; }
+.subject .txt { font-size: 15px; margin: 0 0 8px; }
+.subject .cards { color: var(--ink-soft); font-size: 13px; margin: 0 0 10px; }
+.subject .lbl { font-size: 11px; text-transform: uppercase; letter-spacing: .05em;
+  color: var(--ink-faint); margin: 0 0 5px; }
+.cluster-panel { background: var(--surface); border: 1px solid var(--cluster); border-radius: 8px;
+  margin: 0 0 16px; overflow: hidden; }
+.cluster-panel > h2 { font-size: 13px; margin: 0; padding: 10px 14px; background: var(--cluster-wash);
+  color: var(--cluster); border-bottom: 1px solid var(--cluster); }
+.cluster-panel > h2 .sub { font-weight: 400; color: var(--ink-soft); margin-left: 6px; }
+.cluster-panel .wrap { max-height: 320px; overflow-y: auto; }
+.cluster-panel .empty { padding: 12px 14px; color: var(--ink-soft); font-size: 13px; }
+.cluster-panel ul { list-style: none; margin: 0; padding: 0; }
+.cluster-panel li { padding: 8px 14px; border-bottom: 1px solid var(--rule-soft); cursor: pointer;
+  font-size: 13px; }
+.cluster-panel li:last-child { border-bottom: 0; }
+.cluster-panel li:hover { background: var(--cluster-wash); }
+.cluster-panel li.self { cursor: default; font-weight: 600; }
+.cluster-panel li.self:hover { background: transparent; }
+.cluster-panel .cards { color: var(--ink-faint); font-size: 12px; margin-top: 2px; }
+.cluster-panel .more { padding: 8px 14px; color: var(--ink-faint); font-size: 12px; font-style: italic; }
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+@media (max-width: 900px) { .cols { grid-template-columns: 1fr; } }
+.col { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; }
+.col > h2 { font-size: 13px; margin: 0; padding: 10px 14px; background: var(--surface-2);
+  border-bottom: 1px solid var(--rule); }
+.col > h2 .formula { font-weight: 400; color: var(--ink-faint); margin-left: 6px;
+  font-family: ui-monospace, Consolas, monospace; font-size: 11px; }
+.col.raw > h2 { border-bottom-color: var(--raw); box-shadow: inset 0 -2px 0 var(--raw); }
+.col.wtd > h2 { border-bottom-color: var(--wtd); box-shadow: inset 0 -2px 0 var(--wtd); }
+.nb { padding: 11px 14px; border-bottom: 1px solid var(--rule-soft); }
+.nb:last-child { border-bottom: 0; }
+.nb .head { display: flex; gap: 10px; align-items: baseline; }
+.nb .rank { color: var(--ink-faint); font-variant-numeric: tabular-nums; min-width: 1.4em; }
+.nb .score { font-variant-numeric: tabular-nums; font-weight: 700; margin-left: auto;
+  white-space: nowrap; }
+.col.raw .nb .score { color: var(--raw); }
+.col.wtd .nb .score { color: var(--wtd); }
+.nb .other { font-variant-numeric: tabular-nums; color: var(--ink-faint); font-size: 12px;
+  white-space: nowrap; }
+.nb .other.gap { color: var(--warn); font-weight: 600; }
+.nb .txt { cursor: pointer; }
+.nb .txt:hover { color: var(--accent); }
+.nb .cards { color: var(--ink-faint); font-size: 12px; margin-top: 2px; }
+.toks { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 7px; }
+.tok { font-size: 12px; padding: 1px 7px; border-radius: 999px; border: 1px solid var(--rule);
+  background: var(--surface-2); white-space: nowrap;
+  font-family: ui-monospace, Consolas, monospace; }
+.tok b { font-family: system-ui, sans-serif; font-weight: 600; margin-left: 4px;
+  font-variant-numeric: tabular-nums; }
+.col.raw .tok { background: var(--raw-wash); border-color: var(--raw); }
+.col.wtd .tok { background: var(--wtd-wash); border-color: var(--wtd); }
+.subject .tok { background: var(--surface-2); border-color: var(--rule); }
+.tok .pct { color: var(--ink-faint); margin-left: 5px; font-family: system-ui, sans-serif;
+  font-variant-numeric: tabular-nums; }
+.tok.cheap { opacity: .55; }
+.excluded { margin-top: 8px; font-size: 12px; color: var(--ink-faint); }
+.excluded .ex-lbl { margin-right: 6px; }
+.excluded .tok.ex { text-decoration: line-through; color: var(--ink-faint);
+  border-style: dashed; background: transparent; }
+.none { color: var(--ink-faint); font-style: italic; font-size: 12px; margin-top: 7px; }
+.note { color: var(--ink-soft); font-size: 12px; margin: 14px 0 0; }
+footer { color: var(--ink-faint); font-size: 12px; margin-top: 28px;
+  border-top: 1px solid var(--rule); padding-top: 12px; }
+"""
+
+JS = r"""
+(function () {
+  var D = window.SIMILARITY;
+  if (!D) { document.getElementById('load-error').hidden = false; return; }
+  var IDF = D.idf, VOCAB = D.vocab, E = D.effects, CARDS = D.cards;
+
+  // Token id lists are stored sorted, so intersection and union are one
+  // merge pass -- the page re-derives every score it shows rather than
+  // displaying a number the builder rounded.
+  function inter(a, b) {
+    var out = [], i = 0, j = 0;
+    while (i < a.length && j < b.length) {
+      if (a[i] === b[j]) { out.push(a[i]); i++; j++; }
+      else if (a[i] < b[j]) i++; else j++;
+    }
+    return out;
+  }
+  function norm(t) {
+    var s = 0; for (var i = 0; i < t.length; i++) s += IDF[t[i]] * IDF[t[i]];
+    return Math.sqrt(s);
+  }
+  var NORM = E.map(function (e) { return norm(e[4]); });
+
+  function rawScore(a, b, sh) {
+    var ta = E[a][4], tb = E[b][4];
+    var u = ta.length + tb.length - sh.length;
+    return u ? sh.length / u : 0;
+  }
+  function wtdScore(a, b, sh) {
+    var na = NORM[a], nb = NORM[b];
+    if (!na || !nb) return 0;
+    var s = 0;
+    for (var i = 0; i < sh.length; i++) s += IDF[sh[i]] * IDF[sh[i]];
+    return s / (na * nb);
+  }
+  function fmt(x) { return x.toFixed(3); }
+  function cardList(e) {
+    var names = e[2].map(function (r) { return CARDS[r]; });
+    var extra = e[3] - names.length;
+    return names.join(', ') + (extra > 0 ? ' +' + extra + ' more' : '');
+  }
+
+  function tokenChip(t, weighted, share) {
+    var s = document.createElement('span');
+    s.className = 'tok' + (weighted && IDF[t] < 2 ? ' cheap' : '');
+    s.appendChild(document.createTextNode(VOCAB[t]));
+    if (weighted) {
+      var b = document.createElement('b');
+      b.textContent = IDF[t].toFixed(2);
+      s.appendChild(b);
+      if (share !== undefined) {
+        var p = document.createElement('span');
+        p.className = 'pct';
+        p.textContent = Math.round(share * 100) + '%';
+        s.appendChild(p);
+      }
+      s.title = VOCAB[t] + ' appears in ' + Math.round(D.effects.length / Math.exp(IDF[t]))
+        + ' effects; idf ' + IDF[t].toFixed(3);
+    }
+    return s;
+  }
+
+  function tokenRow(tokens, weighted, shares) {
+    var d = document.createElement('div');
+    d.className = 'toks';
+    tokens.slice().sort(function (x, y) {
+      return IDF[y] - IDF[x] || (VOCAB[x] < VOCAB[y] ? -1 : 1);
+    }).forEach(function (t) {
+      d.appendChild(tokenChip(t, weighted, shares && shares[t]));
+    });
+    return d;
+  }
+
+  function neighbourNode(subject, j, rank, mode) {
+    var sh = inter(E[subject][4], E[j][4]);
+    var r = rawScore(subject, j, sh), w = wtdScore(subject, j, sh);
+    var mine = mode === 'raw' ? r : w, theirs = mode === 'raw' ? w : r;
+
+    var box = document.createElement('div');
+    box.className = 'nb';
+    var head = document.createElement('div');
+    head.className = 'head';
+    var rk = document.createElement('span');
+    rk.className = 'rank'; rk.textContent = rank + '.';
+    var sc = document.createElement('span');
+    sc.className = 'score'; sc.textContent = fmt(mine);
+    var ot = document.createElement('span');
+    // The other mode's verdict on the same pair, always in view: a row that
+    // only one mode likes is the whole reason for the side-by-side.
+    ot.className = 'other' + (Math.abs(mine - theirs) >= 0.25 ? ' gap' : '');
+    ot.textContent = (mode === 'raw' ? 'weighted ' : 'raw ') + fmt(theirs);
+    ot.title = 'the same pair scored by the other mode';
+    head.appendChild(rk); head.appendChild(sc); head.appendChild(ot);
+
+    var wrap = document.createElement('div');
+    var txt = document.createElement('div');
+    txt.className = 'txt'; txt.textContent = E[j][0];
+    txt.title = 'compare from this effect';
+    txt.addEventListener('click', function () { select(j); });
+    var cds = document.createElement('div');
+    cds.className = 'cards'; cds.textContent = cardList(E[j]);
+    wrap.appendChild(txt); wrap.appendChild(cds);
+
+    box.appendChild(head); box.appendChild(wrap);
+    if (!sh.length) {
+      var n = document.createElement('div');
+      n.className = 'none'; n.textContent = 'no shared tokens';
+      box.appendChild(n);
+    } else if (mode === 'raw') {
+      box.appendChild(tokenRow(sh, false));
+    } else {
+      var total = 0, shares = {};
+      sh.forEach(function (t) { total += IDF[t] * IDF[t]; });
+      sh.forEach(function (t) { shares[t] = total ? IDF[t] * IDF[t] / total : 0; });
+      box.appendChild(tokenRow(sh, true, shares));
+    }
+    return box;
+  }
+
+  function renderColumn(subject, mode) {
+    var col = document.getElementById(mode === 'raw' ? 'col-raw' : 'col-wtd');
+    while (col.children.length > 1) col.removeChild(col.lastChild);
+    var list = (mode === 'raw' ? D.raw : D.wtd)[subject];
+    list.forEach(function (j, n) {
+      col.appendChild(neighbourNode(subject, j, n + 1, mode));
+    });
+  }
+
+  function select(i) {
+    var e = E[i];
+    document.getElementById('subj-txt').textContent = e[0];
+    document.getElementById('subj-cards').textContent =
+      cardList(e) + '  ·  ' + e[1] + (e[1] === 1 ? ' card' : ' cards');
+    var host = document.getElementById('subj-toks');
+    host.textContent = '';
+    if (e[4].length) host.appendChild(tokenRow(e[4], true));
+    else {
+      var n = document.createElement('div');
+      n.className = 'none';
+      n.textContent = 'no tokens survive stopword removal — this effect scores 0 '
+        + 'against everything under both modes';
+      host.appendChild(n);
+    }
+    var exHost = document.getElementById('subj-excluded');
+    exHost.textContent = '';
+    exHost.hidden = !e[5].length;
+    if (e[5].length) {
+      var lbl = document.createElement('span');
+      lbl.className = 'ex-lbl';
+      lbl.textContent = (e[1] === 1 ? "this card's own name, excluded: " : 'own name, excluded: ');
+      exHost.appendChild(lbl);
+      e[5].forEach(function (w) {
+        var s = document.createElement('span');
+        s.className = 'tok ex';
+        s.textContent = w;
+        exHost.appendChild(s);
+      });
+    }
+    renderColumn(i, 'raw');
+    renderColumn(i, 'wtd');
+    renderCluster(i);
+    history.replaceState(null, '', '#e=' + i);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  var CLUSTER_SHOWN_CAP = 80;
+
+  function renderCluster(i) {
+    var panel = document.getElementById('cluster-panel');
+    var head = document.getElementById('cluster-head');
+    var list = document.getElementById('cluster-list');
+    list.textContent = '';
+    var cid = E[i][6];
+    if (!D.clusterMembers || cid === undefined || cid === -1 || cid === null) {
+      head.innerHTML = 'Raw-overlap cluster <span class="sub">not clustered (HDBSCAN noise, '
+        + 'or excluded before clustering — see reports/clustering.md §1)</span>';
+      var empty = document.createElement('div');
+      empty.className = 'empty';
+      empty.textContent = 'This effect has no cluster: either fewer than min_cluster_size similar '
+        + 'effects existed under raw overlap, or it shares no token with anything (or no tokens at '
+        + 'all) and was excluded before HDBSCAN ran.';
+      list.appendChild(empty);
+      panel.hidden = false;
+      return;
+    }
+    var members = D.clusterMembers[String(cid)] || [];
+    head.innerHTML = 'Raw-overlap cluster #' + cid
+      + ' <span class="sub">' + members.length + (members.length === 1 ? ' effect' : ' effects')
+      + ' — HDBSCAN, min_cluster_size=5, raw Jaccard only</span>';
+    var ul = document.createElement('ul');
+    var shown = 0;
+    for (var k = 0; k < members.length && shown < CLUSTER_SHOWN_CAP; k++) {
+      var m = members[k];
+      var li = document.createElement('li');
+      if (m === i) {
+        li.className = 'self';
+        li.textContent = E[m][0] + '  (this effect)';
+      } else {
+        var txt = document.createElement('div');
+        txt.textContent = E[m][0];
+        var cd = document.createElement('div');
+        cd.className = 'cards';
+        cd.textContent = cardList(E[m]);
+        li.appendChild(txt);
+        li.appendChild(cd);
+        li.addEventListener('click', function (idx) {
+          return function () { select(idx); };
+        }(m));
+      }
+      ul.appendChild(li);
+      shown++;
+    }
+    list.appendChild(ul);
+    if (members.length > CLUSTER_SHOWN_CAP) {
+      var more = document.createElement('div');
+      more.className = 'more';
+      more.textContent = '… and ' + (members.length - CLUSTER_SHOWN_CAP) + ' more in this cluster';
+      list.appendChild(more);
+    }
+    panel.hidden = false;
+  }
+
+  var q = document.getElementById('q');
+  var results = document.getElementById('results');
+  var count = document.getElementById('count');
+  var LIMIT = 60;
+
+  function search() {
+    var needle = q.value.trim().toLowerCase();
+    results.textContent = '';
+    if (!needle) { count.textContent = ''; return; }
+    var hits = [], n = 0;
+    for (var i = 0; i < E.length && hits.length < LIMIT; i++) {
+      if (E[i][0].toLowerCase().indexOf(needle) >= 0) { hits.push(i); }
+    }
+    for (i = 0; i < E.length; i++) if (E[i][0].toLowerCase().indexOf(needle) >= 0) n++;
+    count.textContent = n + (n === 1 ? ' effect' : ' effects')
+      + (n > LIMIT ? ' · showing first ' + LIMIT : '');
+    hits.sort(function (a, b) { return E[a][0].length - E[b][0].length; });
+    hits.forEach(function (i) {
+      var li = document.createElement('li');
+      li.textContent = E[i][0].slice(0, 150);
+      var o = document.createElement('span');
+      o.className = 'occ';
+      o.textContent = '×' + E[i][1];
+      li.appendChild(o);
+      li.addEventListener('click', function () { select(i); });
+      results.appendChild(li);
+    });
+  }
+  q.addEventListener('input', search);
+
+  var m = /[#&]e=(\d+)/.exec(location.hash);
+  select(m && +m[1] < E.length ? +m[1] : D.default);
+})();
+"""
+
+PAGE = """<title>Effect similarity: raw vs IDF-weighted</title>
+<style>{css}</style>
+<main>
+<h1>Effect similarity — raw overlap vs IDF-weighted overlap</h1>
+<p class="lede">Two deterministic word-overlap modes over the deduped effect glossary
+({n_effects} effects, {n_cards} cards). No model, no curated MTG-term list. Tokenizing drops
+parenthetical reminder text and {n_stop} ordinary-English stopwords; nothing MTG-specific is
+stopworded, so <code>target</code> and <code>creature</code> are discounted only by their own IDF.
+Effects that belong to exactly one card also have words from that card's <b>own name</b> excluded
+before scoring, in both modes — shown struck through below when it applies (why: reports/similarity-validation.md §1).
+Each row shows the shared tokens that produced the score, and the score the <em>other</em> mode
+gives the same pair — a red figure there means the two modes disagree by 0.25 or more.</p>
+
+<div id="load-error" class="error" hidden><b>Data failed to load.</b>
+similarity.data.js must sit next to this page.</div>
+
+<div class="pick">
+  <input id="q" type="search" placeholder="Search effect text — e.g. mills, surveil, destroy all creatures"
+         autocomplete="off" spellcheck="false">
+  <span class="count" id="count"></span>
+</div>
+<ul id="results"></ul>
+
+<div class="subject">
+  <div class="lbl">Comparing from</div>
+  <p class="txt" id="subj-txt"></p>
+  <p class="cards" id="subj-cards"></p>
+  <div class="lbl">Tokens, heaviest IDF first</div>
+  <div id="subj-toks"></div>
+  <div class="excluded" id="subj-excluded" hidden></div>
+</div>
+
+<section class="cluster-panel" id="cluster-panel" hidden>
+  <h2 id="cluster-head"></h2>
+  <div class="wrap" id="cluster-list"></div>
+</section>
+
+<div class="cols">
+  <section class="col raw" id="col-raw">
+    <h2>Raw overlap<span class="formula">|A ∩ B| / |A ∪ B|</span></h2>
+  </section>
+  <section class="col wtd" id="col-wtd">
+    <h2>IDF-weighted overlap<span class="formula">cos(idf·A, idf·B)</span></h2>
+  </section>
+</div>
+
+<p class="note">Percentages on a weighted token are its share of that pair's cosine. Faded
+tokens have idf &lt; 2 — corpus filler the weighted mode has already discounted. Struck-through
+tokens under the subject are excluded because they're that one card's own name, never because
+of anything about the effect. Click any neighbour's text to compare outward from it.</p>
+
+<footer>Top {top_n} per mode, ranked against all {n_effects} effects with no candidate pruning.
+Scores are recomputed in the browser from the shipped token sets and IDF table. The cluster panel
+is a separate, first-pass HDBSCAN clustering over raw overlap only (no IDF, not tuned yet) from
+<code>src/cluster_effects.py</code> — see <code>reports/clustering.md</code> for the full write-up,
+including where it looks wrong.
+Generated {generated} by <code>src/build_similarity_page.py</code>.</footer>
+</main>
+<script src="similarity.data.js" charset="utf-8"></script>
+<script>{js}</script>
+"""
+
+
+def page(corpus, n_cards):
+    return PAGE.format(
+        css=CSS, js=JS, top_n=TOP_N,
+        n_effects="{:,}".format(corpus.n), n_cards="{:,}".format(n_cards),
+        n_stop=len(S.STOPWORDS), generated=html.escape(time.strftime("%Y-%m-%d")))
+
+
+def main():
+    t0 = time.time()
+    corpus = S.load_corpus()
+    names = S.load_card_names()
+    binary, weighted, vocab, idf = matrices(corpus)
+    print("corpus %s effects, %s tokens, %s postings" % (
+        "{:,}".format(corpus.n), "{:,}".format(len(vocab)), "{:,}".format(binary.nnz)))
+
+    def progress(done, total):
+        print("\r  ranking %d/%d" % (done, total), end="", flush=True)
+
+    raw_nb, wtd_nb = rank_all(binary, weighted, progress=progress)
+    print("\r  ranking %d/%d  (%.0fs)" % (corpus.n, corpus.n, time.time() - t0))
+
+    clusters = load_clusters()
+    if clusters:
+        print("clusters: %d (from %s)" % (len(clusters.get("clusters", {})),
+                                           os.path.normpath(CLUSTERS_PATH)))
+    else:
+        print("no clusters.json found -- run cluster_effects.py first for the cluster panel")
+    data = build_data(corpus, names, vocab, idf, raw_nb, wtd_nb, clusters=clusters)
+    with open(DATA_PATH, "w", encoding="utf-8") as fh:
+        fh.write("window.SIMILARITY=")
+        json.dump(data, fh, ensure_ascii=False, separators=(",", ":"))
+        fh.write(";\n")
+    with open(HTML_PATH, "w", encoding="utf-8") as fh:
+        fh.write(page(corpus, len(data["cards"])))
+    print("%s effects, top %d per mode -> %s (%.1f MB data, %.0fs total)" % (
+        "{:,}".format(corpus.n), TOP_N, os.path.normpath(HTML_PATH),
+        os.path.getsize(DATA_PATH) / 1e6, time.time() - t0))
+
+
+if __name__ == "__main__":
+    main()

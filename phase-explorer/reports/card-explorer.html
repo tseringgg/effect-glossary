@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>phase.rs Card Data Explorer</title>
+<style>
+  :root {
+    --bg:#fff; --fg:#111; --mut:#666; --line:#d4d4d4; --panel:#f6f6f6;
+    --clean:#1a7f37; --partial:#b35c00; --unparsed:#b3261e; --vanilla:#555;
+    --warnbg:#fff4e5; --warnline:#e09b3d; --gap:#ffe9e6;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; font:13px/1.45 ui-monospace,SFMono-Regular,Consolas,monospace;
+         background:var(--bg); color:var(--fg); }
+  header { position:sticky; top:0; z-index:10; background:var(--panel);
+           border-bottom:2px solid var(--line); padding:8px 12px; }
+  h1 { font-size:14px; margin:0 0 6px; display:inline-block; }
+  .prov { font-size:12px; color:var(--mut); display:inline-block; margin-left:10px; }
+  .prov b { color:var(--fg); }
+  .caveat { background:var(--warnbg); border:1px solid var(--warnline);
+            border-left:4px solid var(--warnline); padding:6px 9px; margin:6px 0 0;
+            font-size:12px; }
+  .stale { color:var(--unparsed); font-weight:bold; }
+  .controls { padding:8px 12px; border-bottom:1px solid var(--line); }
+  .row { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:7px; }
+  input[type=search] { font:inherit; padding:4px 7px; width:340px; }
+  select { font:11px ui-monospace,monospace; max-width:230px; padding:2px; }
+  label.ax { font-size:11px; color:var(--mut); display:flex; flex-direction:column; gap:1px; }
+  button { font:inherit; padding:3px 9px; cursor:pointer; }
+  .qbar { display:flex; gap:6px; flex-wrap:wrap; align-items:stretch; }
+  .qbtn { border:2px solid var(--line); background:#fff; padding:4px 10px; cursor:pointer;
+          font:inherit; text-align:left; line-height:1.3; }
+  .qbtn small { display:block; font-size:10px; color:var(--mut); }
+  .qbtn.on { background:#111; color:#fff; border-color:#111; }
+  .qbtn.on small { color:#ddd; }
+  .qbtn[data-q=clean]    { border-left:6px solid var(--clean); }
+  .qbtn[data-q=partial]  { border-left:6px solid var(--partial); }
+  .qbtn[data-q=unparsed] { border-left:6px solid var(--unparsed); }
+  .qbtn[data-q=vanilla]  { border-left:6px solid var(--vanilla); }
+  .meter { display:flex; height:16px; border:1px solid var(--line); margin:4px 0 0;
+           font-size:9px; overflow:hidden; }
+  .meter div { display:flex; align-items:center; justify-content:center; color:#fff;
+               white-space:nowrap; overflow:hidden; }
+  table { width:100%; border-collapse:collapse; }
+  th,td { text-align:left; padding:5px 8px; border-bottom:1px solid var(--line);
+          vertical-align:top; }
+  th { background:var(--panel); position:sticky; top:0; font-size:11px; }
+  tbody tr:hover { background:#fafafa; }
+  .nm { font-weight:bold; white-space:nowrap; }
+  .oid { font-size:10px; color:var(--mut); }
+  .txt { white-space:pre-wrap; max-width:520px; font-size:12px; }
+  .badge { font-size:10px; padding:1px 5px; border:1px solid; white-space:nowrap; }
+  .b-clean{color:var(--clean);border-color:var(--clean)}
+  .b-partial{color:var(--partial);border-color:var(--partial)}
+  .b-unparsed{color:var(--unparsed);border-color:var(--unparsed)}
+  .b-vanilla{color:var(--vanilla);border-color:var(--vanilla)}
+  .det { background:#fbfbfb; }
+  .bucket { margin:0 0 10px; }
+  .bucket > h4 { margin:0 0 3px; font-size:12px; }
+  .empty { color:var(--mut); font-style:italic; font-size:11px; }
+  pre { margin:0; font-size:11px; white-space:pre-wrap; word-break:break-word;
+        background:#fff; border:1px solid var(--line); padding:6px; max-height:480px;
+        overflow:auto; }
+  .gapnode { background:var(--gap); }
+  .warnbox { background:var(--warnbg); border:1px solid var(--warnline); padding:6px;
+             margin:0 0 10px; font-size:11px; }
+  .nowarn { border:1px dashed var(--line); padding:6px; margin:0 0 10px;
+            font-size:11px; color:var(--mut); }
+  .pager { padding:9px 12px; display:flex; gap:9px; align-items:center;
+           border-top:1px solid var(--line); position:sticky; bottom:0;
+           background:var(--panel); }
+  .note { font-size:11px; color:var(--mut); }
+  #status { padding:20px 12px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>phase.rs Card Data Explorer</h1>
+  <span class="prov" id="prov">loading…</span>
+  <div class="caveat" id="caveat">
+    <b>Parse warnings are not a trust signal.</b>
+    Absence of a parse warning does <b>not</b> guarantee a complete parse — this field is
+    known to miss real issues. Confirmed example: <i>Deep Analysis</i> (“Target player draws
+    two cards”) parses to <code>Draw{count:2}</code> with the target player dropped entirely,
+    and carries <b>no</b> <code>parse_warnings</code> entry. Only 544 of 34,645 entries carry
+    any warning at all, so treat every parse as unverified until you read it.
+    <span id="colnote"></span>
+  </div>
+</header>
+
+<div id="status">Loading index (~18 MB)…</div>
+
+<div class="controls" id="controls" hidden>
+  <div class="row">
+    <input type="search" id="q" placeholder="search card name + oracle text…" autocomplete="off">
+    <button id="clear">clear all filters</button>
+    <span class="note" id="count"></span>
+  </div>
+
+  <div class="row qbar" id="qbar">
+    <button class="qbtn" id="sgbtn" data-q="soft" style="border-left:6px solid #7a4bbd"
+      title="entries holding an unmodelled enum slot, which the clean/partial split does not catch">
+      <span>+ unmodelled node</span><small data-c="soft">–</small>
+    </button>
+  </div>
+  <div class="meter" id="meter" title="composition of the current result set"></div>
+  <div class="note" style="margin-top:3px">
+    Parse quality of the <b>current result set</b>, not the whole corpus.
+    <b>clean</b> = no Unimplemented/GenericEffect nodes ·
+    <b>partial</b> = real structure plus at least one such node ·
+    <b>unparsed</b> = has oracle text but zero structured abilities ·
+    <b>vanilla</b> = no oracle text at all.
+    Quality is computed from gap nodes only — <i>not</i> from <code>parse_warnings</code>,
+    for the reason in the header.
+  </div>
+
+  <div class="row" id="axes" style="margin-top:9px"></div>
+  <div class="note">
+    Filters are <b>slot-aware</b>: each axis matches only nodes found in that slot, so
+    <code>quantity:Fixed</code> (35,139 nodes) and <code>cost:Fixed</code> (198 nodes) are
+    different filters and never collapse into one. Option lists are derived from the data at
+    build time, so they track phase.rs's parser instead of drifting from a hardcoded list.
+  </div>
+</div>
+
+<table id="tbl" hidden>
+  <thead><tr>
+    <th style="width:26px"></th><th style="width:190px">card</th>
+    <th style="width:92px">quality</th><th>oracle text</th><th style="width:150px">type</th>
+  </tr></thead>
+  <tbody id="body"></tbody>
+</table>
+
+<div class="pager" id="pager" hidden>
+  <button id="first">« first</button><button id="prev">‹ prev</button>
+  <span id="pinfo"></span>
+  <button id="next">next ›</button><button id="last">last »</button>
+  <span class="note">· <span id="perpageinfo"></span> per page</span>
+</div>
+
+<script>
+const QUALITIES = ["clean","partial","unparsed","vanilla"];
+const QCOLOR = {clean:"#1a7f37",partial:"#b35c00",unparsed:"#b3261e",vanilla:"#555"};
+const PER = 50;
+const AXIS_LABEL = {
+  effect:"effect", target:"target / filter", quantity:"quantity", cost:"cost",
+  condition:"condition", trigger_mode:"trigger mode", static_mode:"static mode",
+  replacement_event:"replacement event", keyword:"keyword"
+};
+const AXIS_ORDER = ["effect","trigger_mode","static_mode","replacement_event","keyword",
+                    "target","quantity","cost","condition"];
+
+let META, FACETS, ROWS = [], AXIDX = {}, CHUNKS = new Map();
+let filtered = [], page = 0;
+const state = { q:"", quals:new Set(), axis:{}, soft:false };
+
+async function boot() {
+  const [meta, facets, index] = await Promise.all([
+    fetch("../build/meta.json").then(r=>r.json()),
+    fetch("../build/facets.json").then(r=>r.json()),
+    fetch("../build/index.json").then(r=>r.json()),
+  ]);
+  META = meta; FACETS = facets; ROWS = index.rows;
+
+  // value -> interned id, per axis, for filtering
+  for (const ax of Object.keys(FACETS)) {
+    AXIDX[ax] = new Map(FACETS[ax].map((o,i)=>[o.v,i]));
+  }
+  for (const r of ROWS) r._s = (r.name + "\n" + r.text).toLowerCase();
+
+  renderProv();
+  await renderCollisionNote();
+  renderQBar();
+  renderAxes();
+  wire();
+  document.getElementById("status").hidden = true;
+  document.getElementById("controls").hidden = false;
+  document.getElementById("tbl").hidden = false;
+  document.getElementById("pager").hidden = false;
+  apply();
+}
+
+function renderProv() {
+  const lm = META.snapshot_last_modified.slice(0,10);
+  const days = Math.round((Date.now() - Date.parse(META.snapshot_last_modified))/864e5);
+  const stale = days > 30 ? ` <span class="stale">(${days} days old)</span>` : ` (${days} days old)`;
+  document.getElementById("prov").innerHTML =
+    `snapshot <b>${lm}</b>${stale} · fetched <b>${META.fetched}</b> · ` +
+    `<b>${META.entries.toLocaleString()}</b> face entries / ` +
+    `<b>${META.distinct_oracle_ids.toLocaleString()}</b> oracle ids · ` +
+    `${(META.source_bytes/1e6).toFixed(1)} MB · ` +
+    `<a href="https://data.phase-rs.dev/card-data.json">source</a>`;
+}
+
+async function renderCollisionNote() {
+  try {
+    const c = await fetch("../build/collisions.json").then(r=>r.json());
+    document.getElementById("colnote").innerHTML =
+      `<br><b>Identity is keyed by oracle id here, not face name.</b> ` +
+      `The upstream file is keyed by lowercased face name, which silently drops cards: ` +
+      `<b>${c.keys_with_a_drop}</b> contested keys cost <b>${c.oracle_ids_dropped}</b> oracle ids ` +
+      `(classic <i>Lightning Bolt</i> among them — it is <b>not in this data at all</b>). ` +
+      `Dropped cards cannot be shown below because they are absent from the snapshot; ` +
+      `see <a href="../NAME_COLLISIONS.md">NAME_COLLISIONS.md</a> for the full list.`;
+  } catch (e) { /* report not built yet */ }
+}
+
+function renderQBar() {
+  const bar = document.getElementById("qbar");
+  const sgbtn = document.getElementById("sgbtn");
+  for (const q of QUALITIES) {
+    const b = document.createElement("button");
+    b.className = "qbtn"; b.dataset.q = q;
+    b.innerHTML = `<span>${q}</span><small data-c="${q}">–</small>`;
+    b.onclick = () => {
+      state.quals.has(q) ? state.quals.delete(q) : state.quals.add(q);
+      b.classList.toggle("on", state.quals.has(q));
+      page = 0; apply();
+    };
+    bar.insertBefore(b, sgbtn);
+  }
+  sgbtn.onclick = () => {
+    state.soft = !state.soft;
+    sgbtn.classList.toggle("on", state.soft);
+    page = 0; apply();
+  };
+}
+
+function renderAxes() {
+  const host = document.getElementById("axes");
+  host.innerHTML = "";
+  for (const ax of AXIS_ORDER) {
+    const opts = FACETS[ax] || [];
+    const l = document.createElement("label");
+    l.className = "ax";
+    const sel = document.createElement("select");
+    sel.innerHTML = `<option value="">— any (${opts.length}) —</option>` +
+      opts.slice().sort((a,b)=>b.n-a.n)
+          .map(o=>`<option value="${esc(o.v)}">${esc(o.v)} (${o.n})</option>`).join("");
+    sel.onchange = () => {
+      if (sel.value) state.axis[ax] = sel.value; else delete state.axis[ax];
+      page = 0; apply();
+    };
+    l.append(document.createTextNode(AXIS_LABEL[ax] || ax), sel);
+    host.appendChild(l);
+  }
+}
+
+function wire() {
+  let t;
+  document.getElementById("q").oninput = e => {
+    clearTimeout(t);
+    t = setTimeout(() => { state.q = e.target.value.trim().toLowerCase(); page = 0; apply(); }, 160);
+  };
+  document.getElementById("clear").onclick = () => {
+    state.q = ""; state.quals.clear(); state.axis = {}; state.soft = false;
+    document.getElementById("q").value = "";
+    document.querySelectorAll(".qbtn.on").forEach(b=>b.classList.remove("on"));
+    document.querySelectorAll("#axes select").forEach(s=>s.value="");
+    page = 0; apply();
+  };
+  const go = n => { page = n; draw(); window.scrollTo(0,0); };
+  document.getElementById("first").onclick = () => go(0);
+  document.getElementById("prev").onclick  = () => go(Math.max(0,page-1));
+  document.getElementById("next").onclick  = () => go(Math.min(maxPage(),page+1));
+  document.getElementById("last").onclick  = () => go(maxPage());
+}
+
+const maxPage = () => Math.max(0, Math.ceil(filtered.length/PER)-1);
+const esc = s => String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function apply() {
+  const q = state.q, quals = state.quals;
+  // pre-resolve axis filters to interned ids so the hot loop compares ints
+  const axf = [];
+  for (const [ax,v] of Object.entries(state.axis)) {
+    const id = AXIDX[ax] ? AXIDX[ax].get(v) : undefined;
+    axf.push([ax, id]);
+  }
+  filtered = ROWS.filter(r => {
+    if (quals.size && !quals.has(r.q)) return false;
+    if (state.soft && !r.sg) return false;
+    if (q && !r._s.includes(q)) return false;
+    for (const [ax,id] of axf) {
+      if (id === undefined) return false;
+      const a = r.f[ax];
+      if (!a || !a.includes(id)) return false;
+    }
+    return true;
+  });
+  const tally = Object.fromEntries(QUALITIES.map(k=>[k,0]));
+  for (const r of filtered) tally[r.q]++;
+  for (const q2 of QUALITIES) {
+    const n = tally[q2], pct = filtered.length ? (100*n/filtered.length) : 0;
+    document.querySelector(`small[data-c=${q2}]`).textContent =
+      `${n.toLocaleString()} · ${pct.toFixed(1)}%`;
+  }
+  const nsoft = filtered.reduce((a,r)=>a+(r.sg?1:0),0);
+  const spct = filtered.length ? (100*nsoft/filtered.length) : 0;
+  document.querySelector("small[data-c=soft]").textContent =
+    `${nsoft.toLocaleString()} · ${spct.toFixed(1)}%`;
+  const m = document.getElementById("meter");
+  m.innerHTML = filtered.length
+    ? QUALITIES.filter(k=>tally[k]).map(k=>{
+        const pct = 100*tally[k]/filtered.length;
+        return `<div style="width:${pct}%;background:${QCOLOR[k]}" title="${k}: ${tally[k]} (${pct.toFixed(1)}%)">${pct>7?k:""}</div>`;
+      }).join("")
+    : `<div style="width:100%;background:#999">no matches</div>`;
+  document.getElementById("count").textContent =
+    `${filtered.length.toLocaleString()} of ${ROWS.length.toLocaleString()} entries match`;
+  document.getElementById("perpageinfo").textContent = PER;
+  draw();
+}
+
+function draw() {
+  if (page > maxPage()) page = maxPage();
+  const slice = filtered.slice(page*PER, page*PER+PER);
+  const body = document.getElementById("body");
+  body.innerHTML = "";
+  for (const r of slice) {
+    const tr = document.createElement("tr");
+    tr.innerHTML =
+      `<td><button data-id="${esc(r.id)}" data-ch="${r.ch}" title="show parsed structure">+</button></td>` +
+      `<td class="nm">${esc(r.name)}` +
+        (r.layout?`<br><span class="oid">layout: ${esc(r.layout)}</span>`:"") +
+        `<br><span class="oid">${esc(r.id)}</span>` +
+        (r.group?`<br><span class="oid">multi-face group</span>`:"") +
+      `</td>` +
+      `<td><span class="badge b-${r.q}">${r.q}</span>` +
+        (r.gaps?`<br><span class="oid">${r.gaps} gap node${r.gaps>1?"s":""}</span>`:"") +
+        (r.warn?`<br><span class="oid">${r.warn} warning${r.warn>1?"s":""}</span>`:"") +
+        (r.sg?`<br><span class="oid" style="color:#7a4bbd">${r.sg} unmodelled</span>`:"") +
+      `</td>` +
+      `<td class="txt">${esc(r.text) || '<span class="empty">(no oracle text)</span>'}</td>` +
+      `<td>${esc(r.type)}</td>`;
+    body.appendChild(tr);
+    tr.querySelector("button").onclick = ev => toggle(ev.target, r, tr);
+  }
+  document.getElementById("pinfo").textContent =
+    filtered.length ? `page ${page+1} / ${maxPage()+1}` : "no results";
+}
+
+async function chunk(n) {
+  if (!CHUNKS.has(n)) {
+    CHUNKS.set(n, fetch(`../build/chunks/${n}.json`).then(r=>r.json()));
+  }
+  return CHUNKS.get(n);
+}
+
+async function toggle(btn, r, tr) {
+  if (tr.nextSibling && tr.nextSibling.classList?.contains("det")) {
+    tr.nextSibling.remove(); btn.textContent = "+"; return;
+  }
+  btn.textContent = "…";
+  const data = (await chunk(r.ch))[r.id];
+  btn.textContent = "−";
+  const det = document.createElement("tr");
+  det.className = "det";
+  const td = document.createElement("td");
+  td.colSpan = 5;
+  td.innerHTML = render(data, r);
+  det.appendChild(td);
+  tr.after(det);
+}
+
+function render(d, r) {
+  if (!d) return `<span class="empty">structure missing from chunk ${r.ch}</span>`;
+  let h = "";
+
+  if (d.parse_warnings && d.parse_warnings.length) {
+    h += `<div class="warnbox"><b>parse_warnings (${d.parse_warnings.length})</b> — upstream
+      flagged these itself:<pre>${esc(JSON.stringify(d.parse_warnings,null,1))}</pre></div>`;
+  } else {
+    h += `<div class="nowarn"><b>No parse_warnings on this entry — that is not a
+      verification.</b> This field is known to stay empty while real clauses are dropped
+      (see header). Read the structure below against the oracle text yourself.</div>`;
+  }
+
+  for (const [k,label] of [["abilities","abilities"],["triggers","triggers"],
+        ["static_abilities","static_abilities"],["replacements","replacements"]]) {
+    const v = d[k] || [];
+    h += `<div class="bucket"><h4>${label} <span class="oid">(${v.length})</span></h4>` +
+         (v.length ? `<pre>${hl(JSON.stringify(v,null,1))}</pre>`
+                   : `<span class="empty">none</span>`) + `</div>`;
+  }
+
+  const extra = {};
+  for (const k of ["modal","additional_cost","casting_restrictions","casting_options",
+                   "solve_condition","strive_cost","keywords","mana_cost","card_type",
+                   "power","toughness","loyalty","defense","layout","printings",
+                   "legalities","scryfall_oracle_id","_export_key"]) {
+    if (d[k] !== null && d[k] !== undefined &&
+        !(Array.isArray(d[k]) && !d[k].length) &&
+        !(typeof d[k]==="object" && !Array.isArray(d[k]) && !Object.keys(d[k]).length)) {
+      extra[k] = d[k];
+    }
+  }
+  h += `<div class="bucket"><h4>other fields</h4><pre>${esc(JSON.stringify(extra,null,1))}</pre></div>`;
+  return h;
+}
+
+// highlight the nodes that mean "parser could not represent this"
+function hl(s) {
+  return esc(s).replace(/&quot;(Unimplemented|GenericEffect)&quot;/g,
+    '<span class="gapnode">&quot;$1&quot;</span>');
+}
+
+boot().catch(e => {
+  document.getElementById("status").innerHTML =
+    `<b>Load failed:</b> ${esc(e.message)}<br><br>
+     This page must be served over HTTP (fetch cannot read <code>file://</code>).<br>
+     Run <code>python src/serve.py</code> from the project root.`;
+});
+</script>
+</body>
+</html>

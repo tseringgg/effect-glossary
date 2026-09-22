@@ -4,9 +4,16 @@
     reports/zone-review.data.js   the data, loaded by <script src> -- works on
                                   file:// where fetch() of a .json would not
 
-A flat audit table over data/full/effects.json: filter by one or more zones
-(any / all), text search across raw_text, plain_text and card names, sort, and
-paginate. Not the exploration UI -- no grouping, no map.
+A flat audit table over data/full/effects.json: filter by one or more
+zone:direction tags (any / all), by whether the player has a choice, text
+search across raw_text, plain_text and card names, sort, and paginate. Not the
+exploration UI -- no grouping, no map.
+
+zones is a list of STRUCTURED records ({"zone", "direction", "choice"}), not
+flat tag strings -- see classify_zones.py. The UI groups zone:direction tags
+under their zone (library / source, destination, reference) rather than
+flattening them, and adds a separate choice filter (a player decision point,
+independent of which zone/direction it's on).
 
 Rule evidence is recomputed here with classify_zones (raw_text only, as in
 build_full_glossary.py), so every label can be traced to the rule that fired.
@@ -32,7 +39,7 @@ CSS = """
   --ink: #141A19; --ink-soft: #4A5754; --ink-faint: #7B8783;
   --rule: #C8D3CE; --rule-soft: #DCE4E1;
   --accent: #1F6F5C; --accent-wash: #DCEAE5; --on-accent: #FFFFFF;
-  --warn: #A8434A; --warn-wash: #F4E1E2; --mark: #F3E3A6;
+  --warn: #A8434A; --warn-wash: #F4E1E2; --mark: #F3E3A6; --choice: #A8434A;
   --z-library: #3F6FB0; --z-hand: #8A5CB0; --z-battlefield: #2F8A5C;
   --z-graveyard: #6B6B6B; --z-exile: #B07A2F; --z-stack: #B04F7A;
   --z-command: #5C8AB0; --z-mana: #2F9AA8; --z-none: #9AA5A1;
@@ -43,7 +50,7 @@ CSS = """
     --ink: #DFE7E3; --ink-soft: #A3B0AC; --ink-faint: #74827E;
     --rule: #2C3936; --rule-soft: #222D2B;
     --accent: #5CC3A4; --accent-wash: #16302A; --on-accent: #0E1413;
-    --warn: #E0868C; --warn-wash: #3A1F22; --mark: #5A4A14;
+    --warn: #E0868C; --warn-wash: #3A1F22; --mark: #5A4A14; --choice: #E0868C;
     --z-library: #7FA8E0; --z-hand: #BC95E0; --z-battlefield: #6FCB98;
     --z-graveyard: #A8A8A8; --z-exile: #E0B06F; --z-stack: #E08AB0;
     --z-command: #95BCE0; --z-mana: #6FD0DC; --z-none: #6B7874;
@@ -54,7 +61,7 @@ CSS = """
   --ink: #DFE7E3; --ink-soft: #A3B0AC; --ink-faint: #74827E;
   --rule: #2C3936; --rule-soft: #222D2B;
   --accent: #5CC3A4; --accent-wash: #16302A; --on-accent: #0E1413;
-  --warn: #E0868C; --warn-wash: #3A1F22; --mark: #5A4A14;
+  --warn: #E0868C; --warn-wash: #3A1F22; --mark: #5A4A14; --choice: #E0868C;
   --z-library: #7FA8E0; --z-hand: #BC95E0; --z-battlefield: #6FCB98;
   --z-graveyard: #A8A8A8; --z-exile: #E0B06F; --z-stack: #E08AB0;
   --z-command: #95BCE0; --z-mana: #6FD0DC; --z-none: #6B7874;
@@ -62,22 +69,30 @@ CSS = """
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--paper); color: var(--ink);
   font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
-main { max-width: 1500px; margin: 0 auto; padding: 24px 20px 48px; }
+main { max-width: 1560px; margin: 0 auto; padding: 24px 20px 48px; }
 h1 { font-size: 20px; margin: 0 0 4px; }
 .lede { color: var(--ink-soft); margin: 0 0 14px; }
 .stale, .error { background: var(--warn-wash); color: var(--warn); border: 1px solid var(--warn);
   padding: 10px 12px; border-radius: 6px; margin: 0 0 14px; }
 .panel { position: sticky; top: 0; z-index: 3; background: var(--paper); padding: 10px 0 8px;
   border-bottom: 1px solid var(--rule); margin-bottom: 10px; }
-.zonebar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 8px; }
+.zonegroups { display: flex; flex-wrap: wrap; align-items: stretch; gap: 6px; margin-bottom: 8px; }
+.zonegroup { display: flex; align-items: center; gap: 4px; padding: 3px 6px; border-radius: 8px;
+  border: 1px solid var(--rule); border-left: 4px solid var(--zc); background: var(--surface); }
+.zonegroup .zname { font-size: 12px; font-weight: 600; color: var(--ink-soft); white-space: nowrap;
+  padding-right: 2px; }
+.dbtn { font: inherit; font-size: 12px; cursor: pointer; padding: 3px 8px; border-radius: 999px;
+  border: 1px solid var(--rule); background: var(--paper); color: var(--ink); }
+.dbtn .n { color: var(--ink-faint); margin-left: 4px; font-variant-numeric: tabular-nums; }
+.dbtn[aria-pressed="true"] { background: var(--zc); border-color: var(--zc); color: var(--on-accent); }
+.dbtn[aria-pressed="true"] .n { color: inherit; opacity: .85; }
 .zbtn { font: inherit; font-size: 12px; cursor: pointer; padding: 3px 9px; border-radius: 999px;
   border: 1px solid var(--rule); border-left: 4px solid var(--zc); background: var(--surface); color: var(--ink); }
 .zbtn .n { color: var(--ink-faint); margin-left: 5px; font-variant-numeric: tabular-nums; }
-.zbtn.sub { font-weight: 600; }
 .zbtn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
 .zbtn[aria-pressed="true"] .n { color: inherit; opacity: .8; }
 .row2 { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
-.row2 input[type=search] { font: inherit; min-width: 320px; flex: 1 1 320px; max-width: 520px; color: var(--ink);
+.row2 input[type=search] { font: inherit; min-width: 300px; flex: 1 1 300px; max-width: 460px; color: var(--ink);
   background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 6px 9px; }
 .row2 select, .pager button, .pager input, .linkbtn { font: inherit; color: var(--ink); background: var(--surface);
   border: 1px solid var(--rule); border-radius: 6px; padding: 5px 8px; }
@@ -85,7 +100,9 @@ h1 { font-size: 20px; margin: 0 0 4px; }
 .seg label { padding: 5px 9px; cursor: pointer; background: var(--surface); font-size: 13px; }
 .seg input { position: absolute; opacity: 0; pointer-events: none; }
 .seg input:checked + span { font-weight: 600; color: var(--accent); }
+.seg.choice input:checked + span { color: var(--choice); }
 .seg input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+.seg .cn { color: var(--ink-faint); margin-left: 4px; font-variant-numeric: tabular-nums; font-weight: 400 !important; }
 .muted { color: var(--ink-soft); }
 .pager { display: flex; align-items: center; gap: 6px; margin: 8px 0; flex-wrap: wrap; }
 .pager input { width: 64px; text-align: right; }
@@ -97,22 +114,25 @@ th { background: var(--surface-2); font-size: 12px; text-transform: uppercase; l
   color: var(--ink-soft); white-space: nowrap; }
 tr:last-child td { border-bottom: 0; }
 td.id { font-family: ui-monospace, Consolas, monospace; font-size: 12px; white-space: nowrap; color: var(--ink-soft); }
-td.raw { width: 34%; white-space: pre-line; }
-td.plain { width: 16%; color: var(--ink-soft); }
+td.raw { width: 32%; white-space: pre-line; }
+td.plain { width: 15%; color: var(--ink-soft); }
 td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
-td.cards { width: 20%; font-size: 13px; }
+td.cards { width: 19%; font-size: 13px; }
 .none { color: var(--ink-faint); }
 .chips { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 4px; }
 .chip { font-size: 12px; padding: 1px 7px; border-radius: 999px; border: 1px solid var(--rule);
   border-left: 4px solid var(--zc); background: var(--surface); white-space: nowrap; }
-.chip.sub { font-weight: 600; background: var(--accent-wash); }
 .chip.empty { font-style: italic; color: var(--ink-faint); }
+.chip .cm { color: var(--choice); font-weight: 700; margin-left: 3px; }
 details { margin-top: 5px; font-size: 12px; color: var(--ink-soft); }
 details summary { cursor: pointer; color: var(--ink-faint); }
 details ul { margin: 3px 0 0; padding-left: 16px; }
+details li .cm { color: var(--choice); font-weight: 600; }
 .linkbtn { font-size: 12px; padding: 1px 6px; margin-left: 4px; cursor: pointer; }
 mark { background: var(--mark); color: inherit; border-radius: 2px; }
 .empty-state { padding: 28px; text-align: center; color: var(--ink-soft); }
+.legend { font-size: 12px; color: var(--ink-faint); margin: 2px 0 0; }
+.legend .cm { color: var(--choice); font-weight: 700; }
 """
 
 JS = r"""
@@ -125,14 +145,13 @@ JS = r"""
   var $ = function (id) { return document.getElementById(id); };
 
   // ---- precompute ----
-  var hay = new Array(N), topCount = new Array(N);
+  var hay = new Array(N), zoneCount = new Array(N);
+  function popcount(m) { var k = 0; while (m) { k += m & 1; m >>>= 1; } return k; }
   for (var i = 0; i < N; i++) {
     var e = D.effects[i];
-    var names = e[4].map(function (c) { return D.cards[c]; }).join('\n');
+    var names = e[6].map(function (c) { return D.cards[c]; }).join('\n');
     hay[i] = (e[1] + '\n' + (D.plain[i] || '') + '\n' + names + '\n' + e[0]).toLowerCase();
-    var m = e[3] & D.topMask, k = 0;
-    while (m) { k += m & 1; m >>>= 1; }
-    topCount[i] = k;
+    zoneCount[i] = popcount(e[5]); // e[5] = zoneMask: distinct zones touched
   }
   var orders = {};
   function order(key) {
@@ -143,7 +162,7 @@ JS = r"""
     var cmp = {
       'occ-desc': function (a, b) { return D.effects[b][2] - D.effects[a][2] || a - b; },
       'occ-asc': function (a, b) { return D.effects[a][2] - D.effects[b][2] || a - b; },
-      'zones-desc': function (a, b) { return topCount[b] - topCount[a] || D.effects[b][2] - D.effects[a][2] || a - b; },
+      'zones-desc': function (a, b) { return zoneCount[b] - zoneCount[a] || D.effects[b][2] - D.effects[a][2] || a - b; },
       'raw-az': function (a, b) { var x = raw(a), y = raw(b); return x < y ? -1 : x > y ? 1 : a - b; }
     }[key];
     idx.sort(cmp);
@@ -151,16 +170,17 @@ JS = r"""
   }
 
   // ---- state <-> hash ----
-  var S = { sel: new Set(), mode: 'any', q: '', sort: 'occ-desc', page: 1, size: 100 };
+  var S = { sel: new Set(), mode: 'any', choice: 'any', q: '', sort: 'occ-desc', page: 1, size: 100 };
   var expanded = new Set();
   function readHash() {
     var p = new URLSearchParams(location.hash.slice(1));
     S.sel = new Set();
-    (p.get('zones') || '').split(',').forEach(function (t) {
+    (p.get('tags') || '').split(',').forEach(function (t) {
       if (t === 'none') S.sel.add(NONE);
       else if (TAGS.indexOf(t) !== -1) S.sel.add(TAGS.indexOf(t));
     });
     S.mode = p.get('mode') === 'all' ? 'all' : 'any';
+    S.choice = ['yes', 'no'].indexOf(p.get('choice')) !== -1 ? p.get('choice') : 'any';
     S.q = p.get('q') || '';
     S.sort = ['occ-desc', 'occ-asc', 'zones-desc', 'raw-az'].indexOf(p.get('sort')) !== -1 ? p.get('sort') : 'occ-desc';
     S.size = [50, 100, 250].indexOf(+p.get('size')) !== -1 ? +p.get('size') : 100;
@@ -168,8 +188,9 @@ JS = r"""
   }
   function writeHash() {
     var p = new URLSearchParams();
-    if (S.sel.size) p.set('zones', Array.from(S.sel).map(function (t) { return t === NONE ? 'none' : TAGS[t]; }).join(','));
+    if (S.sel.size) p.set('tags', Array.from(S.sel).map(function (t) { return t === NONE ? 'none' : TAGS[t]; }).join(','));
     if (S.mode !== 'any') p.set('mode', S.mode);
+    if (S.choice !== 'any') p.set('choice', S.choice);
     if (S.q) p.set('q', S.q);
     if (S.sort !== 'occ-desc') p.set('sort', S.sort);
     if (S.size !== 100) p.set('size', S.size);
@@ -179,26 +200,71 @@ JS = r"""
   }
 
   // ---- filter ----
-  var result = [], counts = [];
+  // A "tag" is one zone:direction combination (e.g. "graveyard:destination").
+  // choice is a SEPARATE dimension: whether the player decides anything about
+  // the matching interaction(s). It is evaluated against whichever tags are
+  // selected (or, with no zone/tag selection, against every tag the effect
+  // carries) -- so "graveyard as destination, with a choice" is: select the
+  // graveyard:destination chip, then set the choice filter to "has choice".
+  var result = [], tagCounts = [], noneCount = 0, choiceCounts = { any: 0, no: 0, yes: 0 };
   function run() {
     var needle = S.q.trim().toLowerCase();
-    var sel = Array.from(S.sel), all = S.mode === 'all';
-    counts = new Array(TAGS.length + 1).fill(0);
+    var selReal = [], wantNone = false;
+    S.sel.forEach(function (t) { if (t === NONE) wantNone = true; else selReal.push(t); });
+    var selTotal = selReal.length + (wantNone ? 1 : 0);
+    tagCounts = new Array(TAGS.length).fill(0);
+    noneCount = 0;
+    choiceCounts = { any: 0, no: 0, yes: 0 };
     result = [];
     var ord = order(S.sort);
     for (var j = 0; j < N; j++) {
       var i = ord[j];
       if (needle && hay[i].indexOf(needle) === -1) continue;
-      var m = D.effects[i][3];
-      if (m === 0) counts[TAGS.length]++;
-      else for (var t = 0; t < TAGS.length; t++) if (m & (1 << t)) counts[t]++;
-      if (sel.length) {
-        var hits = 0;
-        for (var s = 0; s < sel.length; s++) {
-          if (sel[s] === NONE ? m === 0 : (m & (1 << sel[s])) !== 0) hits++;
-        }
-        if (all ? hits !== sel.length : hits === 0) continue;
+      var m = D.effects[i][3], cm = D.effects[i][4];
+
+      // facet counts: independent of the CURRENT selection, so chips show
+      // "what would match if this were the only tag picked" (search still applies).
+      if (m === 0) noneCount++;
+      else for (var t = 0; t < TAGS.length; t++) if (m & (1 << t)) tagCounts[t]++;
+      var anyChoiceRec = false, anyNoChoiceRec = false;
+      for (var t3 = 0; t3 < TAGS.length; t3++) {
+        if (!(m & (1 << t3))) continue;
+        if (cm & (1 << t3)) anyChoiceRec = true; else anyNoChoiceRec = true;
       }
+      choiceCounts.any++;
+      if (anyChoiceRec) choiceCounts.yes++;
+      if (anyNoChoiceRec) choiceCounts.no++;
+
+      // zone/tag filter
+      if (selTotal) {
+        var hits = wantNone && m === 0 ? 1 : 0;
+        for (var s = 0; s < selReal.length; s++) if (m & (1 << selReal[s])) hits++;
+        if (S.mode === 'all' ? hits !== selTotal : hits === 0) continue;
+      }
+
+      // choice filter: relative to selected tags if any, else to all tags present
+      if (S.choice !== 'any') {
+        var want = S.choice === 'yes';
+        var relevant = 0, matching = 0;
+        if (selReal.length) {
+          for (var s2 = 0; s2 < selReal.length; s2++) {
+            var t2 = selReal[s2];
+            if (!(m & (1 << t2))) continue;
+            relevant++;
+            if (!!(cm & (1 << t2)) === want) matching++;
+          }
+        } else {
+          for (var t4 = 0; t4 < TAGS.length; t4++) {
+            if (!(m & (1 << t4))) continue;
+            relevant++;
+            if (!!(cm & (1 << t4)) === want) matching++;
+          }
+        }
+        if (!relevant) continue;
+        if (S.mode === 'all' && selReal.length) { if (matching !== relevant) continue; }
+        else if (!matching) continue;
+      }
+
       result.push(i);
     }
   }
@@ -218,20 +284,31 @@ JS = r"""
     }
     return out + esc(text.slice(from));
   }
-  function zoneColor(tag) { return 'var(' + D.colors[tag.split(':')[0]] + ')'; }
-  function chip(tag) {
-    return '<span class="chip' + (tag.indexOf(':') !== -1 ? ' sub' : '') + '" style="--zc:' + zoneColor(tag) + '">' + esc(tag) + '</span>';
+  function zoneColor(zone) { return 'var(' + D.colors[zone] + ')'; }
+  function chip(t, hasChoice) {
+    var tag = TAGS[t], zone = tag.split(':')[0], dir = tag.split(':')[1];
+    return '<span class="chip" style="--zc:' + zoneColor(zone) + '" title="' + esc(tag) +
+      (hasChoice ? ' (player choice)' : '') + '">' + esc(zone) + ':' + esc(dir) +
+      (hasChoice ? '<span class="cm">&#9670;</span>' : '') + '</span>';
   }
 
   function renderZoneBar() {
-    var html = TAGS.map(function (tag, t) {
-      return '<button type="button" class="zbtn' + (tag.indexOf(':') !== -1 ? ' sub' : '') + '" data-tag="' + t +
-        '" aria-pressed="' + S.sel.has(t) + '" style="--zc:' + zoneColor(tag) + '">' + esc(tag) +
-        '<span class="n">' + counts[t].toLocaleString() + '</span></button>';
+    var html = D.zoneGroups.map(function (g) {
+      var buttons = g.tags.map(function (t) {
+        var dir = TAGS[t].split(':')[1];
+        return '<button type="button" class="dbtn" data-tag="' + t + '" aria-pressed="' + S.sel.has(t) +
+          '" style="--zc:' + zoneColor(g.zone) + '">' + esc(dir) +
+          '<span class="n">' + tagCounts[t].toLocaleString() + '</span></button>';
+      }).join('');
+      return '<span class="zonegroup" style="--zc:' + zoneColor(g.zone) + '"><span class="zname">' +
+        esc(g.zone) + '</span>' + buttons + '</span>';
     }).join('');
     html += '<button type="button" class="zbtn" data-tag="' + NONE + '" aria-pressed="' + S.sel.has(NONE) +
-      '" style="--zc:var(--z-none)">no zones<span class="n">' + counts[TAGS.length].toLocaleString() + '</span></button>';
+      '" style="--zc:var(--z-none)">no zones<span class="n">' + noneCount.toLocaleString() + '</span></button>';
     $('zonebar').innerHTML = html;
+    $('c-any-n').textContent = choiceCounts.any.toLocaleString();
+    $('c-no-n').textContent = choiceCounts.no.toLocaleString();
+    $('c-yes-n').textContent = choiceCounts.yes.toLocaleString();
   }
 
   function renderPager(el, pages) {
@@ -257,15 +334,19 @@ JS = r"""
       return;
     }
     $('rows').innerHTML = slice.map(function (i) {
-      var e = D.effects[i], m = e[3];
-      var zones = TAGS.filter(function (_, t) { return m & (1 << t); });
-      var chips = zones.length ? zones.map(chip).join('') : '<span class="chip empty" style="--zc:var(--z-none)">no zones</span>';
+      var e = D.effects[i], m = e[3], cm = e[4];
+      var present = [];
+      for (var t = 0; t < TAGS.length; t++) if (m & (1 << t)) present.push(t);
+      var chips = present.length ? present.map(function (t) { return chip(t, !!(cm & (1 << t))); }).join('')
+        : '<span class="chip empty" style="--zc:var(--z-none)">no zones</span>';
       var ev = {};
-      e[5].forEach(function (r) { var p = D.rules[r].split('|'); (ev[p[0]] = ev[p[0]] || []).push(p[1]); });
-      var evHtml = zones.length ? '<details><summary>rules fired</summary><ul>' + zones.map(function (z) {
-        return '<li><b>' + esc(z) + '</b>: ' + esc((ev[z] || []).join(', ')) + '</li>';
+      e[7].forEach(function (r) { var p = D.rules[r].split('|'); (ev[p[0]] = ev[p[0]] || []).push(p[1]); });
+      var evHtml = present.length ? '<details><summary>rules fired</summary><ul>' + present.map(function (t) {
+        var tag = TAGS[t], has = !!(cm & (1 << t));
+        return '<li><b>' + esc(tag) + '</b>' + (has ? ' <span class="cm">&#9670; choice</span>' : '') +
+          ': ' + esc((ev[tag] || []).join(', ')) + '</li>';
       }).join('') + '</ul></details>' : '';
-      var cards = e[4], shown = expanded.has(i) ? cards : cards.slice(0, 6);
+      var cards = e[6], shown = expanded.has(i) ? cards : cards.slice(0, 6);
       var names = shown.map(function (c) { return highlight(D.cards[c], needle); }).join(' &middot; ');
       var more = cards.length > 6
         ? '<button type="button" class="linkbtn" data-more="' + i + '">' + (expanded.has(i) ? 'less' : '+' + (cards.length - 6).toLocaleString() + ' more') + '</button>'
@@ -306,11 +387,15 @@ JS = r"""
   document.querySelectorAll('input[name=mode]').forEach(function (r) {
     r.addEventListener('change', function () { S.mode = r.value; update(true); });
   });
+  document.querySelectorAll('input[name=choice]').forEach(function (r) {
+    r.addEventListener('change', function () { S.choice = r.value; update(true); });
+  });
   $('sort').addEventListener('change', function () { S.sort = $('sort').value; update(true); });
   $('size').addEventListener('change', function () { S.size = +$('size').value; update(true); });
   $('clear').addEventListener('click', function () {
-    S.sel = new Set(); S.q = ''; S.mode = 'any'; $('q').value = '';
+    S.sel = new Set(); S.q = ''; S.mode = 'any'; S.choice = 'any'; $('q').value = '';
     document.querySelector('input[name=mode][value=any]').checked = true;
+    document.querySelector('input[name=choice][value=any]').checked = true;
     update(true);
   });
   function onPager(ev) {
@@ -343,6 +428,7 @@ JS = r"""
     $('sort').value = S.sort;
     $('size').value = String(S.size);
     document.querySelector('input[name=mode][value=' + S.mode + ']').checked = true;
+    document.querySelector('input[name=choice][value=' + S.choice + ']').checked = true;
   }
 
   readHash();
@@ -366,8 +452,21 @@ def load():
     return effects, names, manifest
 
 
+COLOR_VAR = {"library": "--z-library", "hand": "--z-hand", "battlefield": "--z-battlefield",
+             "graveyard": "--z-graveyard", "exile": "--z-exile", "stack": "--z-stack",
+             "command zone": "--z-command", "mana pool": "--z-mana"}
+
+
 def build_data(effects, names):
-    tag_bit = {t: i for i, t in enumerate(cz.ALL_TAGS)}
+    # Only expose (zone, direction) combinations that actually occur, in
+    # canonical zone/direction order -- e.g. mana pool never appears as a
+    # source in real oracle text, so no "mana pool:source" chip is offered.
+    present = {(r["zone"], r["direction"]) for e in effects for r in e["zones"]}
+    tag_pairs = [(z, d) for z in cz.ZONES for d in cz.DIRECTIONS if (z, d) in present]
+    tags = ["%s:%s" % p for p in tag_pairs]
+    tag_bit = {p: i for i, p in enumerate(tag_pairs)}
+    zone_bit = {z: i for i, z in enumerate(cz.ZONES)}
+
     card_index, card_names = {}, []
     rule_index, rules = {}, []
     rows, plain, stale = [], {}, []
@@ -376,9 +475,13 @@ def build_data(effects, names):
         zones, evidence, _ = cz.classify(e["raw_text"], "")
         if zones != e["zones"]:
             stale.append(e["effect_id"])
-        mask = 0
-        for t in e["zones"]:
-            mask |= 1 << tag_bit[t]
+        tag_mask = choice_mask = zone_mask = 0
+        for r in e["zones"]:
+            bit = tag_bit[(r["zone"], r["direction"])]
+            tag_mask |= 1 << bit
+            if r["choice"]:
+                choice_mask |= 1 << bit
+            zone_mask |= 1 << zone_bit[r["zone"]]
         refs = []
         for cid in e["card_ids"]:
             if cid not in card_index:
@@ -387,24 +490,22 @@ def build_data(effects, names):
             refs.append(card_index[cid])
         refs.sort(key=lambda r: card_names[r].lower())
         rule_refs = []
-        for tag in zones:
-            for _, label, _ in evidence[tag]:
+        for r in zones:
+            tag = "%s:%s" % (r["zone"], r["direction"])
+            for _, label in evidence[tag]:
                 key = "%s|%s" % (tag, label)
                 if key not in rule_index:
                     rule_index[key] = len(rules)
                     rules.append(key)
                 rule_refs.append(rule_index[key])
-        rows.append([e["effect_id"], e["raw_text"], e["occurrence_count"], mask, refs, rule_refs])
+        rows.append([e["effect_id"], e["raw_text"], e["occurrence_count"],
+                    tag_mask, choice_mask, zone_mask, refs, rule_refs])
         if e.get("plain_text"):
             plain[n] = e["plain_text"]
 
-    top_mask = 0
-    for z in cz.ZONES:
-        top_mask |= 1 << tag_bit[z]
-    colors = {"library": "--z-library", "hand": "--z-hand", "battlefield": "--z-battlefield",
-              "graveyard": "--z-graveyard", "exile": "--z-exile", "stack": "--z-stack",
-              "command zone": "--z-command", "mana pool": "--z-mana"}
-    data = {"tags": cz.ALL_TAGS, "topMask": top_mask, "colors": colors, "rules": rules,
+    zone_groups = [{"zone": z, "tags": [tag_bit[(z, d)] for d in cz.DIRECTIONS if (z, d) in present]}
+                   for z in cz.ZONES if any((z, d) in present for d in cz.DIRECTIONS)]
+    data = {"tags": tags, "zoneGroups": zone_groups, "colors": COLOR_VAR, "rules": rules,
             "cards": card_names, "plain": plain, "effects": rows}
     return data, stale
 
@@ -427,16 +528,24 @@ def page(n_effects, n_cards, manifest, stale):
 <h1>Zone review</h1>
 <p class="lede">{n_effects} unique effects from {n_cards} cards &middot; Scryfall oracle_cards {updated}
 &middot; zones classified on raw_text only &middot; page generated {generated}</p>
+<p class="legend">Each chip is a zone:direction (source / destination / reference). A <span class="cm">&#9670;</span>
+marks a record where the player has a choice (declining entirely, or picking which zone) &mdash; see
+<code>classify_zones.py</code>.</p>
 {stale}
 <div id="load-error" class="error" hidden><b>Data failed to load.</b> zone-review.data.js must sit next to this page.
 Re-run <code>python build_zone_review.py</code>.</div>
 <div class="panel">
-  <div class="zonebar" id="zonebar" aria-label="Filter by zone"></div>
+  <div class="zonegroups" id="zonebar" aria-label="Filter by zone and direction"></div>
   <div class="row2">
     <input id="q" type="search" placeholder="Search raw_text, plain_text, card names, effect_id&hellip;" aria-label="Search">
-    <span class="seg" role="radiogroup" aria-label="Zone match mode">
+    <span class="seg" role="radiogroup" aria-label="Tag match mode">
       <label><input type="radio" name="mode" value="any" checked><span>any selected</span></label>
       <label><input type="radio" name="mode" value="all"><span>all selected</span></label>
+    </span>
+    <span class="seg choice" role="radiogroup" aria-label="Player choice">
+      <label><input type="radio" name="choice" value="any" checked><span>any<span class="cn" id="c-any-n"></span></span></label>
+      <label><input type="radio" name="choice" value="no"><span>no choice<span class="cn" id="c-no-n"></span></span></label>
+      <label><input type="radio" name="choice" value="yes"><span>&#9670; has choice<span class="cn" id="c-yes-n"></span></span></label>
     </span>
     <label class="muted">Sort <select id="sort">
       <option value="occ-desc">most cards first</option>
@@ -472,8 +581,8 @@ def main():
         fh.write(";\n")
     with open(HTML_PATH, "w", encoding="utf-8") as fh:
         fh.write(page(len(effects), len(data["cards"]), manifest, stale))
-    print("%d effects, %d cards -> %s (%.1f MB data)%s" % (
-        len(effects), len(data["cards"]), os.path.normpath(HTML_PATH),
+    print("%d effects, %d cards, %d zone:direction tags -> %s (%.1f MB data)%s" % (
+        len(effects), len(data["cards"]), len(data["tags"]), os.path.normpath(HTML_PATH),
         os.path.getsize(DATA_PATH) / 1e6, ("  STALE: %d" % len(stale)) if stale else ""))
 
 

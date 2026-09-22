@@ -1,0 +1,8 @@
+# Upstream inputs -- re-fetch, see README.md
+data/card-data.json
+data/AtomicCards.json.gz
+
+# Derived -- regenerate with: python src/build_index.py && python src/build_collisions.py
+build/
+
+__pycache__/

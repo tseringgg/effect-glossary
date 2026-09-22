@@ -85,6 +85,7 @@ td.plain { width: 26%; color: var(--ink-soft); }
 .chip.sub { font-weight: 600; background: var(--accent-wash); }
 .chip.empty { border-left-color: var(--rule); color: var(--ink-faint); font-style: italic; }
 .chip b { font-weight: 600; margin-left: 4px; font-variant-numeric: tabular-nums; }
+.chip .cm, li .cm { color: var(--warn); font-weight: 700; margin-left: 3px; }
 details { margin-top: 6px; font-size: 12px; color: var(--ink-soft); }
 details summary { cursor: pointer; color: var(--ink-faint); }
 details ul { margin: 4px 0 0; padding-left: 16px; }
@@ -120,6 +121,7 @@ JS = """
       var ok = true;
       if (z === '__none__') ok = zones.length === 0;
       else if (z === '__flag__') ok = r.dataset.flags === '1';
+      else if (z === '__choice__') ok = r.dataset.choice === '1';
       else if (z) ok = zones.indexOf(z) !== -1;
       if (ok && needle) ok = r.dataset.text.indexOf(needle) !== -1;
       r.hidden = !ok;
@@ -163,34 +165,46 @@ def esc(s):
     return html.escape(s or "", quote=True)
 
 
-def chip(tag, count=None):
+def tag_of(record):
+    return "%s:%s" % (record["zone"], record["direction"])
+
+
+def chip(tag, count=None, choice_count=None):
     parent = tag.split(":")[0]
-    cls = "chip sub" if ":" in tag else "chip"
     n = "<b>%d</b>" % count if count is not None else ""
-    return '<span class="%s" style="--zc: var(%s)">%s%s</span>' % (cls, ZONE_COLOR[parent], esc(tag), n)
+    mark = ' <span class="cm">&#9670;%d</span>' % choice_count if choice_count else ""
+    return '<span class="chip" style="--zc: var(%s)">%s%s%s</span>' % (ZONE_COLOR[parent], esc(tag), n, mark)
+
+
+def record_chip(record):
+    mark = '<span class="cm">&#9670;</span>' if record["choice"] else ""
+    return '<span class="chip" style="--zc: var(%s)">%s%s</span>' % (
+        ZONE_COLOR[record["zone"]], esc(tag_of(record)), mark)
 
 
 def row(order, entry, evidence, flags):
-    zones = entry.get("zones") or []
-    if zones:
-        chips = "".join(chip(z) for z in zones)
+    records = entry.get("zones") or []
+    tags = [tag_of(r) for r in records]
+    if records:
+        chips = "".join(record_chip(r) for r in records)
     else:
         chips = '<span class="chip empty">no zones</span>'
     ev_items = "".join(
-        "<li><b>%s</b>: %s</li>" % (esc(tag), esc(", ".join("%s:%s (%s)" % h for h in evidence.get(tag, []))))
-        for tag in zones)
+        "<li><b>%s</b>%s: %s</li>" % (
+            esc(tag), ' <span class="cm">&#9670; choice</span>' if choice else "",
+            esc(", ".join("%s:%s" % h for h in evidence.get(tag, []))))
+        for tag, choice in zip(tags, (r["choice"] for r in records)))
     ev = ("<details><summary>rules fired</summary><ul>%s</ul></details>" % ev_items) if ev_items else ""
     flag_html = "".join(
-        '<div class="flag">%s <span class="st">%s</span> &mdash; plain_text only (%s)</div>'
-        % (esc(tag), "applied" if applied else "not applied",
-           esc(", ".join("%s:%s" % f for f in fired)))
-        for tag, applied, fired in flags) or '<span class="none">&mdash;</span>'
+        '<div class="flag">%s &mdash; plain_text only, NOT applied (%s)</div>'
+        % (esc(tag), esc(", ".join("%s:%s" % f for f in fired)))
+        for tag, _applied, fired in flags) or '<span class="none">&mdash;</span>'
     plain = entry.get("plain_text") or ""
-    text_blob = " ".join([entry["effect_id"], entry["raw_text"], plain, " ".join(zones)]).lower()
+    text_blob = " ".join([entry["effect_id"], entry["raw_text"], plain, " ".join(tags)]).lower()
     return (
         '<tr data-order="{o}" data-id="{id}" data-raw="{raw}" data-plain="{plain_key}" '
         'data-zonecount="{zc}" data-zonekey="{zk}" data-flagcount="{fc}" '
-        'data-zones="{zones}" data-flags="{hasflag}" data-text="{text}">'
+        'data-zones="{zones}" data-flags="{hasflag}" data-choice="{haschoice}" data-text="{text}">'
         '<td class="id">{id}<div class="cards">{cards}</div></td>'
         '<td class="raw">{raw}</td>'
         '<td class="plain">{plain_cell}</td>'
@@ -200,8 +214,9 @@ def row(order, entry, evidence, flags):
         o=order, id=esc(entry["effect_id"]), raw=esc(entry["raw_text"]),
         plain_key=esc(plain),
         plain_cell=esc(plain) if plain else '<span class="none">unauthored</span>',
-        zc=len(cz.top_level(zones)), zk=esc(" ".join(zones)), fc=len(flags),
-        zones=esc("|".join(zones)), hasflag="1" if flags else "0", text=esc(text_blob),
+        zc=len({r["zone"] for r in records}), zk=esc(" ".join(tags)), fc=len(flags),
+        zones=esc("|".join(tags)), hasflag="1" if flags else "0",
+        haschoice="1" if any(r["choice"] for r in records) else "0", text=esc(text_blob),
         cards=esc(", ".join(entry.get("card_ids") or [])),
         chips=chips, ev=ev, flags=flag_html,
     )
@@ -209,19 +224,29 @@ def row(order, entry, evidence, flags):
 
 def build(entries):
     stale, body = [], []
+    all_records = []  # (evidence, flags) per entry, recomputed fresh, raw_text only
     for i, e in enumerate(entries):
         zones, evidence, flags = cz.classify(e.get("raw_text", ""), e.get("plain_text", ""))
         if zones != (e.get("zones") or []):
             stale.append(e["effect_id"])
+        all_records.append(zones)
         body.append(row(i, e, evidence, flags))
 
-    counts = "".join(chip(t, sum(1 for e in entries if t in (e.get("zones") or []))) for t in cz.ALL_TAGS)
-    n_empty = sum(1 for e in entries if not e.get("zones"))
+    tags_seen = sorted({tag_of(r) for zones in all_records for r in zones},
+                       key=lambda t: (cz.ZONES.index(t.split(":")[0]), cz.DIRECTIONS.index(t.split(":")[1])))
+    counts = "".join(
+        chip(t,
+            sum(1 for zones in all_records if any(tag_of(r) == t for r in zones)),
+            sum(1 for zones in all_records if any(tag_of(r) == t and r["choice"] for r in zones)))
+        for t in tags_seen)
+    n_empty = sum(1 for zones in all_records if not zones)
     n_flag = sum(1 for e in entries if cz.classify(e.get("raw_text", ""), e.get("plain_text", ""))[2])
+    n_choice = sum(1 for zones in all_records if any(r["choice"] for r in zones))
 
     options = ['<option value="">all effects</option>']
-    options += ['<option value="%s">%s</option>' % (esc(t), esc(t)) for t in cz.ALL_TAGS]
+    options += ['<option value="%s">%s</option>' % (esc(t), esc(t)) for t in tags_seen]
     options += ['<option value="__none__">(no zones)</option>',
+                '<option value="__choice__">(has a choice)</option>',
                 '<option value="__flag__">(has plain-only flag)</option>']
 
     stale_html = ""
@@ -234,8 +259,9 @@ def build(entries):
 <style>{css}</style>
 <main>
 <h1>Zone labels</h1>
-<p class="lede">{n} effects from data/effects.yaml &middot; {empty} with no zones &middot; {flag} with plain-only flags.
-Battlefield sub-tags match raw_text only; other zones match raw_text + plain_text.</p>
+<p class="lede">{n} effects from data/effects.yaml &middot; {empty} with no zones &middot; {choice} with a
+player choice ({cm}) &middot; {flag} with plain-only flags. Each tag is zone:direction, classified on
+raw_text only.</p>
 {stale}
 <div class="counts">{counts}</div>
 <div class="controls">
@@ -256,8 +282,8 @@ Battlefield sub-tags match raw_text only; other zones match raw_text + plain_tex
 </tbody></table></div>
 </main>
 <script>{js}</script>
-""".format(css=CSS, n=len(entries), empty=n_empty, flag=n_flag, stale=stale_html,
-           counts=counts, options="".join(options), rows="\n".join(body), js=JS)
+""".format(css=CSS, n=len(entries), empty=n_empty, choice=n_choice, cm="&#9670;", flag=n_flag,
+           stale=stale_html, counts=counts, options="".join(options), rows="\n".join(body), js=JS)
 
 
 def main():

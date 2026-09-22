@@ -12,9 +12,12 @@ effects:
   - elvish_mystic
   - fyndhorn_elves
   zones:
-  - battlefield
-  - battlefield:static
-  - mana pool
+  - zone: battlefield
+    direction: reference
+    choice: false
+  - zone: mana pool
+    direction: destination
+    choice: false
 - effect_id: eff_0974abfe45
   raw_text: Flying
   plain_text: This creature has flying, so only creatures with flying or reach can block it.
@@ -22,8 +25,9 @@ effects:
   card_ids:
   - birds_of_paradise
   zones:
-  - battlefield
-  - battlefield:static
+  - zone: battlefield
+    direction: reference
+    choice: false
 - effect_id: eff_b711c42e82
   raw_text: '{T}: Add one mana of any color.'
   plain_text: Tap this permanent to produce one mana of whatever color you need.
@@ -32,9 +36,12 @@ effects:
   - birds_of_paradise
   - chromatic_lantern
   zones:
-  - battlefield
-  - battlefield:static
-  - mana pool
+  - zone: battlefield
+    direction: reference
+    choice: false
+  - zone: mana pool
+    direction: destination
+    choice: false
 - effect_id: eff_924b2ac0c1
   raw_text: '{T}: Add {W}.'
   plain_text: Tap this permanent to produce one white mana.
@@ -42,9 +49,12 @@ effects:
   card_ids:
   - avacyns_pilgrim
   zones:
-  - battlefield
-  - battlefield:static
-  - mana pool
+  - zone: battlefield
+    direction: reference
+    choice: false
+  - zone: mana pool
+    direction: destination
+    choice: false
 - effect_id: eff_a836b0d4b1
   raw_text: Exalted (Whenever a creature you control attacks alone, that creature gets +1/+1 until end
     of turn.)
@@ -54,8 +64,9 @@ effects:
   card_ids:
   - noble_hierarch
   zones:
-  - battlefield
-  - battlefield:static
+  - zone: battlefield
+    direction: reference
+    choice: false
 - effect_id: eff_6ba24fb6df
   raw_text: '{T}: Add {G}, {W}, or {U}.'
   plain_text: Tap this permanent to produce one green, white, or blue mana.
@@ -63,9 +74,12 @@ effects:
   card_ids:
   - noble_hierarch
   zones:
-  - battlefield
-  - battlefield:static
-  - mana pool
+  - zone: battlefield
+    direction: reference
+    choice: false
+  - zone: mana pool
+    direction: destination
+    choice: false
 - effect_id: eff_7d99ccfccd
   raw_text: '{T}: Add {C}.'
   plain_text: Tap this permanent to produce one colorless mana.
@@ -73,9 +87,12 @@ effects:
   card_ids:
   - nykthos
   zones:
-  - battlefield
-  - battlefield:static
-  - mana pool
+  - zone: battlefield
+    direction: reference
+    choice: false
+  - zone: mana pool
+    direction: destination
+    choice: false
 - effect_id: eff_84a90976db
   raw_text: '{2}, {T}: Choose a color. Add an amount of mana of that color equal to your devotion to that
     color. (Your devotion to a color is the number of mana symbols of that color in the mana costs of
@@ -86,9 +103,12 @@ effects:
   card_ids:
   - nykthos
   zones:
-  - battlefield
-  - battlefield:static
-  - mana pool
+  - zone: battlefield
+    direction: reference
+    choice: false
+  - zone: mana pool
+    direction: destination
+    choice: false
 - effect_id: eff_98db4267ea
   raw_text: 'Lands you control have "{T}: Add one mana of any color."'
   plain_text: Every land you control gains the ability to tap for one mana of any color.
@@ -96,9 +116,12 @@ effects:
   card_ids:
   - chromatic_lantern
   zones:
-  - battlefield
-  - battlefield:static
-  - mana pool
+  - zone: battlefield
+    direction: reference
+    choice: false
+  - zone: mana pool
+    direction: destination
+    choice: false
 - effect_id: eff_086b340da2
   raw_text: If you tap a permanent for mana, it produces twice as much of that mana instead.
   plain_text: Whenever you tap a permanent for mana, it produces double the mana instead.
@@ -106,9 +129,12 @@ effects:
   card_ids:
   - mana_reflection
   zones:
-  - battlefield
-  - battlefield:static
-  - mana pool
+  - zone: battlefield
+    direction: reference
+    choice: false
+  - zone: mana pool
+    direction: destination
+    choice: false
 - effect_id: eff_a92ad0b096
   raw_text: '{T}: Add three mana of any one color.'
   plain_text: Tap this permanent to produce three mana, all of a single color of your choice.
@@ -116,9 +142,12 @@ effects:
   card_ids:
   - gilded_lotus
   zones:
-  - battlefield
-  - battlefield:static
-  - mana pool
+  - zone: battlefield
+    direction: reference
+    choice: false
+  - zone: mana pool
+    direction: destination
+    choice: false
 - effect_id: eff_938d0cc426
   raw_text: Destroy all creatures. They can't be regenerated.
   plain_text: Destroy every creature on the battlefield at once. None of them can be regenerated.
@@ -127,9 +156,12 @@ effects:
   - wrath_of_god
   - damnation
   zones:
-  - battlefield
-  - battlefield:leaves
-  - graveyard
+  - zone: battlefield
+    direction: source
+    choice: false
+  - zone: graveyard
+    direction: destination
+    choice: false
 - effect_id: eff_f9b49aade0
   raw_text: Destroy all creatures.
   plain_text: Destroy every creature on the battlefield at once.
@@ -137,9 +169,12 @@ effects:
   card_ids:
   - day_of_judgment
   zones:
-  - battlefield
-  - battlefield:leaves
-  - graveyard
+  - zone: battlefield
+    direction: source
+    choice: false
+  - zone: graveyard
+    direction: destination
+    choice: false
 - effect_id: eff_1f152043dd
   raw_text: Destroy all creatures. You gain 1 life for each creature destroyed this way.
   plain_text: Destroy every creature on the battlefield at once, and gain 1 life for each one destroyed.
@@ -147,9 +182,12 @@ effects:
   card_ids:
   - fumigate
   zones:
-  - battlefield
-  - battlefield:leaves
-  - graveyard
+  - zone: battlefield
+    direction: source
+    choice: false
+  - zone: graveyard
+    direction: destination
+    choice: false
 - effect_id: eff_c25866cdeb
   raw_text: As an additional cost to cast this spell, pay X life.
   plain_text: Pay any amount of life as an extra cost when you cast this spell.
@@ -157,7 +195,9 @@ effects:
   card_ids:
   - toxic_deluge
   zones:
-  - stack
+  - zone: stack
+    direction: destination
+    choice: false
 - effect_id: eff_afb5679e1b
   raw_text: All creatures get -X/-X until end of turn.
   plain_text: Give every creature on the battlefield the same amount of -X/-X until end of turn, which
@@ -166,9 +206,9 @@ effects:
   card_ids:
   - toxic_deluge
   zones:
-  - battlefield
-  - battlefield:static
-  - graveyard
+  - zone: battlefield
+    direction: reference
+    choice: false
 - effect_id: eff_974a6041c8
   raw_text: This spell costs {1} less to cast for each creature on the battlefield.
   plain_text: This spell costs one less generic mana to cast for each creature on the battlefield, so
@@ -177,9 +217,12 @@ effects:
   card_ids:
   - blasphemous_act
   zones:
-  - battlefield
-  - battlefield:static
-  - stack
+  - zone: battlefield
+    direction: reference
+    choice: false
+  - zone: stack
+    direction: destination
+    choice: false
 - effect_id: eff_c262b3de4a
   raw_text: Blasphemous Act deals 13 damage to each creature.
   plain_text: Deal 13 damage to every creature on the battlefield at once.
@@ -187,8 +230,9 @@ effects:
   card_ids:
   - blasphemous_act
   zones:
-  - battlefield
-  - battlefield:static
+  - zone: battlefield
+    direction: reference
+    choice: false
 - effect_id: eff_71e819d2d6
   raw_text: Destroy target nonblack creature.
   plain_text: Destroy a single creature of your choice, as long as it is not black.
@@ -196,9 +240,12 @@ effects:
   card_ids:
   - doom_blade
   zones:
-  - battlefield
-  - battlefield:leaves
-  - graveyard
+  - zone: battlefield
+    direction: source
+    choice: false
+  - zone: graveyard
+    direction: destination
+    choice: false
 - effect_id: eff_d34b58ccf5
   raw_text: Target creature gets +3/+3 until end of turn.
   plain_text: Give a single creature +3/+3 until the turn ends.
@@ -206,8 +253,9 @@ effects:
   card_ids:
   - giant_growth
   zones:
-  - battlefield
-  - battlefield:static
+  - zone: battlefield
+    direction: reference
+    choice: false
 - effect_id: eff_0c8995549c
   raw_text: Counter target spell.
   plain_text: Counter a spell being cast so that it never resolves.
@@ -215,8 +263,12 @@ effects:
   card_ids:
   - counterspell
   zones:
-  - graveyard
-  - stack
+  - zone: graveyard
+    direction: destination
+    choice: false
+  - zone: stack
+    direction: source
+    choice: false
 - effect_id: eff_d165f247e4
   raw_text: Look at the top three cards of your library, then put them back in any order. You may shuffle.
   plain_text: ''
@@ -224,7 +276,9 @@ effects:
   card_ids:
   - ponder
   zones:
-  - library
+  - zone: library
+    direction: reference
+    choice: true
 - effect_id: eff_84c96ff95b
   raw_text: Draw a card.
   plain_text: ''
@@ -232,8 +286,12 @@ effects:
   card_ids:
   - ponder
   zones:
-  - library
-  - hand
+  - zone: library
+    direction: source
+    choice: false
+  - zone: hand
+    direction: destination
+    choice: false
 - effect_id: eff_ed25a537f6
   raw_text: You may have this creature enter as a copy of any creature on the battlefield.
   plain_text: This creature can enter the battlefield as a copy of any creature already in play.
@@ -241,8 +299,9 @@ effects:
   card_ids:
   - clone
   zones:
-  - battlefield
-  - battlefield:enters
+  - zone: battlefield
+    direction: destination
+    choice: true
 - effect_id: eff_676d325a65
   raw_text: You may have this creature enter as a copy of any creature on the battlefield, except it's
     an Illusion in addition to its other types and it has "When this creature becomes the target of a
@@ -253,11 +312,18 @@ effects:
   card_ids:
   - phantasmal_image
   zones:
-  - battlefield
-  - battlefield:enters
-  - battlefield:leaves
-  - graveyard
-  - stack
+  - zone: battlefield
+    direction: source
+    choice: true
+  - zone: battlefield
+    direction: destination
+    choice: true
+  - zone: graveyard
+    direction: destination
+    choice: true
+  - zone: stack
+    direction: reference
+    choice: true
 - effect_id: eff_b2839b45b6
   raw_text: You may have this creature enter as a copy of any nonland permanent on the battlefield.
   plain_text: This creature can enter the battlefield as a copy of any nonland permanent already in play.
@@ -265,8 +331,9 @@ effects:
   card_ids:
   - clever_impersonator
   zones:
-  - battlefield
-  - battlefield:enters
+  - zone: battlefield
+    direction: destination
+    choice: true
 - effect_id: eff_5c74bbe0be
   raw_text: You may have this creature enter as a copy of a creature or planeswalker you control, except
     it enters with an additional +1/+1 counter on it if it's a creature, it enters with an additional
@@ -277,8 +344,9 @@ effects:
   card_ids:
   - spark_double
   zones:
-  - battlefield
-  - battlefield:enters
+  - zone: battlefield
+    direction: destination
+    choice: true
 - effect_id: eff_0edb5a1fd9
   raw_text: You may have this creature enter as a copy of a creature you control.
   plain_text: This creature can enter the battlefield as a copy of a creature you already control.
@@ -286,8 +354,9 @@ effects:
   card_ids:
   - mirror_image
   zones:
-  - battlefield
-  - battlefield:enters
+  - zone: battlefield
+    direction: destination
+    choice: true
 - effect_id: eff_d9e646fb5c
   raw_text: Create a token that's a copy of target creature you control.
   plain_text: Create a token that is a copy of a creature you already control.
@@ -295,8 +364,9 @@ effects:
   card_ids:
   - cackling_counterpart
   zones:
-  - battlefield
-  - battlefield:enters
+  - zone: battlefield
+    direction: destination
+    choice: false
 - effect_id: eff_04f790315a
   raw_text: Flashback {5}{U}{U} (You may cast this card from your graveyard for its flashback cost. Then
     exile it.)
@@ -306,9 +376,15 @@ effects:
   card_ids:
   - cackling_counterpart
   zones:
-  - graveyard
-  - exile
-  - stack
+  - zone: graveyard
+    direction: source
+    choice: true
+  - zone: exile
+    direction: destination
+    choice: false
+  - zone: stack
+    direction: destination
+    choice: true
 - effect_id: eff_71a59f59ae
   raw_text: If an effect would create one or more tokens under your control, it creates twice that many
     of those tokens instead.
@@ -318,8 +394,9 @@ effects:
   - parallel_lives
   - doubling_season
   zones:
-  - battlefield
-  - battlefield:enters
+  - zone: battlefield
+    direction: destination
+    choice: false
 - effect_id: eff_e824a91695
   raw_text: If an effect would put one or more counters on a permanent you control, it puts twice that
     many of those counters on that permanent instead.
@@ -329,8 +406,9 @@ effects:
   card_ids:
   - doubling_season
   zones:
-  - battlefield
-  - battlefield:static
+  - zone: battlefield
+    direction: reference
+    choice: false
 - effect_id: eff_87a7b6018c
   raw_text: Lightning Bolt deals 3 damage to any target.
   plain_text: Deal 3 damage to any creature, player, or planeswalker.
@@ -338,8 +416,9 @@ effects:
   card_ids:
   - lightning_bolt
   zones:
-  - battlefield
-  - battlefield:static
+  - zone: battlefield
+    direction: reference
+    choice: false
 - effect_id: eff_7918637ea5
   raw_text: Draw two cards.
   plain_text: ''
@@ -347,5 +426,9 @@ effects:
   card_ids:
   - divination
   zones:
-  - library
-  - hand
+  - zone: library
+    direction: source
+    choice: false
+  - zone: hand
+    direction: destination
+    choice: false
