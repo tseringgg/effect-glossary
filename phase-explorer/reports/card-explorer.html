@@ -9,8 +9,11 @@
     --clean:#1a7f37; --partial:#b35c00; --unparsed:#b3261e; --vanilla:#555;
     --warnbg:#fff4e5; --warnline:#e09b3d; --gap:#ffe9e6;
     --corr:#a4003f; --corrbg:#fde8ef;
+    --clu:#0b5d8f; --clubg:#e8f1f8;
   }
   * { box-sizing:border-box; }
+  /* class rules like .row{display:flex} outrank the UA [hidden] rule */
+  [hidden] { display:none !important; }
   body { margin:0; font:13px/1.45 ui-monospace,SFMono-Regular,Consolas,monospace;
          background:var(--bg); color:var(--fg); }
   header { position:sticky; top:0; z-index:10; background:var(--panel);
@@ -74,6 +77,78 @@
   .corritem:first-child { border-top:none; margin-top:0; padding-top:0; }
   .kindtag { font-size:9px; text-transform:uppercase; padding:1px 4px; border:1px solid var(--corr);
              color:var(--corr); margin-left:4px; }
+  .clubox { background:var(--clubg); border:1px solid var(--clu); padding:7px 9px;
+            margin:0 0 10px; font-size:11px; }
+  .clubox b.hdr { color:var(--clu); font-size:12px; display:block; margin-bottom:3px; }
+  .clulabel { font-family:inherit; color:var(--clu); word-break:break-all; }
+  .clumem { column-count:3; column-gap:14px; margin-top:5px; font-size:11px; }
+  .clumem a { color:inherit; text-decoration:none; cursor:pointer; }
+  .clumem a:hover { text-decoration:underline; }
+  .clubtn { font-size:10px; padding:1px 5px; border:1px solid var(--clu); color:var(--clu);
+            background:#fff; cursor:pointer; white-space:nowrap; }
+  /* glossary tree: plain nested <details>, no spatial rendering */
+  #tree { border:1px solid var(--line); background:#fcfcfc; padding:6px 9px;
+          margin:0 0 8px; max-height:420px; overflow:auto; }
+  #tree details { margin:0 0 2px; }
+  #tree summary { cursor:pointer; padding:2px 0; font-size:12px; }
+  #tree summary::marker { color:var(--clu); }
+  #tree .bname { font-weight:bold; }
+  #tree .bmeta { color:var(--mut); font-size:11px; font-weight:normal; }
+  #tree .brule { color:var(--mut); font-size:10px; margin:1px 0 3px 18px;
+                 border-left:2px solid var(--line); padding-left:6px; }
+  #tree .leaves { margin-left:18px; }
+  #tree .leafrow { padding:1px 0; font-size:11px; }
+  #tree .leafrow button { font-size:10px; padding:0 5px; margin-right:5px;
+                          border:1px solid var(--clu); color:var(--clu);
+                          background:#fff; cursor:pointer; }
+  #tree .leaflabel { color:var(--mut); }
+  #tree details.unbr > summary .bname { color:var(--unparsed); }
+  #tree .gapnote { font-size:10px; color:var(--mut); margin-top:6px;
+                   border-top:1px solid var(--line); padding-top:5px; }
+  .brbadge { font-size:9px; padding:1px 4px; border:1px solid var(--clu);
+             color:var(--clu); margin-right:3px; white-space:nowrap;
+             display:inline-block; margin-bottom:2px; }
+
+  /* ---- branch treemap -------------------------------------------------
+     Categorical colour carries the branch's VOCABULARY SOURCE, not its
+     identity -- 38 regions is far past the 8-slot cap for categorical hues,
+     and identity is carried by the label instead. Three source slots, fixed
+     order, taken from the validated default palette; validated at pairs=all
+     (any two regions can end up adjacent in a treemap) -- worst CVD dE 9.2,
+     worst normal-vision dE 24.0, both clear. Unbranched is deliberately NOT
+     a fourth hue: it is a state, so it gets neutral ink plus a hatch. */
+  .viz-root {
+    --surface-1:#ffffff; --text-primary:#0b0b0b; --text-secondary:#52514e;
+    --src-curated:#2a78d6;   /* slot 1 blue   */
+    --src-otag:#eb6834;      /* slot 2 orange */
+    --src-slang:#1baf7a;     /* slot 3 aqua   */
+    --unbr-ink:#6b6a66;
+  }
+  #tmwrap { border:1px solid var(--line); background:var(--surface-1);
+            padding:8px 9px; margin:0 0 8px; }
+  #tm { position:relative; width:100%; height:520px; }
+  .tmcell { position:absolute; overflow:hidden; cursor:pointer;
+            border-radius:3px; padding:3px 4px; line-height:1.15; }
+  .tmcell:hover { outline:2px solid var(--fg); outline-offset:-2px; z-index:3; }
+  .tmcell .tmn { font-size:11px; font-weight:bold; display:block;
+                 overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .tmcell.wrap .tmn { white-space:normal; overflow-wrap:break-word; }
+  /* the hatch lightens the fill under the label, so the white ink gets a dark
+     halo to hold its contrast over the stripes */
+  .tmcell.unbr .tmn, .tmcell.unbr .tmc { text-shadow:0 0 3px rgba(0,0,0,.9), 0 1px 2px rgba(0,0,0,.8); }
+  .tmcell .tmc { font-size:10px; opacity:.9; display:block; }
+  /* Unbranched: neutral + 45deg hatch, so it reads as "outside the
+     vocabulary" in greyscale, in print and for any colour vision. */
+  .tmcell.unbr { background-image:repeating-linear-gradient(45deg,
+                   rgba(255,255,255,.42) 0 4px, rgba(255,255,255,0) 4px 9px); }
+  #tmtip { position:fixed; z-index:50; pointer-events:none; display:none;
+           background:#111; color:#fff; font-size:11px; padding:5px 7px;
+           border-radius:3px; max-width:340px; line-height:1.35; }
+  #tmtip b { color:#fff; }
+  .tmlegend { display:flex; flex-wrap:wrap; gap:12px; align-items:center;
+              font-size:11px; color:var(--text-secondary); margin-top:6px; }
+  .tmlegend span.sw { display:inline-block; width:11px; height:11px;
+                      border-radius:2px; margin-right:4px; vertical-align:-1px; }
   .pager { padding:9px 12px; display:flex; gap:9px; align-items:center;
            border-top:1px solid var(--line); position:sticky; bottom:0;
            background:var(--panel); }
@@ -116,6 +191,23 @@
       title="entries with a confirmed, evidence-based defect on file in corrections.json -- found by hand, not by any upstream signal">
       <span>⚠ has correction</span><small data-c="corr">–</small>
     </button>
+  </div>
+  <div class="note" id="clunote" hidden style="margin:2px 0 6px"></div>
+  <div class="row" id="treerow" hidden style="margin:0 0 6px">
+    <button id="tmtoggle">▾ branch map</button>
+    <button id="treetoggle">▸ glossary tree</button>
+    <span class="note" id="treemeta"></span>
+  </div>
+  <div id="tmwrap" class="viz-root" hidden>
+    <div class="note" id="tmcap"></div>
+    <div id="tm"></div>
+    <div class="tmlegend" id="tmlegend"></div>
+  </div>
+  <div id="tmtip"></div>
+  <div id="tree" hidden></div>
+  <div class="row" id="clufilter" hidden style="margin:0 0 7px">
+    <span class="badge" style="color:var(--clu);border-color:var(--clu)" id="clufilterlabel"></span>
+    <button id="cluclear">show all cards again</button>
   </div>
   <div class="meter" id="meter" title="composition of the current result set"></div>
   <div class="note" style="margin-top:3px">
@@ -176,8 +268,10 @@ const AXIS_ORDER = ["effect","trigger_mode","static_mode","replacement_event","k
                     "target","quantity","cost","condition"];
 
 let META, FACETS, ROWS = [], AXIDX = {}, CHUNKS = new Map();
+let CLU = null, CLU_MEMBERS = new Map();   // structural clustering pass
+let BR = null;                             // rule-based branch assignment
 let filtered = [], page = 0;
-const state = { q:"", quals:new Set(), axis:{}, soft:false, corr:false };
+const state = { q:"", quals:new Set(), axis:{}, soft:false, corr:false, cluster:null };
 
 async function boot() {
   const [meta, facets, index] = await Promise.all([
@@ -186,6 +280,21 @@ async function boot() {
     fetch("../build/index.json").then(r=>r.json()),
   ]);
   META = meta; FACETS = facets; ROWS = index.rows;
+
+  // Clustering is a separate pass over a filtered subset, so it is optional:
+  // the page works unchanged if cluster_structural.py has not been run.
+  try {
+    CLU = await fetch("../build/clusters.json").then(r=>r.json());
+    for (const [id, c] of Object.entries(CLU.cards)) {
+      if (c < 0) continue;
+      if (!CLU_MEMBERS.has(c)) CLU_MEMBERS.set(c, []);
+      CLU_MEMBERS.get(c).push(id);
+    }
+  } catch (e) { CLU = null; }
+
+  // Branch assignment is another optional layer on top of the clustering.
+  try { BR = await fetch("../build/branches.json").then(r=>r.json()); }
+  catch (e) { BR = null; }
 
   // value -> interned id, per axis, for filtering
   for (const ax of Object.keys(FACETS)) {
@@ -196,6 +305,9 @@ async function boot() {
   renderProv();
   await renderCollisionNote();
   renderCorrNote();
+  renderCluNote();
+  renderTree();
+  renderTreemap();
   renderQBar();
   renderAxes();
   wire();
@@ -240,6 +352,305 @@ function renderCorrNote() {
     `spot-checking cards this project already relies on, not by any automated sweep. Filter with ` +
     `<b style="color:var(--corr)">⚠ has correction</b> below, or read ` +
     `<a href="../corrections/corrections.json">corrections.json</a> directly.`;
+}
+
+function renderCluNote() {
+  if (!CLU) return;
+  const nclu = Object.keys(CLU.sizes).length;
+  const noise = Object.values(CLU.cards).filter(c=>c<0).length;
+  document.getElementById("clunote").innerHTML =
+    `<b>Structural clustering:</b> ${nclu} clusters over ` +
+    `${CLU.n_cards.toLocaleString()} clean-parse cards ` +
+    `(${(100*noise/CLU.n_cards).toFixed(1)}% noise), on effect type + target/filter shape. ` +
+    `Cards excluded from that pass (partial/unparsed/unmodelled/corrected, or no ` +
+    `extractable effect) show <i>n/a</i> and are not a clustering result. ` +
+    `<a href="clustering-structural.md">full report</a>`;
+  document.getElementById("clunote").hidden = false;
+}
+
+function cluOf(id) {
+  if (!CLU) return undefined;
+  const c = CLU.cards[id];
+  return c === undefined ? undefined : c;
+}
+
+// Row-level cluster marker. Three distinct states, kept visually distinct so
+// "not in the clustering pass at all" is never mistaken for "clustered alone":
+//   n/a   -- excluded by the clean-parse input filter
+//   noise -- fed to HDBSCAN, which declined to cluster it
+//   <id>  -- clustered
+function cluCell(r) {
+  if (!CLU) return "";
+  const c = cluOf(r.id);
+  if (c === undefined)
+    return `<br><span class="oid" title="excluded from the clustering pass by the clean-parse filter">cluster n/a</span>`;
+  if (c < 0)
+    return `<br><span class="oid" title="fed to HDBSCAN but left unclustered">cluster noise</span>`;
+  return `<br><button class="clubtn" data-clu="${c}" title="${esc(CLU.labels[c]||"")}">cluster ${c} (${CLU.sizes[c]})</button>`;
+}
+
+// Glossary tree: branch -> leaf -> cards. Deliberately a plain nested
+// accordion (native <details>), not a map -- collapsed by default so 38
+// branches stay readable, and each leaf hands off to the existing cluster
+// filter + row detail view rather than growing a second card renderer.
+function renderTree() {
+  if (!BR || !CLU) return;
+  const host = document.getElementById("tree");
+  const nb = BR.branches.filter(b => b.n_leaves).length;
+  const unbrCards = BR.unbranched.reduce((a, u) => a + u.n_cards, 0);
+  document.getElementById("treerow").hidden = false;
+  document.getElementById("treemeta").textContent =
+    `${nb} branches with leaves · ${BR.n_leaves} leaves · ` +
+    `${BR.unbranched.length} unbranched (${unbrCards.toLocaleString()} cards)`;
+
+  const leafRow = (l) => {
+    const size = CLU.sizes[l] ?? BR.leaf_sizes[l] ?? 0;
+    const lab = CLU.labels[l] || "";
+    return `<div class="leafrow"><button data-leaf="${l}">leaf ${l}</button>` +
+           `&middot; <b>${size}</b> cards &middot; ` +
+           `<span class="leaflabel">${esc(lab.slice(0,90))}</span></div>`;
+  };
+
+  let h = "";
+  const sorted = BR.branches.filter(b => b.n_leaves)
+                            .sort((a,b) => b.n_leaves - a.n_leaves);
+  for (const b of sorted) {
+    h += `<details data-branch="${esc(b.name)}"><summary><span class="bname">${esc(b.name)}</span> ` +
+         `<span class="bmeta">— ${b.n_leaves} leaves, ${b.n_cards.toLocaleString()} cards ` +
+         `· ${esc(b.source)}${b.otags.length ? " · " + b.otags.map(esc).join(", ") : ""}</span></summary>` +
+         `<div class="brule">rule: ${esc(b.rule)}</div>` +
+         `<div class="leaves">${b.leaves.map(leafRow).join("")}</div></details>`;
+  }
+
+  // Unbranched is a first-class top-level entry, not a hidden remainder.
+  h += `<details class="unbr" data-branch="Unbranched"><summary><span class="bname">Unbranched</span> ` +
+       `<span class="bmeta">— ${BR.unbranched.length} leaves, ${unbrCards.toLocaleString()} cards ` +
+       `· matched no rule</span></summary>` +
+       `<div class="brule">These leaves matched none of the ${BR.branches.length} branch ` +
+       `rules. Kept visible on purpose: an unbranched leaf is a gap in the rule set, ` +
+       `not a defect in the leaf.</div>` +
+       `<div class="leaves">${BR.unbranched.slice()
+           .sort((a,b) => b.n_cards - a.n_cards)
+           .map(u => leafRow(u.leaf)).join("")}</div></details>`;
+
+  const empty = BR.branches.filter(b => !b.n_leaves).map(b => b.name);
+  h += `<div class="gapnote"><b>Defined but matched zero leaves:</b> ` +
+       `${empty.length ? empty.map(esc).join(", ") : "none"}. ` +
+       `<b>Terms left unruled (${BR.gaps.length}):</b> ` +
+       `${BR.gaps.map(g => esc(g.name)).join(", ")} — see ` +
+       `<a href="branches.md">branches.md</a> for why each has no rule.</div>`;
+
+  host.innerHTML = h;
+  host.querySelectorAll("button[data-leaf]").forEach(btn => {
+    btn.onclick = () => setCluster(+btn.dataset.leaf);
+  });
+
+  const tog = document.getElementById("treetoggle");
+  tog.onclick = () => {
+    host.hidden = !host.hidden;
+    tog.textContent = (host.hidden ? "▸" : "▾") + " glossary tree";
+  };
+}
+
+// ---- branch treemap -------------------------------------------------------
+// Squarified treemap (Bruls/Huizing/van Wijk). Branches only -- leaves are
+// never nested inside; the tree accordion below is where leaves live.
+
+function tmWorst(row, side) {
+  const s = row.reduce((a, b) => a + b, 0);
+  const mx = Math.max(...row), mn = Math.min(...row);
+  return Math.max((side * side * mx) / (s * s), (s * s) / (side * side * mn));
+}
+
+function squarify(items, X, Y, W, H) {
+  const total = items.reduce((s, i) => s + i.value, 0) || 1;
+  const scale = (W * H) / total;
+  const areas = items.map(i => i.value * scale);
+  const out = [];
+  let x = X, y = Y, w = W, h = H, i = 0;
+  while (i < areas.length) {
+    const side = Math.min(w, h);
+    let row = [areas[i]], idx = [i], j = i + 1;
+    while (j < areas.length) {
+      const cand = row.concat([areas[j]]);
+      if (tmWorst(cand, side) <= tmWorst(row, side)) { row = cand; idx.push(j); j++; }
+      else break;
+    }
+    const sum = row.reduce((a, b) => a + b, 0);
+    if (w >= h) {
+      const sw = sum / h;
+      let cy = y;
+      row.forEach((a, k) => {
+        const rh = a / sw;
+        out.push({ item: items[idx[k]], x, y: cy, w: sw, h: rh });
+        cy += rh;
+      });
+      x += sw; w -= sw;
+    } else {
+      const sh = sum / w;
+      let cx = x;
+      row.forEach((a, k) => {
+        const rw = a / sh;
+        out.push({ item: items[idx[k]], x: cx, y, w: rw, h: sh });
+        cx += rw;
+      });
+      y += sh; h -= sh;
+    }
+    i = j;
+  }
+  return out;
+}
+
+// Two `slang` variants are merged into one source slot on purpose: with four
+// slots the validator hard-FAILS the normal-vision floor (yellow<->orange
+// dE 13.7, below the 15 gate). Three slots pass at pairs=all.
+function srcSlot(source) {
+  if (source === "curated") return "curated";
+  if (source && source.indexOf("slang") === 0) return "slang";
+    return "otag";
+}
+const SRC_COLOR = { curated: "var(--src-curated)", otag: "var(--src-otag)",
+                    slang: "var(--src-slang)" };
+const SRC_HEX = { curated: "#2a78d6", otag: "#eb6834", slang: "#1baf7a" };
+const UNBR_HEX = "#6b6a66";
+
+// Label ink is picked per fill, not fixed to white: white on the aqua slot is
+// only 2.82:1 and on orange 3.20:1, both under the 4.5:1 text floor. Choosing
+// whichever of near-black / white scores higher puts every label >= 4.4:1.
+function relLum(hex) {
+  const v = [1, 3, 5].map(i => {
+    const c = parseInt(hex.substr(i, 2), 16) / 255;
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2];
+}
+function inkFor(hex) {
+  const L = relLum(hex);
+  return ((1.05) / (L + 0.05)) >= ((L + 0.05) / 0.05) ? "#ffffff" : "#111111";
+}
+const SRC_LABEL = { curated: "curated glossary.yaml", otag: "Scryfall otag",
+                    slang: "slang glossary" };
+
+function renderTreemap() {
+  if (!BR || !CLU) return;
+  const host = document.getElementById("tm");
+  const unbrCards = BR.unbranched.reduce((a, u) => a + u.n_cards, 0);
+
+  const items = BR.branches.filter(b => b.n_leaves).map(b => ({
+    key: b.name, value: b.n_cards, leaves: b.n_leaves, src: srcSlot(b.source),
+    rule: b.rule, otags: b.otags, unbr: false,
+  }));
+  items.push({ key: "Unbranched", value: unbrCards, leaves: BR.unbranched.length,
+               src: null, unbr: true,
+               rule: `matched none of the ${BR.branches.length} branch rules` });
+  items.sort((a, b) => b.value - a.value);
+  const grand = items.reduce((s, i) => s + i.value, 0);
+
+  document.getElementById("tmcap").innerHTML =
+    `Regions are <b>branches only</b> — no leaves nested inside; click one to open it ` +
+    `in the glossary tree below. Area is <b>card count</b>, not leaf count: card count ` +
+    `reflects how much of the corpus a branch actually covers, whereas leaf count only ` +
+    `reflects how finely that branch happened to split during clustering. ` +
+    `<b>Areas do not sum to the corpus</b> — branch assignment is many-to-many, so a card ` +
+    `in 3 branches is counted 3 times (${grand.toLocaleString()} region-cards over ` +
+    `${(BR.n_leaves ? CLU.n_cards : 0).toLocaleString()} clustered cards). ` +
+    `Colour carries the branch's <b>vocabulary source</b>, not its identity.`;
+
+  const W = host.clientWidth || 1200, H = host.clientHeight || 520;
+  const laid = squarify(items, 0, 0, W, H);
+  const GAP = 2;   // 2px surface gap between fills
+
+  let h = "";
+  const small = [];
+  for (const r of laid) {
+    const it = r.item;
+    const w = Math.max(0, r.w - GAP), hh = Math.max(0, r.h - GAP);
+    const bg = it.unbr ? "var(--unbr-ink)" : SRC_COLOR[it.src];
+    const ink = inkFor(it.unbr ? UNBR_HEX : SRC_HEX[it.src]);
+    // Adaptive labelling: full label, name only, or nothing + tooltip. Never
+    // cram unreadable text into a tiny box.
+    let inner = "";
+    if (w >= 62 && hh >= 30) {
+      inner = `<span class="tmn">${esc(it.key)}</span>` +
+              `<span class="tmc">${it.value.toLocaleString()} cards · ${it.leaves} leaves</span>`;
+    } else if (w >= 40 && hh >= 15) {
+      inner = `<span class="tmn">${esc(it.key)}</span>`;
+    } else {
+      small.push(it.key);
+    }
+    // A narrow-but-tall box can take a MULTI-WORD name on two lines instead of
+    // ellipsising it. Single words are left to ellipsis: breaking "Surveil"
+    // into "Survei/l" is harder to read than "Surve...", and the tooltip
+    // carries the full name either way.
+    const wrap = inner && hh >= 28 && w < 9 * it.key.length
+                 && it.key.indexOf(" ") > 0 ? " wrap" : "";
+    h += `<div class="tmcell${it.unbr ? " unbr" : ""}${wrap}" data-b="${esc(it.key)}" ` +
+         `style="left:${r.x}px;top:${r.y}px;width:${w}px;height:${hh}px;` +
+         `background-color:${bg};color:${ink}">${inner}</div>`;
+  }
+  host.innerHTML = h;
+
+  // legend: three source slots + the reserved Unbranched treatment
+  const legend = Object.keys(SRC_COLOR).map(k =>
+    `<span><span class="sw" style="background:${SRC_COLOR[k]}"></span>${SRC_LABEL[k]}</span>`).join("")
+    + `<span><span class="sw unbr" style="background:var(--unbr-ink);` +
+      `background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.4) 0 3px,rgba(255,255,255,0) 3px 6px)"></span>` +
+      `Unbranched (no rule matched)</span>`
+    + (small.length ? `<span style="color:var(--mut)">too small to label (hover, or use the tree): `
+        + small.map(esc).join(", ") + `</span>` : "");
+  document.getElementById("tmlegend").innerHTML = legend;
+
+  // hover tooltip -- required for the smallest regions, useful for all
+  const tip = document.getElementById("tmtip");
+  host.querySelectorAll(".tmcell").forEach(el => {
+    const it = laid.find(r => r.item.key === el.dataset.b).item;
+    el.onmousemove = ev => {
+      tip.style.display = "block";
+      tip.style.left = Math.min(ev.clientX + 14, innerWidth - 350) + "px";
+      tip.style.top = (ev.clientY + 16) + "px";
+      tip.innerHTML = `<b>${esc(it.key)}</b><br>` +
+        `${it.value.toLocaleString()} cards · ${it.leaves} leaves · ` +
+        `${(100 * it.value / grand).toFixed(1)}% of region area<br>` +
+        (it.unbr ? "" : `source: ${esc(it.src)}${it.otags && it.otags.length
+            ? " · " + it.otags.map(esc).join(", ") : ""}<br>`) +
+        `<span style="opacity:.8">${esc(it.rule)}</span><br>` +
+        `<span style="opacity:.8">click to open in the glossary tree</span>`;
+    };
+    el.onmouseleave = () => { tip.style.display = "none"; };
+    el.onclick = () => { tip.style.display = "none"; openBranch(el.dataset.b); };
+  });
+
+  document.getElementById("tmwrap").hidden = false;
+  const tog = document.getElementById("tmtoggle");
+  tog.onclick = () => {
+    const wrap = document.getElementById("tmwrap");
+    wrap.hidden = !wrap.hidden;
+    tog.textContent = (wrap.hidden ? "▸" : "▾") + " branch map";
+    if (!wrap.hidden) renderTreemap();   // re-layout at current width
+  };
+}
+
+// Click-through: the treemap is only an entry point. It opens the EXISTING
+// accordion rather than rendering any cards itself.
+function openBranch(name) {
+  const tree = document.getElementById("tree");
+  const tog = document.getElementById("treetoggle");
+  if (tree.hidden) { tree.hidden = false; tog.textContent = "▾ glossary tree"; }
+  const all = tree.querySelectorAll("details[data-branch]");
+  let target = null;
+  all.forEach(d => {
+    if (d.dataset.branch === name) { d.open = true; target = d; }
+    else d.open = false;
+  });
+  if (target) {
+    tree.scrollTop = target.offsetTop - tree.offsetTop;
+    target.scrollIntoView({ block: "nearest" });
+  }
+}
+
+function branchesOfLeaf(l) {
+  if (!BR) return [];
+  return BR.leaf_branches[String(l)] || [];
 }
 
 function renderQBar() {
@@ -296,11 +707,13 @@ function wire() {
   };
   document.getElementById("clear").onclick = () => {
     state.q = ""; state.quals.clear(); state.axis = {}; state.soft = false; state.corr = false;
+    state.cluster = null;
     document.getElementById("q").value = "";
     document.querySelectorAll(".qbtn.on").forEach(b=>b.classList.remove("on"));
     document.querySelectorAll("#axes select").forEach(s=>s.value="");
     page = 0; apply();
   };
+  document.getElementById("cluclear").onclick = () => { setCluster(null); };
   const go = n => { page = n; draw(); window.scrollTo(0,0); };
   document.getElementById("first").onclick = () => go(0);
   document.getElementById("prev").onclick  = () => go(Math.max(0,page-1));
@@ -310,6 +723,28 @@ function wire() {
 
 const maxPage = () => Math.max(0, Math.ceil(filtered.length/PER)-1);
 const esc = s => String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function setCluster(c) {
+  state.cluster = c;
+  const bar = document.getElementById("clufilter");
+  if (c === null) { bar.hidden = true; }
+  else {
+    // "show only this cluster" means exactly that: the other filters are
+    // dropped, otherwise an active search silently hides most of the cluster
+    // and the count looks wrong.
+    state.q = ""; state.quals.clear(); state.axis = {};
+    state.soft = false; state.corr = false;
+    document.getElementById("q").value = "";
+    document.querySelectorAll(".qbtn.on").forEach(b=>b.classList.remove("on"));
+    document.querySelectorAll("#axes select").forEach(s=>s.value="");
+    bar.hidden = false;
+    document.getElementById("clufilterlabel").innerHTML =
+      `cluster ${c} · ${CLU.sizes[c]} cards · ` +
+      `<span class="clulabel">${esc(CLU.labels[c]||"")}</span>`;
+  }
+  page = 0; apply();
+  window.scrollTo(0,0);
+}
 
 function apply() {
   const q = state.q, quals = state.quals;
@@ -323,6 +758,7 @@ function apply() {
     if (quals.size && !quals.has(r.q)) return false;
     if (state.soft && !r.sg) return false;
     if (state.corr && !r.corr) return false;
+    if (state.cluster !== null && cluOf(r.id) !== state.cluster) return false;
     if (q && !r._s.includes(q)) return false;
     for (const [ax,id] of axf) {
       if (id === undefined) return false;
@@ -378,11 +814,14 @@ function draw() {
         (r.warn?`<br><span class="oid">${r.warn} warning${r.warn>1?"s":""}</span>`:"") +
         (r.sg?`<br><span class="oid" style="color:#7a4bbd">${r.sg} unmodelled</span>`:"") +
         (r.corr?`<br><span class="badge" style="color:var(--corr);border-color:var(--corr)">⚠ ${r.corr} correction${r.corr>1?"s":""}</span>`:"") +
+        cluCell(r) +
       `</td>` +
       `<td class="txt">${esc(r.text) || '<span class="empty">(no oracle text)</span>'}</td>` +
       `<td>${esc(r.type)}</td>`;
     body.appendChild(tr);
     tr.querySelector("button").onclick = ev => toggle(ev.target, r, tr);
+    const cb = tr.querySelector("button.clubtn");
+    if (cb) cb.onclick = ev => { ev.stopPropagation(); setCluster(+cb.dataset.clu); };
   }
   document.getElementById("pinfo").textContent =
     filtered.length ? `page ${page+1} / ${maxPage()+1}` : "no results";
@@ -409,11 +848,26 @@ async function toggle(btn, r, tr) {
   td.innerHTML = render(data, r);
   det.appendChild(td);
   tr.after(det);
+
+  const jump = td.querySelector("[data-clujump]");
+  if (jump) jump.onclick = () => setCluster(+jump.dataset.clujump);
+  // Clicking a member name searches for it, which is the existing way to get
+  // to a card; it keeps one navigation idiom rather than adding a second.
+  td.querySelectorAll("[data-jump]").forEach(a => {
+    a.onclick = () => {
+      const box = document.getElementById("q");
+      box.value = a.dataset.jump;
+      box.dispatchEvent(new Event("input", {bubbles:true}));
+      window.scrollTo(0,0);
+    };
+  });
 }
 
 function render(d, r) {
   if (!d) return `<span class="empty">structure missing from chunk ${r.ch}</span>`;
   let h = "";
+
+  h += renderCluster(r);
 
   if (d._corrections && d._corrections.length) {
     h += `<div class="corrbox"><b class="hdr">⚠ ${d._corrections.length} correction${d._corrections.length>1?"s":""}
@@ -464,6 +918,45 @@ function render(d, r) {
   }
   h += `<div class="bucket"><h4>other fields</h4><pre>${esc(JSON.stringify(extra,null,1))}</pre></div>`;
   return h;
+}
+
+function renderCluster(r) {
+  if (!CLU) return "";
+  const c = cluOf(r.id);
+  if (c === undefined) {
+    return `<div class="clubox"><b class="hdr">Not in the clustering pass</b>
+      This card was excluded by that pass's clean-parse input filter
+      (partial/unparsed/unmodelled/corrected structure, or no extractable top-level
+      effect), so it has no cluster. That is an input-filter outcome, not a
+      statement that the card is unlike anything else.</div>`;
+  }
+  if (c < 0) {
+    return `<div class="clubox"><b class="hdr">Cluster: noise (unclustered)</b>
+      HDBSCAN is density-based and leaves a card unclustered rather than forcing it
+      into the nearest group. This card's combination of effect types and
+      target/filter shapes had no dense enough neighbourhood at
+      <code>min_cluster_size=${CLU.params.min_cluster_size}</code>.</div>`;
+  }
+  const mem = (CLU_MEMBERS.get(c) || []).filter(id => id !== r.id);
+  mem.sort((a, b) => (CLU.names[a]||"").localeCompare(CLU.names[b]||""));
+  const shown = mem.slice(0, 60);
+  const br = branchesOfLeaf(c);
+  const brLine = BR
+    ? (br.length
+        ? `<div style="margin:3px 0">branches: ${br.map(b=>`<span class="brbadge">${esc(b)}</span>`).join("")}</div>`
+        : `<div style="margin:3px 0" class="note">branches: <b>unbranched</b> — this leaf matched no branch rule</div>`)
+    : "";
+  return `<div class="clubox">
+    <b class="hdr">Cluster ${c} — ${CLU.sizes[c]} cards</b>
+    ${brLine}
+    shared structure: <span class="clulabel">${esc(CLU.labels[c]||"")}</span>
+    <button class="clubtn" style="margin-left:6px" data-clujump="${c}">show only this cluster</button>
+    <div class="clumem">${shown.map(id =>
+        `<a data-jump="${esc(CLU.names[id]||"")}">${esc(CLU.names[id]||id)}</a>`).join("<br>")}</div>
+    ${mem.length > shown.length
+        ? `<div class="note">… +${mem.length - shown.length} more (use “show only this cluster”)</div>`
+        : ""}
+  </div>`;
 }
 
 // highlight the nodes that mean "parser could not represent this"
