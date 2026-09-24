@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Leaf Map (validation)</title>
+<style>
+  :root { --bg:#fff; --fg:#111; --mut:#666; --line:#d4d4d4; --panel:#f6f6f6;
+          --dot:#2a78d6; --warn:#b3261e; --warnbg:#fff4e5; --warnline:#e09b3d; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:13px/1.45 ui-monospace,SFMono-Regular,Consolas,monospace;
+         background:var(--bg); color:var(--fg); }
+  header { background:var(--panel); border-bottom:2px solid var(--line); padding:8px 12px; }
+  h1 { font-size:14px; margin:0 0 4px; }
+  .note { font-size:11px; color:var(--mut); }
+  .caveat { background:var(--warnbg); border:1px solid var(--warnline);
+            border-left:4px solid var(--warnline); padding:6px 9px; margin:6px 0 0;
+            font-size:12px; }
+  #wrap { padding:10px 12px; }
+  #plot { border:1px solid var(--line); background:#fcfcfc; position:relative; }
+  circle { fill:var(--dot); fill-opacity:.55; stroke:#fff; stroke-width:.8; cursor:pointer; }
+  circle:hover { fill-opacity:1; stroke:#111; stroke-width:1.6; }
+  #tip { position:fixed; z-index:20; pointer-events:none; display:none;
+         background:#111; color:#fff; font-size:11px; padding:6px 8px;
+         border-radius:3px; max-width:420px; line-height:1.4; }
+  #tip b { color:#fff; }
+  #tip .lab { color:#9ecbff; word-break:break-all; display:block; margin:3px 0; }
+  #tip .cards { color:#ddd; }
+  #sel { margin-top:8px; border:1px solid var(--line); padding:7px 9px;
+         font-size:12px; background:#fcfcfc; min-height:54px; }
+  #sel .lab { color:#0b5d8f; word-break:break-all; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Leaf similarity map — <span style="color:var(--warn)">validation checkpoint, not a feature</span></h1>
+  <div class="note" id="meta">loading…</div>
+  <div class="caveat">
+    <b>Raw layout, deliberately uncoloured.</b> One dot per structural leaf, positioned by
+    UMAP over the same IDF-weighted cosine distances the clustering pass used, sized by card
+    count. No branch colouring yet — the layout has to be judged on its own before an overlay
+    muddies the read. <b>Read proximity, not distance:</b> kNN preservation is 44.4% and the
+    global rank correlation between true cosine distance and on-screen distance is only 0.164,
+    so “these two are close” carries some signal and “these two are far apart” carries almost
+    none. See <a href="leafmap-validation.md">leafmap-validation.md</a>.
+  </div>
+</header>
+<div id="wrap">
+  <div id="plot"></div>
+  <div id="sel">Click a dot to pin its details here.</div>
+</div>
+<div id="tip"></div>
+<script>
+const esc = s => String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+fetch("../build/leafmap.json").then(r=>r.json()).then(M => {
+  const p = M.params;
+  document.getElementById("meta").innerHTML =
+    `<b>${M.n_leaves}</b> leaves · ${M.n_cards.toLocaleString()} cards · ` +
+    `${M.n_features.toLocaleString()} features (identical to the clustering pass) · ` +
+    `umap-learn <b>${p.umap_learn}</b>, seed <b>${p.random_seed}</b>, ` +
+    `n_neighbors ${p.n_neighbors}, min_dist ${p.min_dist}, metric ${p.metric}`;
+
+  const host = document.getElementById("plot");
+  const W = host.clientWidth || 1200, H = 640, PAD = 26;
+  const xs = M.leaves.map(l=>l.x), ys = M.leaves.map(l=>l.y);
+  const x0=Math.min(...xs), x1=Math.max(...xs), y0=Math.min(...ys), y1=Math.max(...ys);
+  const sx = v => PAD + (v-x0)/((x1-x0)||1) * (W-2*PAD);
+  const sy = v => PAD + (1-(v-y0)/((y1-y0)||1)) * (H-2*PAD);
+  // area-proportional radius, floored so a 5-card leaf is still clickable
+  const maxN = Math.max(...M.leaves.map(l=>l.n_cards));
+  const rad = n => 3 + 13 * Math.sqrt(n/maxN);
+
+  host.innerHTML = `<svg width="${W}" height="${H}">` +
+    M.leaves.map((l,i) =>
+      `<circle cx="${sx(l.x).toFixed(1)}" cy="${sy(l.y).toFixed(1)}" ` +
+      `r="${rad(l.n_cards).toFixed(1)}" data-i="${i}"></circle>`).join("") +
+    `</svg>`;
+
+  const tip = document.getElementById("tip");
+  const body = l =>
+    `<b>leaf ${l.leaf}</b> · ${l.n_cards} cards` +
+    `<span class="lab">${esc(l.label)}</span>` +
+    `<span class="cards">${l.sample.map(esc).join(", ")}${l.n_cards>l.sample.length?", …":""}</span>`;
+
+  host.querySelectorAll("circle").forEach(c => {
+    const l = M.leaves[+c.dataset.i];
+    c.onmousemove = ev => {
+      tip.style.display="block";
+      tip.style.left = Math.min(ev.clientX+14, innerWidth-440)+"px";
+      tip.style.top = (ev.clientY+16)+"px";
+      tip.innerHTML = body(l);
+    };
+    c.onmouseleave = () => { tip.style.display="none"; };
+    c.onclick = () => {
+      document.getElementById("sel").innerHTML =
+        `<b>leaf ${l.leaf}</b> · ${l.n_cards} cards · x ${l.x.toFixed(2)}, y ${l.y.toFixed(2)}` +
+        `<br><span class="lab">${esc(l.label)}</span>` +
+        `<br>${l.sample.map(esc).join(", ")}${l.n_cards>l.sample.length?", …":""}`;
+    };
+  });
+}).catch(e => {
+  document.getElementById("meta").innerHTML =
+    `<b style="color:var(--warn)">Load failed: ${esc(e.message)}</b> — run ` +
+    `<code>python src/leafmap_umap.py</code>, and serve over HTTP (not file://).`;
+});
+</script>
+</body>
+</html>
