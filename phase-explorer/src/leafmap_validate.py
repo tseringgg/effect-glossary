@@ -41,12 +41,20 @@ PROBE_CARDS = {
 
 
 def main():
-    D = np.load(os.path.join(BUILD, "_leaf_D.npy"))
-    XY = np.load(os.path.join(BUILD, "_leaf_XY.npy"))
-    leaf_ids = json.load(open(os.path.join(BUILD, "_leaf_ids.json")))
+    # Same code, either pass: `python leafmap_validate.py curated` points it at
+    # the curated-dimension artifacts. Nothing else differs, so the two reports
+    # are directly comparable line for line.
+    which = sys.argv[1] if len(sys.argv) > 1 else "full"
+    if which == "curated":
+        pre, mapf, outf = "_cur_", "leafmap_curated.json", "leafmap-curated-validation.md"
+    else:
+        pre, mapf, outf = "_leaf_", "leafmap.json", "leafmap-validation.md"
+    D = np.load(os.path.join(BUILD, pre + "D.npy"))
+    XY = np.load(os.path.join(BUILD, pre + "XY.npy"))
+    leaf_ids = json.load(open(os.path.join(BUILD, pre + "ids.json")))
     CL = json.load(open(os.path.join(BUILD, "clusters.json"), encoding="utf-8"))
     BR = json.load(open(os.path.join(BUILD, "branches.json"), encoding="utf-8"))
-    MAP = json.load(open(os.path.join(BUILD, "leafmap.json"), encoding="utf-8"))
+    MAP = json.load(open(os.path.join(BUILD, mapf), encoding="utf-8"))
     k_of = {l: i for i, l in enumerate(leaf_ids)}
     L = len(leaf_ids)
 
@@ -116,7 +124,10 @@ def main():
     for k, v in MAP["params"].items():
         A(f"| {k} | `{v}` |")
     A(f"| leaves | {MAP['n_leaves']} |")
-    A(f"| features | {MAP['n_features']} (identical to the clustering pass) |")
+    _nf = MAP.get('n_features') or MAP['params'].get('n_columns')
+    _lbl = ("identical to the clustering pass" if MAP.get('n_features')
+            else "curated columns, not the clustering feature space")
+    A(f"| positioning columns | {_nf} ({_lbl}) |")
     A("")
 
     A("## Global geometry — read this before any group result\n")
@@ -147,19 +158,44 @@ def main():
       "separations. It means *closeness* on this map is meaningful and "
       "*distance* is not — 'X is far from Y' cannot be read off it.\n")
 
-    A("## Is it the parameters? (sweep)\n")
-    A("kNN preservation @10 across a parameter grid, same seed, same distances:\n")
-    A("| n_neighbors | min_dist 0.0 | 0.1 | 0.5 |")
-    A("|---|---|---|---|")
-    A("| 5 | 44.4% | **44.9%** | 43.5% |")
-    A("| 15 (default) | 44.3% | 44.4% | 39.2% |")
-    A("| 30 | 40.1% | 39.0% | 31.8% |")
-    A("| 50 | 38.5% | 37.4% | 28.7% |")
-    A("")
-    A("The best cell (44.9%) is within noise of the default (44.4%), and every "
-      "larger neighbourhood is worse. **Tuning does not rescue this layout.** "
-      "The ceiling comes from compressing genuinely high-dimensional structure "
-      "into two dimensions, not from the parameter choice.\n")
+    if which == "full":
+        A("## Is it the parameters? (sweep)\n")
+        A("kNN preservation @10 across a parameter grid, same seed, same distances:\n")
+        A("| n_neighbors | min_dist 0.0 | 0.1 | 0.5 |")
+        A("|---|---|---|---|")
+        A("| 5 | 44.4% | **44.9%** | 43.5% |")
+        A("| 15 (default) | 44.3% | 44.4% | 39.2% |")
+        A("| 30 | 40.1% | 39.0% | 31.8% |")
+        A("| 50 | 38.5% | 37.4% | 28.7% |")
+        A("")
+        A("The best cell (44.9%) is within noise of the default (44.4%), and every "
+          "larger neighbourhood is worse. **Tuning does not rescue this layout.** "
+          "The ceiling comes from compressing genuinely high-dimensional structure "
+          "into two dimensions, not from the parameter choice.\n")
+    else:
+        A("## Comparison to the full-feature pass\n")
+        A("Identical validation code, identical leaves, identical seed and UMAP "
+          "parameters. The only change is the feature space used for positioning.\n")
+        pri = MAP.get("prior_pass", {})
+        A("| | full 3,347-feature pass | this curated 15-column pass |")
+        A("|---|---|---|")
+        A(f"| positioning columns | {pri.get('n_features','?'):,} | "
+          f"{MAP['params']['n_columns']} |")
+        A(f"| **kNN preservation @10** | {pri.get('knn_at_10',0)*100:.1f}% | "
+          f"**{knn_pres*100:.1f}%** |")
+        A(f"| **Spearman rho** | {pri.get('spearman_rho',0):.3f} | "
+          f"**{rho:.3f}** |")
+        A("")
+        A("Encodings measured before picking one (same seed, same columns):\n")
+        A("| encoding | kNN@10 | Spearman rho |")
+        A("|---|---|---|")
+        for _k, _v in MAP.get("encodings_tested", {}).items():
+            _sel = " **(selected)**" if _k == MAP["params"]["encoding"] else ""
+            A(f"| {_k}{_sel} | {_v['knn_at_10']*100:.1f}% | {_v['spearman_rho']:.3f} |")
+        A("")
+        A("The effect-type block was measured, not assumed: adding it makes both "
+          "metrics worse, confirming that one-hot effect identity is the "
+          "near-orthogonal component worth leaving out.\n")
 
     # ---------------- named validation groups -----------------------------
     A("## Known-case validation\n")
@@ -259,7 +295,7 @@ def main():
               f"{100-s['d2_pct']:.1f}% of pairs | {s['cos_mean']:.4f} |")
     A("")
 
-    with open(os.path.join(REPORTS, "leafmap-validation.md"), "w",
+    with open(os.path.join(REPORTS, outf), "w",
               encoding="utf-8") as fh:
         fh.write("\n".join(Lr))
     print("\n".join(Lr))

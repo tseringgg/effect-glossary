@@ -35,13 +35,7 @@
   <h1>Leaf similarity map — <span style="color:var(--warn)">validation checkpoint, not a feature</span></h1>
   <div class="note" id="meta">loading…</div>
   <div class="caveat">
-    <b>Raw layout, deliberately uncoloured.</b> One dot per structural leaf, positioned by
-    UMAP over the same IDF-weighted cosine distances the clustering pass used, sized by card
-    count. No branch colouring yet — the layout has to be judged on its own before an overlay
-    muddies the read. <b>Read proximity, not distance:</b> kNN preservation is 44.4% and the
-    global rank correlation between true cosine distance and on-screen distance is only 0.164,
-    so “these two are close” carries some signal and “these two are far apart” carries almost
-    none. See <a href="leafmap-validation.md">leafmap-validation.md</a>.
+    <span id="cav">loading…</span>
   </div>
 </header>
 <div id="wrap">
@@ -52,13 +46,32 @@
 <script>
 const esc = s => String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
-fetch("../build/leafmap.json").then(r=>r.json()).then(M => {
+const SRC = new URLSearchParams(location.search).get("src") === "curated"
+  ? "../build/leafmap_curated.json" : "../build/leafmap.json";
+fetch(SRC).then(r=>r.json()).then(M => {
   const p = M.params;
   document.getElementById("meta").innerHTML =
     `<b>${M.n_leaves}</b> leaves · ${M.n_cards.toLocaleString()} cards · ` +
-    `${M.n_features.toLocaleString()} features (identical to the clustering pass) · ` +
+    `${(M.n_features||M.params.n_columns).toLocaleString()} positioning columns · ` +
     `umap-learn <b>${p.umap_learn}</b>, seed <b>${p.random_seed}</b>, ` +
-    `n_neighbors ${p.n_neighbors}, min_dist ${p.min_dist}, metric ${p.metric}`;
+    `n_neighbors ${p.n_neighbors}, min_dist ${p.min_dist}, ` +
+    `metric ${p.metric || p.encoding}`;
+
+  const cur = SRC.indexOf("curated") >= 0;
+  const mt = cur ? (M.encodings_tested||{})[p.encoding] : null;
+  const kn = cur && mt ? (mt.knn_at_10*100).toFixed(1) : "44.4";
+  const rh = cur && mt ? mt.spearman_rho.toFixed(3) : "0.164";
+  document.getElementById("cav").innerHTML =
+    `<b>Raw layout, deliberately uncoloured.</b> One dot per structural leaf, sized by card ` +
+    `count, positioned by UMAP over ` +
+    (cur ? `a curated <b>${p.n_columns}-column</b> space (zone profile, direction, choice, `
+         + `mass-vs-single, activated, keyword-bearing) — <i>not</i> the 3,347-feature space.`
+         : `the full IDF-weighted 3,347-feature cosine distances the clustering pass used.`) +
+    ` No branch colouring yet. <b>kNN preservation ${kn}%, Spearman rho ${rh}.</b> ` +
+    (cur ? `Both improved over the full-feature pass (44.4% / 0.164), but read proximity `
+         + `with care and distance with more. ` : `Read proximity, not distance. `) +
+    `See <a href="${cur ? "leafmap-curated-validation.md" : "leafmap-validation.md"}">the ` +
+    `validation report</a>.`;
 
   const host = document.getElementById("plot");
   const W = host.clientWidth || 1200, H = 640, PAD = 26;
