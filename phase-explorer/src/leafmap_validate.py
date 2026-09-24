@@ -47,6 +47,8 @@ def main():
     which = sys.argv[1] if len(sys.argv) > 1 else "full"
     if which == "curated":
         pre, mapf, outf = "_cur_", "leafmap_curated.json", "leafmap-curated-validation.md"
+    elif which == "effect":
+        pre, mapf, outf = "_eff_", "leafmap_effect.json", "leafmap-effect-validation.md"
     else:
         pre, mapf, outf = "_leaf_", "leafmap.json", "leafmap-validation.md"
     D = np.load(os.path.join(BUILD, pre + "D.npy"))
@@ -176,16 +178,30 @@ def main():
         A("## Comparison to the full-feature pass\n")
         A("Identical validation code, identical leaves, identical seed and UMAP "
           "parameters. The only change is the feature space used for positioning.\n")
-        pri = MAP.get("prior_pass", {})
-        A("| | full 3,347-feature pass | this curated 15-column pass |")
-        A("|---|---|---|")
-        A(f"| positioning columns | {pri.get('n_features','?'):,} | "
-          f"{MAP['params']['n_columns']} |")
-        A(f"| **kNN preservation @10** | {pri.get('knn_at_10',0)*100:.1f}% | "
-          f"**{knn_pres*100:.1f}%** |")
-        A(f"| **Spearman rho** | {pri.get('spearman_rho',0):.3f} | "
-          f"**{rho:.3f}** |")
-        A("")
+        pri = MAP.get("prior_pass") or MAP.get("prior_passes", {}).get(
+            "full_feature", {})
+        _pp = MAP.get("prior_passes")
+        if _pp:
+            A("| | full 3,347-feature | zone/choice 15-col | this effect-flavoured pass |")
+            A("|---|---|---|---|")
+            A(f"| positioning columns | {_pp['full_feature']['n_columns']:,} | "
+              f"{_pp['zone_choice']['n_columns']} | {MAP['params']['n_columns']} |")
+            A(f"| **kNN preservation @10** | {_pp['full_feature']['knn_at_10']*100:.1f}% | "
+              f"{_pp['zone_choice']['knn_at_10']*100:.1f}% | **{knn_pres*100:.1f}%** |")
+            A(f"| **Spearman rho** | {_pp['full_feature']['spearman_rho']:.3f} | "
+              f"{_pp['zone_choice']['spearman_rho']:.3f} | **{rho:.3f}** |")
+            A("")
+        if not _pp:
+            A("| | full 3,347-feature pass | this pass |")
+            A("|---|---|---|")
+            _pc = pri.get('n_features') or pri.get('n_columns') or 0
+            A(f"| positioning columns | {_pc:,} | "
+              f"{MAP['params']['n_columns']} |")
+            A(f"| **kNN preservation @10** | {pri.get('knn_at_10',0)*100:.1f}% | "
+              f"**{knn_pres*100:.1f}%** |")
+            A(f"| **Spearman rho** | {pri.get('spearman_rho',0):.3f} | "
+              f"**{rho:.3f}** |")
+            A("")
         A("Encodings measured before picking one (same seed, same columns):\n")
         A("| encoding | kNN@10 | Spearman rho |")
         A("|---|---|---|")
@@ -193,9 +209,17 @@ def main():
             _sel = " **(selected)**" if _k == MAP["params"]["encoding"] else ""
             A(f"| {_k}{_sel} | {_v['knn_at_10']*100:.1f}% | {_v['spearman_rho']:.3f} |")
         A("")
-        A("The effect-type block was measured, not assumed: adding it makes both "
-          "metrics worse, confirming that one-hot effect identity is the "
-          "near-orthogonal component worth leaving out.\n")
+        if which == "curated":
+            A("The effect-type block was measured, not assumed: adding it "
+              "makes both metrics worse, confirming that one-hot effect "
+              "identity is the near-orthogonal component worth leaving out.\n")
+        else:
+            A("Dropping the effect/type block scores the BEST kNN (68.9%) -- "
+              "because it discards effect identity, the one thing this pass "
+              "exists to encode. It is deliberately NOT selected: it collapses "
+              "branch cohesion to a 64.2% median with 14 branches under 60%. "
+              "Selection here is by branch cohesion, the stated bar for this "
+              "map, not by kNN.\n")
 
     # ---------------- named validation groups -----------------------------
     A("## Known-case validation\n")

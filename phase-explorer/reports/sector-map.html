@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sector Map</title>
+<style>
+  :root { --bg:#fff; --fg:#111; --mut:#666; --line:#d4d4d4; --panel:#f6f6f6;
+          --neutral:#9a9a96; --warn:#b3261e; --warnbg:#fff4e5; --warnline:#e09b3d; }
+  * { box-sizing:border-box; }
+  [hidden] { display:none !important; }
+  body { margin:0 0 84px; font:13px/1.45 ui-monospace,SFMono-Regular,Consolas,monospace;
+         background:var(--bg); color:var(--fg); }
+  header { background:var(--panel); border-bottom:2px solid var(--line); padding:8px 12px; }
+  h1 { font-size:14px; margin:0 0 4px; }
+  .note { font-size:11px; color:var(--mut); }
+  .caveat { background:var(--warnbg); border:1px solid var(--warnline);
+            border-left:4px solid var(--warnline); padding:6px 9px; margin:6px 0 0;
+            font-size:12px; }
+  #wrap { padding:10px 12px; }
+  #plot { border:1px solid var(--line); background:#fcfcfc; }
+
+  /* Regions default to NEUTRAL, not to eight hues. Measured reason: up to 7
+     sectors stack at a single point and only 32.6% of covered area carries
+     just one, so simultaneous hue display cannot be legible. Hue appears only
+     for the sector(s) under the cursor, and the readout panel -- not the
+     colour -- is the authoritative answer. */
+  /* Region outlines are HIDDEN by default -- the constellation lines, the
+     coloured dots and the labels carry the map. An outline appears only for
+     the sector whose legend button is hovered or pinned. */
+  .sect path { fill:var(--hue); stroke:var(--hue);
+               fill-opacity:0; stroke-opacity:0; stroke-width:1.2;
+               transition:fill-opacity .12s, stroke-opacity .12s; }
+  .sect text { font:bold 12px ui-monospace,monospace; paint-order:stroke;
+               stroke:#fff; stroke-width:3.5px; stroke-linejoin:round;
+               fill:var(--hue); opacity:1; }
+  .sect.hot path { fill-opacity:.20; stroke-opacity:1; stroke-width:2.4; }
+  .sect.mute path { fill-opacity:0; stroke-opacity:0; }
+  .sect.mute text { opacity:.10; }
+
+  /* constellation: MST edges within each sector */
+  .link { stroke:var(--hue); stroke-opacity:.30; stroke-width:.9; fill:none; }
+  .lg-edges.hot .link { stroke-opacity:.95; stroke-width:1.7; }
+  .lg-edges.mute .link { stroke-opacity:.05; }
+
+  circle.leaf { stroke:#fff; stroke-width:.7; cursor:pointer; }
+  circle.leaf:hover { stroke:#111; stroke-width:1.9; }
+  circle.leaf.mute { opacity:.12; }
+  circle.stray { stroke-width:1.7; fill-opacity:.3; }
+
+  #legend { display:flex; flex-wrap:wrap; gap:7px; margin:8px 0 0; }
+  .lg { border:2px solid var(--line); background:#fff; padding:3px 8px; cursor:pointer;
+        font:inherit; font-size:11px; text-align:left; line-height:1.3; }
+  .lg .sw { display:inline-block; width:10px; height:10px; border-radius:2px;
+            margin-right:5px; vertical-align:-1px; }
+  .lg small { display:block; font-size:10px; color:var(--mut); }
+  .lg.on { background:#111; color:#fff; border-color:#111; }
+  .lg.on small { color:#ddd; }
+
+  #tip { position:fixed; z-index:30; pointer-events:none; display:none;
+         background:#111; color:#fff; font-size:11px; padding:6px 8px;
+         border-radius:3px; max-width:430px; line-height:1.4; }
+  #tip .lab { color:#9ecbff; word-break:break-all; display:block; margin:3px 0; }
+  #tip .cards { color:#ddd; }
+  #tip .none { color:#ffb3ab; }
+  .chip { display:inline-block; font-size:10px; padding:1px 6px; margin:2px 4px 0 0;
+          border-radius:2px; color:#fff; white-space:nowrap; }
+  #here { position:fixed; left:0; right:0; bottom:0; z-index:25; background:#fff;
+          border-top:2px solid var(--line); padding:6px 12px; font-size:11px;
+          min-height:58px; }
+  #here .empty { color:var(--mut); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Sector map — broad buckets over the structural leaf map</h1>
+  <div class="note" id="meta">loading…</div>
+  <div class="caveat" id="cav"></div>
+</header>
+<div id="wrap">
+  <div id="plot"></div>
+  <div id="legend"></div>
+</div>
+<div id="tip"></div>
+<div id="here"><b>Hover a sector button below</b> to light up its region and
+constellation. Hover any dot for the leaf itself.</div>
+<script>
+const esc = s => String(s==null?"":s).replace(/[&<>"]/g,
+  c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+Promise.all([
+  fetch("../build/leafmap_effect.json").then(r=>r.json()),
+  fetch("../build/sectors.json").then(r=>r.json()),
+  fetch("../build/branches.json").then(r=>r.json()),
+]).then(([M, S, BR]) => {
+  const secOf = S.leaf_sectors;
+  const colOf = {}, byName = {};
+  S.sectors.forEach(s => { colOf[s.name] = s.color; byName[s.name] = s; });
+  const strayOf = {};
+  S.sectors.forEach(s => s.strays.forEach(
+    l => (strayOf[l] = strayOf[l] || []).push(s.name)));
+  const branchOf = BR.leaf_branches || {};
+  const nUnbranched = M.n_leaves - Object.keys(secOf).length
+                    - S.unsectored_leaves.length;
+
+  document.getElementById("meta").innerHTML =
+    `<b>${S.sectors.length}</b> sectors over <b>${M.n_leaves}</b> leaves · ` +
+    `positions from the effect-flavoured map (seed ${M.params.random_seed}, ` +
+    `umap-learn ${M.params.umap_learn}) · ` +
+    `<b>${Object.keys(secOf).length}</b> in ≥1 sector, ` +
+    `<b>${S.unsectored_leaves.length}</b> in a branch but no sector, ` +
+    `<b>${nUnbranched}</b> unbranched · <a href="sectors.md">notes</a>`;
+
+  document.getElementById("cav").innerHTML =
+    `<b>Sectors overlap heavily, so only one lights at a time.</b> ` +
+    `Up to <b>7</b> sectors stack at a single point and only <b>32.6%</b> of the ` +
+    `covered area carries just one, so eight simultaneous hues could not be ` +
+    `read — <b>hover a sector button</b> below to outline that one. Lines are a ` +
+    `minimum spanning tree within each sector (long edges cut, so ` +
+    `separate clumps are not joined across the map). Dot colour is the leaf's ` +
+    `<i>smallest</i> sector, since 38 leaves sit in several. Borders are ` +
+    `approximate: a region hugs each clump of its leaves. Read proximity, not ` +
+    `distance — this map preserves neighbourhoods, not absolute separations.`;
+
+  // one shared transform: dots and polygons are in the same coordinate space
+  const host = document.getElementById("plot");
+  const W = host.clientWidth || 1200, H = 660, PAD = 30;
+  const xs = M.leaves.map(l=>l.x), ys = M.leaves.map(l=>l.y);
+  for (const s of S.sectors) for (const p of s.polygons) for (const q of p) {
+    xs.push(q[0]); ys.push(q[1]);
+  }
+  const x0=Math.min(...xs), x1=Math.max(...xs), y0=Math.min(...ys), y1=Math.max(...ys);
+  const sx = v => PAD + (v-x0)/((x1-x0)||1) * (W-2*PAD);
+  const sy = v => PAD + (1-(v-y0)/((y1-y0)||1)) * (H-2*PAD);
+  const maxN = Math.max(...M.leaves.map(l=>l.n_cards));
+  const rad = n => 3 + 11 * Math.sqrt(n/maxN);
+
+  // 38 leaves sit in more than one sector, so a dot's default colour needs a
+  // tiebreak. The SMALLEST sector wins: the more specific label is the more
+  // informative one, and it is deterministic rather than "whichever came
+  // first". Leaves with no sector stay grey.
+  const primaryOf = leaf => {
+    const secs = secOf[String(leaf)] || [];
+    if (!secs.length) return null;
+    return secs.slice().sort((a,b) => byName[a].n_leaves - byName[b].n_leaves)[0];
+  };
+  const baseTone = leaf => {
+    const p = primaryOf(leaf);
+    return p ? colOf[p] : "#c4c4bf";
+  };
+
+  const posOf = {};
+  M.leaves.forEach(l => posOf[l.leaf] = [sx(l.x), sy(l.y)]);
+
+  // biggest blob wins the label
+  let svg = `<svg width="${W}" height="${H}">`;
+  // constellation edges first, so dots sit on top of their own lines
+  for (const s of S.sectors) {
+    const segs = (s.edges || []).map(([a,b]) => {
+      const p = posOf[a], q = posOf[b];
+      if (!p || !q) return "";
+      return `<line x1="${p[0].toFixed(1)}" y1="${p[1].toFixed(1)}" ` +
+             `x2="${q[0].toFixed(1)}" y2="${q[1].toFixed(1)}" class="link"></line>`;
+    }).join("");
+    svg += `<g class="lg-edges" data-s="${esc(s.name)}" ` +
+           `style="--hue:${s.color}">${segs}</g>`;
+  }
+  for (const s of S.sectors.slice().sort((a,b)=>b.n_leaves-a.n_leaves)) {
+    const paths = s.polygons.map(p =>
+      `<path d="M${p.map(q=>`${sx(q[0]).toFixed(1)},${sy(q[1]).toFixed(1)}`)
+        .join("L")}Z"></path>`).join("");
+    let lx=0, ly=0;
+    if (s.polygons.length) {
+      const big = s.polygons.reduce((a,b)=>b.length>a.length?b:a);
+      lx = big.reduce((t,q)=>t+sx(q[0]),0)/big.length;
+      ly = big.reduce((t,q)=>t+sy(q[1]),0)/big.length;
+    }
+    svg += `<g class="sect" data-s="${esc(s.name)}" style="--hue:${s.color}">` +
+           `${paths}<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" ` +
+           `text-anchor="middle">${esc(s.name)}</text></g>`;
+  }
+  for (let i=0;i<M.leaves.length;i++) {
+    const l = M.leaves[i];
+    const secs = secOf[String(l.leaf)] || [];
+    const stray = (strayOf[l.leaf] || []).length > 0;
+    const tone = baseTone(l.leaf);
+    svg += `<circle class="leaf${stray?" stray":""}" data-i="${i}" ` +
+           `cx="${sx(l.x).toFixed(1)}" cy="${sy(l.y).toFixed(1)}" ` +
+           `r="${rad(l.n_cards).toFixed(1)}" ` +
+           `fill="${stray?"#fff":tone}" stroke="${stray?tone:"#fff"}"></circle>`;
+  }
+  host.innerHTML = svg + `</svg>`;
+
+  // Nudge colliding sector labels apart vertically. Several sectors have
+  // their largest blob in the same crowded part of the map, so centroid
+  // placement alone overlapped "Card Selection & Attrition" with "Removal".
+  (() => {
+    const labels = [...host.querySelectorAll("g.sect text")];
+    for (let pass = 0; pass < 24; pass++) {
+      let moved = false;
+      for (let i = 0; i < labels.length; i++) {
+        for (let j = i + 1; j < labels.length; j++) {
+          const a = labels[i].getBBox(), b = labels[j].getBBox();
+          const ox = Math.min(a.x+a.width, b.x+b.width) - Math.max(a.x, b.x);
+          const oy = Math.min(a.y+a.height, b.y+b.height) - Math.max(a.y, b.y);
+          if (ox > 0 && oy > 2) {
+            const push = (oy / 2) + 1.5;
+            const ay = +labels[i].getAttribute("y"), by = +labels[j].getAttribute("y");
+            const up = ay <= by ? labels[i] : labels[j];
+            const dn = ay <= by ? labels[j] : labels[i];
+            up.setAttribute("y", (+up.getAttribute("y") - push).toFixed(1));
+            dn.setAttribute("y", (+dn.getAttribute("y") + push).toFixed(1));
+            moved = true;
+          }
+        }
+      }
+      if (!moved) break;
+    }
+  })();
+
+  const groups = [...host.querySelectorAll("g.sect")];
+  const edgeGroups = [...host.querySelectorAll("g.lg-edges")];
+  const dots = [...host.querySelectorAll("circle.leaf")];
+  const lg = document.getElementById("legend");
+  const here = document.getElementById("here");
+  let pinned = null;
+
+  lg.innerHTML = S.sectors.map(s =>
+    `<button class="lg" data-s="${esc(s.name)}">` +
+    `<span class="sw" style="background:${s.color}"></span>${esc(s.name)}` +
+    `<small>tier ${s.tier} · ${s.n_leaves} leaves · ` +
+    `${s.n_cards.toLocaleString()} cards · ${s.branches.length} branches</small>` +
+    `</button>`).join("") +
+    `<button class="lg" data-s="__none"><span class="sw" ` +
+    `style="background:#9a9a96"></span>no sector<small>in a branch but ` +
+    `unsectored (${S.unsectored_leaves.length}), or unbranched ` +
+    `(${nUnbranched})</small></button>`;
+
+  function light(names) {
+    const set = new Set(names);
+    const any = set.size > 0;
+    groups.forEach(g => {
+      g.classList.toggle("hot", set.has(g.dataset.s));
+      g.classList.toggle("mute", any && !set.has(g.dataset.s));
+    });
+    edgeGroups.forEach(g => {
+      g.classList.toggle("hot", set.has(g.dataset.s));
+      g.classList.toggle("mute", any && !set.has(g.dataset.s));
+    });
+    dots.forEach(c => {
+      const l = M.leaves[+c.dataset.i];
+      const secs = secOf[String(l.leaf)] || [];
+      const on = set.has("__none") ? secs.length === 0
+                                   : secs.some(n => set.has(n));
+      c.classList.toggle("mute", any && !on);
+      // while a sector is lit, its members take ITS hue even if their default
+      // primary is a different sector -- that is the point of the highlight
+      const lit = on && !set.has("__none") ? secs.find(n => set.has(n)) : null;
+      const stray = (strayOf[l.leaf] || []).length > 0;
+      const tone = lit ? colOf[lit] : baseTone(l.leaf);
+      c.setAttribute("fill", stray ? "#fff" : tone);
+      c.setAttribute("stroke", stray ? tone : "#fff");
+    });
+    lg.querySelectorAll(".lg").forEach(b =>
+      b.classList.toggle("on", set.has(b.dataset.s)));
+  }
+
+  function readout(names) {
+    if (!names.length) {
+      here.innerHTML = `<span class="empty">Hover a sector button to light up ` +
+        `its region and constellation. Grey dots belong to no sector ` +
+        `(${S.unsectored_leaves.length} in a branch but unsectored, ` +
+        `${nUnbranched} unbranched).</span>`;
+      return;
+    }
+    here.innerHTML =
+      `<b>${names.length > 1 ? names.length + " sectors:" : "Sector:"}</b> ` +
+      names.map(n=>`<span class="chip" style="background:${colOf[n]}">` +
+        `${esc(n)}</span>`).join("") +
+      names.map(n => {
+        const s = byName[n];
+        return `<div class="note" style="margin-top:2px">` +
+          `<b>${esc(n)}</b> (tier ${s.tier}) — ${esc(s.branches.join(", "))}</div>`;
+      }).join("");
+  }
+
+  // Highlighting is driven by the LEGEND BUTTONS, not by pointer position on
+  // the map. Pointing at the map lit whatever happened to stack under the
+  // cursor -- up to 7 sectors at once -- which is noisy and not what you ask
+  // for when you want to see one bucket.
+  const show = name => {
+    light([name]);
+    readout(name === "__none" ? [] : [name]);
+  };
+  const clear = () => { light([]); readout([]); };
+  lg.querySelectorAll(".lg").forEach(b => {
+    b.onmouseenter = () => { if (!pinned) show(b.dataset.s); };
+    b.onmouseleave = () => { if (!pinned) clear(); };
+    b.onfocus = () => { if (!pinned) show(b.dataset.s); };
+    b.onblur = () => { if (!pinned) clear(); };
+    b.onclick = () => {                       // click pins it
+      pinned = (pinned === b.dataset.s) ? null : b.dataset.s;
+      if (pinned) show(pinned); else clear();
+    };
+  });
+
+  const tip = document.getElementById("tip");
+  dots.forEach(c => {
+    const l = M.leaves[+c.dataset.i];
+    const secs = secOf[String(l.leaf)] || [];
+    const brs = branchOf[String(l.leaf)] || [];
+    const stray = strayOf[l.leaf] || [];
+    c.onmousemove = ev => {
+      tip.style.display = "block";
+      tip.style.left = Math.min(ev.clientX+14, innerWidth-450)+"px";
+      tip.style.top = (ev.clientY+16)+"px";
+      tip.innerHTML =
+        `<b>leaf ${l.leaf}</b> · ${l.n_cards} cards<br>` +
+        (secs.length
+          ? secs.map(n=>`<span class="chip" style="background:${colOf[n]}">` +
+              `${esc(n)}</span>`).join("")
+          : `<span class="none">no sector</span>`) +
+        (stray.length ? `<br><span class="none">outside the drawn shape of: ` +
+          `${stray.map(esc).join(", ")}</span>` : "") +
+        `<br><span class="cards">branches: ` +
+        `${brs.length ? brs.map(esc).join(", ") : "none"}</span>` +
+        `<span class="lab">${esc(l.label)}</span>` +
+        `<span class="cards">${l.sample.map(esc).join(", ")}` +
+        `${l.n_cards>l.sample.length?", …":""}</span>`;
+    };
+    c.onmouseleave = () => { tip.style.display = "none"; };
+  });
+}).catch(e => {
+  document.getElementById("meta").innerHTML =
+    `<b style="color:#b3261e">Load failed: ${esc(e.message)}</b> — run ` +
+    `<code>python src/build_sectors.py</code>, and serve over HTTP.`;
+});
+</script>
+</body>
+</html>

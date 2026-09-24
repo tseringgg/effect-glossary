@@ -66,7 +66,21 @@ MASS_REMOVAL_EFFECTS = {
     "DestroyAll", "DamageAll", "ChangeZoneAll", "SacrificeAll", "BounceAll",
     "ExileAll",
 }
-BURN_EFFECTS = {"DealDamage", "DamageAll", "DamageEachPlayer"}
+# Burn is SINGLE-TARGET damage only. It previously read
+#   {"DealDamage", "DamageAll", "DamageEachPlayer"}
+# which bundled "deal 3 damage to one target" with "deal 3 damage to
+# EVERYTHING". Those are different kinds of card, and the branch scored
+# worst of all 33 branches in both leaf-similarity maps (42% zone/choice,
+# 52% effect) because no layout can make a category cohere that is drawn
+# across that line. 15 of its 41 leaves were mass-dominant.
+BURN_EFFECTS = {"DealDamage"}
+# DamageAll is deliberately NOT here. Bundling it with DamageEachPlayer
+# repeated the very defect this audit exists to remove: the two halves
+# scored 99.4% and 98.5% cohesion separately but 62.9% together, sitting
+# 9.05 apart against a 4.94 corpus mean -- further apart than random
+# leaves. DamageAll hits each CREATURE (mass removal, already Board wipe,
+# which claims all 11 of those leaves); DamageEachPlayer hits each PLAYER.
+MASS_BURN_EFFECTS = {"DamageEachPlayer"}
 DRAW_EFFECTS = {"Draw"}
 EVASION_KEYWORDS = {
     "Flying", "Menace", "Fear", "Intimidate", "Shadow", "Skulk",
@@ -187,9 +201,15 @@ BRANCHES = [
                 or any(f.startswith("cz:") and f.endswith(">Exile") for f in F))
                and not (effs(F) & MASS_EFFECTS)),
 
+    # Was `SPOT_REMOVAL_EFFECTS | MASS_REMOVAL_EFFECTS` -- a literal union of the
+    # single-target and mass sets, 10 of its 39 leaves mass-dominant. The mass
+    # half is not given a new branch: mass removal of creatures is *exactly*
+    # Board wipe's definition, and all 10 of those leaves already carry Board
+    # wipe, so a second name would only duplicate it.
     ("Creature removal", "curated", ["removal-creature"],
-     "a removal effect (spot or mass) whose bound target filter is Typed[Creature...]",
-     lambda F: targets_creature(F, SPOT_REMOVAL_EFFECTS | MASS_REMOVAL_EFFECTS)),
+     "a SINGLE-TARGET removal effect whose bound target filter is "
+     "Typed[Creature...]; mass creature removal is Board wipe",
+     lambda F: targets_creature(F, SPOT_REMOVAL_EFFECTS)),
 
     ("Destroy removal", "otag", ["removal-destroy"],
      "dominant effect is Destroy",
@@ -253,8 +273,18 @@ BRANCHES = [
 
     # ---- damage / life -------------------------------------------------
     ("Burn", "slang+otag", ["burn-creature", "burn-any", "burn-player"],
-     "dominant effect in {DealDamage, DamageAll, DamageEachPlayer}",
+     "dominant effect is DealDamage (single target)",
      lambda F: bool(effs(F) & BURN_EFFECTS)),
+
+    # The mass half keeps a name of its own rather than dissolving into the
+    # generic Mass effect bucket: `burn-player-each` is a real Scryfall otag
+    # (132 cards), and "deals damage to each player" is a function people
+    # actually look for. Scoped to DamageEachPlayer only -- see
+    # MASS_BURN_EFFECTS for why DamageAll is excluded.
+    ("Mass burn", "otag", ["burn-player-each"],
+     "dominant effect is DamageEachPlayer -- damage to every player. Damage to "
+     "every creature (DamageAll) is Board wipe, not this",
+     lambda F: bool(effs(F) & MASS_BURN_EFFECTS)),
 
     ("Lifegain", "otag", ["lifegain", "repeatable-lifegain"],
      "dominant effect is GainLife",
@@ -281,10 +311,17 @@ BRANCHES = [
      lambda F: "BecomeCopy" in effs(F)),
 
     # ---- counters ------------------------------------------------------
+    # Was {PutCounter, PutCounterAll}: the same single/mass "or" as Burn, though
+    # milder in effect (5 of 50 leaves mass-dominant). Split anyway, because the
+    # rule is drawn across the same line.
     ("+1/+1 counters", "otag", ["gives-pp-counters", "gains-pp-counters",
                                 "counters-matter"],
-     "dominant effect in {PutCounter, PutCounterAll}",
-     lambda F: bool(effs(F) & {"PutCounter", "PutCounterAll"})),
+     "dominant effect is PutCounter (single target)",
+     lambda F: "PutCounter" in effs(F)),
+
+    ("Mass +1/+1 counters", "otag", ["gives-pp-counters-to-all"],
+     "dominant effect is PutCounterAll -- counters on every matching permanent",
+     lambda F: "PutCounterAll" in effs(F)),
 
     # ---- combat / static -----------------------------------------------
     ("Tapper", "otag", ["tapper-creature"],

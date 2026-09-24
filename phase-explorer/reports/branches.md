@@ -24,7 +24,7 @@ No branch name is invented. Every one traces to:
 | **One-sided sweeper** | otag | `sweeper-one-sided` | a mass-removal effect whose target controller scope is Opponent | 2 | 16 |
 | **Mass effect** | otag | `sweeper`, `mass-shrink`, `anthem` | dominant effect is any '...All' / each-player mass effect, removal or not -- the broad superset of Board wipe | 45 | 861 |
 | **Spot removal** | curated | `spot-removal` | dominant effect in {Destroy, Bounce, Sacrifice, Fight}, or a ChangeZone ending in Exile, with no mass effect dominant | 113 | 2,843 |
-| **Creature removal** | curated | `removal-creature` | a removal effect (spot or mass) whose bound target filter is Typed[Creature...] | 39 | 961 |
+| **Creature removal** | curated | `removal-creature` | a SINGLE-TARGET removal effect whose bound target filter is Typed[Creature...]; mass creature removal is Board wipe | 29 | 741 |
 | **Destroy removal** | otag | `removal-destroy` | dominant effect is Destroy | 29 | 831 |
 | **Exile removal** | otag | `removal-exile` | a dominant ChangeZone transition ending in Exile, not originating in a graveyard | 26 | 577 |
 | **Bounce removal** | otag | `removal-bounce` | dominant effect is Bounce | 34 | 802 |
@@ -39,13 +39,15 @@ No branch name is invented. Every one traces to:
 | **Tutor** | otag | `tutor-to-hand` | dominant effect is SearchLibrary | 28 | 513 |
 | **Discard** | otag | `discard` | dominant effect is Discard | 9 | 362 |
 | **Counterspell** | slang | `counterspell` | dominant effect is Counter | 13 | 334 |
-| **Burn** | slang+otag | `burn-creature`, `burn-any`, `burn-player` | dominant effect in {DealDamage, DamageAll, DamageEachPlayer} | 41 | 1,646 |
+| **Burn** | slang+otag | `burn-creature`, `burn-any`, `burn-player` | dominant effect is DealDamage (single target) | 26 | 1,327 |
+| **Mass burn** | otag | `burn-player-each` | dominant effect is DamageEachPlayer -- damage to every player. Damage to every creature (DamageAll) is Board wipe, not this | 4 | 112 |
 | **Lifegain** | otag | `lifegain`, `repeatable-lifegain` | dominant effect is GainLife | 8 | 559 |
 | **Ramp** | curated | `ramp` | dominant effect is Mana | 32 | 1,269 |
 | **Land ramp** | curated | `land-ramp` | a dominant ChangeZone ending on the Battlefield bound to a Typed[Land...] filter | 2 | 29 |
 | **Token maker** | curated | `repeatable-creature-tokens` | dominant effect is Token | 34 | 1,430 |
 | **Clone effect** | curated | `clone`, `copy-creature` | dominant effect is BecomeCopy | 1 | 49 |
-| **+1/+1 counters** | otag | `gives-pp-counters`, `gains-pp-counters`, `counters-matter` | dominant effect in {PutCounter, PutCounterAll} | 50 | 1,464 |
+| **+1/+1 counters** | otag | `gives-pp-counters`, `gains-pp-counters`, `counters-matter` | dominant effect is PutCounter (single target) | 45 | 1,373 |
+| **Mass +1/+1 counters** | otag | `gives-pp-counters-to-all` | dominant effect is PutCounterAll -- counters on every matching permanent | 5 | 91 |
 | **Tapper** | otag | `tapper-creature` | dominant effect is Tap | 28 | 852 |
 | **Untapper** | otag | `untapper-creature` | dominant effect is Untap | 11 | 148 |
 | **Anthem** | otag | `anthem` | a dominant static Continuous modification adding power or toughness | 16 | 138 |
@@ -66,18 +68,18 @@ No branch name is invented. Every one traces to:
 | branch | leaves | cards |
 |---|---|---|
 | Spot removal | 113 | 2,843 |
-| +1/+1 counters | 50 | 1,464 |
 | Mass effect | 45 | 861 |
-| Burn | 41 | 1,646 |
-| Creature removal | 39 | 961 |
+| +1/+1 counters | 45 | 1,373 |
 | Card draw | 38 | 1,565 |
 | Bounce removal | 34 | 802 |
 | Token maker | 34 | 1,430 |
 | Ramp | 32 | 1,269 |
+| Creature removal | 29 | 741 |
 | Destroy removal | 29 | 831 |
 | Tutor | 28 | 513 |
 | Tapper | 28 | 852 |
 | Exile removal | 26 | 577 |
+| Burn | 26 | 1,327 |
 | Board wipe | 19 | 332 |
 | Sacrifice removal | 16 | 474 |
 | Anthem | 16 | 138 |
@@ -91,9 +93,11 @@ No branch name is invented. Every one traces to:
 | Self-mill | 5 | 164 |
 | Opponent mill | 5 | 106 |
 | Surveil | 5 | 114 |
+| Mass +1/+1 counters | 5 | 91 |
 | Regeneration | 5 | 151 |
 | Theft | 5 | 51 |
 | Scry | 4 | 137 |
+| Mass burn | 4 | 112 |
 | Keyword grant | 4 | 26 |
 | Damage prevention | 4 | 126 |
 | Copy spell | 4 | 87 |
@@ -103,7 +107,7 @@ No branch name is invented. Every one traces to:
 | Clone effect | 1 | 49 |
 | Drain | 1 | 7 |
 
-37 branches hold at least one leaf; largest 113 leaves, median 9, smallest 1.
+39 branches hold at least one leaf; largest 113 leaves, median 9, smallest 1.
 
 Branches per leaf (assignment is many-to-many):
 
@@ -111,10 +115,9 @@ Branches per leaf (assignment is many-to-many):
 |---|---|
 | 0 (unbranched) | 178 |
 | 1 | 204 |
-| 2 | 144 |
-| 3 | 51 |
-| 4 | 13 |
-| 5 | 1 |
+| 2 | 155 |
+| 3 | 49 |
+| 4 | 5 |
 
 ## Unbranched leaves
 
