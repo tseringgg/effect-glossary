@@ -66,7 +66,8 @@ Same discipline as the branch-rule audit: a weak grouping is worse than an hones
 
 - leaves in at least one sector: **339**
 - of those, in more than one sector: 38
-- in a branch but no sector: 74
-- unbranched entirely: 178
+- in a branch but no sector: 178 (this grew when the auto-named fallback landed: leaves that used to be unbranched now carry a flagged auto name, so they count as branched here while still belonging to no sector)
+- awaiting a review decision: 21
+- Unique effect (terminal, shares structure with no other leaf): 53
 
 Leaves inside a sector's membership but outside its drawn blobs (too far from any clump of 3+) are kept as **strays**: coloured and hoverable, but not enclosed. Stretching a hull to catch an outlier is exactly what makes sector borders look wrong.

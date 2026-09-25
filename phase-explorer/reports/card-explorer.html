@@ -103,6 +103,28 @@
                           background:#fff; cursor:pointer; }
   #tree .leaflabel { color:var(--mut); }
   #tree details.unbr > summary .bname { color:var(--unparsed); }
+  /* An auto-named branch must never be mistakable for sourced vocabulary, so
+     the badge rides the name itself -- not a column, not a tooltip. It carries
+     its own border and letterforms, so it survives greyscale and CVD. */
+  .autobadge { font-size:9px; font-weight:bold; letter-spacing:.4px;
+               padding:0 4px; margin-left:5px; border-radius:2px;
+               border:1px solid #8a6d1f; color:#6b530f; background:#fdf3d6;
+               text-transform:uppercase; vertical-align:1px; }
+  #tree details.auto > summary .bname { font-style:italic; }
+  /* Type sub-branches: an additive drill-down INSIDE the parent, never a
+     replacement for it. Indented and rule-marked so it is visually obvious the
+     parent still owns its full card set. */
+  #tree .subs { margin:3px 0 2px 18px; border-left:2px solid #cfe0f2;
+                padding-left:7px; }
+  #tree .subrow { font-size:11px; padding:1px 0; display:flex; gap:6px;
+                  align-items:baseline; flex-wrap:wrap; }
+  #tree .subrow .sname { font-weight:bold; }
+  #tree .subrow .smeta { color:var(--mut); font-size:10px; }
+  #tree .typechip { font-size:9px; padding:0 4px; border-radius:2px;
+                    border:1px solid #9bb8d4; color:#1e4e7a; background:#eef4fb; }
+  #tree .srcchip { font-size:9px; padding:0 4px; border-radius:2px;
+                   border:1px solid #2a7a4a; color:#1f6f43; background:#e6f4ec; }
+  #tree .subnote { font-size:10px; color:var(--mut); margin:2px 0 0 18px; }
   #tree .gapnote { font-size:10px; color:var(--mut); margin-top:6px;
                    border-top:1px solid var(--line); padding-top:5px; }
   .brbadge { font-size:9px; padding:1px 4px; border:1px solid var(--clu);
@@ -141,6 +163,17 @@
      vocabulary" in greyscale, in print and for any colour vision. */
   .tmcell.unbr { background-image:repeating-linear-gradient(45deg,
                    rgba(255,255,255,.42) 0 4px, rgba(255,255,255,0) 4px 9px); }
+  /* Auto-named cells carry a VERTICAL texture -- a different angle from
+     Unique effect's 45deg hatch, so the two never read as the same thing.
+     Colour alone could not do this job: an auto-named branch inherits its
+     source colour slot, and the smallest cells show no label at all, so
+     without texture a tiny auto cell would be indistinguishable from a
+     sourced one. Texture also survives greyscale, print and forced colours. */
+  .tmcell.auto { background-image:repeating-linear-gradient(90deg,
+                   rgba(255,255,255,.40) 0 3px, rgba(255,255,255,0) 3px 7px); }
+  .tmcell.auto .tmn, .tmcell.auto .tmc { text-shadow:0 1px 2px rgba(0,0,0,.55); }
+  .sw.autosw { background-image:repeating-linear-gradient(90deg,
+                 rgba(255,255,255,.55) 0 2px, rgba(255,255,255,0) 2px 5px); }
   #tmtip { position:fixed; z-index:50; pointer-events:none; display:none;
            background:#111; color:#fff; font-size:11px; padding:5px 7px;
            border-radius:3px; max-width:340px; line-height:1.35; }
@@ -397,11 +430,42 @@ function renderTree() {
   if (!BR || !CLU) return;
   const host = document.getElementById("tree");
   const nb = BR.branches.filter(b => b.n_leaves).length;
-  const unbrCards = BR.unbranched.reduce((a, u) => a + u.n_cards, 0);
+  const COV = BR.coverage || {};
+  const uniq = BR.unique_effect || [];
+  const uniqCards = uniq.reduce((a, u) => a + u.n_cards, 0);
+  const nAuto = (BR.auto_branches || []).length;
+  const SUBS = {};
+  (BR.sub_branches || []).forEach(sb => (SUBS[sb.parent] = SUBS[sb.parent] || []).push(sb));
+  const nSub = (BR.sub_branches || []).length;
+  const nQ = (BR.review_queue || []).length;
   document.getElementById("treerow").hidden = false;
   document.getElementById("treemeta").textContent =
-    `${nb} branches with leaves · ${BR.n_leaves} leaves · ` +
-    `${BR.unbranched.length} unbranched (${unbrCards.toLocaleString()} cards)`;
+    `${nb} branches with leaves (${nAuto} auto-named) · ${nSub} type sub-branches · ` +
+    `${BR.n_leaves} leaves · ` +
+    `${nQ} in review · ${uniq.length} unique effect (${uniqCards.toLocaleString()} cards)`;
+
+  // A parent's type drill-down. Cards, not leaves -- one leaf's cards can
+  // appear under several sub-branches (an Artifact Creature that taps for mana
+  // is both a dork and a rock), which is why these sum past the parent.
+  const subBlock = (parent) => {
+    const rows = SUBS[parent];
+    if (!rows || !rows.length) return "";
+    const sum = rows.reduce((a, r) => a + r.n_cards, 0);
+    return `<div class="subs">` + rows.map(r =>
+      `<div class="subrow">` +
+        `<span class="sname">${esc(r.name)}</span>` +
+        `<span class="typechip">${esc(r.type)}</span>` +
+        (r.sourced ? `<span class="srcchip">sourced</span>`
+                   : `<span class="autobadge">auto-named</span>`) +
+        `<span class="smeta">${r.n_cards.toLocaleString()} cards · ` +
+        `${(r.share_of_parent*100).toFixed(0)}% of parent · ` +
+        `${r.n_leaves_touched} leaves</span>` +
+      `</div>`).join("") +
+      `<div class="subnote">Card-level drill-down — the parent above keeps all ` +
+      `its cards. Multi-type cards count under each type they have, so these ` +
+      `sum to ${sum.toLocaleString()} card slots.</div>` +
+    `</div>`;
+  };
 
   const leafRow = (l) => {
     const size = CLU.sizes[l] ?? BR.leaf_sizes[l] ?? 0;
@@ -415,23 +479,41 @@ function renderTree() {
   const sorted = BR.branches.filter(b => b.n_leaves)
                             .sort((a,b) => b.n_leaves - a.n_leaves);
   for (const b of sorted) {
-    h += `<details data-branch="${esc(b.name)}"><summary><span class="bname">${esc(b.name)}</span> ` +
+    const auto = !!b.auto_named;
+    const badge = auto ? `<span class="autobadge" title="Machine-generated name from the leaves\u2019 shared structure \u2014 not sourced MTG vocabulary. Rename in corrections/branch_names.json.">auto-named</span>` : "";
+    const coh = (auto && b.cohesion != null)
+      ? ` · cohesion ${(b.cohesion*100).toFixed(1)}%` : "";
+    h += `<details class="${auto ? "auto" : ""}" data-branch="${esc(b.name)}">` +
+         `<summary><span class="bname">${esc(b.name)}</span>${badge} ` +
          `<span class="bmeta">— ${b.n_leaves} leaves, ${b.n_cards.toLocaleString()} cards ` +
-         `· ${esc(b.source)}${b.otags.length ? " · " + b.otags.map(esc).join(", ") : ""}</span></summary>` +
-         `<div class="brule">rule: ${esc(b.rule)}</div>` +
+         `· ${esc(b.source)}${b.otags.length ? " · " + b.otags.map(esc).join(", ") : ""}${coh}</span></summary>` +
+         `<div class="brule">rule: ${esc(b.rule)}` +
+         (auto ? ` <b>This name was generated from structure, not sourced.</b> ` +
+                 `Signature <code>${esc(b.key||"")}</code>.` : "") + `</div>` +
+         subBlock(b.name) +
          `<div class="leaves">${b.leaves.map(leafRow).join("")}</div></details>`;
   }
 
-  // Unbranched is a first-class top-level entry, not a hidden remainder.
-  h += `<details class="unbr" data-branch="Unbranched"><summary><span class="bname">Unbranched</span> ` +
-       `<span class="bmeta">— ${BR.unbranched.length} leaves, ${unbrCards.toLocaleString()} cards ` +
-       `· matched no rule</span></summary>` +
-       `<div class="brule">These leaves matched none of the ${BR.branches.length} branch ` +
-       `rules. Kept visible on purpose: an unbranched leaf is a gap in the rule set, ` +
-       `not a defect in the leaf.</div>` +
-       `<div class="leaves">${BR.unbranched.slice()
+  // Unique effect is a terminal FINDING, not a pending state. It replaces the
+  // old "Unbranched" entry, which read as work left undone.
+  h += `<details class="unbr" data-branch="Unique effect"><summary>` +
+       `<span class="bname">Unique effect</span> ` +
+       `<span class="bmeta">— ${uniq.length} leaves, ${uniqCards.toLocaleString()} cards ` +
+       `· structure shared with no other leaf</span></summary>` +
+       `<div class="brule">These leaves went through the curated rules, the ` +
+       `auto-named fallback and the review queue, and came out the other side: ` +
+       `their structure is not shared with anything else in the corpus. That is ` +
+       `a result, not a backlog — nothing is pending on them.</div>` +
+       `<div class="leaves">${uniq.slice()
            .sort((a,b) => b.n_cards - a.n_cards)
            .map(u => leafRow(u.leaf)).join("")}</div></details>`;
+
+  if (nQ) {
+    h += `<div class="gapnote"><b>${nQ} open review ${nQ === 1 ? "item" : "items"}</b> ` +
+         `covering ${(COV.review_queue ? COV.review_queue.cards : 0).toLocaleString()} ` +
+         `unplaced cards — borderline calls left for a human rather than guessed. ` +
+         `<a href="review-queue.html">Open the review queue</a>.</div>`;
+  }
 
   const empty = BR.branches.filter(b => !b.n_leaves).map(b => b.name);
   h += `<div class="gapnote"><b>Defined but matched zero leaves:</b> ` +
@@ -534,15 +616,17 @@ const SRC_LABEL = { curated: "curated glossary.yaml", otag: "Scryfall otag",
 function renderTreemap() {
   if (!BR || !CLU) return;
   const host = document.getElementById("tm");
-  const unbrCards = BR.unbranched.reduce((a, u) => a + u.n_cards, 0);
+  const uniq = BR.unique_effect || [];
+  const uniqCards = uniq.reduce((a, u) => a + u.n_cards, 0);
 
   const items = BR.branches.filter(b => b.n_leaves).map(b => ({
-    key: b.name, value: b.n_cards, leaves: b.n_leaves, src: srcSlot(b.source),
-    rule: b.rule, otags: b.otags, unbr: false,
+    key: b.name + (b.auto_named ? " \u00b7 auto" : ""),
+    value: b.n_cards, leaves: b.n_leaves, src: srcSlot(b.source),
+    rule: b.rule, otags: b.otags, unbr: false, auto: !!b.auto_named,
   }));
-  items.push({ key: "Unbranched", value: unbrCards, leaves: BR.unbranched.length,
+  items.push({ key: "Unique effect", value: uniqCards, leaves: uniq.length,
                src: null, unbr: true,
-               rule: `matched none of the ${BR.branches.length} branch rules` });
+               rule: "structure shared with no other leaf" });
   items.sort((a, b) => b.value - a.value);
   const grand = items.reduce((s, i) => s + i.value, 0);
 
@@ -584,7 +668,7 @@ function renderTreemap() {
     // carries the full name either way.
     const wrap = inner && hh >= 28 && w < 9 * it.key.length
                  && it.key.indexOf(" ") > 0 ? " wrap" : "";
-    h += `<div class="tmcell${it.unbr ? " unbr" : ""}${wrap}" data-b="${esc(it.key)}" ` +
+    h += `<div class="tmcell${it.unbr ? " unbr" : ""}${it.auto ? " auto" : ""}${wrap}" data-b="${esc(it.key)}" ` +
          `style="left:${r.x}px;top:${r.y}px;width:${w}px;height:${hh}px;` +
          `background-color:${bg};color:${ink}">${inner}</div>`;
   }
@@ -595,7 +679,9 @@ function renderTreemap() {
     `<span><span class="sw" style="background:${SRC_COLOR[k]}"></span>${SRC_LABEL[k]}</span>`).join("")
     + `<span><span class="sw unbr" style="background:var(--unbr-ink);` +
       `background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.4) 0 3px,rgba(255,255,255,0) 3px 6px)"></span>` +
-      `Unbranched (no rule matched)</span>`
+      `Unique effect (shared with no other leaf)</span>`
+    + `<span><span class="sw autosw" style="background-color:var(--src-otag)"></span>` +
+      `auto-named (machine-generated, any source colour)</span>`
     + (small.length ? `<span style="color:var(--mut)">too small to label (hover, or use the tree): `
         + small.map(esc).join(", ") + `</span>` : "");
   document.getElementById("tmlegend").innerHTML = legend;

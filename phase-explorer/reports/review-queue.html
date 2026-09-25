@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>Branch review queue</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  :root {
+    --ink:#1a1a1a; --mut:#666; --line:#d8d8d8; --bg:#fff; --panel:#fafafa;
+    --clu:#2b6cb0; --warn:#8a6d1f; --warnbg:#fdf3d6;
+    --ok:#1f6f43; --okbg:#e6f4ec; --no:#8a2f2f; --nobg:#fbeaea;
+    --defer:#5a4a7a; --deferbg:#f0ecf7;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; padding:14px 16px 40px; background:var(--bg); color:var(--ink);
+         font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+  h1 { font-size:16px; margin:0 0 3px; }
+  .sub { color:var(--mut); font-size:11px; margin-bottom:10px; }
+  a { color:var(--clu); }
+
+  .note { border:1px solid var(--warn); background:var(--warnbg); color:#4a3a08;
+          padding:7px 9px; font-size:11px; margin:0 0 12px; border-radius:3px; }
+
+  .bar { display:flex; gap:8px; align-items:center; flex-wrap:wrap;
+         margin:0 0 12px; padding:7px 9px; background:var(--panel);
+         border:1px solid var(--line); border-radius:3px; }
+  .bar label { font-size:11px; color:var(--mut); }
+  .bar select, .bar input { font:inherit; font-size:11px; padding:2px 4px;
+                            border:1px solid var(--line); background:#fff; }
+  .count { font-size:11px; color:var(--mut); margin-left:auto; }
+
+  .stats { display:flex; gap:14px; flex-wrap:wrap; margin:0 0 12px;
+           font-size:11px; color:var(--mut); }
+  .stats b { color:var(--ink); }
+
+  .item { border:1px solid var(--line); border-radius:3px; margin:0 0 9px;
+          background:#fff; }
+  .item.done { opacity:.55; }
+  .item.assigned { border-left:4px solid var(--ok); }
+  .item.rejected { border-left:4px solid var(--no); }
+  .item.deferred { border-left:4px solid var(--defer); }
+  .item.open     { border-left:4px solid var(--warn); }
+
+  .ihead { display:flex; gap:9px; align-items:baseline; flex-wrap:wrap;
+           padding:7px 9px; border-bottom:1px solid var(--line);
+           background:var(--panel); }
+  .leafid { font-weight:bold; }
+  .kind { font-size:9px; text-transform:uppercase; letter-spacing:.4px;
+          padding:1px 5px; border-radius:2px; border:1px solid var(--warn);
+          color:var(--warn); background:var(--warnbg); }
+  .kind.cohesion { border-color:#6b4ea8; color:#5a4a7a; background:var(--deferbg); }
+  .kind.typemix { border-color:#1f6f7a; color:#14545c; background:#e3f2f4; }
+  .tier { font-size:9px; font-weight:bold; padding:0 4px; border-radius:2px;
+          border:1px solid #999; color:#444; }
+  .tier.A { border-color:#8a2f2f; color:#8a2f2f; background:var(--nobg); }
+  .tier.B { border-color:#777; color:#555; background:#f1f1f1; }
+  .types { display:flex; gap:2px; margin:0 0 7px; height:16px;
+           border:1px solid var(--line); border-radius:2px; overflow:hidden; }
+  .types span { font-size:9px; line-height:16px; text-align:center; color:#fff;
+                white-space:nowrap; overflow:hidden; }
+  .imeta { color:var(--mut); font-size:11px; }
+  .state { margin-left:auto; font-size:10px; font-weight:bold; }
+  .state.assigned { color:var(--ok); }
+  .state.rejected { color:var(--no); }
+  .state.deferred { color:var(--defer); }
+  .state.open { color:var(--warn); }
+
+  .ibody { padding:8px 9px; }
+  .why { font-size:11px; color:var(--mut); margin:0 0 7px; }
+  .label { font-size:10px; color:var(--mut); word-break:break-all;
+           background:#f6f6f6; border:1px solid var(--line); padding:3px 5px;
+           border-radius:2px; margin:0 0 7px; }
+  .sample { font-size:11px; color:var(--mut); margin:0 0 8px; }
+  .sample b { color:var(--ink); font-weight:normal; }
+
+  .cands { margin:0 0 4px; }
+  .cand { display:flex; gap:7px; align-items:center; flex-wrap:wrap;
+          padding:5px 6px; border:1px solid var(--line); border-radius:2px;
+          margin:0 0 5px; background:#fcfcfc; }
+  .cname { font-weight:bold; }
+  .autobadge { font-size:9px; font-weight:bold; letter-spacing:.4px;
+               padding:0 4px; border-radius:2px; border:1px solid var(--warn);
+               color:#6b530f; background:var(--warnbg); text-transform:uppercase; }
+  .ev { font-size:10px; color:var(--mut); }
+  .ev code { background:#f0f0f0; padding:0 3px; border-radius:2px; }
+  .acts { margin-left:auto; display:flex; gap:4px; }
+  button { font:inherit; font-size:10px; padding:2px 7px; cursor:pointer;
+           border:1px solid var(--line); background:#fff; border-radius:2px; }
+  button:hover { border-color:#999; }
+  button.assign:hover { border-color:var(--ok); background:var(--okbg); }
+  button.reject:hover { border-color:var(--no); background:var(--nobg); }
+  button.defer:hover  { border-color:var(--defer); background:var(--deferbg); }
+  button.clear:hover  { border-color:#999; background:#f0f0f0; }
+  button[disabled] { opacity:.4; cursor:default; }
+
+  .placed { font-size:10px; color:var(--mut); }
+  .placed code { background:#eef4fb; border:1px solid #cfe0f2; padding:0 3px;
+                 border-radius:2px; color:#1e4e7a; }
+  .empty { color:var(--mut); font-size:12px; padding:18px 0; }
+  #toast { position:fixed; right:14px; bottom:14px; background:#111; color:#fff;
+           font-size:11px; padding:6px 9px; border-radius:3px; display:none;
+           max-width:380px; z-index:60; }
+  #toast.bad { background:#8a2f2f; }
+</style>
+<body>
+
+<h1>Branch review queue</h1>
+<div class="sub">
+  Borderline placements left for a human instead of guessed &mdash; see also
+  <a href="card-explorer.html">card explorer</a> ·
+  <a href="branches.md">branches.md</a> ·
+  <a href="sector-map.html">sector map</a>
+</div>
+
+<div class="note">
+  This queue is <b>persistent and asynchronous</b>. Nothing here blocks a build,
+  and nothing is auto-resolved. A decision is written to
+  <code>corrections/branch_review.json</code> and read back by
+  <code>src/branch_leaves.py</code> on the next rebuild, so
+  <b>assign</b> and <b>reject</b> entries never come back.
+  <b>Defer</b> keeps an entry queued but marks it as already seen.
+  Re-run <code>python src/branch_leaves.py</code> to apply decisions.
+</div>
+
+<div class="stats" id="stats"></div>
+
+<div class="bar">
+  <label>show
+    <select id="filter">
+      <option value="open">open only</option>
+      <option value="all">everything</option>
+      <option value="near-miss">near-miss only</option>
+      <option value="cohesion">cohesion only</option>
+      <option value="type-mix">type-mix only</option>
+      <option value="type-mix-A">type-mix, tier A (leaf-44 shape)</option>
+      <option value="placed">mixing inside a real branch</option>
+      <option value="resolved">resolved only</option>
+    </select>
+  </label>
+  <label>search <input id="q" placeholder="leaf, branch, card name" size="24"></label>
+  <span class="count" id="count"></span>
+</div>
+
+<div id="list"></div>
+<div id="toast"></div>
+
+<script>
+const esc = s => String(s ?? "").replace(/[&<>"]/g,
+  c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+
+// Type colours are for at-a-glance proportion only -- the percentage is
+// written into each segment and the title, so nothing depends on hue alone.
+const TYPE_HUE = {
+  Creature: "#2a78d6", Artifact: "#6b6a66", Land: "#1f6f43",
+  Enchantment: "#8a4fbf", Spell: "#c2682a", Planeswalker: "#a8306b",
+  Battle: "#8a6d1f", Kindred: "#2a8f9a", Tribal: "#2a8f9a",
+};
+
+let BR = null;
+// Decisions already on disk, so a reloaded page shows what was decided before.
+let DEC = {};
+
+async function boot() {
+  BR = await fetch("../build/branches.json?v=" + Date.now()).then(r => r.json());
+  try {
+    const d = await fetch("../corrections/branch_review.json?v=" + Date.now());
+    if (d.ok) DEC = (await d.json()).decisions || {};
+  } catch (e) { DEC = {}; }
+  render();
+}
+
+function toast(msg, bad) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className = bad ? "bad" : "";
+  t.style.display = "block";
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => { t.style.display = "none"; }, bad ? 6500 : 2600);
+}
+
+async function decide(key, action, branch, btn) {
+  const body = { key, action, branch: branch || "" };
+  try {
+    const r = await fetch("/api/review", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const j = await r.json();
+    if (action === "clear") delete DEC[key];
+    else DEC[key] = { action, branch: branch || "", when: new Date().toISOString() };
+    toast(`saved: ${action}${branch ? " → " + branch : ""} (${j.total} on file)`);
+    render();
+  } catch (e) {
+    // No endpoint means no persistence -- say so loudly rather than pretend the
+    // click worked, because an unsaved decision reappears on the next rebuild.
+    toast("NOT SAVED: " + e.message + ". Serve via src/serve.py so /api/review exists; " +
+          "otherwise edit corrections/branch_review.json by hand.", true);
+  }
+}
+
+function stateOf(key) {
+  return (DEC[key] || {}).action || "open";
+}
+
+function render() {
+  const cov = BR.coverage || {};
+  const q = BR.review_queue || [];
+  const nOpen = q.filter(e => stateOf(e.key) === "open").length;
+  const nDef  = q.filter(e => stateOf(e.key) === "defer").length;
+
+  document.getElementById("stats").innerHTML =
+    `<span><b>${q.length}</b> queue entries</span>` +
+    `<span><b>${nOpen}</b> open</span>` +
+    `<span><b>${nDef}</b> deferred</span>` +
+    `<span>real branches <b>${(cov.real_branches||{}).leaves ?? 0}</b> leaves / ` +
+      `${((cov.real_branches||{}).cards ?? 0).toLocaleString()} cards</span>` +
+    `<span>auto-named <b>${(cov.auto_named||{}).leaves ?? 0}</b> / ` +
+      `${((cov.auto_named||{}).cards ?? 0).toLocaleString()}</span>` +
+    `<span>unique effect <b>${(cov.unique_effect||{}).leaves ?? 0}</b> / ` +
+      `${((cov.unique_effect||{}).cards ?? 0).toLocaleString()}</span>`;
+
+  const f = document.getElementById("filter").value;
+  const needle = document.getElementById("q").value.trim().toLowerCase();
+
+  let rows = q.filter(e => {
+    const st = stateOf(e.key);
+    if (f === "open" && st !== "open" && st !== "defer") return false;
+    if (f === "resolved" && (st === "open" || st === "defer")) return false;
+    if (f === "near-miss" && e.kind !== "near-miss") return false;
+    if (f === "cohesion" && e.kind !== "cohesion") return false;
+    if (f === "type-mix" && e.kind !== "type-mix") return false;
+    if (f === "type-mix-A" && !(e.kind === "type-mix" && e.tier === "A")) return false;
+    // the sharp case: a leaf that reads as settled but is not
+    if (f === "placed" && !((e.placed_in || []).length)) return false;
+    if (needle) {
+      const hay = [
+        "leaf " + e.leaf, e.label,
+        (e.candidates || []).map(c => c.branch).join(" "),
+        (e.sample || []).join(" "),
+      ].join(" ").toLowerCase();
+      if (!hay.includes(needle)) return false;
+    }
+    return true;
+  });
+
+  document.getElementById("count").textContent =
+    `${rows.length} shown of ${q.length}`;
+
+  if (!rows.length) {
+    document.getElementById("list").innerHTML =
+      `<div class="empty">Nothing matches. ` +
+      (q.length ? `Try "everything".` : `The queue is empty — no borderline cases.`) +
+      `</div>`;
+    return;
+  }
+
+  document.getElementById("list").innerHTML = rows.map(e => {
+    const st = stateOf(e.key);
+    const dec = DEC[e.key] || {};
+    const done = st === "assign" || st === "reject";
+    const cls = { assign:"assigned", reject:"rejected", defer:"deferred", open:"open" }[st];
+    const lbl = { assign:"ASSIGNED", reject:"REJECTED", defer:"DEFERRED", open:"NEEDS A DECISION" }[st];
+
+    const cands = (e.candidates || []).map(c => {
+      const ev = (c.evidence || []).map(x =>
+        `<code>${esc(x.fact)}</code> ${(x.score*100).toFixed(1)}%`).join(" · ");
+      const coh = c.cohesion != null
+        ? `cohesion ${(c.cohesion*100).toFixed(1)}%` : "";
+      const chosen = dec.branch === c.branch && st === "assign";
+      return `<div class="cand">` +
+        `<span class="cname">${esc(c.branch)}</span>` +
+        (c.auto_named ? `<span class="autobadge">auto-named</span>` : "") +
+        (ev ? `<span class="ev">${ev}</span>` : "") +
+        (coh ? `<span class="ev">${coh}</span>` : "") +
+        (chosen ? `<span class="ev" style="color:var(--ok)">✓ assigned</span>` : "") +
+        `<span class="acts">` +
+          `<button class="assign" data-k="${esc(e.key)}" data-a="assign" data-b="${esc(c.branch)}">assign</button>` +
+          `<button class="reject" data-k="${esc(e.key)}" data-a="reject" data-b="${esc(c.branch)}">reject</button>` +
+        `</span></div>`;
+    }).join("");
+
+    return `<div class="item ${cls} ${done ? "done" : ""}">` +
+      `<div class="ihead">` +
+        `<span class="leafid">leaf ${e.leaf}</span>` +
+        `<span class="kind ${e.kind === "cohesion" ? "cohesion" : e.kind === "type-mix" ? "typemix" : ""}">${esc(e.kind)}</span>` +
+        (e.tier ? `<span class="tier ${esc(e.tier)}" title="${e.tier === "A"
+            ? "Two or more distinct PERMANENT types -- leaf 44's shape"
+            : "Permanent vs non-permanent: same effect, different delivery"}">tier ${esc(e.tier)}</span>` : "") +
+        `<span class="imeta">${e.n_cards.toLocaleString()} cards</span>` +
+        ((e.placed_in || []).length
+          ? `<span class="placed">already in ${e.placed_in.map(b => `<code>${esc(b)}</code>`).join(" ")}</span>`
+          : `<span class="placed">not placed in any branch</span>`) +
+        `<span class="state ${cls}">${lbl}</span>` +
+      `</div>` +
+      `<div class="ibody">` +
+        `<div class="why">${esc(e.why)}</div>` +
+        `<div class="label">${esc(e.label)}</div>` +
+        (e.type_shares ? `<div class="types">` + Object.entries(e.type_shares)
+            .map(([t, v]) => {
+              const pct = v * 100;
+              const bg = TYPE_HUE[t] || "#777";
+              return `<span style="flex:${pct};background:${bg}" title="${esc(t)} ${pct.toFixed(1)}%">` +
+                     `${pct >= 12 ? esc(t) + " " + pct.toFixed(0) + "%" : ""}</span>`;
+            }).join("") + `</div>` : "") +
+        `<div class="sample">members: <b>${(e.sample||[]).map(esc).join("</b>, <b>")}</b>` +
+          (e.n_cards > (e.sample||[]).length ? ` … and ${e.n_cards - e.sample.length} more` : "") +
+        `</div>` +
+        `<div class="cands">${cands}</div>` +
+        `<div class="acts" style="margin-left:0">` +
+          `<button class="defer" data-k="${esc(e.key)}" data-a="defer">defer — decide later</button>` +
+          (!(e.candidates || []).length
+            ? `<button class="reject" data-k="${esc(e.key)}" data-a="reject" data-b="">` +
+              `not a problem — stop asking</button>` : "") +
+          (st !== "open"
+            ? `<button class="clear" data-k="${esc(e.key)}" data-a="clear">undo decision</button>` : "") +
+        `</div>` +
+      `</div></div>`;
+  }).join("");
+
+  document.querySelectorAll("button[data-k]").forEach(b => {
+    b.onclick = () => decide(b.dataset.k, b.dataset.a, b.dataset.b, b);
+  });
+}
+
+document.getElementById("filter").onchange = render;
+document.getElementById("q").oninput = render;
+boot();
+</script>
+</body>
+</html>

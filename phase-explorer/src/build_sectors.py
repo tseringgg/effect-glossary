@@ -424,8 +424,16 @@ def write_report(path, out):
     multi = sum(1 for v in out["leaf_sectors"].values() if len(v) > 1)
     A(f"- leaves in at least one sector: **{len(out['leaf_sectors'])}**")
     A(f"- of those, in more than one sector: {multi}")
-    A(f"- in a branch but no sector: {len(out['unsectored_leaves'])}")
-    A("- unbranched entirely: 178")
+    A(f"- in a branch but no sector: {len(out['unsectored_leaves'])} "
+      "(this grew when the auto-named fallback landed: leaves that used to be "
+      "unbranched now carry a flagged auto name, so they count as branched "
+      "here while still belonging to no sector)")
+    BRJ = json.load(open(os.path.join(BUILD, "branches.json"), encoding="utf-8"))
+    _c = BRJ.get("coverage", {})
+    A(f"- awaiting a review decision: "
+      f"{_c.get('review_queue', {}).get('leaves', 0)}")
+    A(f"- Unique effect (terminal, shares structure with no other leaf): "
+      f"{_c.get('unique_effect', {}).get('leaves', 0)}")
     A("")
     A("Leaves inside a sector's membership but outside its drawn blobs "
       "(too far from any clump of 3+) are kept as **strays**: coloured and "

@@ -44,17 +44,43 @@
 
   circle.leaf { stroke:#fff; stroke-width:.7; cursor:pointer; }
   circle.leaf:hover { stroke:#111; stroke-width:1.9; }
-  circle.leaf.mute { opacity:.12; }
+  /* Muted dots stop being hoverable/clickable, not just dim. Left alone, a
+     faded-out dot could still sit on top of (or right next to) a highlighted
+     one and steal its tooltip -- exactly when you're trying to pick out the
+     highlighted leaf, which is the moment it matters most. */
+  circle.leaf.mute { opacity:.12; pointer-events:none; }
   circle.stray { stroke-width:1.7; fill-opacity:.3; }
 
-  #legend { display:flex; flex-wrap:wrap; gap:7px; margin:8px 0 0; }
-  .lg { border:2px solid var(--line); background:#fff; padding:3px 8px; cursor:pointer;
-        font:inherit; font-size:11px; text-align:left; line-height:1.3; }
+  #legend { display:flex; flex-wrap:wrap; gap:7px; margin:8px 0 0; align-items:flex-start; }
+  .lg { border:2px solid var(--line); background:#fff; font-size:11px; width:230px; }
   .lg .sw { display:inline-block; width:10px; height:10px; border-radius:2px;
-            margin-right:5px; vertical-align:-1px; }
+            margin-right:5px; vertical-align:-1px; flex:0 0 auto; }
   .lg small { display:block; font-size:10px; color:var(--mut); }
-  .lg.on { background:#111; color:#fff; border-color:#111; }
-  .lg.on small { color:#ddd; }
+  .lg-head.on { background:#111; color:#fff; border-color:#111; }
+  .lg-head.on small { color:#ddd; }
+  /* the sector header is a real <button> so click/keyboard semantics stay
+     native; the checkboxes below it are siblings, never nested inside it */
+  .lg-head { all:unset; box-sizing:border-box; display:block; width:100%;
+             padding:3px 8px; cursor:pointer; font:inherit; font-size:11px;
+             text-align:left; line-height:1.3; }
+  .lg-head:hover, .lg-head:focus { background:var(--panel); }
+  .lg-head .chev { float:right; color:var(--mut); font-size:9px;
+                   transition:transform .12s; }
+  .lg.open .lg-head .chev { transform:rotate(90deg); }
+  .lg.has-selected .lg-head { border-left:4px solid var(--hue); }
+  .lg-plain { border:2px solid var(--line); background:#fff; padding:3px 8px;
+              cursor:pointer; font:inherit; font-size:11px; text-align:left;
+              line-height:1.3; width:230px; }
+  .lg-plain.on { background:#111; color:#fff; border-color:#111; }
+  .lg-plain.on small { color:#ddd; }
+  .lg-branches { border-top:1px solid var(--line); max-height:230px; overflow-y:auto; }
+  .br-row { display:flex; align-items:center; gap:6px; padding:3px 8px;
+            cursor:pointer; font-size:10.5px; }
+  .br-row:hover { background:var(--panel); }
+  .br-row.checked { background:#eef4fb; }
+  .br-row input { margin:0; flex:0 0 auto; }
+  .br-name { flex:1 1 auto; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .br-meta { color:var(--mut); font-size:9.5px; white-space:nowrap; flex:0 0 auto; }
 
   #tip { position:fixed; z-index:30; pointer-events:none; display:none;
          background:#111; color:#fff; font-size:11px; padding:6px 8px;
@@ -222,86 +248,204 @@ Promise.all([
   const dots = [...host.querySelectorAll("circle.leaf")];
   const lg = document.getElementById("legend");
   const here = document.getElementById("here");
-  let pinned = null;
 
-  lg.innerHTML = S.sectors.map(s =>
-    `<button class="lg" data-s="${esc(s.name)}">` +
-    `<span class="sw" style="background:${s.color}"></span>${esc(s.name)}` +
-    `<small>tier ${s.tier} · ${s.n_leaves} leaves · ` +
-    `${s.n_cards.toLocaleString()} cards · ${s.branches.length} branches</small>` +
-    `</button>`).join("") +
-    `<button class="lg" data-s="__none"><span class="sw" ` +
+  // branch -> its one parent sector (every branch belongs to exactly one
+  // sector in SECTORS, by construction) and branch -> full record, for the
+  // dropdown rows and for colouring a branch's leaves by its sector's hue.
+  const branchByName = {};
+  (BR.branches || []).forEach(b => branchByName[b.name] = b);
+  const parentSectorOfBranch = {};
+  S.sectors.forEach(s => s.branches.forEach(bn => parentSectorOfBranch[bn] = s.name));
+  const branchLeaves = bn => new Set((branchByName[bn] || {}).leaves || []);
+  const noSectorLeaves = new Set(
+    M.leaves.map(l => l.leaf).filter(l => !(String(l) in secOf)));
+
+  // Checkbox selections persist; hovering a row or a header is a transient
+  // preview layered on top, restored to the selection on mouseleave.
+  const selectedBranches = new Set();
+
+  lg.innerHTML = S.sectors.map(s => `
+    <div class="lg" data-s="${esc(s.name)}" style="--hue:${s.color}">
+      <button class="lg-head" data-s="${esc(s.name)}" type="button">
+        <span class="sw" style="background:${s.color}"></span>${esc(s.name)}
+        <span class="chev">▸</span>
+        <small>tier ${s.tier} · ${s.n_leaves} leaves · ` +
+        `${s.n_cards.toLocaleString()} cards · ${s.branches.length} branches</small>
+      </button>
+      <div class="lg-branches" hidden>${s.branches.map(bn => {
+        const b = branchByName[bn] || { n_leaves: 0, n_cards: 0 };
+        return `<label class="br-row" data-b="${esc(bn)}">` +
+          `<input type="checkbox" data-b="${esc(bn)}">` +
+          `<span class="br-name">${esc(bn)}</span>` +
+          `<span class="br-meta">${b.n_leaves} lv · ${b.n_cards.toLocaleString()} cd</span>` +
+          `</label>`;
+      }).join("")}</div>
+    </div>`).join("") +
+    `<button class="lg-plain" data-s="__none"><span class="sw" ` +
     `style="background:#9a9a96"></span>no sector<small>in a branch but ` +
     `unsectored (${S.unsectored_leaves.length}), or unbranched ` +
     `(${nUnbranched})</small></button>`;
 
-  function light(names) {
-    const set = new Set(names);
-    const any = set.size > 0;
+  // --- applying a highlight state to the map -------------------------------
+  // A state is null (fully neutral: every dot its own default colour, nothing
+  // muted, no regions lit) or { sectors, leafFilter, colorForLeaf, label }.
+  // `sectors` drives which regions/constellations light up. `leafFilter`, when
+  // given, narrows which dots count as "on" to a specific branch (or several);
+  // omitted, "on" means "belongs to one of `sectors`" -- that is how a bare
+  // sector hover still lights its whole membership.
+  function applyState(state) {
+    const secOn = new Set(state ? state.sectors : []);
+    const any = !!state;
     groups.forEach(g => {
-      g.classList.toggle("hot", set.has(g.dataset.s));
-      g.classList.toggle("mute", any && !set.has(g.dataset.s));
+      g.classList.toggle("hot", secOn.has(g.dataset.s));
+      g.classList.toggle("mute", any && !secOn.has(g.dataset.s));
     });
     edgeGroups.forEach(g => {
-      g.classList.toggle("hot", set.has(g.dataset.s));
-      g.classList.toggle("mute", any && !set.has(g.dataset.s));
+      g.classList.toggle("hot", secOn.has(g.dataset.s));
+      g.classList.toggle("mute", any && !secOn.has(g.dataset.s));
     });
     dots.forEach(c => {
       const l = M.leaves[+c.dataset.i];
       const secs = secOf[String(l.leaf)] || [];
-      const on = set.has("__none") ? secs.length === 0
-                                   : secs.some(n => set.has(n));
+      let on, tone;
+      if (!state) {
+        on = true; tone = baseTone(l.leaf);
+      } else if (state.leafFilter) {
+        on = state.leafFilter.has(l.leaf);
+        tone = on ? state.colorForLeaf(l.leaf) : baseTone(l.leaf);
+      } else {
+        const hit = secs.find(n => secOn.has(n));
+        on = !!hit;
+        tone = on ? colOf[hit] : baseTone(l.leaf);
+      }
       c.classList.toggle("mute", any && !on);
-      // while a sector is lit, its members take ITS hue even if their default
-      // primary is a different sector -- that is the point of the highlight
-      const lit = on && !set.has("__none") ? secs.find(n => set.has(n)) : null;
       const stray = (strayOf[l.leaf] || []).length > 0;
-      const tone = lit ? colOf[lit] : baseTone(l.leaf);
       c.setAttribute("fill", stray ? "#fff" : tone);
       c.setAttribute("stroke", stray ? tone : "#fff");
     });
-    lg.querySelectorAll(".lg").forEach(b =>
-      b.classList.toggle("on", set.has(b.dataset.s)));
+    lg.querySelectorAll(".lg-head, .lg-plain").forEach(b =>
+      b.classList.toggle("on", secOn.has(b.dataset.s)
+        || (b.dataset.s === "__none" && state && state.leafFilter === noSectorLeaves)));
+    here.innerHTML = state ? state.label : emptyMessage();
   }
 
-  function readout(names) {
-    if (!names.length) {
-      here.innerHTML = `<span class="empty">Hover a sector button to light up ` +
-        `its region and constellation. Grey dots belong to no sector ` +
-        `(${S.unsectored_leaves.length} in a branch but unsectored, ` +
-        `${nUnbranched} unbranched).</span>`;
-      return;
-    }
-    here.innerHTML =
-      `<b>${names.length > 1 ? names.length + " sectors:" : "Sector:"}</b> ` +
-      names.map(n=>`<span class="chip" style="background:${colOf[n]}">` +
-        `${esc(n)}</span>`).join("") +
-      names.map(n => {
-        const s = byName[n];
-        return `<div class="note" style="margin-top:2px">` +
-          `<b>${esc(n)}</b> (tier ${s.tier}) — ${esc(s.branches.join(", "))}</div>`;
-      }).join("");
+  function emptyMessage() {
+    return `<span class="empty">Hover a sector or a branch row to preview it. ` +
+      `Check a branch's box to pin it — <b>${selectedBranches.size}</b> pinned ` +
+      `right now. Grey dots belong to no sector (${S.unsectored_leaves.length} ` +
+      `in a branch but unsectored, ${nUnbranched} unbranched).</span>`;
   }
 
-  // Highlighting is driven by the LEGEND BUTTONS, not by pointer position on
-  // the map. Pointing at the map lit whatever happened to stack under the
-  // cursor -- up to 7 sectors at once -- which is noisy and not what you ask
-  // for when you want to see one bucket.
-  const show = name => {
-    light([name]);
-    readout(name === "__none" ? [] : [name]);
-  };
-  const clear = () => { light([]); readout([]); };
-  lg.querySelectorAll(".lg").forEach(b => {
-    b.onmouseenter = () => { if (!pinned) show(b.dataset.s); };
-    b.onmouseleave = () => { if (!pinned) clear(); };
-    b.onfocus = () => { if (!pinned) show(b.dataset.s); };
-    b.onblur = () => { if (!pinned) clear(); };
-    b.onclick = () => {                       // click pins it
-      pinned = (pinned === b.dataset.s) ? null : b.dataset.s;
-      if (pinned) show(pinned); else clear();
+  function sectorState(name) {
+    const s = byName[name];
+    return { sectors: [name], leafFilter: null, colorForLeaf: null,
+      label: `<b>Sector:</b> <span class="chip" style="background:${s.color}">` +
+        `${esc(name)}</span><div class="note" style="margin-top:2px">` +
+        `${esc(name)} (tier ${s.tier}) — ${esc(s.branches.join(", "))}</div>` };
+  }
+
+  function noneState() {
+    return { sectors: [], leafFilter: noSectorLeaves, colorForLeaf: () => "#9a9a96",
+      label: `<b>No sector.</b> ${S.unsectored_leaves.length} leaves are in a ` +
+        `branch but unsectored (see sectors.md for why); ${nUnbranched} more ` +
+        `have no branch at all.` };
+  }
+
+  function branchState(bn) {
+    const sName = parentSectorOfBranch[bn], s = byName[sName], b = branchByName[bn];
+    return { sectors: [sName], leafFilter: branchLeaves(bn),
+      colorForLeaf: () => s.color,
+      label: `<b>Branch:</b> <span class="chip" style="background:${s.color}">` +
+        `${esc(bn)}</span><div class="note" style="margin-top:2px">` +
+        `${b.n_leaves} leaves · ${b.n_cards.toLocaleString()} cards · part of ` +
+        `<b>${esc(sName)}</b></div>` };
+  }
+
+  // Checked branches persist across hovers -- this is what "selected" means.
+  // Several can be pinned at once, even across different sectors; each leaf
+  // is coloured by whichever selected branch is smallest (most specific),
+  // same tiebreak reasoning as the default per-dot colour.
+  function persistedState() {
+    if (!selectedBranches.size) return null;
+    const sectors = new Set(), leafFilter = new Set(), owner = {};
+    selectedBranches.forEach(bn => {
+      const sName = parentSectorOfBranch[bn];
+      sectors.add(sName);
+      branchLeaves(bn).forEach(lf => {
+        leafFilter.add(lf);
+        if (!(lf in owner) ||
+            branchByName[bn].n_leaves < branchByName[owner[lf]].n_leaves) {
+          owner[lf] = bn;
+        }
+      });
+    });
+    const names = [...selectedBranches];
+    return {
+      sectors: [...sectors], leafFilter,
+      colorForLeaf: lf => byName[parentSectorOfBranch[owner[lf]]].color,
+      label: `<b>${names.length} branch${names.length>1?"es":""} pinned:</b> ` +
+        names.map(bn => `<span class="chip" style="background:${
+          byName[parentSectorOfBranch[bn]].color}">${esc(bn)}</span>`).join(""),
     };
+  }
+  const restore = () => applyState(persistedState());
+
+  // --- wiring ---------------------------------------------------------------
+  restore();   // paints the initial "0 pinned" neutral state via applyState(null)
+
+  lg.querySelectorAll(".lg").forEach(div => {
+    const sName = div.dataset.s;
+    const branchesEl = div.querySelector(".lg-branches");
+
+    // Opens on HOVER of the whole box (header + branch list together), not on
+    // click. mouseenter/mouseleave are bound to `div`, not `head`, specifically
+    // because those events don't re-fire when the pointer moves between a
+    // parent and its descendants -- binding them to `head` alone would close
+    // the dropdown the moment the cursor crossed from the header down into
+    // its own branch rows.
+    const openDrop = () => {
+      div.classList.add("open");
+      branchesEl.hidden = false;
+      applyState(sectorState(sName));
+    };
+    const closeDrop = () => {
+      div.classList.remove("open");
+      branchesEl.hidden = true;
+      restore();
+    };
+    div.onmouseenter = openDrop;
+    div.onmouseleave = closeDrop;
+    // keyboard equivalent: focusin/focusout bubble and report whether focus
+    // is still somewhere inside the container, unlike plain focus/blur, which
+    // would fire (and wrongly close the dropdown) on every Tab between rows
+    div.addEventListener("focusin", openDrop);
+    div.addEventListener("focusout", e => {
+      if (!div.contains(e.relatedTarget)) closeDrop();
+    });
+
+    div.querySelectorAll(".br-row").forEach(row => {
+      const bn = row.dataset.b;
+      const cb = row.querySelector("input");
+      row.onmouseenter = () => applyState(branchState(bn));
+      // leaving a row (but not the box) falls back to the sector-wide preview,
+      // not all the way to the persisted state -- the pointer is still inside
+      // this sector's dropdown, so that box's own colour should stay shown
+      row.onmouseleave = () => applyState(sectorState(sName));
+      cb.onchange = () => {
+        if (cb.checked) selectedBranches.add(bn); else selectedBranches.delete(bn);
+        row.classList.toggle("checked", cb.checked);
+        div.classList.toggle("has-selected",
+          [...div.querySelectorAll(".br-row input")].some(x => x.checked));
+        restore();
+      };
+    });
   });
+
+  const noneBtn = lg.querySelector(".lg-plain");
+  noneBtn.onmouseenter = () => applyState(noneState());
+  noneBtn.onmouseleave = restore;
+  noneBtn.onfocus = () => applyState(noneState());
+  noneBtn.onblur = restore;
 
   const tip = document.getElementById("tip");
   dots.forEach(c => {

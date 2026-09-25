@@ -1,0 +1,191 @@
+{
+ "_comment": "Decisions from the branch review queue. 'assign' places the leaf in that branch (marked manual); 'reject' means it does not belong there and the entry never returns; 'defer' keeps it queued but out of the new-items view. Hand-editable. Keys are '<leaf>|<candidate branch>'.",
+ "decisions": {
+  "44|type-mix": {
+   "action": "split",
+   "branch": "Ramp",
+   "note": "split into type sub-branches under Ramp: Land ramp, Mana dork, Mana rock, Ramp (Enchantment), Ramp (Spell), Ramp (other types)",
+   "when": "2026-09-24T19:23:53"
+  },
+  "401|type-mix": {
+   "action": "split",
+   "branch": "Burn",
+   "note": "split into type sub-branches under Burn: Burn (Spell), Burn (Creature), Burn (Enchantment), Burn (Artifact), Burn (Land), Burn (other types)",
+   "when": "2026-09-24T19:23:55"
+  },
+  "140|type-mix": {
+   "action": "split",
+   "branch": "Burn",
+   "note": "split into type sub-branches under Burn: Burn (Spell), Burn (Creature), Burn (Enchantment), Burn (Artifact), Burn (Land), Burn (other types)",
+   "when": "2026-09-24T19:23:57"
+  },
+  "139|type-mix": {
+   "action": "split",
+   "branch": "+1/+1 counters",
+   "note": "split into type sub-branches under +1/+1 counters: +1/+1 counters (Creature), +1/+1 counters (Artifact), +1/+1 counters (Enchantment), +1/+1 counters (Spell), +1/+1 counters (Land), +1/+1 counters (other types); Ramp: Land ramp, Mana dork, Mana rock, Ramp (Enchantment), Ramp (Spell), Ramp (other types)",
+   "when": "2026-09-24T19:23:59"
+  },
+  "408|type-mix": {
+   "action": "split",
+   "branch": "Copy spell",
+   "note": "split into type sub-branches under Copy spell: Copy spell (Creature), Copy spell (Spell), Copy spell (Enchantment), Copy spell (other types)",
+   "when": "2026-09-24T19:24:01"
+  },
+  "51|type-mix": {
+   "action": "split",
+   "branch": "Tutor",
+   "note": "split into type sub-branches under Tutor: Tutor (Creature), Tutor (Spell), Tutor (Artifact), Tutor (Land), Tutor (Enchantment), Tutor (other types)",
+   "when": "2026-09-24T19:24:03"
+  },
+  "443|type-mix": {
+   "action": "split",
+   "branch": "Tapper",
+   "note": "split into type sub-branches under Tapper: Tapper (Land), Tapper (Creature), Tapper (Artifact), Tapper (Enchantment), Tapper (Spell), Tapper (other types)",
+   "when": "2026-09-24T19:24:05"
+  },
+  "137|type-mix": {
+   "action": "split",
+   "branch": "Card draw",
+   "note": "split into type sub-branches under Card draw: Card draw (Creature), Card draw (Spell), Card draw (Artifact), Card draw (Enchantment), Card draw (Land), Card draw (other types); Lifegain: Lifegain (Creature), Lifegain (Spell), Lifegain (Artifact), Lifegain (Enchantment), Lifegain (Land), Lifegain (other types)",
+   "when": "2026-09-24T19:24:07"
+  },
+  "404|type-mix": {
+   "action": "split",
+   "branch": "+1/+1 counters",
+   "note": "split into type sub-branches under +1/+1 counters: +1/+1 counters (Creature), +1/+1 counters (Artifact), +1/+1 counters (Enchantment), +1/+1 counters (Spell), +1/+1 counters (Land), +1/+1 counters (other types)",
+   "when": "2026-09-24T19:24:09"
+  },
+  "56|type-mix": {
+   "action": "split",
+   "branch": "Lifegain",
+   "note": "split into type sub-branches under Lifegain: Lifegain (Creature), Lifegain (Spell), Lifegain (Artifact), Lifegain (Enchantment), Lifegain (Land), Lifegain (other types); Ramp: Land ramp, Mana dork, Mana rock, Ramp (Enchantment), Ramp (Spell), Ramp (other types)",
+   "when": "2026-09-24T19:24:11"
+  },
+  "251|type-mix": {
+   "action": "split",
+   "branch": "Card draw",
+   "note": "split into type sub-branches under Card draw: Card draw (Creature), Card draw (Spell), Card draw (Artifact), Card draw (Enchantment), Card draw (Land), Card draw (other types)",
+   "when": "2026-09-24T19:24:13"
+  },
+  "406|type-mix": {
+   "action": "split",
+   "branch": "Counterspell",
+   "note": "split into type sub-branches under Counterspell: Counterspell (Spell), Counterspell (Creature), Counterspell (other types)",
+   "when": "2026-09-24T19:24:15"
+  },
+  "357|type-mix": {
+   "action": "split",
+   "branch": "Destroy removal",
+   "note": "split into type sub-branches under Destroy removal: Destroy removal (Spell), Destroy removal (Creature), Destroy removal (Enchantment), Destroy removal (Artifact), Destroy removal (other types); Spot removal: Spot removal (Creature), Spot removal (Spell), Spot removal (Enchantment), Spot removal (Artifact), Spot removal (Land), Spot removal (other types)",
+   "when": "2026-09-24T19:24:17"
+  },
+  "231|type-mix": {
+   "action": "split",
+   "branch": "Destroy removal",
+   "note": "split into type sub-branches under Destroy removal: Destroy removal (Spell), Destroy removal (Creature), Destroy removal (Enchantment), Destroy removal (Artifact), Destroy removal (other types); Spot removal: Spot removal (Creature), Spot removal (Spell), Spot removal (Enchantment), Spot removal (Artifact), Spot removal (Land), Spot removal (other types)",
+   "when": "2026-09-24T19:24:19"
+  },
+  "215|type-mix": {
+   "action": "split",
+   "branch": "Graveyard hate",
+   "note": "split into type sub-branches under Graveyard hate: Graveyard hate (Creature), Graveyard hate (Spell), Graveyard hate (Artifact), Graveyard hate (Enchantment), Graveyard hate (other types); Spot removal: Spot removal (Creature), Spot removal (Spell), Spot removal (Enchantment), Spot removal (Artifact), Spot removal (Land), Spot removal (other types)",
+   "when": "2026-09-24T19:24:21"
+  },
+  "312|type-mix": {
+   "action": "split",
+   "branch": "Tutor",
+   "note": "split into type sub-branches under Tutor: Tutor (Creature), Tutor (Spell), Tutor (Artifact), Tutor (Land), Tutor (Enchantment), Tutor (other types)",
+   "when": "2026-09-24T19:24:23"
+  },
+  "143|type-mix": {
+   "action": "split",
+   "branch": "Graveyard hate",
+   "note": "split into type sub-branches under Graveyard hate: Graveyard hate (Creature), Graveyard hate (Spell), Graveyard hate (Artifact), Graveyard hate (Enchantment), Graveyard hate (other types); Spot removal: Spot removal (Creature), Spot removal (Spell), Spot removal (Enchantment), Spot removal (Artifact), Spot removal (Land), Spot removal (other types)",
+   "when": "2026-09-24T19:24:26"
+  },
+  "363|type-mix": {
+   "action": "split",
+   "branch": "Ramp",
+   "note": "split into type sub-branches under Ramp: Land ramp, Mana dork, Mana rock, Ramp (Enchantment), Ramp (Spell), Ramp (other types)",
+   "when": "2026-09-24T19:24:28"
+  },
+  "93|type-mix": {
+   "action": "split",
+   "branch": "Card draw",
+   "note": "split into type sub-branches under Card draw: Card draw (Creature), Card draw (Spell), Card draw (Artifact), Card draw (Enchantment), Card draw (Land), Card draw (other types)",
+   "when": "2026-09-24T19:24:30"
+  },
+  "229|type-mix": {
+   "action": "split",
+   "branch": "Card draw",
+   "note": "split into type sub-branches under Card draw: Card draw (Creature), Card draw (Spell), Card draw (Artifact), Card draw (Enchantment), Card draw (Land), Card draw (other types); Scry: Scry (Creature), Scry (Land), Scry (Artifact), Scry (Spell), Scry (other types)",
+   "when": "2026-09-24T19:24:32"
+  },
+  "477|type-mix": {
+   "action": "split",
+   "branch": "Exile removal",
+   "note": "split into type sub-branches under Exile removal: Exile removal (Creature), Exile removal (Spell), Exile removal (Enchantment), Exile removal (Artifact), Exile removal (other types); Spot removal: Spot removal (Creature), Spot removal (Spell), Spot removal (Enchantment), Spot removal (Artifact), Spot removal (Land), Spot removal (other types)",
+   "when": "2026-09-24T19:24:34"
+  },
+  "105|type-mix": {
+   "action": "split",
+   "branch": "Tutor",
+   "note": "split into type sub-branches under Tutor: Tutor (Creature), Tutor (Spell), Tutor (Artifact), Tutor (Land), Tutor (Enchantment), Tutor (other types)",
+   "when": "2026-09-24T19:24:36"
+  },
+  "578|type-mix": {
+   "action": "split",
+   "branch": "Bounce removal",
+   "note": "split into type sub-branches under Bounce removal: Bounce removal (Creature), Bounce removal (Spell), Bounce removal (Enchantment), Bounce removal (Artifact), Bounce removal (Land), Bounce removal (other types); Spot removal: Spot removal (Creature), Spot removal (Spell), Spot removal (Enchantment), Spot removal (Artifact), Spot removal (Land), Spot removal (other types); Token maker: Token maker ",
+   "when": "2026-09-24T19:24:38"
+  },
+  "531|type-mix": {
+   "action": "split",
+   "branch": "Impulse",
+   "note": "split into type sub-branches under Impulse: Impulse (Creature), Impulse (Spell), Impulse (Artifact), Impulse (Enchantment), Impulse (other types); Ramp: Land ramp, Mana dork, Mana rock, Ramp (Enchantment), Ramp (Spell), Ramp (other types)",
+   "when": "2026-09-24T19:24:40"
+  },
+  "64|type-mix": {
+   "action": "split",
+   "branch": "Reanimation",
+   "note": "split into type sub-branches under Reanimation: Reanimation (Creature), Reanimation (Spell), Reanimation (other types)",
+   "when": "2026-09-24T19:24:42"
+  },
+  "369|type-mix": {
+   "action": "split",
+   "branch": "Token maker",
+   "note": "split into type sub-branches under Token maker: Token maker (Creature), Token maker (Spell), Token maker (Artifact), Token maker (Enchantment), Token maker (Land), Token maker (other types)",
+   "when": "2026-09-24T19:24:44"
+  },
+  "115|type-mix": {
+   "action": "split",
+   "branch": "Tapper",
+   "note": "split into type sub-branches under Tapper: Tapper (Land), Tapper (Creature), Tapper (Artifact), Tapper (Enchantment), Tapper (Spell), Tapper (other types)",
+   "when": "2026-09-24T19:24:46"
+  },
+  "518|type-mix": {
+   "action": "split",
+   "branch": "Ramp",
+   "note": "split into type sub-branches under Ramp: Land ramp, Mana dork, Mana rock, Ramp (Enchantment), Ramp (Spell), Ramp (other types); Self-mill: Self-mill (Creature), Self-mill (Spell), Self-mill (Artifact), Self-mill (other types)",
+   "when": "2026-09-24T19:24:48"
+  },
+  "479|type-mix": {
+   "action": "split",
+   "branch": "Creature removal",
+   "note": "split into type sub-branches under Creature removal: Creature removal (Spell), Creature removal (Creature), Creature removal (Enchantment), Creature removal (Artifact), Creature removal (other types); Sacrifice removal: Sacrifice removal (Creature), Sacrifice removal (Spell), Sacrifice removal (Enchantment), Sacrifice removal (Land), Sacrifice removal (Artifact), Sacrifice removal (other types); S",
+   "when": "2026-09-24T19:24:50"
+  },
+  "567|type-mix": {
+   "action": "split",
+   "branch": "Burn",
+   "note": "tier B, but already covered by the tier-A split of its parent: Burn -> Burn (Spell), Burn (Creature), Burn (Enchantment), Burn (Artifact), Burn (Land), Burn (other types). Recorded to close the paperwork; no additional sub-branch work was done for this leaf.",
+   "when": "2026-09-24T20:41:38"
+  },
+  "374|type-mix": {
+   "action": "split",
+   "branch": "Tutor",
+   "note": "tier B, but already covered by the tier-A split of its parent: Tutor -> Tutor (Creature), Tutor (Spell), Tutor (Artifact), Tutor (Land), Tutor (Enchantment), Tutor (other types). Recorded to close the paperwork; no additional sub-branch work was done for this leaf.",
+   "when": "2026-09-24T20:41:40"
+  }
+ }
+}

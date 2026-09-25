@@ -148,7 +148,7 @@ Leaf 14 · 49 cards · `eff:BecomeCopy (100%) · eff:BecomeCopy|tgt:Typed[Creatu
 | 479 | 0.20 | 0.3899 | Creature removal, Sacrifice removal, Spot removal, Token maker | `eff:Token (100%) · eff:Sacrifice (100%) · eff:Sacr` |
 | 152 | 0.33 | 0.4713 | Creature removal, Sacrifice removal, Spot removal | `eff:Sacrifice (100%) · eff:Sacrifice|tgt:Typed[Cre` |
 | 480 | 0.38 | 0.3427 | Creature removal, Sacrifice removal, Spot removal | `eff:Sacrifice (100%) · eff:Sacrifice|tgt:Typed[Cre` |
-| 322 | 0.39 | 0.3308 | — | `eff:RevealUntil (100%) · eff:RevealUntil|tgt:Typed` |
+| 322 | 0.39 | 0.3308 | Reveal until | `eff:RevealUntil (100%) · eff:RevealUntil|tgt:Typed` |
 | 126 | 0.41 | 0.3423 | Creature removal, Sacrifice removal, Spot removal | `eff:Sacrifice (100%) · eff:Sacrifice|tgt:Typed[Cre` |
 
 ### 5. Own spot-checks: multi-leaf branches
@@ -160,6 +160,6 @@ Do leaves that a *rule* put in the same branch also land together?
 | Ramp | 32 | 2.12 | 84.6% of pairs | 0.4431 |
 | Card draw | 38 | 4.36 | 57.4% of pairs | 0.4988 |
 | Token maker | 34 | 4.04 | 61.2% of pairs | 0.4827 |
-| +1/+1 counters | 50 | 3.91 | 62.7% of pairs | 0.4565 |
+| +1/+1 counters | 45 | 3.27 | 69.5% of pairs | 0.4119 |
 | Spot removal | 113 | 3.26 | 69.6% of pairs | 0.5717 |
 | Tapper | 28 | 4.29 | 58.2% of pairs | 0.4681 |

@@ -1,0 +1,4 @@
+{
+ "_comment": "Rename auto-named branches here. The key is the STRUCTURAL SIGNATURE, not the display name, so a rename re-derives nothing: leaves, cohesion and coverage are unaffected. Renaming does NOT make a branch sourced -- it stays flagged as auto-named until a real rule is written for it. Example: 'eff:Pump': 'Single-target pump'",
+ "names": {}
+}
