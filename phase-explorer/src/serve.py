@@ -3,7 +3,8 @@
 
     python src/serve.py [port]
 
-Then open http://localhost:8765/reports/card-explorer.html
+Then open http://localhost:8765/reports/browse.html -- the branch/sub-branch/leaf
+browsing page. The parse-audit explorer is at /reports/card-explorer.html.
 """
 import datetime
 import http.server
@@ -15,7 +16,8 @@ import webbrowser
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 8765
-URL = f"http://localhost:{PORT}/reports/card-explorer.html"
+URL = f"http://localhost:{PORT}/reports/browse.html"
+AUDIT_URL = f"http://localhost:{PORT}/reports/card-explorer.html"
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):

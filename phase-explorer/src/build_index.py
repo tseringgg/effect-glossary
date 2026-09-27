@@ -56,6 +56,53 @@ GAP_TAGS = {"Unimplemented", "GenericEffect"}
 SOFT_TAGS = {"Unrecognized"}
 
 
+# ---- browsing facets: colour, mana value, core types ----------------------
+# These three are what a player filters a card list by, and all three come out
+# of fields the snapshot already carries -- no extra input, no second pass.
+#
+# Colour: `color_override` when present, else the colours named in the mana
+# cost's shards. The override is the snapshot's colour-indicator/devoid field
+# and it is authoritative where it disagrees with the cost: 3,202 entries carry
+# one, 541 of those differ from their cost (a back face with no cost but a
+# colour indicator, or a devoid card with coloured pips that is colourless).
+# Reading the cost alone would mis-colour every one of them.
+#
+# Mana value: generic + one per shard, with two exceptions that would otherwise
+# be wrong -- `X` counts 0 (as it does on the stack) and a `Two<Colour>` hybrid
+# pip counts 2. A face with no mana cost at all (back faces, tokens, most
+# lands) gets `None`, NOT 0: 2,168 entries have no cost, and folding them into
+# "mana value 0" would silently pad that bucket with cards that cannot be cast.
+COLOUR_OF = {"White": "W", "Blue": "U", "Black": "B", "Red": "R", "Green": "G"}
+
+
+def shard_weight(shard):
+    if shard == "X":
+        return 0
+    return 2 if shard.startswith("Two") else 1
+
+
+def browse_facets(entry):
+    """-> (colours string e.g. "WU" / "" for colourless, mana value or None)."""
+    mc = entry.get("mana_cost") or {}
+    shards = mc.get("shards") or []
+    generic = mc.get("generic") or 0
+
+    override = entry.get("color_override")
+    if override is not None:
+        cols = {COLOUR_OF[c] for c in override if c in COLOUR_OF}
+    else:
+        cols = set()
+        for shard in shards:
+            for name, letter in COLOUR_OF.items():
+                if name in shard:
+                    cols.add(letter)
+
+    mv = None
+    if shards or generic:
+        mv = generic + sum(shard_weight(s) for s in shards)
+    return "".join(c for c in "WUBRG" if c in cols), mv
+
+
 def tag_name(v):
     """Normalise an enum value that may be a bare string or externally tagged."""
     if isinstance(v, str):
@@ -209,6 +256,8 @@ def main():
                 ])
             ).strip()
 
+            colours, mana_value = browse_facets(entry)
+
             rows.append({
                 "id": eid,
                 "key": key,
@@ -216,6 +265,9 @@ def main():
                 "text": entry.get("oracle_text") or "",
                 "q": quality,
                 "type": typeline,
+                "col": colours,              # "WU", or "" for colourless
+                "mv": mana_value,            # null when the face has no cost
+                "cty": ct.get("core_types") or [],
                 "layout": entry.get("layout"),
                 "warn": len(entry.get("parse_warnings") or []),
                 "gaps": len(gaps),

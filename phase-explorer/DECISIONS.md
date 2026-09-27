@@ -9,6 +9,307 @@ on, and what it does *not* establish.
 
 ---
 
+## 2026-09-26 — The card-type layer is gone; the filter already does it
+
+The tree was sector → branch → **type sub-branch** → leaf. The middle level is
+removed: a branch now opens straight to its leaves.
+
+The reasoning is that the layer duplicated a control that already exists. The
+card list carries a **card-type filter** that works on any scope — a sector, a
+branch, an effect group, a single leaf — and it is computed live from the cards
+on screen. A fixed type level in the tree does the same cut in one place only,
+at one fixed depth, and costs a level of nesting on every branch to do it. That
+includes the Ramp → Mana dork / Mana rock split, which is a real distinction in
+the game and still not worth a tree level: filtering Ramp to `Creature` gives
+the dorks, `Artifact` gives the rocks.
+
+### What changed with it
+
+- **Effect groups moved up a level.** They used to be computed inside each type
+  sub-branch; now they sit on the branch and cover all of it. Spot removal's
+  Destroy group went from 270 cards (the Creature slice) to **831** (the whole
+  branch), which is the number the branch's own sibling actually holds.
+- **Leaves are listed directly under their branch.** Spot removal shows its 113
+  leaves rather than hiding them behind six type folders.
+- **A leaf's pick key carries the branch it was clicked from**, purely so the
+  breadcrumb reads `Removal › Spot removal › leaf 299`. The card set is
+  unchanged — leaves are many-to-many with branches, and the readout still says
+  when a leaf sits under more than one.
+- The same layer was removed from the audit page, so the two do not disagree
+  about what the tree is.
+
+### What this does NOT change
+
+- **The type-mixing finding stands, and is still on screen.** The 74
+  heterogeneous leaves keep their `mixed types` chip and their shares; leaf 44
+  is still 513 cards at Creature 44% / Land 30% / Artifact 28%. What is gone is
+  a layer that *organised* that mixing without fixing it — the previous entry on
+  sub-branches said as much at the time.
+- **`src/sub_branches.py` and `reports/sub-branches.md` are kept.** The analysis
+  (89 typed sub-branches, 0 type-heterogeneous under the same test) is a real
+  result and stays recorded. Nothing reads `build/sub_branches.json` any more,
+  and the README says so rather than leaving it looking live.
+- **The standalone `Mana dork` and `Mana rock` branches are untouched.** They
+  come from the curated glossary vocabulary in `branch_leaves.py`, not from the
+  type split, and they remain their own branches.
+
+Artifacts: [`reports/browse.html`](reports/browse.html) ·
+[`reports/card-explorer.html`](reports/card-explorer.html)
+
+---
+
+## 2026-09-26 — The phrase must come from the clause the parser matched
+
+A leaf row now reads:
+
+```
+leaf 453 · 117 cards
+Destroy target creature
+```
+
+The phrase is verbatim card text. Getting it right took two corrections, both
+of which are the point of this entry.
+
+**First correction: no descriptions.** The first version wrote a plain-English
+*description* of the structural facts, generated from the enum names
+("destroys target creature"). That was our prose dressed as the card's. It was
+rejected, and the glosser plus its ~230 lines of vocabulary tables were
+deleted rather than left switched off.
+
+**Second correction: not the whole card.** The replacement scanned each card's
+full oracle text for the most common shared wording — literal, but wrong in a
+way that is worth recording. The most common phrase on a card is frequently
+unrelated boilerplate. A leaf clustered on `eff:PutCounterAll` reported *"You
+may cast this card face down as a 2/2 creature for"*, because every card in it
+happened to be a megamorph Dragon. Literally true, and nothing to do with why
+those cards are in that leaf.
+
+The fix is not a heuristic. Each parsed node carries a `description` — phase.rs's
+own record of which clause it matched that node from. `leaf_phrases.py` now
+imports `cluster_structural.effect_features()` (the same function that formed
+the leaves) to find the nodes whose effect type IS the leaf's dominant effect,
+and reads only those descriptions. The phrase can only come from the clause the
+parser matched. That leaf now reads *"When this creature is turned face up, put
+a +1/+1 counter on"*.
+
+| | whole oracle text | matched clause only |
+|---|---|---|
+| leaf 11 (`PutCounterAll`) | "You may cast this card face down as a 2/2 creature for" | "When this creature is turned face up, put a +1/+1 counter on" |
+| leaves with a shared phrase | 591 | 579 |
+| top phrase in ≥50% of the leaf | 481 | 432 |
+
+Both numbers going **down** is the correct direction: the smaller corpus is the
+relevant one, and 932 cards match their leaf's effect in a node carrying no
+description at all, so they now contribute nothing rather than contributing
+irrelevant text.
+
+### The scoring, and what was tried against it
+
+The winner maximises `share × phrase_length`. Two alternatives were tested on
+the same leaves and both are worse:
+
+- **Anchoring to the start of the matched clause** (to favour the effect's own
+  verb) helps pump leaves but wrecks triggered abilities, where the clause
+  starts with the trigger: leaf 32 goes from "draw a card" (60%) to "When this
+  creature" (16%).
+- **Cross-leaf dampening** (downweighting phrases common to many leaves) fixes
+  the same pump leaves and costs far more elsewhere: leaf 426 drops from
+  "Counter target spell" at 99% to "Counter target spell unless its controller
+  pays" at 39%.
+
+### What this does NOT establish
+
+- **The phrase is not a definition of the leaf.** 18 leaves report *"until end
+  of turn"*, because on a Pump card that genuinely is the most common wording
+  inside the matched clause. It is the duration, not the effect — the duration
+  is a separate parsed field, and there is no way to exclude it without the
+  vocabulary this pass exists to avoid. Left as is, and recorded here.
+- **432 of 591 leaves have a top phrase in half their cards or more.** The rest
+  are weaker, and the number is in `reports/leaf-phrases.md` rather than being
+  implied away by showing the phrase alone.
+- **It says nothing about whether the parse is right.** It reports which text
+  phase.rs attributed to a node, taking that attribution at face value.
+
+### Row behaviour
+
+The whole leaf row is the click target (previously only the number was), with
+hover and selected states, `role="button"`, `tabindex`, and Enter/Space
+handling. One phrase, on its own line under the count; no quotes, no percentage
+— the count and share stayed, on the selected-leaf readout and in the report,
+where there is room to read them.
+
+Artifacts: `src/leaf_phrases.py` · `build/leaf_phrases.json` ·
+[`reports/leaf-phrases.md`](reports/leaf-phrases.md) ·
+[`reports/browse.html`](reports/browse.html) ·
+[`reports/card-explorer.html`](reports/card-explorer.html)
+
+---
+
+## 2026-09-25 — A bare `Non` in the clustering feature space
+
+Found while working on leaf wording, and independent of how it is displayed.
+`shape_tag()` folds a scalar payload into its tag (`{"Non": "Artifact"}` →
+`Non:Artifact`), but a **nested** one has nowhere to go, so
+`{"Non": {"Subtype": "Zombie"}}` collapses to a bare `Non` and the excluded
+subtype is lost. Six leaves carry `Typed[Creature,Non]` as a result, and in
+leaf 111 *Cruel Revival* (non-Zombie) and *Eyeblight's Ending* (non-Elf) are
+genuinely indistinguishable in that feature space. Fixing it means changing
+`shape_tag`, which changes the feature space and invalidates every leaf id.
+Not taken; recorded.
+
+---
+
+## 2026-09-25 — Two more nav layers: sectors on top, effect groups underneath
+
+Two additions to `reports/browse.html`, both reusing data that already
+existed — `build/sectors.json` (`src/build_sectors.py`) for the top, and
+branches.json's own leaf lists for the new bottom layer. Neither runs a new
+clustering pass or writes a new build file; both are computed client-side at
+page load.
+
+**Sectors are now the top level.** The tree was branch → sub-branch → leaf;
+it is now sector → branch → sub-branch → leaf. A sector groups branches only
+(it contributes no leaf of its own), so a branch's own content is identical
+whichever way it's reached. 28 of 64 branches sit in one of the 8 sectors;
+the other 36 — including some big, well-known ones (Card draw, Token maker,
+Reanimation, Lifegain, the Ramp/Land-ramp/Mana-dork family) — are under
+**Unsectored branches**, with `sectors.json`'s own `unsectored_notes`
+surfaced there rather than silently dropped: e.g. Reanimation sits closer to
+the Removal cluster (0.49–0.60x) than to Graveyard hate (0.77x), so filing it
+under either would misstate the map. Clicking a sector loads the union of
+its branches' cards, same many-to-many caveat as everywhere else (cards
+don't sum across branches within a sector any more than across branches
+generally).
+
+**Effect groups are a new bottom layer** — nested inside a branch's type
+sub-branch when it has one (matching the user's own framing: *"within Spot
+removal (Creature), group again by whether it's Destroy, Bounce, or
+Sacrifice"*), directly under the branch when it doesn't. A group is one of
+the branch's own **sector siblings** — e.g. Destroy/Bounce/Sacrifice/Exile
+removal are Spot removal's siblings in the Removal sector — intersected live
+against whatever cards are already on screen. No new rule, no new leaf: this
+surfaces branch membership `branch_leaves.py` already computed, the same way
+the type sub-branch layer surfaces `card_type`.
+
+A sibling only qualifies if it clears two checks, both computed once at
+boot, not hand-picked:
+1. **It must itself be a near-full subset (≥85% of its own leaves) of some
+   OTHER branch in the same sector.** This is what keeps "Spot removal"
+   itself off the sibling list for its own children — nothing else in the
+   sector contains Spot removal, so it fails the test, correctly, and
+   doesn't loop back on itself as a spurious "100% overlap" group. The bug
+   this test fixes was caught only by an end-to-end run: without it, every
+   type sub-branch across the Removal sector picked up a "Spot removal:
+   ~100%" group that added nothing.
+2. **Its rule must name an effect, not a different axis riding the same
+   sector.** `Typed[...]` is a target-type filter — Creature removal is
+   "which of Spot removal's targets are creatures," not a removal
+   *mechanism* — and `controller scope` is a who-it-affects filter
+   (One-sided sweeper). Both fail this check and are correctly excluded,
+   which is also why Creature removal's own type sub-branches get an effect
+   layer (Destroy/Bounce/Sacrifice, live-intersected against *that* card set)
+   while Creature removal the branch does not: it isn't itself a sector
+   subset-qualifying sibling, so it never appears as someone else's "effect."
+
+Verified numbers: Spot removal (Creature) — 1,202 cards — splits into Bounce
+347 / Sacrifice 284 / Destroy 270 / Exile 218 / **other 83** (sums to 1,202;
+`other` is real — mostly the Fight-effect leaves Spot removal's own rule
+names but no branch was ever curated for). Creature removal (Creature) — 272
+cards — splits into Bounce 106 / Sacrifice 80 / Destroy 71 / **other 15**
+(Exile removal has zero overlap here — not an omission, its own leaves never
+bind to a creature-typed target in this parse). Mass effect, which has no
+type split, gets the layer directly on the branch: Board wipe 332 / Mass
++1/+1 counters 91 / other 438. Every count cross-checked against an
+independent Python pass over the same build files.
+
+### What this does NOT establish
+
+- **It does not establish that every branch has an effect breakdown.** Most
+  don't — the sector-subset test is a real filter, not a formality; outside
+  Removal and Mass Effects, no sector currently produces a subset relation at
+  all, so e.g. Tutor / Impulse / Copy spell (Resource Acquisition) show no
+  effect layer, which is correct: nothing there is a subset of anything else
+  in that sector.
+- **It does not establish that "other" is small or unimportant.** 83 of 1,202
+  Spot-removal-Creature cards and 438 of 861 Mass-effect cards land in
+  "other" — the layer surfaces what the sector's OWN curated branches already
+  cover, nothing more, and says so on the card list itself.
+- **It does not change what a sector or branch contains.** Both come
+  straight from files already built and already documented in
+  `reports/sectors.md` / `reports/branches.md`; this pass only changed how
+  they're reached.
+
+Artifacts: [`reports/browse.html`](reports/browse.html) (no new build file;
+`build/sectors.json` was already built by `src/build_sectors.py`)
+
+---
+
+## 2026-09-25 — Browsing page: an assembly pass, and what it did not change
+
+`reports/browse.html` makes the tree the way in — branch → sub-branch → leaf →
+filtered card list — and demotes the treemap to a collapsed secondary overview.
+Nothing about the data changed: every set it shows is a lookup or a set
+intersection over `build/clusters.json`, `build/branches.json` and
+`build/sub_branches.json`. No leaf was re-clustered, no branch re-assigned, and
+the review queue was not touched.
+
+Card rendering moved into `reports/cardview.js` and the treemap into
+`reports/branchmap.js`, both now shared with `card-explorer.html`, which lost its
+inline copies (−11 KB). Each page injects its own extras through the modules'
+`opts` hooks. One side effect of the extraction: clicking an **auto-named**
+region in the treemap now opens that branch in the tree. It never did before —
+the region's `data-b` carried the ` · auto` suffix and the tree's `data-branch`
+did not, so the lookup silently missed on all 23 of them.
+
+### The three filters, and the two judgement calls in them
+
+Colour, card type and mana value, all read off `col` / `mv` / `cty` added to the
+existing index rows by `build_index.py` — from the snapshot's own `mana_cost`,
+`color_override` and `card_type`. No new input file, no second pass.
+
+- **Colour comes from `color_override` first, the mana cost second.** 3,202
+  entries carry an override and **541 of those disagree with their cost**: back
+  faces with a colour indicator but no cost (70 red, 69 green, …), and devoid
+  cards with coloured pips that are colourless (35 blue, 32 black, …). Deriving
+  colour from the cost alone mis-colours every one of them.
+- **A face with no mana cost is its own state (`—`), not mana value 0.** 2,368
+  entries have no cost at all — 1,248 lands, 509 with no core type, 265
+  creatures, mostly back faces and tokens. Folding them into the 0 bucket would
+  take it from 19 cards to 2,387 and fill it with cards that cannot be cast. A
+  mana-value **range** therefore excludes them, and the control says so rather
+  than silently dropping them.
+
+Range was chosen over an exact value because the distribution is a long right
+tail (0–16, plus *Gleemax* at 1,000,000) and "3 or less" is the question a player
+actually asks; one click on a histogram bar still gives an exact value.
+
+### What this does NOT establish
+
+- **It does not establish that the corpus is browsable.** The tree sits on a
+  clean-parse-only clustering pass: **11,087 of 34,645 entries have no leaf** and
+  appear nowhere in it. The page states this above the tree; it is not fixed.
+- **It does not fix the type mixing.** The 74 heterogeneous leaves are now
+  *marked* `mixed types` with their shares, which is the previous entry's finding
+  made visible — not resolved. Leaf 44 is still 513 cards at Creature 44% / Land
+  30% / Artifact 28%.
+- **It does not resolve anything in the review queue.** The 79 open items are
+  unchanged; their leaves are marked `in review` and left browsable.
+- **The filters are not verified against Scryfall.** They are faithful to the
+  snapshot's fields, and the snapshot's parses are unverified — the same caveat
+  as everywhere else in this project.
+
+Verified end-to-end by driving the real page in headless Chrome: branch → sub-
+branch → leaf → filters → card detail → pagination, with every filter count
+cross-checked against an independent Python pass over the same build files
+(Ramp 1,269 cards; + green 179; + green and Land 1, *Dryad Arbor*; Burn mana
+value 1–2 485, exactly 3 296, + red 209, mono-red only 180; Land ramp ∩ leaf 555
+= 257).
+
+Artifacts: [`reports/browse.html`](reports/browse.html) ·
+`reports/cardview.js` · `reports/branchmap.js` · `src/build_index.py`
+
+---
+
 ## 2026-09-24 — Type sub-branches: the mixing is hidden, not fixed
 
 Sub-branches make the browsing experience look clean, but the underlying
