@@ -14,6 +14,7 @@ python src/branch_leaves.py       # -> build/branches.json, reports/branches.md
 python src/sub_branches.py        # -> build/sub_branches.json (analysis only, not read by the pages)
 python src/audit_leaf_types.py    # -> build/type_audit.json, reports/leaf-type-audit.md
 python src/leaf_phrases.py        # -> build/leaf_phrases.json, reports/leaf-phrases.md
+python src/match_spans.py         # -> build/match_spans.json
 python src/serve.py               # opens http://localhost:8765/reports/browse.html
 ```
 
@@ -22,6 +23,7 @@ shows no cluster column. Requires `hdbscan`, `numpy`, `scipy`. `audit_leaf_types
 supplies the `mixed types` marks and is optional, as is
 `leaf_phrases.py` — without it a leaf row falls back to its raw structural label.
 `sub_branches.py` is no longer read by either page; it is kept for its report.
+`match_spans.py` is optional too — without it the oracle text renders unhighlighted.
 
 The page must be served over HTTP; it fetches JSON, which `file://` forbids.
 
@@ -119,6 +121,40 @@ and no new input.
 
 Option counts are computed over the current list, not the corpus, so each control
 shows what it would actually yield here.
+
+### What the parser matched, inside the card's own text
+
+**highlight what the parser matched** (header toggle) marks the clauses phase.rs
+attributed to a parsed node, in the oracle text column and in the expanded detail.
+Every parsed node carries a `description` — their record of which clause it came
+from — and `src/match_spans.py` locates that clause back in the card's text.
+
+This is their attribution, not a capture group: we do not have their regexes. Of
+47,971 nodes, **90.6% are located**, 6.3% carry no description at all, and 3.1%
+name something that is not card text (a Saga's `Chapter 1`, a `CR 702.104a:` rule
+reference). Those are counted in the build output and never approximated into a
+highlight. The one substitution is `~`, their self-reference token, against oracle
+text that says "This creature".
+
+What is *not* highlighted is as informative as what is: reminder text and keyword
+definitions stay plain, so you can see the parser walk past `Deathtouch (Any amount
+of damage this deals to a creature is enough to destroy it.)` and match only
+`When this creature enters, destroy target artifact, enchantment, or land.`
+Expanding a card lists every clause it attributed, and every node it attributed
+nothing to.
+
+### Editing a leaf's phrase
+
+The phrase a leaf is labelled by is derived, and sometimes the derived one is the
+wrong one to lead with. Select a leaf and hit **edit**: the page POSTs to
+`/api/phrase` on `src/serve.py`, which writes `corrections/leaf_phrases.json`.
+`leaf_phrases.py` reads that back, so an override survives a rebuild and shows up
+in the report marked *(edited by hand)*. Clearing the box drops the override.
+
+An override is free text — your wording, not the cards' — so it carries an
+`edited` chip, the tree row is rule-marked, and the derived phrase stays visible
+underneath it. Same shape as the review queue: dev-only, bound to 127.0.0.1, and a
+file rather than browser storage so the build can read the decision back.
 
 The **branch map** is a secondary overview behind a toggle, collapsed by default. It
 renders no cards; clicking a region opens that branch in the tree.

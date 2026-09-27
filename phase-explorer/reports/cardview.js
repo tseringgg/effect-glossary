@@ -133,6 +133,79 @@ function tally(rows) {
   return { col, typ, mv, noCost, n: rows.length };
 }
 
+// ---- what the parser matched, inside the card's own text -----------------
+// build/match_spans.json holds, per entry, the character ranges of the clauses
+// phase.rs attributed to each parsed node (its `description`, located back in
+// the oracle text by src/match_spans.py). Highlighting them shows which words
+// the parser consumed and -- just as usefully -- which it passed straight over.
+//
+// These are THEIR attributions. We do not have their regexes, so this is not a
+// capture group: it is the text they say a node came from. 90.6% of nodes are
+// located; the rest either carry no description (6.3%) or name something that
+// is not card text at all (3.1%, e.g. a Saga's "Chapter 1"). Those are counted
+// in the build output and never approximated into a highlight.
+let SPANS = null, SPAN_EFFECTS = [], SPANS_ON = true;
+
+function setSpans(doc) {
+  SPANS = doc ? doc.spans : null;
+  SPAN_EFFECTS = doc ? (doc.effects || []) : [];
+}
+function setHighlight(on) { SPANS_ON = !!on; }
+function hasSpans() { return !!SPANS; }
+
+// text -> HTML with the matched clauses wrapped. Falls back to plain escaped
+// text whenever spans are unavailable or switched off, so the column always
+// renders the same words either way.
+function markText(id, text) {
+  if (!text) return "";
+  const sp = SPANS_ON && SPANS ? SPANS[id] : null;
+  if (!sp || !sp.length) return esc(text);
+  let out = "", pos = 0;
+  for (const [start, end, ei] of sp) {
+    if (start < pos || start >= text.length) continue;
+    out += esc(text.slice(pos, start));
+    const eff = SPAN_EFFECTS[ei] || "?";
+    out += `<mark class="mt" title="phase.rs matched this clause as ${esc(eff)}">` +
+           esc(text.slice(start, end)) + `</mark>`;
+    pos = end;
+  }
+  return out + esc(text.slice(pos));
+}
+
+// The per-node breakdown, for the expanded detail: every clause the parser
+// attributed, and every node it attributed nothing to.
+function matchedClausesHTML(d) {
+  const rows = [];
+  let noDesc = 0;
+  for (const bucket of ["abilities", "triggers", "static_abilities", "replacements"]) {
+    (d[bucket] || []).forEach((node, i) => {
+      const desc = node.description;
+      if (!desc) { noDesc++; return; }
+      const eff = bucket === "abilities" ? (node.effect || {}).type
+                : bucket === "static_abilities" ? tagOf(node.mode)
+                : ((node.execute || {}).effect || {}).type;
+      rows.push(`<div class="mcrow"><span class="mcb">${bucket}[${i}]</span>` +
+        `<span class="mce">${esc(eff || "—")}</span>` +
+        `<span class="mct">${esc(desc)}</span></div>`);
+    });
+  }
+  if (!rows.length && !noDesc) return "";
+  return `<div class="mcbox"><b class="hdr">Clauses the parser matched</b>` +
+    `<div class="note">phase.rs's own <code>description</code> per node — the text ` +
+    `it says that node came from. Highlighted in the oracle text above where it ` +
+    `could be located.</div>` + rows.join("") +
+    (noDesc ? `<div class="note"><b>${noDesc} node${noDesc > 1 ? "s" : ""} carr${noDesc > 1 ? "y" : "ies"} ` +
+      `no description at all</b> — nothing to attribute, so nothing is highlighted ` +
+      `for ${noDesc > 1 ? "them" : "it"}.</div>` : "") + `</div>`;
+}
+
+// mode arrives either as a bare string or externally tagged, same as upstream
+function tagOf(v) {
+  if (typeof v === "string") return v;
+  if (v && typeof v === "object") return Object.keys(v)[0];
+  return null;
+}
+
 // ---- card row ------------------------------------------------------------
 // The row shape card-explorer.html has always used. `opts.extra(r)` appends
 // dev-only markup (the cluster button) inside the quality cell; `opts.cost`
@@ -154,7 +227,7 @@ function rowHTML(r, opts = {}) {
       (r.corr ? `<br><span class="badge" style="color:var(--corr);border-color:var(--corr)">⚠ ${r.corr} correction${r.corr > 1 ? "s" : ""}</span>` : "") +
       extra +
     `</td>` +
-    `<td class="txt">${esc(r.text) || '<span class="empty">(no oracle text)</span>'}</td>` +
+    `<td class="txt">${markText(r.id, r.text) || '<span class="empty">(no oracle text)</span>'}</td>` +
     `<td>${esc(r.type)}</td>`;
 }
 
@@ -166,6 +239,7 @@ function rowHTML(r, opts = {}) {
 function detailHTML(d, r, opts = {}) {
   if (!d) return `<span class="empty">structure missing from chunk ${r.ch}</span>`;
   let h = opts.prefix ? opts.prefix(r) : "";
+  h += matchedClausesHTML(d);
 
   if (d._corrections && d._corrections.length) {
     h += `<div class="corrbox"><b class="hdr">⚠ ${d._corrections.length} correction${d._corrections.length > 1 ? "s" : ""}
@@ -239,5 +313,5 @@ async function toggleDetail(btn, r, tr, opts = {}) {
 
 return { esc, hl, chunk, COLOURS, COLOUR_NAME, NO_COST, mvLabel, colourLabel,
          costChip, newFilter, filterActive, match, tally, rowHTML, detailHTML,
-         toggleDetail };
+         toggleDetail, setSpans, setHighlight, hasSpans, markText };
 })();

@@ -27,13 +27,77 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     def log_message(self, fmt, *args):  # quieter: one line per request, no noise
         sys.stderr.write("%s %s\n" % (self.command, self.path))
 
+    # ---- leaf phrase overrides ----------------------------------------
+    # The phrase a leaf is labelled by is derived (src/leaf_phrases.py), and a
+    # derived phrase is sometimes the wrong one to lead with. An override is
+    # written HERE, to corrections/, and not into build/ -- build/ is
+    # regenerated and would drop it. leaf_phrases.py reads this file back, so
+    # an edit survives a rebuild and shows up in the report too.
+    #
+    # An override is free text: it is the user's wording, and the page marks it
+    # as edited rather than passing it off as the cards' own.
+    def do_phrase(self):
+        try:
+            n = int(self.headers.get("Content-Length") or 0)
+            body = json.loads(self.rfile.read(n) or b"{}")
+        except Exception as exc:
+            self.send_error(400, f"bad JSON: {exc}")
+            return
+
+        leaf = body.get("leaf")
+        if leaf is None or not str(leaf).lstrip("-").isdigit():
+            self.send_error(400, "need a numeric leaf")
+            return
+        leaf = str(leaf)
+        phrase = (body.get("phrase") or "").strip()
+
+        path = os.path.join(ROOT, "corrections", "leaf_phrases.json")
+        try:
+            doc = json.load(open(path, encoding="utf-8"))
+        except Exception:
+            doc = {}
+        doc.setdefault("_comment",
+                       "Hand-written overrides for the phrase a leaf is "
+                       "labelled by. Free text: this is the editor's wording, "
+                       "not a verbatim card phrase, and the pages badge it as "
+                       "edited. Delete an entry to fall back to the derived "
+                       "phrase. Read by src/leaf_phrases.py. Hand-editable.")
+        overrides = doc.setdefault("overrides", {})
+
+        if phrase:
+            overrides[leaf] = {
+                "phrase": phrase,
+                "was": body.get("was") or "",
+                "when": datetime.datetime.now().isoformat(timespec="seconds"),
+            }
+        else:
+            overrides.pop(leaf, None)   # empty box clears the override
+
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        tmp = path + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as fh:
+            json.dump(doc, fh, indent=1, ensure_ascii=False)
+        os.replace(tmp, path)
+
+        out = json.dumps({"ok": True, "leaf": leaf, "phrase": phrase,
+                          "total": len(overrides)}).encode()
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(out)))
+        self.end_headers()
+        self.wfile.write(out)
+
     # ---- review-queue persistence -------------------------------------
     # The queue has to survive a rebuild, and the rebuild reads a FILE -- so a
     # decision cannot live in localStorage, or branch_leaves.py would never see
     # it and resolved entries would come straight back. One small endpoint is
     # the whole mechanism. Dev-only, bound to 127.0.0.1, same as the server.
     def do_POST(self):
-        if self.path.rstrip("/") != "/api/review":
+        route = self.path.rstrip("/")
+        if route == "/api/phrase":
+            self.do_phrase()
+            return
+        if route != "/api/review":
             self.send_error(404, "no such endpoint")
             return
         try:

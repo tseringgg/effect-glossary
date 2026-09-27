@@ -69,6 +69,25 @@
   #tree .leafsays { color:#222; font-size:11.5px; margin-top:1px; }
   #tree .leafrow.on .leafsays { font-weight:bold; }
   #tree .leaflabel { color:var(--mut); font-size:10px; }
+  /* The clauses phase.rs matched, inside the card's own text. One colour --
+     which effect it was is on hover; the point of the mark is the boundary
+     between what the parser consumed and what it walked past. */
+  mark.mt { background:#fff3bf; color:inherit; padding:0 1px;
+            box-shadow:inset 0 -2px 0 #e0b400; border-radius:2px; }
+  .mcbox { background:#f7f9fb; border:1px solid #cfe0f2; padding:7px 9px;
+           margin:0 0 10px; font-size:11px; }
+  .mcbox b.hdr { color:var(--clu); font-size:12px; display:block; }
+  .mcrow { display:flex; gap:7px; align-items:baseline; padding:2px 0;
+           border-top:1px solid #e6eef6; }
+  .mcb { color:var(--mut); font-size:10px; min-width:120px; }
+  .mce { font-weight:bold; min-width:110px; }
+  .mct { color:#222; }
+  .chip-edit { border-color:#7a4bbd; color:#5b338f; background:#f2ebfb; }
+  #tree .leafsays.edited { border-left:3px solid #7a4bbd; padding-left:5px; }
+  .phedit { font-size:10px; padding:0 6px; }
+  .phform { margin-top:4px; display:flex; gap:5px; align-items:center;
+            flex-wrap:wrap; }
+  .phform input { font:inherit; font-size:12px; padding:3px 6px; }
   .leafread { margin:3px 0 0; font-size:13px; }
   .leafread .note { margin-top:1px; }
   #tree details.unbr > summary .bname { color:var(--unparsed); }
@@ -238,6 +257,8 @@
   <div class="prov" style="margin-top:3px">
     <button id="tmtoggle">▸ branch map overview</button>
     <button id="expand">expand all</button>
+    <label class="prov" id="hllab" hidden><input type="checkbox" id="hl" checked>
+      highlight what the parser matched</label>
     <button id="collapse">collapse all</button>
     · <a href="card-explorer.html">parse-audit explorer</a>
     · <a href="review-queue.html">review queue</a>
@@ -337,6 +358,10 @@ async function boot() {
   // without it a leaf row falls back to its raw structural label.
   try { PHR = await fetch("../build/leaf_phrases.json").then(r => r.json()); }
   catch (e) { PHR = null; }
+  // Where each parsed node was matched from, for highlighting the oracle text
+  // (src/match_spans.py). Optional: without it the text renders plain.
+  try { CV.setSpans(await fetch("../build/match_spans.json").then(r => r.json())); }
+  catch (e) { CV.setSpans(null); }
 
   for (const r of ROWS) ROW.set(r.id, r);
   for (const [id, leaf] of Object.entries(CLU.cards)) {
@@ -424,7 +449,12 @@ function leafChips(l) {
 // not just the number. The raw structural label stays as the row's tooltip.
 function leafPhrase(l) {
   const e = PHR && PHR.leaves[String(l)];
-  return (e && e.phrases.length) ? e.phrases[0].phrase : "";
+  if (!e) return "";
+  return e.edited || (e.phrases.length ? e.phrases[0].phrase : "");
+}
+function leafEdited(l) {
+  const e = PHR && PHR.leaves[String(l)];
+  return !!(e && e.edited);
 }
 
 function leafRow(l, branch) {
@@ -439,7 +469,7 @@ function leafRow(l, branch) {
          `data-pick="${esc(key)}" title="${esc(raw)}">` +
          `<div class="leafhead">leaf ${l} · <b>${n.toLocaleString()}</b> cards ` +
          `${leafChips(l)}</div>` +
-         `<div class="leafsays">${esc(phrase) ||
+         `<div class="leafsays${leafEdited(l) ? " edited" : ""}">${esc(phrase) ||
             `<span class="leaflabel">${esc(raw.slice(0, 70))}</span>`}</div>` +
          `</div>`;
 }
@@ -836,17 +866,36 @@ function renderScope() {
 
   if (scope.kind === "leaf") {
     const l = scope.leaf;
-    // The wording these cards share, verbatim, then the structural label the
-    // parser matched it from. Two views of the same thing, neither rewritten.
+    // The wording these cards share, then the structural label the parser
+    // matched it from. The phrase is editable: a derived phrase is sometimes
+    // the wrong one to lead with, and an override is written to
+    // corrections/leaf_phrases.json so it survives a rebuild. An override is
+    // free text -- the editor's wording, not the cards' -- so it is badged as
+    // edited and the derived phrase stays visible underneath it.
     const raw = CLU.labels[l] || "";
     const e = PHR && PHR.leaves[String(l)];
-    if (e && e.phrases.length) {
-      state += `<div class="leafread"><b>${esc(e.phrases[0].phrase)}</b>` +
-        `<div class="note">verbatim from the clause phase.rs matched ` +
-        `<code>${esc(e.effect || "")}</code> from — carried by ` +
-        `${e.phrases[0].n_cards} of this leaf's ${e.n_cards} cards ` +
-        `(the leaf as a whole, not just the ${pool.length.toLocaleString()} ` +
-        `listed here)</div></div>`;
+    if (e) {
+      const derived = e.phrases.length ? e.phrases[0].phrase : "";
+      const shown = e.edited || derived;
+      state += `<div class="leafread">` +
+        `<b id="phtext">${esc(shown) || "<i>no shared phrase</i>"}</b>` +
+        (e.edited ? ` <span class="chip chip-edit" title="Hand-written in corrections/leaf_phrases.json — this is your wording, not the cards'.">edited</span>` : "") +
+        ` <button class="phedit" id="phedit">edit</button>` +
+        `<div class="note" id="phnote">` +
+        (e.edited
+          ? `derived phrase was: <i>${esc(e.derived || derived) || "none"}</i>`
+          : (derived
+              ? `verbatim from the clause phase.rs matched ` +
+                `<code>${esc(e.effect || "")}</code> from — carried by ` +
+                `${e.phrases[0].n_cards} of this leaf's ${e.n_cards} cards`
+              : `no phrase is shared by two or more of this leaf's cards`)) +
+        `</div>` +
+        `<div class="phform" id="phform" hidden>` +
+        `<input type="text" id="phin" value="${esc(shown)}" ` +
+        `placeholder="phrase to label this leaf by…" size="60">` +
+        `<button id="phsave">save</button>` +
+        `<button id="phreset" title="drop the override and go back to the derived phrase">reset</button>` +
+        `<span class="note" id="phmsg"></span></div></div>`;
     }
     state += `<div class="note">shared structure (what the parser matched): ` +
       `<span class="clulabel">${esc(raw)}</span></div>`;
@@ -895,6 +944,74 @@ function renderScope() {
 
   document.getElementById("scope").innerHTML =
     `<div class="crumb">${crumb} <span class="note" id="scount"></span></div>${state}`;
+  wirePhraseEditor();
+}
+
+// Save goes to src/serve.py's /api/phrase, which writes
+// corrections/leaf_phrases.json. Same shape as the review queue's endpoint:
+// dev-only, bound to 127.0.0.1, and a file rather than localStorage so the
+// build can read the decision back.
+// In-place update of every tree row showing this leaf, so an edit lands
+// without rebuilding (and collapsing) the tree.
+function refreshLeafRows(leaf) {
+  const phrase = leafPhrase(leaf), edited = leafEdited(leaf);
+  if (!phrase) return;
+  document.querySelectorAll("#tree .leafrow").forEach(row => {
+    const parts = (row.dataset.pick || "").split("␟");
+    if (parts[0] !== "L" || +parts[2] !== leaf) return;
+    const says = row.querySelector(".leafsays");
+    if (!says) return;
+    says.textContent = phrase;
+    says.classList.toggle("edited", edited);
+  });
+}
+
+function wirePhraseEditor() {
+  const btn = document.getElementById("phedit");
+  if (!btn || scope.kind !== "leaf") return;
+  const form = document.getElementById("phform");
+  const input = document.getElementById("phin");
+  const msg = document.getElementById("phmsg");
+  btn.onclick = () => {
+    form.hidden = !form.hidden;
+    if (!form.hidden) { input.focus(); input.select(); }
+  };
+  const send = async (phrase) => {
+    const e = PHR.leaves[String(scope.leaf)];
+    msg.textContent = "saving…";
+    try {
+      const r = await fetch("/api/phrase", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          leaf: scope.leaf, phrase,
+          was: e.derived || (e.phrases[0] || {}).phrase || "",
+        }),
+      });
+      if (!r.ok) throw new Error(await r.text() || r.status);
+      // Keep the in-memory copy in step so the tree and this panel agree
+      // without a reload; the file is the record either way.
+      if (phrase) {
+        if (!e.edited) e.derived = (e.phrases[0] || {}).phrase || "";
+        e.edited = phrase;
+      } else {
+        delete e.edited;
+      }
+      renderScope();
+      // Update just this leaf's rows. Re-rendering the whole tree would
+      // collapse every open sector and branch and throw away the scroll
+      // position, which is a lot to lose for a one-line edit.
+      refreshLeafRows(scope.leaf);
+      const m = document.getElementById("phmsg");
+      if (m) m.textContent = phrase ? "saved" : "override cleared";
+    } catch (err) {
+      msg.textContent = "save failed: " + err.message +
+        " (is this served by src/serve.py?)";
+    }
+  };
+  document.getElementById("phsave").onclick = () => send(input.value.trim());
+  document.getElementById("phreset").onclick = () => send("");
+  input.onkeydown = ev => { if (ev.key === "Enter") send(input.value.trim()); };
 }
 
 // ---- filters -------------------------------------------------------------
@@ -1106,6 +1223,11 @@ function wireChrome() {
   document.getElementById("prev").onclick = () => go(Math.max(0, page - 1));
   document.getElementById("next").onclick = () => go(Math.min(maxPage(), page + 1));
   document.getElementById("last").onclick = () => go(maxPage());
+  const hl = document.getElementById("hl");
+  if (CV.hasSpans()) {
+    document.getElementById("hllab").hidden = false;
+    hl.onchange = () => { CV.setHighlight(hl.checked); draw(); };
+  }
   document.getElementById("expand").onclick = () =>
     document.querySelectorAll("#tree details").forEach(d => d.open = true);
   document.getElementById("collapse").onclick = () =>

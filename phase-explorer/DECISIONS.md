@@ -9,6 +9,91 @@ on, and what it does *not* establish.
 
 ---
 
+## 2026-09-27 — Showing what the parser consumed, and letting a phrase be overridden
+
+Two features, plus a reproducibility bug found while building them.
+
+### Highlighting the matched clause
+
+Every parsed node carries a `description`: phase.rs's own record of which clause
+it matched that node from. `src/match_spans.py` locates that clause back inside
+the card's oracle text and stores the character range, so both pages can mark it.
+
+**This is their attribution, not a capture group.** We do not have their regexes.
+The scoping request was to "show which part the regex matched" — what is
+actually available is the text they say a node came from, which is close but not
+the same claim, and the pages say so.
+
+Measured over the whole corpus, 47,971 nodes:
+
+| | |
+|---|---|
+| located in the card's text | **90.6%** |
+| no `description` at all | 6.3% |
+| description is not card text (`Chapter 1`, `CR 702.104a: …`) | 3.1% |
+
+The only normalisation is `~`, their self-reference token, against oracle text
+that spells it "This creature". No case folding beyond one retry, no whitespace
+repair, no fuzzy matching — a clause that cannot be found is counted and left
+unhighlighted rather than approximated onto nearby words.
+
+**The unhighlighted text turned out to be the interesting half.** Reminder text
+and keyword definitions stay plain, so the parser can be watched walking past
+`Deathtouch (Any amount of damage this deals to a creature is enough to destroy
+it.)` and matching only `When this creature enters, destroy target artifact,
+enchantment, or land.`
+
+### Overriding a leaf's phrase
+
+`/api/phrase` on `serve.py` writes `corrections/leaf_phrases.json`;
+`leaf_phrases.py` reads it back, so an edit survives a rebuild and appears in the
+report as *(edited by hand)*. This is the review queue's existing shape — dev-only,
+127.0.0.1, a file rather than browser storage precisely so the build can see it.
+
+Overrides are **free text**, by request. That breaks the "verbatim, never our
+wording" property the phrases were built on, which is a fair trade when it is the
+editor's deliberate choice — but it is not hidden: the phrase carries an `edited`
+chip, the tree row is rule-marked, and the derived phrase stays on screen
+underneath it, so what was replaced is always visible and one click from being
+restored.
+
+Saving updates only the affected rows rather than re-rendering the tree, which
+would collapse every open sector for a one-line edit.
+
+### The bug: the build was not reproducible
+
+Two runs of `leaf_phrases.py` over identical input produced different files.
+Cause: `dominant_effect()` fed a `Counter` from a `set` of effect-name strings,
+and set iteration order for strings changes with every process under hash
+randomisation. `Counter.most_common()` breaks ties by insertion order, so a leaf
+whose top two effects were tied could get a different dominant effect — and
+therefore a different phrase — on each rebuild.
+
+Fixed by making every tie-break explicit (`(-count, name)`) rather than relying
+on insertion order, in both the dominant-effect choice and the literal-form
+choice. Three consecutive runs now produce byte-identical output. Worth recording
+because nothing about the output *looked* wrong — the phrases were plausible
+either way, and only hashing two builds caught it.
+
+### What this does NOT establish
+
+- **90.6% is not a verdict on the parse.** It measures how often their own
+  attribution can be found in their own text, nothing about whether the node is
+  correct.
+- **An unhighlighted clause is not proof the parser ignored it.** It may have
+  been matched by a node whose description is missing (6.3%) or synthetic (3.1%).
+  The expanded detail lists both cases per card rather than leaving the gap to be
+  read as intent.
+- **An override says nothing about the cards.** It is one person's label for a
+  leaf, recorded as such.
+
+Artifacts: `src/match_spans.py` · `build/match_spans.json` ·
+`corrections/leaf_phrases.json` · `src/serve.py` · `src/leaf_phrases.py` ·
+`reports/cardview.js` · [`reports/browse.html`](reports/browse.html) ·
+[`reports/card-explorer.html`](reports/card-explorer.html)
+
+---
+
 ## 2026-09-26 — The card-type layer is gone; the filter already does it
 
 The tree was sector → branch → **type sub-branch** → leaf. The middle level is

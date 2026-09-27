@@ -57,6 +57,7 @@ import cluster_structural as CS   # noqa: E402  -- reuse its exact matcher
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BUILD = os.path.join(HERE, "build")
 REPORTS = os.path.join(HERE, "reports")
+OVERRIDES = os.path.join(HERE, "corrections", "leaf_phrases.json")
 
 NMIN, NMAX = 2, 12
 BUCKETS = ("abilities", "triggers", "static_abilities", "replacements")
@@ -118,7 +119,12 @@ def dominant_effect(cards):
         tally.update(seen)
     if not tally:
         return None, 0
-    eff, n = tally.most_common(1)[0]
+    # Explicit tie-break. `most_common` falls back to insertion order, and the
+    # counts are fed from a set of strings whose iteration order changes with
+    # every process (hash randomisation) -- which made two runs over identical
+    # input disagree about a tied leaf's dominant effect, and so about its
+    # phrase. Sorting by name on ties makes the build reproducible.
+    eff, n = min(tally.items(), key=lambda kv: (-kv[1], kv[0]))
     return eff, n
 
 
@@ -169,6 +175,11 @@ def near_duplicate(a, b, frac=0.6):
     return longest_shared_run(a, b) >= frac * min(len(a), len(b))
 
 
+def pick_form(counter):
+    """The literal rendering most cards used, ties broken by the text itself."""
+    return min(counter.items(), key=lambda kv: (-kv[1], kv[0]))[0]
+
+
 def phrases_for(texts, n_cards):
     df = collections.Counter()
     forms = collections.defaultdict(collections.Counter)
@@ -194,8 +205,8 @@ def phrases_for(texts, n_cards):
     # The first entry is the score winner -- the phrase this leaf is reported
     # by. The rest are sorted by share so the list reads top-down, rather than
     # in the score order that put the headline first.
-    head, rest = chosen[:1], sorted(chosen[1:], key=lambda x: -x[1])
-    return [{"phrase": forms[g].most_common(1)[0][0],
+    head, rest = chosen[:1], sorted(chosen[1:], key=lambda x: (-x[1], x[0]))
+    return [{"phrase": pick_form(forms[g]),
              "n_cards": k,
              "share": round(k / n_cards, 4)} for g, k in head + rest]
 
@@ -226,6 +237,14 @@ def main():
             if cid in blob:
                 cards[cid] = blob[cid]
 
+    # Hand-written overrides live in corrections/ and are applied on top. They
+    # are the editor's wording, not the cards', so they are flagged `edited`
+    # and the derived phrase is kept beside them rather than overwritten.
+    try:
+        overrides = json.load(io.open(OVERRIDES, encoding="utf-8")).get("overrides", {})
+    except Exception:
+        overrides = {}
+
     out = {}
     no_match = 0
     for leaf, ids in sorted(members.items()):
@@ -241,13 +260,19 @@ def main():
                 # phrase can never span two separate matched nodes.
                 texts.append(chr(10).join(got))
         no_match += len(ids) - with_text
-        out[str(leaf)] = {
+        phrases = phrases_for(texts, len(ids))
+        entry = {
             "n_cards": len(ids),
             "effect": effect,
             "n_with_effect": n_with_effect,
             "n_with_matched_text": with_text,
-            "phrases": phrases_for(texts, len(ids)),
+            "phrases": phrases,
         }
+        ov = overrides.get(str(leaf))
+        if ov and ov.get("phrase"):
+            entry["edited"] = ov["phrase"]
+            entry["derived"] = phrases[0]["phrase"] if phrases else ""
+        out[str(leaf)] = entry
         if len(out) % 100 == 0 or len(out) == len(members):
             sys.stderr.write(str(len(out)) + "/" + str(len(members)) + " leaves" + chr(10))
 
@@ -268,6 +293,7 @@ def main():
         json.dump(doc, fh, ensure_ascii=False)
 
     covered = sum(1 for v in out.values() if v["phrases"])
+    edited = sum(1 for v in out.values() if v.get("edited"))
     strong = sum(1 for v in out.values()
                  if v["phrases"] and v["phrases"][0]["share"] >= 0.5)
     with io.open(os.path.join(REPORTS, "leaf-phrases.md"), "w",
@@ -292,7 +318,10 @@ def main():
         fh.write("| leaf | cards | effect | phrase (verbatim) | in |\n")
         fh.write("|---:|---:|---|---|---:|\n")
         for leaf, v in sorted(out.items(), key=lambda x: -x[1]["n_cards"]):
-            if v["phrases"]:
+            if v.get("edited"):
+                fh.write(f"| {leaf} | {v['n_cards']} | `{v['effect']}` | "
+                         f"{v['edited']} *(edited by hand)* | — |" + chr(10))
+            elif v["phrases"]:
                 p = v["phrases"][0]
                 txt = p["phrase"].replace("|", "\\|")
                 fh.write(f"| {leaf} | {v['n_cards']} | `{v['effect']}` | `{txt}` | "

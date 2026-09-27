@@ -1,0 +1,4 @@
+{
+ "_comment": "Hand-written overrides for the phrase a leaf is labelled by. Free text: this is the editor's wording, not a verbatim card phrase, and the pages badge it as edited. Delete an entry to fall back to the derived phrase. Read by src/leaf_phrases.py. Hand-editable.",
+ "overrides": {}
+}
