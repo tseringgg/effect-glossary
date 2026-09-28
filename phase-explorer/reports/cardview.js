@@ -134,16 +134,18 @@ function tally(rows) {
 }
 
 // ---- what the parser matched, inside the card's own text -----------------
-// build/match_spans.json holds, per entry, the character ranges of the clauses
-// phase.rs attributed to each parsed node (its `description`, located back in
-// the oracle text by src/match_spans.py). Highlighting them shows which words
-// the parser consumed and -- just as usefully -- which it passed straight over.
+// build/match_spans.json holds, per entry, the character range of each
+// ability's TOP-LEVEL effect: phase.rs's own `description` for the ability,
+// located in the oracle text, then narrowed by src/effect_span.py past the
+// cost or trigger condition and before any chained sub-effect. That is the
+// part the clustering matched -- it reads `node.effect` and never walks
+// sub-abilities -- so "Destroy target creature." is marked on Angrath's Fury
+// and the damage and tutor that follow it on the same line are not.
 //
-// These are THEIR attributions. We do not have their regexes, so this is not a
-// capture group: it is the text they say a node came from. 90.6% of nodes are
-// located; the rest either carry no description (6.3%) or name something that
-// is not card text at all (3.1%, e.g. a Saga's "Chapter 1"). Those are counted
-// in the build output and never approximated into a highlight.
+// These are THEIR attributions, narrowed; we do not have their regexes, so
+// this is not a capture group. 90.6% of abilities are located; the rest carry
+// no description (6.3%) or name something that is not card text (3.1%, e.g.
+// a Saga's "Chapter 1"). Those are counted, never approximated.
 let SPANS = null, SPAN_EFFECTS = [], SPANS_ON = true;
 
 function setSpans(doc) {
@@ -165,7 +167,7 @@ function markText(id, text) {
     if (start < pos || start >= text.length) continue;
     out += esc(text.slice(pos, start));
     const eff = SPAN_EFFECTS[ei] || "?";
-    out += `<mark class="mt" title="phase.rs matched this clause as ${esc(eff)}">` +
+    out += `<mark class="mt" title="matched as ${esc(eff)} — this ability's top-level effect, the part the clustering read">` +
            esc(text.slice(start, end)) + `</mark>`;
     pos = end;
   }
@@ -190,10 +192,11 @@ function matchedClausesHTML(d) {
     });
   }
   if (!rows.length && !noDesc) return "";
-  return `<div class="mcbox"><b class="hdr">Clauses the parser matched</b>` +
-    `<div class="note">phase.rs's own <code>description</code> per node — the text ` +
-    `it says that node came from. Highlighted in the oracle text above where it ` +
-    `could be located.</div>` + rows.join("") +
+  return `<div class="mcbox"><b class="hdr">Abilities the parser matched</b>` +
+    `<div class="note">phase.rs's own <code>description</code> per ability — the ` +
+    `whole ability, cost and condition and chained sub-effects included. The ` +
+    `highlight in the oracle text marks only the named top-level effect within ` +
+    `it, which is the part the clustering matched.</div>` + rows.join("") +
     (noDesc ? `<div class="note"><b>${noDesc} node${noDesc > 1 ? "s" : ""} carr${noDesc > 1 ? "y" : "ies"} ` +
       `no description at all</b> — nothing to attribute, so nothing is highlighted ` +
       `for ${noDesc > 1 ? "them" : "it"}.</div>` : "") + `</div>`;
@@ -204,6 +207,32 @@ function tagOf(v) {
   if (typeof v === "string") return v;
   if (v && typeof v === "object") return Object.keys(v)[0];
   return null;
+}
+
+// ---- card images ---------------------------------------------------------
+// build/card_images.json (src/build_images.py) maps our oracle ids onto
+// Scryfall card ids, so a URL can be built without storing 33,618 full
+// strings. Images load from Scryfall's own CDN, lazily and only in the image
+// view -- the ONLY thing in these pages that reaches outside the machine.
+// 99.4% of oracle ids have one; every miss is an Alchemy "A-" card, which is
+// digital-only and absent from the export they publish.
+let IMG = null;
+
+function setImages(doc) { IMG = doc || null; }
+function hasImages() { return !!IMG; }
+
+// r is an index row; its id is "<oracle id>" or "<oracle id>/<face>".
+function imageURL(r, size) {
+  if (!IMG) return null;
+  const bits = String(r.id).split("/");
+  const rec = IMG.cards[bits[0]];
+  if (!rec) return null;
+  const [cid, ts, hasBack] = rec;
+  const face = (bits.length > 1 && +bits[1] > 0 && hasBack) ? "back" : "front";
+  return IMG.template
+    .replace("{size}", size || "normal").replace("{face}", face)
+    .replace("{a}", cid[0]).replace("{b}", cid[1])
+    .replace("{id}", cid).replace("{ts}", ts);
 }
 
 // ---- card row ------------------------------------------------------------
@@ -313,5 +342,6 @@ async function toggleDetail(btn, r, tr, opts = {}) {
 
 return { esc, hl, chunk, COLOURS, COLOUR_NAME, NO_COST, mvLabel, colourLabel,
          costChip, newFilter, filterActive, match, tally, rowHTML, detailHTML,
-         toggleDetail, setSpans, setHighlight, hasSpans, markText };
+         toggleDetail, setSpans, setHighlight, hasSpans, markText,
+         setImages, hasImages, imageURL };
 })();

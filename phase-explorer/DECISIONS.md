@@ -9,6 +9,127 @@ on, and what it does *not* establish.
 
 ---
 
+## 2026-09-27 — Highlights narrowed to the effect that was actually matched
+
+The highlight used to cover each ability's whole `description`. That is
+phase.rs's granularity — they record text only at the top of an ability, never
+per sub-effect — but it is wider than what was matched. The clustering reads the
+top-level effect only (`node.effect`; sub-ability chains are not walked), so on
+*Angrath's Fury* the match is `Destroy target creature.`, while the old
+highlight also covered the damage, the tutor and the shuffle chained after it.
+
+`src/effect_span.py` now cuts each located description down, in three steps:
+the cost / trigger condition prefix (found by Oracle punctuation at quote and
+paren depth 0, with the card's own name masked since names can hold commas);
+trailing `Activate only…` restriction sentences; and chained sub-effects, cut at
+the first clause that reads as a different effect in the chain.
+
+**How "reads as an effect" is decided is learned, not hand-written.** A
+vocabulary of effect words was exactly what was rejected for the leaf phrases,
+so none is used here either. Instead, 33,320 unambiguous clauses (single-link
+chains) teach each effect type its marker words by smoothed log-odds — with card
+names excluded and a 3% support floor, both added after the first pass learned
+`searing` and `bolt` for DealDamage from "Searing Spear deals…". The result is in
+`build/effect_anchors.json`, readable. It only locates boundaries; the marked text
+is always the card's own.
+
+### Measured, not eyeballed
+
+| | whole ability | narrowed |
+|---|---|---|
+| multi-effect abilities marking another effect's words | 8,677 | **1,998** |
+| highlighted characters | 4.03 M | 2.46 M (61%) |
+| narrowed spans still holding their own effect's words | — | **99.5%** |
+
+Iterating against the misses found three real bugs, each fixed and re-measured:
+commas inside card names ("Whenever *Ambergris, Agent of Tyranny* attacks,")
+truncating the condition; leading durations ("Until end of turn,") being taken as
+the whole effect; and "If you do" lead-ins attaching to the wrong side. A
+positional fallback (one sentence per chain link → align by reading order)
+covers sub-effects that are unmodelled and so have no learned words.
+
+Also a tooling hazard worth recording: a regex `\b` written through a
+shell-quoted Python string reached the file as a literal backspace byte,
+silently disabling the "If you do" rule — no error, just a rule that never
+matched. It had bitten once before in this work, in code since deleted. Regex-bearing code is now edited directly rather than through shell-quoted
+Python strings.
+
+### What this does NOT establish
+
+- **It is still their attribution, narrowed.** Not a capture group; we have no
+  access to their parser's spans.
+- **1,998 multi-effect highlights still carry another effect's words** — mostly
+  single clauses that genuinely mix two effects, or sub-effects the corpus has
+  too few examples of. Where a boundary is not confident the text stays wider.
+- **The leaf phrases are unchanged.** They are built from the same whole-ability
+  descriptions and would benefit from the same narrowing (41 leaves are currently
+  topped by a trigger-condition phrase), but it changes 141 of 591 top phrases,
+  leaves one leaf with none, and makes some more faithful but less readable
+  (`TargetOnly` leaves read `Choose target spell`). A separate decision.
+
+Artifacts: `src/effect_span.py` · `src/match_spans.py` ·
+`build/effect_anchors.json` · `reports/cardview.js`
+
+---
+
+## 2026-09-27 — Card images: the first thing here that leaves the machine
+
+A **card images** view toggle on the browse page, backed by
+`src/build_images.py`. This is worth a decision entry mainly because of what it
+changes about the project, not because the grid is hard.
+
+### It breaks the offline property, deliberately and narrowly
+
+Every page here has been a read-only consumer of one local snapshot: after the
+build, nothing talked to anything. Images cannot work that way — 33,618 card
+images are gigabytes, so they are loaded from Scryfall's CDN as you scroll.
+
+The containment: the view is **opt-in** (a toggle, text stays the default), it is
+**hidden entirely** unless `build_images.py` has been run, and it is the only
+feature that does this. The view's own note says so on screen rather than leaving
+it to be discovered in devtools. Everything else — tree, filters, phrases,
+highlighting, parsed structure — still works with no network at all.
+
+### The join, and the number the scoping could not settle
+
+`oracle_cards` bulk (~25 MB, gitignored, fetched once) rather than per-card API
+calls, which is what Scryfall asks programs to do.
+
+**33,618 of 33,834 oracle ids matched — 99.4%.** The scoping flagged Alchemy
+`A-` cards as an unknown risk; the bulk join answered it exactly: **all 216
+misses are Alchemy cards and nothing else.** They are digital-only and absent
+from that export. They keep their slot in the grid as a tile that says why,
+rather than being skipped into a gap that looks like a bug.
+
+### Two small things worth keeping
+
+- **URLs are stored as a template plus parts**, not 33,618 full strings — 3.1 MB
+  instead of ~9 MB, and the page can pick a size.
+- **The template is verified during the build**, by rebuilding Scryfall's own
+  `image_uris` from it and comparing. All 33,618 matched. If their URL shape ever
+  changes the run exits rather than writing a file of 404s — the failure would
+  otherwise show up as silently blank tiles much later.
+
+Their manifest had already moved from a plain-JSON `download_uri` to a gzipped
+JSONL `jsonl_download_uri` since the format this was first written against, which
+is precisely the kind of drift that check exists for. Reading it as streamed JSONL
+also means the export is never held in memory.
+
+### What this does NOT establish
+
+- **It is not a local cache.** Browsing images needs network every time; nothing
+  is stored. A card whose image fails to load shows a blank tile, not an error.
+- **99.4% is a join rate, not a correctness claim.** It says an oracle id was
+  found in their export, not that the printing shown is the one you would expect
+  — `oracle_cards` picks one printing per oracle id, and which one is their call.
+- **The audit page has no image view.** It is the parse-audit tool and stays
+  text-only.
+
+Artifacts: `src/build_images.py` · `build/card_images.json` ·
+`reports/cardview.js` · [`reports/browse.html`](reports/browse.html)
+
+---
+
 ## 2026-09-27 — Showing what the parser consumed, and letting a phrase be overridden
 
 Two features, plus a reproducibility bug found while building them.

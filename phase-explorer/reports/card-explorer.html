@@ -313,11 +313,10 @@ let filtered = [], page = 0;
 const state = { q:"", quals:new Set(), axis:{}, soft:false, corr:false, cluster:null };
 
 async function boot() {
-  const [meta, facets, index] = await Promise.all([
-    fetch("../build/meta.json").then(r=>r.json()),
-    fetch("../build/facets.json").then(r=>r.json()),
-    fetch("../build/index.json").then(r=>r.json()),
-  ]);
+  // Sequential, not Promise.all -- see browse.html's boot() for why.
+  const meta = await fetch("../build/meta.json").then(r=>r.json());
+  const facets = await fetch("../build/facets.json").then(r=>r.json());
+  const index = await fetch("../build/index.json").then(r=>r.json());
   META = meta; FACETS = facets; ROWS = index.rows;
 
   // Clustering is a separate pass over a filtered subset, so it is optional:

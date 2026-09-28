@@ -14,7 +14,8 @@ python src/branch_leaves.py       # -> build/branches.json, reports/branches.md
 python src/sub_branches.py        # -> build/sub_branches.json (analysis only, not read by the pages)
 python src/audit_leaf_types.py    # -> build/type_audit.json, reports/leaf-type-audit.md
 python src/leaf_phrases.py        # -> build/leaf_phrases.json, reports/leaf-phrases.md
-python src/match_spans.py         # -> build/match_spans.json
+python src/match_spans.py         # -> build/match_spans.json, build/effect_anchors.json
+python src/build_images.py        # -> build/card_images.json  (downloads ~25 MB from Scryfall)
 python src/serve.py               # opens http://localhost:8765/reports/browse.html
 ```
 
@@ -23,7 +24,8 @@ shows no cluster column. Requires `hdbscan`, `numpy`, `scipy`. `audit_leaf_types
 supplies the `mixed types` marks and is optional, as is
 `leaf_phrases.py` — without it a leaf row falls back to its raw structural label.
 `sub_branches.py` is no longer read by either page; it is kept for its report.
-`match_spans.py` is optional too — without it the oracle text renders unhighlighted.
+`match_spans.py` is optional too — without it the oracle text renders unhighlighted —
+as is `build_images.py`, without which the card-image view is hidden entirely.
 
 The page must be served over HTTP; it fetches JSON, which `file://` forbids.
 
@@ -33,10 +35,13 @@ The page must be served over HTTP; it fetches JSON, which `file://` forbids.
 |---|---|---|
 | `data/card-data.json` | 83 MB | the snapshot under inspection |
 | `data/AtomicCards.json.gz` | 52 MB | MTGJSON reference, only for collision detection |
+| `data/scryfall-oracle-cards.jsonl.gz` | 25 MB | Scryfall reference, only for the image join |
 
 ```
 curl -o data/card-data.json     https://data.phase-rs.dev/card-data.json
 curl -o data/AtomicCards.json.gz https://mtgjson.com/api/v5/AtomicCards.json.gz
+# the Scryfall export is fetched by the script itself:
+python src/build_images.py --refresh
 ```
 
 ## Two pages
@@ -124,24 +129,56 @@ shows what it would actually yield here.
 
 ### What the parser matched, inside the card's own text
 
-**highlight what the parser matched** (header toggle) marks the clauses phase.rs
-attributed to a parsed node, in the oracle text column and in the expanded detail.
-Every parsed node carries a `description` — their record of which clause it came
-from — and `src/match_spans.py` locates that clause back in the card's text.
+**highlight what the parser matched** (header toggle) marks, in the oracle text,
+exactly the effect each ability was matched on — not the whole ability. On
+*Angrath's Fury* only `Destroy target creature.` is marked; the damage, tutor and
+shuffle that follow on the same line are sub-effects the clustering never read.
 
-This is their attribution, not a capture group: we do not have their regexes. Of
-47,971 nodes, **90.6% are located**, 6.3% carry no description at all, and 3.1%
-name something that is not card text (a Saga's `Chapter 1`, a `CR 702.104a:` rule
-reference). Those are counted in the build output and never approximated into a
-highlight. The one substitution is `~`, their self-reference token, against oracle
-text that says "This creature".
+Two steps in `src/match_spans.py`:
 
-What is *not* highlighted is as informative as what is: reminder text and keyword
-definitions stay plain, so you can see the parser walk past `Deathtouch (Any amount
-of damage this deals to a creature is enough to destroy it.)` and match only
-`When this creature enters, destroy target artifact, enchantment, or land.`
-Expanding a card lists every clause it attributed, and every node it attributed
-nothing to.
+1. **Locate.** Every ability carries a `description` — phase.rs's record of which
+   text it came from — found verbatim in the card's oracle text. 90.6% are
+   located; 6.3% have no description and 3.1% name something that isn't card text
+   (a Saga's `Chapter 1`). Those are counted, never approximated.
+2. **Narrow** (`src/effect_span.py`). A description is the whole ability, but the
+   clustering reads only the top-level effect (`node.effect`; sub-ability chains
+   are not walked). So the cost (`{2}, {T}, Sacrifice this artifact:`), the trigger
+   condition (`Whenever you cast an instant, sorcery, or artifact spell,`),
+   trailing `Activate only…` restrictions, and every chained sub-effect are cut
+   off. Sub-effects are cut at the first clause that reads as a *different* effect
+   in the chain — which words mark which effect is **learned from the corpus**
+   (33,320 unambiguous single-effect clauses, card names excluded), written to
+   `build/effect_anchors.json` so it can be checked, and never displayed.
+
+Measured against the old whole-ability highlight: multi-effect abilities whose
+highlight contained another effect's words fell from 8,677 to 1,998, highlighted
+text fell to 61%, and 99.5% of narrowed spans still contain their own effect's
+words — the cut almost never removes what was matched. Where a boundary can't be
+found confidently the text is left wider rather than guessed narrower.
+
+Expanding a card lists each ability's full description, so what was trimmed is
+always visible next to what was marked.
+
+### Card images
+
+**card images** (view toggle above the card list) swaps the text table for a grid
+of card images. This is **the only part of these pages that reaches outside the
+machine** — images come from Scryfall's CDN, lazily, as you scroll. Everything
+else still works with no network at all, and the view is hidden unless
+`build_images.py` has been run.
+
+`src/build_images.py` downloads Scryfall's `oracle_cards` bulk export (~25 MB,
+gitignored, fetched once) and joins it on `scryfall_oracle_id`. Bulk rather than
+per-card API calls is what Scryfall asks programs to do. The output stores a URL
+*template* plus each card's Scryfall id, not 33,618 full strings, and the build
+**verifies that template against Scryfall's own `image_uris`** — if their URL shape
+changes, the run fails instead of writing a file of 404s.
+
+**33,618 of 33,834 oracle ids (99.4%) have an image.** Every one of the 216 misses
+is an Alchemy `A-` card: those are digital-only and absent from the oracle export.
+They keep their place in the grid as a tile saying so, rather than being skipped.
+(Scryfall's larger `default_cards` export carries them if they are ever wanted.)
+Clicking any card opens the same parsed-structure view the text rows use.
 
 ### Editing a leaf's phrase
 

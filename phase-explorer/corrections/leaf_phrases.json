@@ -1,4 +1,25 @@
 {
  "_comment": "Hand-written overrides for the phrase a leaf is labelled by. Free text: this is the editor's wording, not a verbatim card phrase, and the pages badge it as edited. Delete an entry to fall back to the derived phrase. Read by src/leaf_phrases.py. Hand-editable.",
- "overrides": {}
+ "overrides": {
+  "299": {
+   "phrase": "Destroy target ___ or ___",
+   "was": "Destroy target artifact or enchantment",
+   "when": "2026-09-27T14:59:53"
+  },
+  "446": {
+   "phrase": "Exile target ___",
+   "was": "Exile target",
+   "when": "2026-09-27T17:16:35"
+  },
+  "480": {
+   "phrase": "sacrifice a creature",
+   "was": "sacrifices a creature of their choice",
+   "when": "2026-09-27T17:17:34"
+  },
+  "432": {
+   "phrase": "sacrifice this creature",
+   "was": "At the beginning of your upkeep, sacrifice this creature unless you",
+   "when": "2026-09-27T17:18:07"
+  }
+ }
 }

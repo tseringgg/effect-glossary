@@ -6,3 +6,6 @@ data/AtomicCards.json.gz
 build/
 
 __pycache__/
+
+# Scryfall image join reference -- re-fetch with src/build_images.py --refresh
+data/scryfall-oracle-cards.jsonl.gz

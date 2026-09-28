@@ -43,6 +43,7 @@
     #nav { width:100%; flex:none; height:auto; max-height:52vh;
            border-right:none; border-bottom:2px solid var(--line); }
     #cards { width:100%; height:auto; }
+    #grid { grid-template-columns:repeat(2, calc((100% - 10px) / 2 * 0.75)); }
   }
 
   /* ---- tree ---- */
@@ -69,6 +70,31 @@
   #tree .leafsays { color:#222; font-size:11.5px; margin-top:1px; }
   #tree .leafrow.on .leafsays { font-weight:bold; }
   #tree .leaflabel { color:var(--mut); font-size:10px; }
+  /* ---- card image view ---- */
+  .viewbar { padding:6px 12px; border-bottom:1px solid var(--line);
+             display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+  .vbtn { font-size:11px; padding:2px 10px; border:1px solid var(--line);
+          background:#fff; cursor:pointer; }
+  .vbtn.on { background:#111; color:#fff; border-color:#111; }
+  /* Cards are 75% of the width four equal columns would give them; the 10px
+     gap between cards stays fixed, and the space saved sits at the right. */
+  #grid { display:grid; gap:10px; padding:12px;
+          grid-template-columns:repeat(4, calc((100% - 30px) / 4 * 0.75)); }
+  .tile { cursor:pointer; }
+  .tile img { width:100%; display:block; border-radius:4.75% / 3.5%;
+              background:#e9e9e9; aspect-ratio:488/680; }
+  .tile:hover img { outline:2px solid var(--clu); outline-offset:2px; }
+  .tname { font-size:10px; color:var(--mut); margin-top:2px;
+           overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  /* A card with no published image keeps its slot, with the reason in it. */
+  .noimg { aspect-ratio:488/680; border:1px dashed var(--line);
+           border-radius:4.75% / 3.5%; padding:10px; font-size:11px;
+           display:flex; flex-direction:column; justify-content:center;
+           background:#fafafa; }
+  .tiledet { grid-column:1/-1; background:#fbfbfb; border:1px solid var(--line);
+             padding:9px 11px; }
+  .tdname { display:block; font-size:13px; margin-bottom:5px; }
+
   /* The clauses phase.rs matched, inside the card's own text. One colour --
      which effect it was is on hover; the point of the mark is the boundary
      between what the parser consumed and what it walked past. */
@@ -291,6 +317,11 @@
   <section id="cards">
     <div id="scope"></div>
     <div id="filters"></div>
+    <div class="viewbar" id="viewbar" hidden>
+      <button id="vtext" class="vbtn on">text</button><button id="vimg" class="vbtn">card images</button>
+      <span class="note" id="viewnote"></span>
+    </div>
+    <div id="grid" hidden></div>
     <table id="tbl">
       <thead><tr>
         <th style="width:26px"></th><th style="width:200px">card</th>
@@ -334,14 +365,18 @@ let EFF_SIBLINGS = new Map();  // branch name -> [effect-sibling branch objects]
 
 const f = CV.newFilter();
 let scope = null, pool = [], shown = [], page = 0;
+let view = "text";           // "text" | "images"
+let IMGMETA = {};            // counts from build/card_images.json, for the note
 
 async function boot() {
-  const [meta, index, clu, br] = await Promise.all([
-    fetch("../build/meta.json").then(r => r.json()),
-    fetch("../build/index.json").then(r => r.json()),
-    fetch("../build/clusters.json").then(r => r.json()),
-    fetch("../build/branches.json").then(r => r.json()),
-  ]);
+  // Sequential, not Promise.all: some local setups (an AV/security agent that
+  // inspects loopback traffic) drop connections when several land on
+  // src/serve.py at once. One request at a time avoids that -- a few hundred
+  // extra ms on first load, and it never fails partway through.
+  const meta = await fetch("../build/meta.json").then(r => r.json());
+  const index = await fetch("../build/index.json").then(r => r.json());
+  const clu = await fetch("../build/clusters.json").then(r => r.json());
+  const br = await fetch("../build/branches.json").then(r => r.json());
   META = meta; ROWS = index.rows; CLU = clu; BR = br;
 
   // The type audit is a separate optional pass; it supplies the `mixed types`
@@ -358,10 +393,39 @@ async function boot() {
   // without it a leaf row falls back to its raw structural label.
   try { PHR = await fetch("../build/leaf_phrases.json").then(r => r.json()); }
   catch (e) { PHR = null; }
+  // Hand-written overrides are read from corrections/ directly, not only via
+  // the build: build/leaf_phrases.json picks them up only when
+  // src/leaf_phrases.py re-runs, so without this an edit vanished on the next
+  // reload even though it was saved. The file is the record either way.
+  if (PHR) {
+    try {
+      const ov = await fetch("../corrections/leaf_phrases.json", { cache: "no-store" })
+        .then(r => r.json());
+      const live = ov.overrides || {};
+      // The file is authoritative both ways: an override cleared since the
+      // last rebuild must not come back from the stale build output.
+      for (const [leaf, e] of Object.entries(PHR.leaves)) {
+        if (e.edited && !(live[leaf] && live[leaf].phrase)) delete e.edited;
+      }
+      for (const [leaf, o] of Object.entries(live)) {
+        const e = PHR.leaves[leaf];
+        if (!e || !o.phrase) continue;
+        if (!e.edited) e.derived = e.derived || ((e.phrases[0] || {}).phrase || "");
+        e.edited = o.phrase;
+      }
+    } catch (e) { /* no overrides file yet */ }
+  }
   // Where each parsed node was matched from, for highlighting the oracle text
   // (src/match_spans.py). Optional: without it the text renders plain.
   try { CV.setSpans(await fetch("../build/match_spans.json").then(r => r.json())); }
   catch (e) { CV.setSpans(null); }
+  // Card image join (src/build_images.py). Optional, and the only feature
+  // that makes the page reach outside this machine -- see the image view's
+  // own note. Without it the view toggle stays hidden.
+  try {
+    IMGMETA = await fetch("../build/card_images.json").then(r => r.json());
+    CV.setImages(IMGMETA);
+  } catch (e) { CV.setImages(null); IMGMETA = {}; }
 
   for (const r of ROWS) ROW.set(r.id, r);
   for (const [id, leaf] of Object.entries(CLU.cards)) {
@@ -1170,7 +1234,6 @@ function run() {
       ? `— <b>${shown.length.toLocaleString()}</b> of ${pool.length.toLocaleString()} cards match`
       : `— <b>${pool.length.toLocaleString()}</b> cards`;
   const empty = document.getElementById("empty");
-  document.getElementById("tbl").hidden = !shown.length;
   document.getElementById("pager").hidden = !shown.length;
   empty.hidden = !!shown.length;
   if (!shown.length) {
@@ -1187,17 +1250,61 @@ const maxPage = () => Math.max(0, Math.ceil(shown.length / PER) - 1);
 
 function draw() {
   if (page > maxPage()) page = maxPage();
+  const slice = shown.slice(page * PER, page * PER + PER);
+  document.getElementById("tbl").hidden = view !== "text" || !shown.length;
+  document.getElementById("grid").hidden = view !== "images" || !shown.length;
+  if (view === "images") drawImages(slice); else drawRows(slice);
+  document.getElementById("pinfo").textContent =
+    shown.length ? `page ${page + 1} / ${maxPage() + 1}` : "no results";
+}
+
+function drawRows(slice) {
   const body = document.getElementById("body");
   body.innerHTML = "";
-  for (const r of shown.slice(page * PER, page * PER + PER)) {
+  for (const r of slice) {
     const tr = document.createElement("tr");
     tr.innerHTML = CV.rowHTML(r, { cost: true });   // shared renderer
     body.appendChild(tr);
     tr.querySelector("button").onclick = ev =>
       CV.toggleDetail(ev.target, r, tr, { prefix: provBox, wire: wireDetail });
   }
-  document.getElementById("pinfo").textContent =
-    shown.length ? `page ${page + 1} / ${maxPage() + 1}` : "no results";
+}
+
+// Card images, lazily. A card with no image gets a tile saying so rather than
+// a gap -- every one of those is an Alchemy card Scryfall does not publish in
+// the oracle export, and that is worth seeing rather than silently skipping.
+function drawImages(slice) {
+  const grid = document.getElementById("grid");
+  grid.innerHTML = "";
+  for (const r of slice) {
+    const url = CV.imageURL(r, "normal");
+    const tile = document.createElement("div");
+    tile.className = "tile";
+    tile.innerHTML = url
+      ? `<img loading="lazy" src="${esc(url)}" alt="${esc(r.name)}" title="${esc(r.name)}">` +
+        `<div class="tname">${esc(r.name)}</div>`
+      : `<div class="noimg"><b>${esc(r.name)}</b>` +
+        `<div class="note">no image published for this oracle id` +
+        (r.name.startsWith("A-") ? ` — Alchemy rebalanced cards are digital-only ` +
+          `and absent from Scryfall's oracle export` : "") + `</div></div>`;
+    grid.appendChild(tile);
+    tile.onclick = () => toggleTileDetail(tile, r);
+  }
+}
+
+// Clicking a card opens the same parsed-structure view the text rows use,
+// full width under the tile, so the two views stay one renderer.
+async function toggleTileDetail(tile, r) {
+  const open = tile.nextElementSibling;
+  if (open && open.classList.contains("tiledet")) { open.remove(); return; }
+  document.querySelectorAll("#grid .tiledet").forEach(n => n.remove());
+  const det = document.createElement("div");
+  det.className = "tiledet";
+  det.innerHTML = `<div class="note">loading…</div>`;
+  tile.after(det);
+  const data = (await CV.chunk(r.ch))[r.id];
+  det.innerHTML = `<b class="tdname">${esc(r.name)}</b>` +
+    CV.detailHTML(data, r, { prefix: provBox });
 }
 
 // Where this card sits in the tree, shown above its parsed structure. Same
@@ -1223,6 +1330,26 @@ function wireChrome() {
   document.getElementById("prev").onclick = () => go(Math.max(0, page - 1));
   document.getElementById("next").onclick = () => go(Math.min(maxPage(), page + 1));
   document.getElementById("last").onclick = () => go(maxPage());
+  const setView = v => {
+    view = v;
+    document.getElementById("vtext").classList.toggle("on", v === "text");
+    document.getElementById("vimg").classList.toggle("on", v === "images");
+    document.getElementById("viewnote").innerHTML = v === "images"
+      ? `images load from Scryfall's CDN as you scroll — the only part of this ` +
+        `page that reaches outside this machine. ` +
+        `<b>${(CV.hasImages() ? IMGMETA.n_matched : 0).toLocaleString()}</b> of ` +
+        `<b>${(CV.hasImages() ? IMGMETA.n_ours : 0).toLocaleString()}</b> oracle ids ` +
+        `have one; the ${(CV.hasImages() ? IMGMETA.n_missing : 0)} that do not are ` +
+        `all Alchemy cards.`
+      : "";
+    draw();
+  };
+  if (CV.hasImages()) {
+    document.getElementById("viewbar").hidden = false;
+    document.getElementById("vtext").onclick = () => setView("text");
+    document.getElementById("vimg").onclick = () => setView("images");
+  }
+
   const hl = document.getElementById("hl");
   if (CV.hasSpans()) {
     document.getElementById("hllab").hidden = false;
