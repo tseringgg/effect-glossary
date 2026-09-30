@@ -384,7 +384,9 @@ async function renderCollisionNote() {
       `The upstream file is keyed by lowercased face name, which silently drops cards: ` +
       `<b>${c.keys_with_a_drop}</b> contested keys cost <b>${c.oracle_ids_dropped}</b> oracle ids ` +
       `(classic <i>Lightning Bolt</i> among them — it is <b>not in this data at all</b>). ` +
-      `Dropped cards cannot be shown below because they are absent from the snapshot; ` +
+      `Dropped cards cannot be shown below because they are absent from the snapshot ` +
+      `(regenerated copies, marked <i>recovered</i>, are in the <a href="browse.html">browse</a> ` +
+      `page and the <a href="ledger.html">coverage ledger</a>); ` +
       `see <a href="../NAME_COLLISIONS.md">NAME_COLLISIONS.md</a> for the full list.`;
   } catch (e) { /* report not built yet */ }
 }

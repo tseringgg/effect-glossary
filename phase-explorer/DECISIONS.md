@@ -9,6 +9,54 @@ on, and what it does *not* establish.
 
 ---
 
+## 2026-09-28 — A coverage ledger, the dropped cards back, and a placement layer
+
+**Universe.** MTGJSON AtomicCards (5.3.0+20260921), keyed by oracle id: it holds
+every one of the snapshot's 33,834 ids, while Scryfall's oracle export misses
+216 Alchemy `A-` cards the snapshot has. Scryfall-only ids (3,641: art series,
+tokens, emblems, …) are in the universe as `out_of_scope` with a reason rather
+than silently absent. Planes, schemes and vanguards (416) are also
+`out_of_scope` (`deferred_card_type:*`) — real cards, but not deck cards, and
+a later separate pass, as vanilla is. Universe 38,906; in scope 34,849.
+
+**Status rule.** One status per card: the furthest clustering-pass stage any
+face reached. ~410 cards have faces at different stages; each face's stage is
+in the evidence. `unparsed` keeps the pipeline's meaning but now carries
+`keywords_only` (1,220 of 1,267): those cards' text is fully parsed — into the
+`keywords` field, which `classify()` does not look at.
+
+**Collisions: 63, not 80.** The old figure summed losers per key. Of 78
+distinct losing ids, 63 are cards absent from the snapshot, 12 are present and
+lost only one face (the Strixhaven twins: *Emeritus of Woe // Demonic Tutor*
+lost its back face; classic Demonic Tutor, Brainstorm and Swords to Plowshares
+were never missing, contrary to what KNOWN_LIMITATIONS.md said), and 3 postdate
+the snapshot. Both documents are corrected, the count at its generator.
+
+**Recovery is gated on parity.** oracle-gen v0.1.15 (commit 930172dab041,
+the export's own release, pinned nightly) regenerated all 63 as a separate
+overlay, one card per run. Gate: the same binary over the current AtomicCards
+reproduced 34,481 comparable entries byte-for-byte; the other 16 differed only
+through MTGJSON metadata edited since April (keyword lists, one colour list, and
+"Joven and Chandler" now naming two cards) and matched once that input was
+restored — 34,497 / 34,497, parse fields only, since legalities/printings/
+rulings are copied from the input file. Recovered: 22 faces clean, 38 partial,
+5 unparsed.
+
+**Floor 0.80 for proximity.** Clustered cards score ≥ 0.80 against their own
+leaf centroid 96.6% of the time (1st percentile 0.73); noise cards between 0.70
+and 0.80 are mostly two-effect cards matching one effect at ~1/√2. Placed: 426
+noise cards and 19 recovered; 3,542 below the floor go to a review queue with
+their best leaf and score. Vanilla: 344 cards to "No abilities".
+
+**What this does not establish.** A proximity placement means the card's
+top-level effect signature resembles a leaf's, and it inherits that leaf's
+branches, including any label the leaf already carries imperfectly (Regrowth
+lands in a leaf filed under "Bounce removal"). Partial, unparsed and
+unmodelled-node cards are not placed: they need their own rule, and the ledger
+keeps them visible with `awaiting_rule:*`.
+
+---
+
 ## 2026-09-27 — Highlights narrowed to the effect that was actually matched
 
 The highlight used to cover each ability's whole `description`. That is

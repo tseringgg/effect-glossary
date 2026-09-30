@@ -24,8 +24,15 @@ Measured against MTGJSON AtomicCards (v5.3.0+20260921):
 |---|---|
 | face-name keys contested by 2+ oracle ids in MTGJSON | **50** |
 | contested keys present in the snapshot holding one id while others were dropped | **44** |
-| distinct oracle ids silently missing as a result | **80** |
+| cards missing from the snapshot as a result (`card_dropped`) | **63** |
+| cards that lost one face's key but are present under another face | 12 |
+| losing ids first printed after the snapshot (never competed) | 3 |
 | contested keys absent from the snapshot entirely | 6 |
+
+An earlier version of this table said **80** oracle ids were missing. That
+figure summed losers per key: it double-counted ids that lost more than one
+key and included the other two classes above. 63 is the number of cards
+actually absent.
 
 The full list, naming the winner and every dropped card, is regenerated into
 [`NAME_COLLISIONS.md`](NAME_COLLISIONS.md).
@@ -42,8 +49,16 @@ everyone means:
   (PSOS, SOS), `legalities: {}`
 
 A 46-printing staple lost its slot to a 2-printing face of a different card.
-Other notable casualties include **Ancestral Recall**, **Brainstorm**,
-**Demonic Tutor**, **Channel**, **Braingeyser**, and **Careful Study**.
+The other classic casualties are **Ancestral Recall**, **Channel**,
+**Braingeyser** and **Careful Study**.
+
+**Demonic Tutor**, **Brainstorm** and classic **Swords to Plowshares** are *not*
+missing — an earlier version of this section said Brainstorm and Demonic Tutor
+were. Those classics won their keys. What lost was the Strixhaven twin's
+prepare face: *Emeritus of Woe // Demonic Tutor*, *Harmonized Trio //
+Brainstorm* and *Emeritus of Truce // Swords to Plowshares* are in the snapshot
+under their front faces, minus the back face (`face_lost_card_present` in
+NAME_COLLISIONS.md; recorded per card in the coverage ledger's evidence).
 
 ### How this tool responds
 
@@ -55,11 +70,16 @@ wrinkles the data forces:
   per-face ids are suffixed `/0`, `/1`;
 - some entries carry no oracle id, and fall back to `noid:<export key>`.
 
-**What this tool cannot do:** show you a dropped card. It is not in the
-snapshot. Re-keying prevents *further* collisions inside our own index; it
-cannot resurrect what the export already discarded. Recovering those 80 cards
-means regenerating card-data from MTGJSON with a non-colliding key, which is
-upstream work.
+Re-keying prevents *further* collisions inside our own index; it cannot
+resurrect what the export already discarded. The 63 dropped cards are
+regenerated separately by `src/recover_dropped.py`: phase-rs `oracle-gen` at
+v0.1.15 (the snapshot's own release), run once per card on a one-card
+AtomicCards input, into `data/overlay/recovered-cards.json`. `card-data.json`
+is untouched. A hard gate precedes it: the same binary must reproduce every
+comparable snapshot entry byte-for-byte (34,497 of 34,497). The overlay's
+`legalities`/`printings`/`rulings`/keyword metadata come from the newer
+AtomicCards, not April's. The 12 lost faces of present cards are *not*
+recovered — adding a face would change an existing card's parse.
 
 ---
 

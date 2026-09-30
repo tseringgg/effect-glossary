@@ -9,3 +9,5 @@ __pycache__/
 
 # Scryfall image join reference -- re-fetch with src/build_images.py --refresh
 data/scryfall-oracle-cards.jsonl.gz
+data/scryfall-sets.json
+data/scryfall-default-cards.jsonl.gz

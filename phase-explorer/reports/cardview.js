@@ -29,6 +29,9 @@ async function chunk(n) {
   }
   return CHUNKS.get(n);
 }
+// Structure that does not live in build/chunks/ (the recovered-card overlay,
+// shipped inside build/placements.json) is seeded under its own chunk name.
+function seedChunk(n, data) { CHUNKS.set(n, Promise.resolve(data)); }
 
 // ---- browsing facets -----------------------------------------------------
 // Values come off the index rows that are already loaded (`col`, `mv`, `cty`,
@@ -340,7 +343,7 @@ async function toggleDetail(btn, r, tr, opts = {}) {
   if (opts.wire) opts.wire(td);
 }
 
-return { esc, hl, chunk, COLOURS, COLOUR_NAME, NO_COST, mvLabel, colourLabel,
+return { esc, hl, chunk, seedChunk, COLOURS, COLOUR_NAME, NO_COST, mvLabel, colourLabel,
          costChip, newFilter, filterActive, match, tally, rowHTML, detailHTML,
          toggleDetail, setSpans, setHighlight, hasSpans, markText,
          setImages, hasImages, imageURL };

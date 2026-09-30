@@ -149,6 +149,13 @@
   .chip-review { border-color:var(--corr); color:var(--corr); background:var(--corrbg); }
   .chip-mixed  { border-color:#7a4bbd; color:#5b338f; background:#f2ebfb; }
   .chip-uniq   { border-color:var(--unparsed); color:var(--unparsed); background:var(--gap); }
+  /* Proximity layer (build/placements.json): cards placed by nearest centroid,
+     not by the clustering. Dashed everywhere, so it never reads as a leaf member. */
+  .chip-near   { border-color:#2f7d6d; color:#1f5e51; background:#e6f4f0; border-style:dashed; }
+  .chip-rec    { border-color:#2f7d6d; color:#1f5e51; background:#fff; }
+  .nearn { color:#1f5e51; font-weight:normal; }
+  #tree details.vanbr > summary .bname { color:var(--vanilla); }
+  .covbox label { display:block; margin-top:4px; cursor:pointer; }
   .statenote { font-size:10px; color:var(--mut); border-top:1px solid var(--line);
                margin-top:8px; padding-top:6px; }
   .qbox { background:var(--corrbg); border:1px solid var(--corr); padding:5px 7px;
@@ -362,6 +369,13 @@ let UNIQ = new Set();          // leaves whose structure is shared with nothing
 let BRANCH_SECTOR = new Map(); // branch name -> its sector object
 let BRANCH_CARDS = new Map();  // branch name -> Set<entry id>   (built on demand)
 let EFF_SIBLINGS = new Map();  // branch name -> [effect-sibling branch objects]
+// Placement layer (src/build_placements.py). Kept apart from LEAF so every
+// count the clustering produced stays exactly what it was; the tree shows
+// these as a separate "+N nearby" figure.
+let PL = null;                 // build/placements.json, or null
+let PROX = new Map();          // leaf -> [face id] placed by proximity
+let VANILLA = [];              // face ids placed by the vanilla rule
+let NEARBY = true;             // include proximity cards in card lists
 
 const f = CV.newFilter();
 let scope = null, pool = [], shown = [], page = 0;
@@ -427,7 +441,23 @@ async function boot() {
     CV.setImages(IMGMETA);
   } catch (e) { CV.setImages(null); IMGMETA = {}; }
 
+  try { PL = await fetch("../build/placements.json").then(r => r.json()); }
+  catch (e) { PL = null; }
+  try { NEARBY = localStorage.getItem("browse.nearby") !== "0"; } catch (e) { /* default on */ }
+
   for (const r of ROWS) ROW.set(r.id, r);
+  if (PL) {
+    // Recovered cards are not in build/index.json (they were never in the
+    // snapshot); their rows and structure ride in the layer file.
+    for (const r of PL.recovered.rows) ROW.set(r.id, r);
+    CV.seedChunk("recovered", PL.recovered.chunk);
+    for (const [id, p] of Object.entries(PL.faces)) {
+      if (p.method === "proximity") {
+        if (!PROX.has(p.leaf)) PROX.set(p.leaf, []);
+        PROX.get(p.leaf).push(id);
+      } else if (p.method === "vanilla_rule") VANILLA.push(id);
+    }
+  }
   for (const [id, leaf] of Object.entries(CLU.cards)) {
     if (leaf < 0) continue;                       // HDBSCAN noise: no leaf
     if (!LEAF.has(leaf)) LEAF.set(leaf, []);
@@ -484,13 +514,44 @@ function renderCoverage() {
     `appear nowhere below — use the ` +
     `<a href="card-explorer.html">parse-audit explorer</a> to reach those. ` +
     `Assignment is many-to-many: a card in 3 branches is listed under all 3, which is why ` +
-    `branch counts sum past the corpus.`;
+    `branch counts sum past the corpus.` +
+    (PL ? `<br><b>Placement layer.</b> <span class="nearn">+${(PL.meta.counts["proximity:noise"] || 0).toLocaleString()}` +
+      `</span> unclustered and <span class="nearn">+${(PL.meta.counts["proximity:recovered"] || 0).toLocaleString()}</span> ` +
+      `recovered faces placed by proximity (cosine ≥ ${PL.meta.floor} to a leaf centroid), ` +
+      `marked <span class="chip chip-near">nearby</span> and counted separately as "+N nearby" — ` +
+      `every clustered count above is unchanged. ${VANILLA.length.toLocaleString()} cards with no ` +
+      `text sit under "${esc(PL.meta.vanilla_branch)}". Full accounting: ` +
+      `<a href="ledger.html">coverage ledger</a>.` +
+      `<label><input type="checkbox" id="nearby"${NEARBY ? " checked" : ""}> include ` +
+      `proximity-placed cards in card lists</label>` : "");
+  const cb = document.getElementById("nearby");
+  if (cb) cb.onchange = () => {
+    NEARBY = cb.checked;
+    try { localStorage.setItem("browse.nearby", NEARBY ? "1" : "0"); } catch (e) { /* session only */ }
+    BRANCH_CARDS.clear();
+    if (scope) pick(scope);
+  };
 }
 
 // ---- tree: the primary navigation ---------------------------------------
 // sector -> branch -> leaf. Native <details>, collapsed by default. Every set
 // is a lookup: sector branches from sectors.json, branch.leaves from
 // branches.json, leaf members from clusters.json.
+
+// A leaf's cards for a card LIST: clustered members, plus the proximity layer
+// when it is switched on. Tree COUNTS never use this -- they read LEAF alone.
+function leafIds(l) {
+  const c = LEAF.get(l) || [];
+  return NEARBY && PROX.has(l) ? c.concat(PROX.get(l)) : c;
+}
+function nearCount(leaves) {
+  let n = 0;
+  for (const l of leaves) n += (PROX.get(l) || []).length;
+  return n;
+}
+function nearChip(n) {
+  return n ? ` <span class="nearn" title="placed by proximity to these leaves' centroids (cosine ≥ ${PL.meta.floor}) — a separate layer, not counted in the clustered figure">+${n.toLocaleString()} nearby</span>` : "";
+}
 
 function leafChips(l) {
   let h = "";
@@ -531,7 +592,7 @@ function leafRow(l, branch) {
   const phrase = leafPhrase(l);
   return `<div class="leafrow pick" role="button" tabindex="0" ` +
          `data-pick="${esc(key)}" title="${esc(raw)}">` +
-         `<div class="leafhead">leaf ${l} · <b>${n.toLocaleString()}</b> cards ` +
+         `<div class="leafhead">leaf ${l} · <b>${n.toLocaleString()}</b> cards${nearChip((PROX.get(l) || []).length)} ` +
          `${leafChips(l)}</div>` +
          `<div class="leafsays${leafEdited(l) ? " edited" : ""}">${esc(phrase) ||
             `<span class="leaflabel">${esc(raw.slice(0, 70))}</span>`}</div>` +
@@ -600,14 +661,17 @@ function effectSiblings(branchName) {
   return out;
 }
 
-function branchCardSet(branchName) {
-  if (!BRANCH_CARDS.has(branchName)) {
+function branchCardSet(branchName, withNearby = false) {
+  const k = (withNearby ? "+" : "") + branchName;
+  if (!BRANCH_CARDS.has(k)) {
     const b = BR.branches.find(x => x.name === branchName);
     const set = new Set();
-    for (const l of (b ? b.leaves : [])) for (const id of (LEAF.get(l) || [])) set.add(id);
-    BRANCH_CARDS.set(branchName, set);
+    for (const l of (b ? b.leaves : [])) {
+      for (const id of (withNearby ? leafIds(l) : (LEAF.get(l) || []))) set.add(id);
+    }
+    BRANCH_CARDS.set(k, set);
   }
-  return BRANCH_CARDS.get(branchName);
+  return BRANCH_CARDS.get(k);
 }
 
 // Splits `ids` (a card-id list already scoped to one branch)
@@ -617,12 +681,12 @@ function branchCardSet(branchName) {
 // in practice, but the code does not assume it, matching the many-to-many
 // discipline everywhere else in this tree. `other` is whatever matched no
 // sibling at all -- kept, never dropped.
-function effectGroupsFor(ids, branchName) {
+function effectGroupsFor(ids, branchName, withNearby = false) {
   const siblings = effectSiblings(branchName);
   if (!siblings.length) return null;
   const matched = new Set();
   const groups = siblings.map(sib => {
-    const cs = branchCardSet(sib.name);
+    const cs = branchCardSet(sib.name, withNearby);
     const hit = ids.filter(id => cs.has(id));
     hit.forEach(id => matched.add(id));
     return { name: sib.name, auto: !!sib.auto_named, ids: hit };
@@ -674,7 +738,7 @@ function branchBlockHTML(b) {
   const ids = b.leaves.reduce((a, l) => a.concat(LEAF.get(l) || []), []);
   return `<details data-branch="${esc(b.name)}" class="${auto ? "auto" : ""}">` +
     `<summary><span class="bname">${esc(b.name)}</span> ${badge}${marks} ` +
-    `<span class="bmeta">— ${b.n_cards.toLocaleString()} cards · ${b.n_leaves} leaves · ` +
+    `<span class="bmeta">— ${b.n_cards.toLocaleString()} cards${nearChip(nearCount(b.leaves))} · ${b.n_leaves} leaves · ` +
     `${esc(b.source)}</span></summary>` +
     `<div class="brule">rule: ${esc(b.rule)}` +
     (auto ? ` <b>This name was generated from structure, not sourced.</b>` : "") + `</div>` +
@@ -688,10 +752,10 @@ function branchBlockHTML(b) {
     `</details>`;
 }
 
-function sectorCardIds(sec) {
+function sectorCardIds(sec, withNearby = false) {
   const seen = new Set(), out = [];
   for (const l of sec.leaves) {
-    for (const id of (LEAF.get(l) || [])) if (!seen.has(id)) { seen.add(id); out.push(id); }
+    for (const id of (withNearby ? leafIds(l) : (LEAF.get(l) || []))) if (!seen.has(id)) { seen.add(id); out.push(id); }
   }
   return out;
 }
@@ -705,7 +769,7 @@ function uniqueBlockHTML() {
   const uniqCards = uniq.reduce((a, u) => a + u.n_cards, 0);
   return `<details class="unbr" data-branch="Unique effect"><summary>` +
     `<span class="bname">Unique effect</span> ` +
-    `<span class="bmeta">— ${uniqCards.toLocaleString()} cards · ${uniq.length} leaves · ` +
+    `<span class="bmeta">— ${uniqCards.toLocaleString()} cards${nearChip(nearCount(uniq.map(u => u.leaf)))} · ${uniq.length} leaves · ` +
     `structure shared with no other leaf</span></summary>` +
     `<div class="brule">These leaves went through the curated rules, the auto-named ` +
     `fallback and the review queue and came out the other side: their structure is not ` +
@@ -713,6 +777,20 @@ function uniqueBlockHTML() {
     `is pending on them.</div>` +
     `<button class="allbtn pickbtn" data-pick="U">all ${uniqCards.toLocaleString()} cards →</button>` +
     `<div class="leaves">${uniq.map(u => leafRow(u.leaf)).join("")}</div></details>`;
+}
+
+// "No abilities": cards with no oracle text, placed by rule rather than by
+// the clustering (they have no structure to cluster). A branch of its own,
+// outside the sectors, like Unique effect.
+function vanillaBlockHTML() {
+  return `<details class="vanbr" data-branch="${esc(PL.meta.vanilla_branch)}"><summary>` +
+    `<span class="bname">${esc(PL.meta.vanilla_branch)}</span> ` +
+    `<span class="chip chip-near" title="placed by rule, not by the clustering">vanilla rule</span> ` +
+    `<span class="bmeta">— ${VANILLA.length.toLocaleString()} cards · no oracle text</span></summary>` +
+    `<div class="brule">Cards with no rules text at all. They have no structure to cluster, ` +
+    `so they are placed here by rule rather than left out.</div>` +
+    `<button class="allbtn pickbtn" data-pick="V">all ${VANILLA.length.toLocaleString()} cards →</button>` +
+    `</details>`;
 }
 
 // Sectors (src/build_sectors.py) are the top level: bigger structural
@@ -737,7 +815,7 @@ function renderTree() {
       h += `<details class="sector" data-sector="${esc(sec.name)}">` +
         `<summary><span class="bname">${esc(sec.name)}</span> ` +
         `<span class="chip chip-tier">tier ${sec.tier}</span> ` +
-        `<span class="bmeta">— ${cardCount.toLocaleString()} cards · ${sec.n_leaves} leaves · ` +
+        `<span class="bmeta">— ${cardCount.toLocaleString()} cards${nearChip(nearCount(sec.leaves))} · ${sec.n_leaves} leaves · ` +
         `${branches.length} branch${branches.length === 1 ? "" : "es"}</span></summary>` +
         `<div class="brule">${esc(sec.why)}</div>` +
         `<button class="allbtn pickbtn" data-pick="SEC␟${esc(sec.name)}">` +
@@ -766,6 +844,7 @@ function renderTree() {
   }
 
   h += uniqueBlockHTML();
+  if (VANILLA.length) h += vanillaBlockHTML();
 
   host.innerHTML = h;
   host.querySelectorAll("[data-pick]").forEach(btn => {
@@ -788,6 +867,7 @@ function parsePick(s) {
   if (p[0] === "SEC") return { kind: "sector", sector: p[1] };
   if (p[0] === "B") return { kind: "branch", branch: p[1] };
   if (p[0] === "U") return { kind: "unique" };
+  if (p[0] === "V") return { kind: "vanilla" };
   // E␟branch␟effect; X is the same for the "no effect matched" remainder.
   if (p[0] === "E") return { kind: "effect", branch: p[1], effect: p[2] };
   if (p[0] === "X") return { kind: "other-effect", branch: p[1] };
@@ -853,7 +933,7 @@ function baseIds(branch) {
   const b = BR.branches.find(x => x.name === branch);
   const seen = new Set(), out = [];
   for (const l of (b ? b.leaves : [])) {
-    for (const id of (LEAF.get(l) || [])) if (!seen.has(id)) { seen.add(id); out.push(id); }
+    for (const id of leafIds(l)) if (!seen.has(id)) { seen.add(id); out.push(id); }
   }
   return out;
 }
@@ -863,21 +943,23 @@ function poolFor(sc) {
   if (sc.kind === "branch") {
     ids = baseIds(sc.branch);
   } else if (sc.kind === "leaf") {
-    ids = LEAF.get(sc.leaf) || [];
+    ids = leafIds(sc.leaf);
   } else if (sc.kind === "unique") {
     const seen = new Set();
     for (const u of (BR.unique_effect || [])) {
-      for (const id of (LEAF.get(u.leaf) || [])) if (!seen.has(id)) { seen.add(id); ids.push(id); }
+      for (const id of leafIds(u.leaf)) if (!seen.has(id)) { seen.add(id); ids.push(id); }
     }
+  } else if (sc.kind === "vanilla") {
+    ids = VANILLA;
   } else if (sc.kind === "effect") {
-    const cs = branchCardSet(sc.effect);
+    const cs = branchCardSet(sc.effect, NEARBY);
     ids = baseIds(sc.branch).filter(id => cs.has(id));
   } else if (sc.kind === "other-effect") {
-    const eg = effectGroupsFor(baseIds(sc.branch), sc.branch);
+    const eg = effectGroupsFor(baseIds(sc.branch), sc.branch, NEARBY);
     ids = eg ? eg.other : [];
   } else if (sc.kind === "sector") {
     const sec = SECT ? SECT.sectors.find(s => s.name === sc.sector) : null;
-    ids = sec ? sectorCardIds(sec) : [];
+    ids = sec ? sectorCardIds(sec, NEARBY) : [];
   }
   return ids.map(id => ROW.get(id)).filter(Boolean)
             .sort((a, b) => a.name.localeCompare(b.name));
@@ -888,6 +970,7 @@ function markActive() {
   const key = scope.kind === "sector" ? `SEC␟${scope.sector}`
             : scope.kind === "branch" ? `B␟${scope.branch}`
             : scope.kind === "unique" ? "U"
+            : scope.kind === "vanilla" ? "V"
             : scope.kind === "effect" ? `E␟${scope.branch}␟${scope.effect}`
             : scope.kind === "other-effect" ? `X␟${scope.branch}`
             : `L␟${scope.branch || ""}␟${scope.leaf}`;
@@ -904,7 +987,11 @@ function renderScope() {
   const b = scope.branch ? BR.branches.find(x => x.name === scope.branch) : null;
   let crumb = "", state = "";
 
-  if (scope.kind === "unique") {
+  if (scope.kind === "vanilla") {
+    crumb = `<b>${esc(PL.meta.vanilla_branch)}</b>`;
+    state = `<div class="note">Cards with no oracle text, placed by the vanilla rule — ` +
+      `not by the clustering.</div>`;
+  } else if (scope.kind === "unique") {
     crumb = `<b>Unique effect</b>`;
     state = `<div class="note">${(BR.unique_effect||[]).length} leaves whose structure is ` +
       `shared with no other leaf — a terminal finding, not a backlog.</div>`;
@@ -1229,10 +1316,12 @@ function syncMv() {
 function run() {
   shown = CV.filterActive(f) ? pool.filter(r => CV.match(r, f)) : pool;
   const active = CV.filterActive(f);
+  const nNear = pool.filter(r => isNear(r.id)).length;
   document.getElementById("scount").innerHTML =
-    active
+    (active
       ? `— <b>${shown.length.toLocaleString()}</b> of ${pool.length.toLocaleString()} cards match`
-      : `— <b>${pool.length.toLocaleString()}</b> cards`;
+      : `— <b>${pool.length.toLocaleString()}</b> cards`) +
+    (nNear ? ` <span class="nearn">(${nNear.toLocaleString()} of them placed by proximity)</span>` : "");
   const empty = document.getElementById("empty");
   document.getElementById("pager").hidden = !shown.length;
   empty.hidden = !!shown.length;
@@ -1263,7 +1352,7 @@ function drawRows(slice) {
   body.innerHTML = "";
   for (const r of slice) {
     const tr = document.createElement("tr");
-    tr.innerHTML = CV.rowHTML(r, { cost: true });   // shared renderer
+    tr.innerHTML = CV.rowHTML(r, { cost: true, extra: layerChips });   // shared renderer
     body.appendChild(tr);
     tr.querySelector("button").onclick = ev =>
       CV.toggleDetail(ev.target, r, tr, { prefix: provBox, wire: wireDetail });
@@ -1282,7 +1371,7 @@ function drawImages(slice) {
     tile.className = "tile";
     tile.innerHTML = url
       ? `<img loading="lazy" src="${esc(url)}" alt="${esc(r.name)}" title="${esc(r.name)}">` +
-        `<div class="tname">${esc(r.name)}</div>`
+        `<div class="tname">${esc(r.name)}${layerChips(r)}</div>`
       : `<div class="noimg"><b>${esc(r.name)}</b>` +
         `<div class="note">no image published for this oracle id` +
         (r.name.startsWith("A-") ? ` — Alchemy rebalanced cards are digital-only ` +
@@ -1309,7 +1398,40 @@ async function toggleTileDetail(tile, r) {
 
 // Where this card sits in the tree, shown above its parsed structure. Same
 // `prefix` hook the audit explorer uses for its cluster box.
+function isNear(id) {
+  const p = PL && PL.faces[id];
+  return !!(p && p.method === "proximity");
+}
+// Marks a card that is on screen through the placement layer, never through
+// the clustering: proximity cards and recovered cards each carry their chip.
+function layerChips(r) {
+  const p = PL && PL.faces[r.id];
+  let h = "";
+  if (p && p.method === "proximity") {
+    h += `<br><span class="chip chip-near" title="Not clustered: placed at the nearest leaf centroid, cosine ${p.similarity.toFixed(3)} (floor ${PL.meta.floor}). Source: ${p.source}.">nearby · ${p.similarity.toFixed(2)}</span>`;
+  }
+  if (r.recovered) {
+    h += `<br><span class="chip chip-rec" title="Dropped from the snapshot by a face-name collision; regenerated by phase-rs oracle-gen v0.1.15 into data/overlay/recovered-cards.json">recovered</span>`;
+  }
+  return h;
+}
+
 function provBox(r) {
+  const p = PL && PL.faces[r.id];
+  if (p && p.method !== "clustered") {
+    const brs = p.leaf != null ? (BR.leaf_branches[String(p.leaf)] || []) : [p.branch];
+    return `<div class="clubox"><b class="hdr">Where this card sits</b>` +
+      (p.method === "proximity"
+        ? `<b>placed by proximity</b>, not clustered — nearest centroid is leaf <b>${p.leaf}</b> ` +
+          `at cosine <b>${p.similarity.toFixed(3)}</b> (floor ${PL.meta.floor}) · ` +
+          `<span class="clulabel">${esc(CLU.labels[p.leaf] || "")}</span>`
+        : `<b>placed by rule</b> (${esc(p.method)}) — no oracle text, nothing to cluster`) +
+      (brs.length ? `<div style="margin:3px 0">branches: ` +
+        brs.map(b => `<span class="brbadge">${esc(b)}</span>`).join("") + `</div>` : "") +
+      (r.recovered ? `<div class="note">Recovered card: dropped from the snapshot by a ` +
+        `face-name collision, regenerated by the same parser version.</div>` : "") +
+      `<div class="note">This card changes no leaf centroid, cohesion score or count.</div></div>`;
+  }
   const l = CLU.cards[r.id];
   const brs = (l != null && l >= 0) ? (BR.leaf_branches[String(l)] || []) : [];
   return `<div class="clubox"><b class="hdr">Where this card sits</b>` +

@@ -16,8 +16,15 @@ python src/audit_leaf_types.py    # -> build/type_audit.json, reports/leaf-type-
 python src/leaf_phrases.py        # -> build/leaf_phrases.json, reports/leaf-phrases.md
 python src/match_spans.py         # -> build/match_spans.json, build/effect_anchors.json
 python src/build_images.py        # -> build/card_images.json  (downloads ~25 MB from Scryfall)
+python src/build_ledger.py        # -> build/ledger.json, reports/coverage-ledger.md
+python src/recover_dropped.py     # -> data/overlay/recovered-cards.json (needs oracle-gen, see below)
+python src/build_placements.py    # -> build/placements.json
+python src/build_ledger.py        # again: adds each card's placement
 python src/serve.py               # opens http://localhost:8765/reports/browse.html
 ```
+
+The ledger runs twice because placement reads the ledger's statuses and the
+ledger then records placement; placement never feeds back into a status.
 
 `cluster_structural.py` is optional — the audit page works without it and simply
 shows no cluster column. Requires `hdbscan`, `numpy`, `scipy`. `audit_leaf_types.py`
@@ -35,7 +42,8 @@ The page must be served over HTTP; it fetches JSON, which `file://` forbids.
 |---|---|---|
 | `data/card-data.json` | 83 MB | the snapshot under inspection |
 | `data/AtomicCards.json.gz` | 52 MB | MTGJSON reference, only for collision detection |
-| `data/scryfall-oracle-cards.jsonl.gz` | 25 MB | Scryfall reference, only for the image join |
+| `data/scryfall-oracle-cards.jsonl.gz` | 25 MB | Scryfall reference: image join, out-of-scope ids |
+| `data/scryfall-default-cards.jsonl.gz` | — | Scryfall `default_cards` bulk export: first-printing dates for the ledger and NAME_COLLISIONS.md (URL from `https://api.scryfall.com/bulk-data/default-cards`) |
 
 ```
 curl -o data/card-data.json     https://data.phase-rs.dev/card-data.json
@@ -43,6 +51,39 @@ curl -o data/AtomicCards.json.gz https://mtgjson.com/api/v5/AtomicCards.json.gz
 # the Scryfall export is fetched by the script itself:
 python src/build_images.py --refresh
 ```
+
+## Coverage ledger (reports/ledger.html)
+
+One row per oracle id in the card universe — MTGJSON AtomicCards plus
+Scryfall-only ids — with exactly one status (`clustered`, `noise`, `partial`,
+`unparsed`, `missing_from_export`, `out_of_scope`, …), a reason code and the
+evidence behind it. Exclusivity is computed, not assumed: pairwise
+intersections, sum = universe, and reconciliation against the counts earlier
+passes produced. The page filters by status, reason and placement, searches by
+name or oracle id, ranks gap causes (which `Unimplemented`/`GenericEffect`
+fragments cost the most cards), and shows each card's raw evidence and parse.
+Out of scope: tokens, art series, emblems and other non-cards, plus planes,
+schemes and vanguards (deferred to a separate pass).
+
+**Recovery.** `src/recover_dropped.py` regenerates the 63 collision-dropped
+cards with phase-rs `oracle-gen` at v0.1.15 — the snapshot's own release —
+one card per run so nothing can collide. It first proves parser parity: the
+same binary must reproduce every comparable snapshot entry byte-for-byte, or
+nothing is written. Building it on Windows: rustup with
+`--default-host x86_64-pc-windows-gnu`, toolchain `nightly-2026-04-19` (the
+tag's `rust-toolchain.toml`), then
+`cargo +nightly-2026-04-19 build --profile tool --bin oracle-gen --features cli -p engine`.
+Without MSVC the bundled `dlltool` needs an assembler: pass
+`RUSTFLAGS=-Cdlltool=<wrapper>` where the wrapper calls the bundled
+`dlltool.exe -S <path to as.exe>` (any MinGW-w64 binutils `as.exe`). Point
+`PHASE_ORACLE_GEN` at the built binary.
+
+**Placement.** `src/build_placements.py` places `noise` cards and recovered
+clean parses at the nearest leaf centroid in the clustering's own feature space
+(cosine ≥ 0.80), and `vanilla` cards under "No abilities". It is a separate
+layer: centroids come from clustered members only, and no leaf, branch, sector,
+map or cohesion number changes. Browse shows those cards with a dashed
+`nearby` chip and a separate "+N nearby" count, and can hide them.
 
 ## Two pages
 
@@ -329,6 +370,10 @@ looks wrong during real use.
 - [KNOWN_LIMITATIONS.md](KNOWN_LIMITATIONS.md) — measured caveats, including the
   corrections overlay (§4)
 - [NAME_COLLISIONS.md](NAME_COLLISIONS.md) — generated: every dropped card
+- [reports/coverage-ledger.md](reports/coverage-ledger.md) — generated: every card
+  in the universe, one status each, plus placement coverage
+- [data/overlay/recovered-cards.json](data/overlay/recovered-cards.json) — the 63
+  collision-dropped cards, regenerated (tracked; the snapshot is not modified)
 - [PROVENANCE.md](PROVENANCE.md) — snapshot identity
 - [corrections/corrections.json](corrections/corrections.json) — hand-maintained
   correction log, [corrections/SCHEMA.md](corrections/SCHEMA.md) for its format
