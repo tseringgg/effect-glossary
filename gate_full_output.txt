@@ -1,0 +1,70 @@
+gate: generating the full current AtomicCards
+gate: still differs: acolyte of bahamut
+gate: still differs: agent of the iron throne
+gate: still differs: agent of the shadow thieves
+gate: still differs: aminatou, the fateshifter
+gate: still differs: byode, inverse sun
+gate: still differs: candlekeep sage
+gate: still differs: clan crafter
+gate: still differs: cloakwood hermit
+gate: still differs: commodore guff
+gate: still differs: criminal past
+gate: still differs: cultist of the absolute
+gate: still differs: daretti, scrap savant
+gate: still differs: dihada, binder of wills
+gate: still differs: dragon cultist
+gate: still differs: dungeon delver
+gate: still differs: elminster
+gate: still differs: ersta, friend to all
+gate: still differs: estrid, the masked
+gate: still differs: far traveler
+gate: still differs: feywild visitor
+gate: still differs: flaming fist
+gate: still differs: folk hero
+gate: still differs: freyalise, llanowar's fury
+gate: still differs: guild artisan
+gate: still differs: hardy outlander
+gate: still differs: haunted one
+gate: still differs: heroes of kamigawa
+gate: still differs: inspiring leader
+gate: still differs: jared carthalion
+gate: still differs: jeska, thrice reborn
+gate: still differs: lord windgrace
+gate: still differs: master chef
+gate: still differs: minsc & boo, timeless heroes
+gate: still differs: nahiri, the lithomancer
+gate: still differs: noble heritage
+gate: still differs: ob nixilis of the black oath
+gate: still differs: passionate archaeologist
+gate: still differs: popular entertainer
+gate: still differs: quintorius, history chaser
+gate: still differs: raised by giants
+gate: still differs: rowan kenrith
+gate: still differs: saheeli, the gifted
+gate: still differs: scion of halaster
+gate: still differs: shameless charlatan
+gate: still differs: sivitri, dragon master
+gate: still differs: street urchin
+gate: still differs: svega, the unconventional
+gate: still differs: sword coast sailor
+gate: still differs: tasha, the witch queen
+gate: still differs: tavern brawler
+gate: still differs: teferi, temporal archmage
+gate: still differs: tevesh szat, doom of fools
+gate: still differs: the grand calcutron
+gate: still differs: the legend of arena
+gate: still differs: the mystery raceway
+gate: still differs: the vegetable car
+gate: still differs: veteran soldier
+gate: still differs: will kenrith
+gate: still differs: wizard from beyond
+{
+ "identical": 34429,
+ "identical_after_april_metadata": 16,
+ "different": 59,
+ "excluded_inputs_changed": 116,
+ "excluded_key_reassigned": 23,
+ "excluded_absent": 2,
+ "compared": 34504,
+ "passed": false
+}

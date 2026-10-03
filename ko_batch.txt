@@ -1,0 +1,180 @@
+================================================================================
+Nacatl Outlander | 333555d6-3fcc-4021-ab60-afc36d723877
+ORACLE TEXT: 'Protection from blue'
+KEYWORDS: [{"Protection": {"Color": "Blue"}}]
+abilities/triggers/statics/replacements empty: True
+
+================================================================================
+Baneslayer Angel | 0e11792b-7fe5-4208-aa0b-e5d09b2b65fe
+ORACLE TEXT: 'Flying, first strike, lifelink, protection from Demons and from Dragons'
+KEYWORDS: ["FirstStrike", "Flying", "Lifelink", {"Protection": {"CardType": "demons"}}, {"Protection": {"CardType": "dragons"}}]
+abilities/triggers/statics/replacements empty: True
+
+================================================================================
+Razortooth Rats | 72e9a207-dad9-4c51-8040-e90a36bd35e6
+ORACLE TEXT: "Fear (This creature can't be blocked except by artifact creatures and/or black creatures.)"
+KEYWORDS: ["Fear"]
+abilities/triggers/statics/replacements empty: True
+
+================================================================================
+Vulshok Berserker | 694f7e51-7b8b-4f00-bd77-a52eded4aaa1
+ORACLE TEXT: 'Haste (This creature can attack and {T} as soon as it comes under your control.)'
+KEYWORDS: ["Haste"]
+abilities/triggers/statics/replacements empty: True
+
+================================================================================
+Ridgetop Raptor | 600a8c9e-e158-4fff-8c4d-c3a1bfd006e8
+ORACLE TEXT: 'Double strike (This creature deals both first-strike and regular combat damage.)'
+KEYWORDS: ["DoubleStrike"]
+abilities/triggers/statics/replacements empty: True
+
+================================================================================
+Nimbus of the Isles | 3d529824-8e82-4c44-8e28-ed3419740c11
+ORACLE TEXT: "Flying (This creature can't be blocked except by creatures with flying or reach.)"
+KEYWORDS: ["Flying"]
+abilities/triggers/statics/replacements empty: True
+
+================================================================================
+Thousand-legged Kami | 2f3bd1fc-387e-41b7-b19b-62dd9fbe2d10
+ORACLE TEXT: 'Soulshift 7 (When this creature dies, you may return target Spirit card with mana value 7 or less from your graveyard to your hand.)'
+KEYWORDS: [{"Soulshift": 7}]
+abilities/triggers/statics/replacements empty: True
+
+================================================================================
+Starlit Angel | e66e3450-bddb-46ac-bc7e-c7732e258374
+ORACLE TEXT: 'Flying'
+KEYWORDS: ["Flying"]
+abilities/triggers/statics/replacements empty: True
+
+================================================================================
+Butcher Ghoul | 28caeed4-c175-469f-8d8e-f45bc0a51a1c
+ORACLE TEXT: "Undying (When this creature dies, if it had no +1/+1 counters on it, return it to the battlefield under its owner's control with a +1/+1 counter on it.)"
+KEYWORDS: ["Undying"]
+abilities/triggers/statics/replacements empty: True
+
+================================================================================
+Paladin en-Vec | fd8722e1-9c41-4037-ab7e-47e2aa9858a0
+ORACLE TEXT: "First strike, protection from black and from red (This creature deals combat damage before creatures without first strike. It can't be blocked, targeted, dealt damage, or enchanted by anything black or red.)"
+KEYWORDS: ["FirstStrike", {"Protection": {"Color": "Black"}}, {"Protection": {"Color": "Red"}}]
+abilities/triggers/statics/replacements empty: True
+
+================================================================================
+Ghor-Clan Wrecker | b113285c-80b2-46dd-874e-201d26979518
+ORACLE TEXT: "Riot (This creature enters with your choice of a +1/+1 counter or haste.)\nMenace (This creature can't be blocked except by two or more creatures.)"
+KEYWORDS: ["Menace", "Riot"]
+abilities/triggers/statics/replacements empty: True
+
+================================================================================
+Shu General | 0fef6729-b044-4daf-834a-ac8c9711ad8a
+ORACLE TEXT: "Vigilance; horsemanship (This creature can't be blocked except by creatures with horsemanship.)"
+KEYWORDS: ["Horsemanship", "Vigilance"]
+abilities/triggers/statics/replacements empty: True
+
+================================================================================
+Nezumi Ronin | 0f9672ac-f4fc-46e8-9fe5-93b3e66810a4
+ORACLE TEXT: 'Bushido 1 (Whenever this creature blocks or becomes blocked, it gets +1/+1 until end of turn.)'
+KEYWORDS: [{"Bushido": 1}]
+abilities/triggers/statics/replacements empty: True
+
+================================================================================
+Darksteel Relic | 2bda1fb1-528c-4e66-89f1-bb1a85e9181e
+ORACLE TEXT: 'Indestructible (Effects that say "destroy" don\'t destroy this artifact.)'
+KEYWORDS: ["Indestructible"]
+abilities/triggers/statics/replacements empty: True
+
+================================================================================
+Steadfast Paladin | 5e95618c-4f58-4ae9-9e5e-deffd5e210a4
+ORACLE TEXT: 'Lifelink'
+KEYWORDS: ["Lifelink"]
+abilities/triggers/statics/replacements empty: True
+
+================================================================================
+Vault Skirge | 64cf5d59-7bcd-4b0b-a160-c8468d4c0f60
+ORACLE TEXT: '({B/P} can be paid with either {B} or 2 life.)\nFlying\nLifelink (Damage dealt by this creature also causes you to gain that much life.)'
+KEYWORDS: ["Flying", "Lifelink"]
+abilities/triggers/statics/replacements empty: True
+
+================================================================================
+Tangle Mantis | d52397bf-e3fb-4894-996d-7c1cc8d92603
+ORACLE TEXT: 'Trample'
+KEYWORDS: ["Trample"]
+abilities/triggers/statics/replacements empty: True
+
+================================================================================
+Giant Warthog | 0eb41c36-5910-41fd-97fc-1cae2332e5c5
+ORACLE TEXT: 'Trample'
+KEYWORDS: ["Trample"]
+abilities/triggers/statics/replacements empty: True
+
+================================================================================
+Tenement Crasher | ee11cecc-4772-4bb2-9af8-a2a99eb037f9
+ORACLE TEXT: 'Haste'
+KEYWORDS: ["Haste"]
+abilities/triggers/statics/replacements empty: True
+
+================================================================================
+Aven Skirmisher | 57d8d656-ccbd-4deb-abf1-a7fde4e7d691
+ORACLE TEXT: 'Flying'
+KEYWORDS: ["Flying"]
+abilities/triggers/statics/replacements empty: True
+
+================================================================================
+Galewind Moose | b0747a4f-d041-4750-aef5-a5d101696f65
+ORACLE TEXT: 'Flash\nVigilance, reach, trample'
+KEYWORDS: ["Flash", "Reach", "Trample", "Vigilance"]
+abilities/triggers/statics/replacements empty: True
+
+================================================================================
+Giant Dustwasp | 5f4e45c1-2bd2-4741-bb97-b6a324c574ba
+ORACLE TEXT: 'Flying\nSuspend 4—{1}{G} (Rather than cast this card from your hand, you may pay {1}{G} and exile it with four time counters on it. At the beginning of your upkeep, remove a time counter. When the last is removed, you may cast it without paying its mana cost. It has haste.)'
+KEYWORDS: ["Flying", {"Suspend": {"count": 4, "cost": {"type": "Cost", "shards": ["Green"], "generic": 1}}}]
+abilities/triggers/statics/replacements empty: True
+
+================================================================================
+Hearthfire Hobgoblin | bc940eda-efa8-4227-9b56-0c6fbf1398d2
+ORACLE TEXT: 'Double strike'
+KEYWORDS: ["DoubleStrike"]
+abilities/triggers/statics/replacements empty: True
+
+================================================================================
+Vorapede | fd44986c-cf37-4f6e-b8d6-1795ec794b5f
+ORACLE TEXT: "Vigilance, trample\nUndying (When this creature dies, if it had no +1/+1 counters on it, return it to the battlefield under its owner's control with a +1/+1 counter on it.)"
+KEYWORDS: ["Trample", "Undying", "Vigilance"]
+abilities/triggers/statics/replacements empty: True
+
+================================================================================
+Tangle Golem | 733c6e30-3c0c-41f0-b1e9-4c2eb76f7b82
+ORACLE TEXT: 'Affinity for Forests (This spell costs {1} less to cast for each Forest you control.)'
+KEYWORDS: [{"Affinity": {"type_filters": ["Land", {"Subtype": "Forest"}], "controller": null, "properties": []}}]
+abilities/triggers/statics/replacements empty: True
+
+================================================================================
+Coast Watcher | 02eef375-5166-4b6b-bb17-b38074a6ba53
+ORACLE TEXT: 'Flying, protection from green'
+KEYWORDS: ["Flying", {"Protection": {"Color": "Green"}}]
+abilities/triggers/statics/replacements empty: True
+
+================================================================================
+Wary Okapi | 46f01d1c-7ab6-4a58-97ce-57a4eb99843c
+ORACLE TEXT: 'Vigilance'
+KEYWORDS: ["Vigilance"]
+abilities/triggers/statics/replacements empty: True
+
+================================================================================
+Fighting Drake | b13cc6be-ee35-491e-a437-f7fc191f24c7
+ORACLE TEXT: 'Flying'
+KEYWORDS: ["Flying"]
+abilities/triggers/statics/replacements empty: True
+
+================================================================================
+Sagu Mauler | 8d877ee9-1751-48a1-9f2f-02897dae153b
+ORACLE TEXT: 'Trample, hexproof\nMorph {3}{G}{U} (You may cast this card face down as a 2/2 creature for {3}. Turn it face up any time for its morph cost.)'
+KEYWORDS: ["Hexproof", "Trample", {"Morph": {"type": "Cost", "shards": ["Green", "Blue"], "generic": 3}}]
+abilities/triggers/statics/replacements empty: True
+
+================================================================================
+Angelic Wall | 4502b24f-604b-4e36-9168-31c1a1ab4dab
+ORACLE TEXT: "Defender (This creature can't attack.)\nFlying"
+KEYWORDS: ["Defender", "Flying"]
+abilities/triggers/statics/replacements empty: True
+

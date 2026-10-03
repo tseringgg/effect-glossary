@@ -1,0 +1,3413 @@
+===== #1: Ray of Enfeeblement | 647e5639-6339-48af-af96-e48729e1cad3 | abilities[0] =====
+ORACLE TEXT:
+Target creature gets -4/-1 until end of turn. If that creature is white, it gets -4/-4 until end of turn instead.
+MATCHED ITEM:
+{
+ "kind": "Spell",
+ "effect": {
+  "type": "Pump",
+  "power": {
+   "type": "Fixed",
+   "value": -4
+  },
+  "toughness": {
+   "type": "Fixed",
+   "value": -1
+  },
+  "target": {
+   "type": "Typed",
+   "type_filters": [
+    "Creature"
+   ],
+   "controller": null,
+   "properties": []
+  }
+ },
+ "cost": null,
+ "sub_ability": {
+  "kind": "Spell",
+  "effect": {
+   "type": "Pump",
+   "power": {
+    "type": "Fixed",
+    "value": -4
+   },
+   "toughness": {
+    "type": "Fixed",
+    "value": -4
+   },
+   "target": {
+    "type": "ParentTarget"
+   }
+  },
+  "cost": null,
+  "sub_ability": null,
+  "duration": null,
+  "description": null,
+  "target_prompt": null,
+  "sorcery_speed": false,
+  "condition": null,
+  "optional_targeting": false,
+  "optional": false,
+  "forward_result": false
+ },
+ "duration": "UntilEndOfTurn",
+ "description": "Target creature gets -4/-1 until end of turn. If that creature is white, it gets -4/-4 until end of turn instead.",
+ "target_prompt": null,
+ "sorcery_speed": false,
+ "condition": null,
+ "optional_targeting": false,
+ "optional": false,
+ "forward_result": false
+}
+
+===== #2: Play with Fire | 5ffc1e77-152b-4a82-8ea8-2c79cc31d5ef | abilities[0] =====
+ORACLE TEXT:
+Play with Fire deals 2 damage to any target. If a player is dealt damage this way, scry 1. (Look at the top card of your library. You may put that card on the bottom.)
+MATCHED ITEM:
+{
+ "kind": "Spell",
+ "effect": {
+  "type": "DealDamage",
+  "amount": {
+   "type": "Fixed",
+   "value": 2
+  },
+  "target": {
+   "type": "Any"
+  }
+ },
+ "cost": null,
+ "sub_ability": {
+  "kind": "Spell",
+  "effect": {
+   "type": "Scry",
+   "count": {
+    "type": "Fixed",
+    "value": 1
+   }
+  },
+  "cost": null,
+  "sub_ability": null,
+  "duration": null,
+  "description": null,
+  "target_prompt": null,
+  "sorcery_speed": false,
+  "condition": null,
+  "optional_targeting": false,
+  "optional": false,
+  "forward_result": false
+ },
+ "duration": null,
+ "description": "Play with Fire deals 2 damage to any target. If a player is dealt damage this way, scry 1.",
+ "target_prompt": null,
+ "sorcery_speed": false,
+ "condition": null,
+ "optional_targeting": false,
+ "optional": false,
+ "forward_result": false
+}
+
+===== #3: Gimli's Fury | 1b550c27-14b0-45fb-b17e-fcb061dc6ad0 | abilities[0] =====
+ORACLE TEXT:
+Target creature gets +3/+2 until end of turn. If it's legendary, it also gains trample until end of turn.
+MATCHED ITEM:
+{
+ "kind": "Spell",
+ "effect": {
+  "type": "Pump",
+  "power": {
+   "type": "Fixed",
+   "value": 3
+  },
+  "toughness": {
+   "type": "Fixed",
+   "value": 2
+  },
+  "target": {
+   "type": "Typed",
+   "type_filters": [
+    "Creature"
+   ],
+   "controller": null,
+   "properties": []
+  }
+ },
+ "cost": null,
+ "sub_ability": {
+  "kind": "Spell",
+  "effect": {
+   "type": "GenericEffect",
+   "static_abilities": [
+    {
+     "mode": "Continuous",
+     "affected": {
+      "type": "SelfRef"
+     },
+     "modifications": [
+      {
+       "type": "AddKeyword",
+       "keyword": "Trample"
+      }
+     ],
+     "condition": null,
+     "affected_zone": null,
+     "effect_zone": null,
+     "active_zones": [],
+     "characteristic_defining": false,
+     "description": "gain trample"
+    }
+   ],
+   "duration": "UntilEndOfTurn",
+   "target": {
+    "type": "ParentTarget"
+   }
+  },
+  "cost": null,
+  "sub_ability": null,
+  "duration": "UntilEndOfTurn",
+  "description": null,
+  "target_prompt": null,
+  "sorcery_speed": false,
+  "condition": null,
+  "optional_targeting": false,
+  "optional": false,
+  "forward_result": false
+ },
+ "duration": "UntilEndOfTurn",
+ "description": "Target creature gets +3/+2 until end of turn. If it's legendary, it also gains trample until end of turn.",
+ "target_prompt": null,
+ "sorcery_speed": false,
+ "condition": null,
+ "optional_targeting": false,
+ "optional": false,
+ "forward_result": false
+}
+
+===== #4: Flamewake Phoenix | 9e43805d-3576-47d4-9331-524869ab99d0 | static_abilities[0] =====
+ORACLE TEXT:
+Flying, haste
+This creature attacks each combat if able.
+Ferocious — At the beginning of combat on your turn, if you control a creature with power 4 or greater, you may pay {R}. If you do, return this card from your graveyard to the battlefield.
+MATCHED ITEM:
+{
+ "mode": "MustAttack",
+ "affected": {
+  "type": "SelfRef"
+ },
+ "modifications": [],
+ "condition": null,
+ "affected_zone": null,
+ "effect_zone": null,
+ "active_zones": [],
+ "characteristic_defining": false,
+ "description": "~ attacks each combat if able."
+}
+
+===== #5: Herigast, Erupting Nullkite | 76243b38-cab1-465f-aa7d-5bc617541753 | triggers[0] =====
+ORACLE TEXT:
+Emerge {6}{R}{R} (You may cast this spell by sacrificing a creature and paying the emerge cost reduced by that creature's mana value.)
+When you cast this spell, you may exile your hand. If you do, draw three cards.
+Flying
+Each creature spell you cast has emerge. The emerge cost is equal to its mana cost.
+MATCHED ITEM:
+{
+ "mode": "SpellCast",
+ "execute": {
+  "kind": "Spell",
+  "effect": {
+   "type": "ChangeZoneAll",
+   "origin": null,
+   "destination": "Exile",
+   "target": {
+    "type": "Typed",
+    "type_filters": [],
+    "controller": "You",
+    "properties": [
+     {
+      "type": "InZone",
+      "zone": "Hand"
+     }
+    ]
+   }
+  },
+  "cost": null,
+  "sub_ability": {
+   "kind": "Spell",
+   "effect": {
+    "type": "Draw",
+    "count": {
+     "type": "Fixed",
+     "value": 3
+    }
+   },
+   "cost": null,
+   "sub_ability": null,
+   "duration": null,
+   "description": null,
+   "target_prompt": null,
+   "sorcery_speed": false,
+   "condition": {
+    "type": "IfYouDo"
+   },
+   "optional_targeting": false,
+   "optional": false,
+   "forward_result": false
+  },
+  "duration": null,
+  "description": null,
+  "target_prompt": null,
+  "sorcery_speed": false,
+  "condition": null,
+  "optional_targeting": false,
+  "optional": true,
+  "forward_result": false
+ },
+ "valid_card": {
+  "type": "SelfRef"
+ },
+ "origin": null,
+ "destination": null,
+ "trigger_zones": [
+  "Stack"
+ ],
+ "phase": null,
+ "optional": true,
+ "damage_kind": "Any",
+ "secondary": false,
+ "valid_target": null,
+ "valid_source": null,
+ "description": "When you cast this spell, you may exile your hand. If you do, draw three cards.",
+ "constraint": null,
+ "condition": null,
+ "batched": false
+}
+
+===== #6: Indoctrination Attendant | 9587bdb3-fb6a-47c0-898d-404bf60fcb6b | triggers[0] =====
+ORACLE TEXT:
+Toxic 1 (Players dealt combat damage by this creature also get a poison counter.)
+When this creature enters, you may return another permanent you control to its owner's hand. If you do, create a 1/1 colorless Phyrexian Mite artifact creature token with toxic 1 and "This token can't block."
+MATCHED ITEM:
+{
+ "mode": "ChangesZone",
+ "execute": {
+  "kind": "Spell",
+  "effect": {
+   "type": "Bounce",
+   "target": {
+    "type": "Typed",
+    "type_filters": [
+     "Permanent"
+    ],
+    "controller": "You",
+    "properties": [
+     {
+      "type": "Another"
+     }
+    ]
+   },
+   "destination": null
+  },
+  "cost": null,
+  "sub_ability": {
+   "kind": "Spell",
+   "effect": {
+    "type": "Token",
+    "name": "Phyrexian Mite",
+    "power": {
+     "type": "Fixed",
+     "value": 1
+    },
+    "toughness": {
+     "type": "Fixed",
+     "value": 1
+    },
+    "types": [
+     "Artifact",
+     "Creature",
+     "Phyrexian",
+     "Mite"
+    ],
+    "colors": [],
+    "keywords": [],
+    "tapped": false,
+    "count": {
+     "type": "Fixed",
+     "value": 1
+    },
+    "owner": {
+     "type": "Controller"
+    },
+    "enters_attacking": false,
+    "static_abilities": [
+     {
+      "mode": "CantBlock",
+      "affected": null,
+      "modifications": [],
+      "condition": null,
+      "affected_zone": null,
+      "effect_zone": null,
+      "active_zones": [],
+      "characteristic_defining": false,
+      "description": null
+     }
+    ]
+   },
+   "cost": null,
+   "sub_ability": null,
+   "duration": null,
+   "description": null,
+   "target_prompt": null,
+   "sorcery_speed": false,
+   "condition": {
+    "type": "IfYouDo"
+   },
+   "optional_targeting": false,
+   "optional": false,
+   "forward_result": false
+  },
+  "duration": null,
+  "description": null,
+  "target_prompt": null,
+  "sorcery_speed": false,
+  "condition": null,
+  "optional_targeting": false,
+  "optional": true,
+  "forward_result": false
+ },
+ "valid_card": {
+  "type": "SelfRef"
+ },
+ "origin": null,
+ "destination": "Battlefield",
+ "trigger_zones": [
+  "Battlefield"
+ ],
+ "phase": null,
+ "optional": true,
+ "damage_kind": "Any",
+ "secondary": false,
+ "valid_target": null,
+ "valid_source": null,
+ "description": "When this creature enters, you may return another permanent you control to its owner's hand. If you do, create a 1/1 colorless Phyrexian Mite artifact creature token with toxic 1 and \"This token can't block.\"",
+ "constraint": null,
+ "condition": null,
+ "batched": false
+}
+
+===== #7: Domineering Will | 2c438ecb-b127-4450-9395-2d1eea294f30 | abilities[0] =====
+ORACLE TEXT:
+Target player gains control of up to three target nonattacking creatures until end of turn. Untap those creatures. They block this turn if able.
+MATCHED ITEM:
+{
+ "kind": "Spell",
+ "effect": {
+  "type": "GainControl",
+  "target": {
+   "type": "Typed",
+   "type_filters": [
+    "Creature",
+    {
+     "Non": {
+      "Subtype": "Attacking"
+     }
+    }
+   ],
+   "controller": null,
+   "properties": []
+  }
+ },
+ "cost": null,
+ "sub_ability": {
+  "kind": "Spell",
+  "effect": {
+   "type": "Untap",
+   "target": {
+    "type": "TrackedSet",
+    "id": 0
+   }
+  },
+  "cost": null,
+  "sub_ability": {
+   "kind": "Spell",
+   "effect": {
+    "type": "ForceBlock",
+    "target": {
+     "type": "ParentTarget"
+    }
+   },
+   "cost": null,
+   "sub_ability": null,
+   "duration": null,
+   "description": null,
+   "target_prompt": null,
+   "sorcery_speed": false,
+   "condition": null,
+   "optional_targeting": false,
+   "optional": false,
+   "forward_result": false
+  },
+  "duration": null,
+  "description": null,
+  "target_prompt": null,
+  "sorcery_speed": false,
+  "condition": null,
+  "optional_targeting": false,
+  "optional": false,
+  "forward_result": false
+ },
+ "duration": "UntilEndOfTurn",
+ "description": "Target player gains control of up to three target nonattacking creatures until end of turn. Untap those creatures. They block this turn if able.",
+ "target_prompt": null,
+ "sorcery_speed": false,
+ "condition": null,
+ "optional_targeting": false,
+ "optional": false,
+ "forward_result": false
+}
+
+===== #8: Charitable Levy | 8a628875-96c8-4a28-aaff-99fd99ae778e | triggers[0] =====
+ORACLE TEXT:
+Noncreature spells cost {1} more to cast.
+Whenever a player casts a noncreature spell, put a collection counter on this enchantment. Then if there are three or more collection counters on it, sacrifice it. If you do, draw a card, then you may search your library for a Plains card, put it onto the battlefield tapped, then shuffle.
+MATCHED ITEM:
+{
+ "mode": "SpellCast",
+ "execute": {
+  "kind": "Spell",
+  "effect": {
+   "type": "PutCounter",
+   "counter_type": "collection",
+   "count": {
+    "type": "Fixed",
+    "value": 1
+   },
+   "target": {
+    "type": "SelfRef"
+   }
+  },
+  "cost": null,
+  "sub_ability": {
+   "kind": "Spell",
+   "effect": {
+    "type": "Sacrifice",
+    "target": {
+     "type": "ParentTarget"
+    },
+    "count": {
+     "type": "Fixed",
+     "value": 1
+    }
+   },
+   "cost": null,
+   "sub_ability": {
+    "kind": "Spell",
+    "effect": {
+     "type": "Draw",
+     "count": {
+      "type": "Fixed",
+      "value": 1
+     }
+    },
+    "cost": null,
+    "sub_ability": null,
+    "duration": null,
+    "description": null,
+    "target_prompt": null,
+    "sorcery_speed": false,
+    "condition": {
+     "type": "IfYouDo"
+    },
+    "optional_targeting": false,
+    "optional": false,
+    "forward_result": false
+   },
+   "duration": null,
+   "description": null,
+   "target_prompt": null,
+   "sorcery_speed": false,
+   "condition": null,
+   "optional_targeting": false,
+   "optional": false,
+   "forward_result": false
+  },
+  "duration": null,
+  "description": null,
+  "target_prompt": null,
+  "sorcery_speed": false,
+  "condition": null,
+  "optional_targeting": false,
+  "optional": false,
+  "forward_result": false
+ },
+ "valid_card": {
+  "type": "Typed",
+  "type_filters": [
+   "Card",
+   {
+    "Non": "Creature"
+   }
+  ],
+  "controller": null,
+  "properties": []
+ },
+ "origin": null,
+ "destination": null,
+ "trigger_zones": [
+  "Battlefield"
+ ],
+ "phase": null,
+ "optional": false,
+ "damage_kind": "Any",
+ "secondary": false,
+ "valid_target": null,
+ "valid_source": null,
+ "description": "Whenever a player casts a noncreature spell, put a collection counter on this enchantment. Then if there are three or more collection counters on it, sacrifice it. If you do, draw a card, then you may search your library for a Plains card, put it onto the battlefield tapped, then shuffle.",
+ "constraint": null,
+ "condition": null,
+ "batched": false
+}
+
+===== #9: Inner-Flame Igniter | 059788eb-2c55-4da2-bf54-aa2fa7954169 | abilities[0] =====
+ORACLE TEXT:
+{2}{R}: Creatures you control get +1/+0 until end of turn. If this is the third time this ability has resolved this turn, creatures you control gain first strike until end of turn.
+MATCHED ITEM:
+{
+ "kind": "Activated",
+ "effect": {
+  "type": "PumpAll",
+  "power": {
+   "type": "Fixed",
+   "value": 1
+  },
+  "toughness": {
+   "type": "Fixed",
+   "value": 0
+  },
+  "target": {
+   "type": "Typed",
+   "type_filters": [
+    "Creature"
+   ],
+   "controller": "You",
+   "properties": []
+  }
+ },
+ "cost": {
+  "type": "Mana",
+  "cost": {
+   "type": "Cost",
+   "shards": [
+    "Red"
+   ],
+   "generic": 2
+  }
+ },
+ "sub_ability": {
+  "kind": "Activated",
+  "effect": {
+   "type": "GenericEffect",
+   "static_abilities": [
+    {
+     "mode": "Continuous",
+     "affected": {
+      "type": "Typed",
+      "type_filters": [
+       "Creature"
+      ],
+      "controller": "You",
+      "properties": []
+     },
+     "modifications": [
+      {
+       "type": "AddKeyword",
+       "keyword": "FirstStrike"
+      }
+     ],
+     "condition": null,
+     "affected_zone": null,
+     "effect_zone": null,
+     "active_zones": [],
+     "characteristic_defining": false,
+     "description": "gain first strike"
+    }
+   ],
+   "duration": "UntilEndOfTurn",
+   "target": null
+  },
+  "cost": null,
+  "sub_ability": null,
+  "duration": "UntilEndOfTurn",
+  "description": null,
+  "target_prompt": null,
+  "sorcery_speed": false,
+  "condition": null,
+  "optional_targeting": false,
+  "optional": false,
+  "forward_result": false
+ },
+ "duration": "UntilEndOfTurn",
+ "description": "{2}{R}: Creatures you control get +1/+0 until end of turn. If this is the third time this ability has resolved this turn, creatures you control gain first strike until end of turn.",
+ "target_prompt": null,
+ "sorcery_speed": false,
+ "condition": null,
+ "optional_targeting": false,
+ "optional": false,
+ "forward_result": false
+}
+
+===== #10: Poultrygeist | 76407853-7103-4010-b198-33a04ece7b23 | triggers[0] =====
+ORACLE TEXT:
+Flying
+Whenever a creature dies, you may roll a six-sided die. If you roll a 1, sacrifice this creature. Otherwise, put a +1/+1 counter on this creature.
+MATCHED ITEM:
+{
+ "mode": "ChangesZone",
+ "execute": {
+  "kind": "Spell",
+  "effect": {
+   "type": "RollDie",
+   "sides": 6,
+   "results": []
+  },
+  "cost": null,
+  "sub_ability": {
+   "kind": "Spell",
+   "effect": {
+    "type": "Sacrifice",
+    "target": {
+     "type": "SelfRef"
+    },
+    "count": {
+     "type": "Fixed",
+     "value": 1
+    }
+   },
+   "cost": null,
+   "sub_ability": {
+    "kind": "Spell",
+    "effect": {
+     "type": "Unimplemented",
+     "name": "otherwise",
+     "description": "Otherwise"
+    },
+    "cost": null,
+    "sub_ability": {
+     "kind": "Spell",
+     "effect": {
+      "type": "PutCounter",
+      "counter_type": "P1P1",
+      "count": {
+       "type": "Fixed",
+       "value": 1
+      },
+      "target": {
+       "type": "SelfRef"
+      }
+     },
+     "cost": null,
+     "sub_ability": null,
+     "duration": null,
+     "description": null,
+     "target_prompt": null,
+     "sorcery_speed": false,
+     "condition": null,
+     "optional_targeting": false,
+     "optional": false,
+     "forward_result": false
+    },
+    "duration": null,
+    "description": null,
+    "target_prompt": null,
+    "sorcery_speed": false,
+    "condition": null,
+    "optional_targeting": false,
+    "optional": false,
+    "forward_result": false
+   },
+   "duration": null,
+   "description": null,
+   "target_prompt": null,
+   "sorcery_speed": false,
+   "condition": null,
+   "optional_targeting": false,
+   "optional": false,
+   "forward_result": false
+  },
+  "duration": null,
+  "description": null,
+  "target_prompt": null,
+  "sorcery_speed": false,
+  "condition": null,
+  "optional_targeting": false,
+  "optional": true,
+  "forward_result": false
+ },
+ "valid_card": {
+  "type": "Typed",
+  "type_filters": [
+   "Creature"
+  ],
+  "controller": null,
+  "properties": []
+ },
+ "origin": "Battlefield",
+ "destination": "Graveyard",
+ "trigger_zones": [
+  "Battlefield"
+ ],
+ "phase": null,
+ "optional": true,
+ "damage_kind": "Any",
+ "secondary": false,
+ "valid_target": null,
+ "valid_source": null,
+ "description": "Whenever a creature dies, you may roll a six-sided die. If you roll a 1, sacrifice this creature. Otherwise, put a +1/+1 counter on this creature.",
+ "constraint": null,
+ "condition": null,
+ "batched": false
+}
+
+===== #11: TL;DR | 071de5f6-4b88-421c-847c-14efa774268d | abilities[0] =====
+ORACLE TEXT:
+Exile target creature if it has any abilities other than keywords. (Flying, protection, and partner are all keywords. See rule 702 for details. Landfall and scry aren't keywords; they're an ability word and a keyword action respectively. Yes, there's a difference.)
+MATCHED ITEM:
+{
+ "kind": "Spell",
+ "effect": {
+  "type": "ChangeZone",
+  "origin": null,
+  "destination": "Exile",
+  "target": {
+   "type": "Typed",
+   "type_filters": [
+    "Creature"
+   ],
+   "controller": null,
+   "properties": []
+  },
+  "owner_library": false,
+  "enter_transformed": false,
+  "under_your_control": false,
+  "enter_tapped": false,
+  "enters_attacking": false
+ },
+ "cost": null,
+ "sub_ability": null,
+ "duration": null,
+ "description": "Exile target creature if it has any abilities other than keywords.",
+ "target_prompt": null,
+ "sorcery_speed": false,
+ "condition": null,
+ "optional_targeting": false,
+ "optional": false,
+ "forward_result": false
+}
+
+===== #12: Trench Behemoth | dc2b1863-b45c-4213-ad89-5e39432daca7 | triggers[0] =====
+ORACLE TEXT:
+Return a land you control to its owner's hand: Untap this creature. It gains hexproof until end of turn.
+Landfall — Whenever a land you control enters, target creature an opponent controls attacks during its controller's next combat phase if able.
+MATCHED ITEM:
+{
+ "mode": "ChangesZone",
+ "execute": {
+  "kind": "Spell",
+  "effect": {
+   "type": "Unimplemented",
+   "name": "attack",
+   "description": "attack during its controller's next combat phase if able"
+  },
+  "cost": null,
+  "sub_ability": null,
+  "duration": null,
+  "description": null,
+  "target_prompt": null,
+  "sorcery_speed": false,
+  "condition": null,
+  "optional_targeting": false,
+  "optional": false,
+  "forward_result": false
+ },
+ "valid_card": {
+  "type": "Typed",
+  "type_filters": [
+   "Land"
+  ],
+  "controller": "You",
+  "properties": []
+ },
+ "origin": null,
+ "destination": "Battlefield",
+ "trigger_zones": [
+  "Battlefield"
+ ],
+ "phase": null,
+ "optional": false,
+ "damage_kind": "Any",
+ "secondary": false,
+ "valid_target": null,
+ "valid_source": null,
+ "description": "Whenever a land you control enters, target creature an opponent controls attacks during its controller's next combat phase if able.",
+ "constraint": null,
+ "condition": null,
+ "batched": false
+}
+
+===== #13: Cinder Crawler | 3850479f-1c1e-4a72-ae47-6da2997202e2 | abilities[0] =====
+ORACLE TEXT:
+{R}: This creature gets +1/+0 until end of turn. Activate only if this creature is blocked.
+MATCHED ITEM:
+{
+ "kind": "Activated",
+ "effect": {
+  "type": "Pump",
+  "power": {
+   "type": "Fixed",
+   "value": 1
+  },
+  "toughness": {
+   "type": "Fixed",
+   "value": 0
+  },
+  "target": {
+   "type": "SelfRef"
+  }
+ },
+ "cost": {
+  "type": "Mana",
+  "cost": {
+   "type": "Cost",
+   "shards": [
+    "Red"
+   ],
+   "generic": 0
+  }
+ },
+ "sub_ability": null,
+ "duration": "UntilEndOfTurn",
+ "description": "{R}: This creature gets +1/+0 until end of turn. Activate only if this creature is blocked.",
+ "target_prompt": null,
+ "sorcery_speed": false,
+ "activation_restrictions": [
+  {
+   "type": "RequiresCondition",
+   "data": {
+    "condition": {
+     "type": "SourceIsBlocked"
+    }
+   }
+  }
+ ],
+ "condition": null,
+ "optional_targeting": false,
+ "optional": false,
+ "forward_result": false
+}
+
+===== #14: Stridehangar Automaton | 9070c98b-fd01-4eeb-a4ec-fc464946c7c0 | replacements[0] =====
+ORACLE TEXT:
+Thopters you control get +1/+1.
+If one or more artifact tokens would be created under your control, those tokens plus an additional 1/1 colorless Thopter artifact creature token with flying are created instead.
+MATCHED ITEM:
+{
+ "event": "CreateToken",
+ "execute": null,
+ "mode": {
+  "type": "Mandatory"
+ },
+ "valid_card": null,
+ "description": "If one or more artifact tokens would be created under your control, those tokens plus an additional 1/1 colorless Thopter artifact creature token with flying are created instead.",
+ "condition": null,
+ "token_owner_scope": "You"
+}
+
+===== #15: Gilraen, Dúnedain Protector | 27e83bae-0ffe-4cc7-a6c0-cbca25f2ba4e | abilities[0] =====
+ORACLE TEXT:
+{2}, {T}: Exile another target creature you control. You may return that card to the battlefield under its owner's control. If you don't, at the beginning of the next end step, return that card to the battlefield under its owner's control with a vigilance counter and a lifelink counter on it.
+MATCHED ITEM:
+{
+ "kind": "Activated",
+ "effect": {
+  "type": "ChangeZone",
+  "origin": null,
+  "destination": "Exile",
+  "target": {
+   "type": "Typed",
+   "type_filters": [
+    "Creature"
+   ],
+   "controller": "You",
+   "properties": [
+    {
+     "type": "Another"
+    }
+   ]
+  },
+  "owner_library": false,
+  "enter_transformed": false,
+  "under_your_control": false,
+  "enter_tapped": false,
+  "enters_attacking": false
+ },
+ "cost": {
+  "type": "Composite",
+  "costs": [
+   {
+    "type": "Mana",
+    "cost": {
+     "type": "Cost",
+     "shards": [],
+     "generic": 2
+    }
+   },
+   {
+    "type": "Tap"
+   }
+  ]
+ },
+ "sub_ability": {
+  "kind": "Activated",
+  "effect": {
+   "type": "ChangeZone",
+   "origin": null,
+   "destination": "Battlefield",
+   "target": {
+    "type": "ParentTarget"
+   },
+   "owner_library": false,
+   "enter_transformed": false,
+   "under_your_control": false,
+   "enter_tapped": false,
+   "enters_attacking": false
+  },
+  "cost": null,
+  "sub_ability": {
+   "kind": "Activated",
+   "effect": {
+    "type": "Unimplemented",
+    "name": "at",
+    "description": "at the beginning of the next end step, return that card to the battlefield under its owner's control with a vigilance counter and a lifelink counter on it"
+   },
+   "cost": null,
+   "sub_ability": null,
+   "duration": null,
+   "description": null,
+   "target_prompt": null,
+   "sorcery_speed": false,
+   "condition": null,
+   "optional_targeting": false,
+   "optional": false,
+   "forward_result": false
+  },
+  "duration": null,
+  "description": null,
+  "target_prompt": null,
+  "sorcery_speed": false,
+  "condition": null,
+  "optional_targeting": false,
+  "optional": true,
+  "forward_result": false
+ },
+ "duration": null,
+ "description": "{2}, {T}: Exile another target creature you control. You may return that card to the battlefield under its owner's control. If you don't, at the beginning of the next end step, return that card to the battlefield under its owner's control with a vigilance counter and a lifelink counter on it.",
+ "target_prompt": null,
+ "sorcery_speed": false,
+ "condition": null,
+ "optional_targeting": false,
+ "optional": false,
+ "forward_result": false
+}
+
+===== #16: Ritual of Hope | 8afe3d28-be3e-416c-9457-8a2af85b2eec | abilities[1] =====
+ORACLE TEXT:
+Creatures you control get +1/+1 until end of turn.
+Coven — If you control three or more creatures with different powers, creatures you control get +2/+1 until end of turn instead.
+MATCHED ITEM:
+{
+ "kind": "Spell",
+ "effect": {
+  "type": "PumpAll",
+  "power": {
+   "type": "Fixed",
+   "value": 2
+  },
+  "toughness": {
+   "type": "Fixed",
+   "value": 1
+  },
+  "target": {
+   "type": "Typed",
+   "type_filters": [
+    "Creature"
+   ],
+   "controller": "You",
+   "properties": []
+  }
+ },
+ "cost": null,
+ "sub_ability": null,
+ "duration": "UntilEndOfTurn",
+ "description": "Coven — If you control three or more creatures with different powers, creatures you control get +2/+1 until end of turn instead.",
+ "target_prompt": null,
+ "sorcery_speed": false,
+ "condition": null,
+ "optional_targeting": false,
+ "optional": false,
+ "forward_result": false
+}
+
+===== #17: Wretched Camel | 525d1562-4fb6-4df3-ab6d-ab6a94c866e0 | triggers[0] =====
+ORACLE TEXT:
+When this creature dies, if you control a Desert or there is a Desert card in your graveyard, target player discards a card.
+MATCHED ITEM:
+{
+ "mode": "ChangesZone",
+ "execute": {
+  "kind": "Spell",
+  "effect": {
+   "type": "Discard",
+   "count": {
+    "type": "Fixed",
+    "value": 1
+   },
+   "target": {
+    "type": "Player"
+   }
+  },
+  "cost": null,
+  "sub_ability": null,
+  "duration": null,
+  "description": null,
+  "target_prompt": null,
+  "sorcery_speed": false,
+  "condition": null,
+  "optional_targeting": false,
+  "optional": false,
+  "forward_result": false
+ },
+ "valid_card": {
+  "type": "SelfRef"
+ },
+ "origin": "Battlefield",
+ "destination": "Graveyard",
+ "trigger_zones": [
+  "Graveyard"
+ ],
+ "phase": null,
+ "optional": false,
+ "damage_kind": "Any",
+ "secondary": false,
+ "valid_target": null,
+ "valid_source": null,
+ "description": "When this creature dies, if you control a Desert or there is a Desert card in your graveyard, target player discards a card.",
+ "constraint": null,
+ "condition": null,
+ "batched": false
+}
+
+===== #18: Groundling Pouncer | f695a073-7235-45c8-bc42-f1e29bb086ee | abilities[0] =====
+ORACLE TEXT:
+{G/U}: This creature gets +1/+3 and gains flying until end of turn. Activate only once each turn and only if an opponent controls a creature with flying.
+MATCHED ITEM:
+{
+ "kind": "Activated",
+ "effect": {
+  "type": "GenericEffect",
+  "static_abilities": [
+   {
+    "mode": "Continuous",
+    "affected": {
+     "type": "SelfRef"
+    },
+    "modifications": [
+     {
+      "type": "AddPower",
+      "value": 1
+     },
+     {
+      "type": "AddToughness",
+      "value": 3
+     },
+     {
+      "type": "AddKeyword",
+      "keyword": "Flying"
+     }
+    ],
+    "condition": null,
+    "affected_zone": null,
+    "effect_zone": null,
+    "active_zones": [],
+    "characteristic_defining": false,
+    "description": "get +1/+3 and gains flying"
+   }
+  ],
+  "duration": "UntilEndOfTurn",
+  "target": null
+ },
+ "cost": {
+  "type": "Mana",
+  "cost": {
+   "type": "Cost",
+   "shards": [
+    "GreenBlue"
+   ],
+   "generic": 0
+  }
+ },
+ "sub_ability": null,
+ "duration": "UntilEndOfTurn",
+ "description": "{G/U}: This creature gets +1/+3 and gains flying until end of turn. Activate only once each turn and only if an opponent controls a creature with flying.",
+ "target_prompt": null,
+ "sorcery_speed": false,
+ "activation_restrictions": [
+  {
+   "type": "RequiresCondition",
+   "data": {
+    "condition": null
+   }
+  }
+ ],
+ "condition": null,
+ "optional_targeting": false,
+ "optional": false,
+ "forward_result": false
+}
+
+===== #19: Personal Decoy | f2134b18-6f6e-44a6-8830-11326279e324 | replacements[0] =====
+ORACLE TEXT:
+Personal Decoy enters with a number of loyalty counters on it equal to your life total. If it would leave the battlefield, exile it instead of putting it anywhere else. You can't be attacked.
+[+1]: You gain 1 life.
+[−4]: Draw a card.
+MATCHED ITEM:
+{
+ "event": "Moved",
+ "execute": {
+  "kind": "Spell",
+  "effect": {
+   "type": "PutCounter",
+   "counter_type": "LOYALTY",
+   "count": {
+    "type": "Fixed",
+    "value": 1
+   },
+   "target": {
+    "type": "SelfRef"
+   }
+  },
+  "cost": null,
+  "sub_ability": null,
+  "duration": null,
+  "description": null,
+  "target_prompt": null,
+  "sorcery_speed": false,
+  "condition": null,
+  "optional_targeting": false,
+  "optional": false,
+  "forward_result": false
+ },
+ "mode": {
+  "type": "Mandatory"
+ },
+ "valid_card": {
+  "type": "SelfRef"
+ },
+ "description": "Personal Decoy enters with a number of loyalty counters on it equal to your life total. If it would leave the battlefield, exile it instead of putting it anywhere else. You can't be attacked.",
+ "condition": null
+}
+
+===== #20: Prize Pig | 14f55fc9-ec19-4b4a-b3de-d75898c19edf | triggers[0] =====
+ORACLE TEXT:
+Whenever you gain life, put that many ribbon counters on this creature. Then if there are three or more ribbon counters on this creature, remove those counters and untap it.
+{T}: Add one mana of any color.
+MATCHED ITEM:
+{
+ "mode": "LifeGained",
+ "execute": {
+  "kind": "Spell",
+  "effect": {
+   "type": "PutCounter",
+   "counter_type": "ribbon",
+   "count": {
+    "type": "Ref",
+    "qty": {
+     "type": "EventContextAmount"
+    }
+   },
+   "target": {
+    "type": "SelfRef"
+   }
+  },
+  "cost": null,
+  "sub_ability": {
+   "kind": "Spell",
+   "effect": {
+    "type": "Unimplemented",
+    "name": "remove",
+    "description": "remove those counters"
+   },
+   "cost": null,
+   "sub_ability": {
+    "kind": "Spell",
+    "effect": {
+     "type": "Untap",
+     "target": {
+      "type": "ParentTarget"
+     }
+    },
+    "cost": null,
+    "sub_ability": null,
+    "duration": null,
+    "description": null,
+    "target_prompt": null,
+    "sorcery_speed": false,
+    "condition": null,
+    "optional_targeting": false,
+    "optional": false,
+    "forward_result": false
+   },
+   "duration": null,
+   "description": null,
+   "target_prompt": null,
+   "sorcery_speed": false,
+   "condition": null,
+   "optional_targeting": false,
+   "optional": false,
+   "forward_result": false
+  },
+  "duration": null,
+  "description": null,
+  "target_prompt": null,
+  "sorcery_speed": false,
+  "condition": null,
+  "optional_targeting": false,
+  "optional": false,
+  "forward_result": false
+ },
+ "valid_card": null,
+ "origin": null,
+ "destination": null,
+ "trigger_zones": [
+  "Battlefield"
+ ],
+ "phase": null,
+ "optional": false,
+ "damage_kind": "Any",
+ "secondary": false,
+ "valid_target": null,
+ "valid_source": null,
+ "description": "Whenever you gain life, put that many ribbon counters on this creature. Then if there are three or more ribbon counters on this creature, remove those counters and untap it.",
+ "constraint": null,
+ "condition": null,
+ "batched": false
+}
+
+===== #21: Graven Archfiend | ba3f0051-ccd9-4b45-a1de-76c982935cbd | triggers[0] =====
+ORACLE TEXT:
+As an additional cost to cast this spell, you may sacrifice a non-Demon creature.
+Flying
+When Graven Archfiend enters the battlefield, if its additional cost was paid, conjure a card named Demonic Pact onto the battlefield.
+MATCHED ITEM:
+{
+ "mode": "ChangesZone",
+ "execute": {
+  "kind": "Spell",
+  "effect": {
+   "type": "Unimplemented",
+   "name": "conjure",
+   "description": "conjure a card named demonic pact onto the battlefield"
+  },
+  "cost": null,
+  "sub_ability": null,
+  "duration": null,
+  "description": null,
+  "target_prompt": null,
+  "sorcery_speed": false,
+  "condition": null,
+  "optional_targeting": false,
+  "optional": false,
+  "forward_result": false
+ },
+ "valid_card": {
+  "type": "SelfRef"
+ },
+ "origin": null,
+ "destination": "Battlefield",
+ "trigger_zones": [
+  "Battlefield"
+ ],
+ "phase": null,
+ "optional": false,
+ "damage_kind": "Any",
+ "secondary": false,
+ "valid_target": null,
+ "valid_source": null,
+ "description": "When Graven Archfiend enters the battlefield, if its additional cost was paid, conjure a card named Demonic Pact onto the battlefield.",
+ "constraint": null,
+ "condition": null,
+ "batched": false
+}
+
+===== #22: Emeritus of Truce | e6c41473-2398-4888-9f0c-467dce7c39a4 | triggers[0] =====
+ORACLE TEXT:
+When this creature enters, target player creates a 1/1 white and black Inkling creature token with flying. Then if an opponent controls more creatures than you, this creature becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)
+MATCHED ITEM:
+{
+ "mode": "ChangesZone",
+ "execute": {
+  "kind": "Spell",
+  "effect": {
+   "type": "Token",
+   "name": "Inkling",
+   "power": {
+    "type": "Fixed",
+    "value": 1
+   },
+   "toughness": {
+    "type": "Fixed",
+    "value": 1
+   },
+   "types": [
+    "Creature",
+    "Inkling"
+   ],
+   "colors": [
+    "White",
+    "Black"
+   ],
+   "keywords": [
+    "Flying"
+   ],
+   "tapped": false,
+   "count": {
+    "type": "Fixed",
+    "value": 1
+   },
+   "owner": {
+    "type": "Player"
+   },
+   "enters_attacking": false
+  },
+  "cost": null,
+  "sub_ability": {
+   "kind": "Spell",
+   "effect": {
+    "type": "BecomePrepared",
+    "target": {
+     "type": "ParentTarget"
+    }
+   },
+   "cost": null,
+   "sub_ability": null,
+   "duration": null,
+   "description": null,
+   "target_prompt": null,
+   "sorcery_speed": false,
+   "condition": {
+    "type": "QuantityCheck",
+    "lhs": {
+     "type": "Ref",
+     "qty": {
+      "type": "ObjectCount",
+      "filter": {
+       "type": "Typed",
+       "type_filters": [
+        "Creature"
+       ],
+       "controller": "Opponent",
+       "properties": []
+      }
+     }
+    },
+    "comparator": "GT",
+    "rhs": {
+     "type": "Ref",
+     "qty": {
+      "type": "ObjectCount",
+      "filter": {
+       "type": "Typed",
+       "type_filters": [
+        "Creature"
+       ],
+       "controller": "You",
+       "properties": []
+      }
+     }
+    }
+   },
+   "optional_targeting": false,
+   "optional": false,
+   "forward_result": false
+  },
+  "duration": null,
+  "description": null,
+  "target_prompt": null,
+  "sorcery_speed": false,
+  "condition": null,
+  "optional_targeting": false,
+  "optional": false,
+  "forward_result": false
+ },
+ "valid_card": {
+  "type": "SelfRef"
+ },
+ "origin": null,
+ "destination": "Battlefield",
+ "trigger_zones": [
+  "Battlefield"
+ ],
+ "phase": null,
+ "optional": false,
+ "damage_kind": "Any",
+ "secondary": false,
+ "valid_target": null,
+ "valid_source": null,
+ "description": "When this creature enters, target player creates a 1/1 white and black Inkling creature token with flying. Then if an opponent controls more creatures than you, this creature becomes prepared.",
+ "constraint": null,
+ "condition": null,
+ "batched": false
+}
+
+===== #23: Skitterskin | ff3f5b1e-9d53-4258-84ee-cfecf685dd05 | abilities[0] =====
+ORACLE TEXT:
+Devoid (This card has no color.)
+This creature can't block.
+{1}{B}: Regenerate this creature. Activate only if you control another colorless creature.
+MATCHED ITEM:
+{
+ "kind": "Activated",
+ "effect": {
+  "type": "Regenerate",
+  "target": {
+   "type": "SelfRef"
+  }
+ },
+ "cost": {
+  "type": "Mana",
+  "cost": {
+   "type": "Cost",
+   "shards": [
+    "Black"
+   ],
+   "generic": 1
+  }
+ },
+ "sub_ability": null,
+ "duration": null,
+ "description": "{1}{B}: Regenerate this creature. Activate only if you control another colorless creature.",
+ "target_prompt": null,
+ "sorcery_speed": false,
+ "activation_restrictions": [
+  {
+   "type": "RequiresCondition",
+   "data": {
+    "condition": {
+     "type": "YouControlAnotherColorlessCreature"
+    }
+   }
+  }
+ ],
+ "condition": null,
+ "optional_targeting": false,
+ "optional": false,
+ "forward_result": false
+}
+
+===== #24: Flaring Cinder | f70d65bf-5f1c-4aee-9bd1-f5ee6974b058 | triggers[0] =====
+ORACLE TEXT:
+When this creature enters and whenever you cast a spell with mana value 4 or greater, you may discard a card. If you do, draw a card.
+MATCHED ITEM:
+{
+ "mode": "ChangesZone",
+ "execute": {
+  "kind": "Spell",
+  "effect": {
+   "type": "Discard",
+   "count": {
+    "type": "Fixed",
+    "value": 1
+   },
+   "target": {
+    "type": "Controller"
+   }
+  },
+  "cost": null,
+  "sub_ability": {
+   "kind": "Spell",
+   "effect": {
+    "type": "Draw",
+    "count": {
+     "type": "Fixed",
+     "value": 1
+    }
+   },
+   "cost": null,
+   "sub_ability": null,
+   "duration": null,
+   "description": null,
+   "target_prompt": null,
+   "sorcery_speed": false,
+   "condition": {
+    "type": "IfYouDo"
+   },
+   "optional_targeting": false,
+   "optional": false,
+   "forward_result": false
+  },
+  "duration": null,
+  "description": null,
+  "target_prompt": null,
+  "sorcery_speed": false,
+  "condition": null,
+  "optional_targeting": false,
+  "optional": true,
+  "forward_result": false
+ },
+ "valid_card": {
+  "type": "SelfRef"
+ },
+ "origin": null,
+ "destination": "Battlefield",
+ "trigger_zones": [
+  "Battlefield"
+ ],
+ "phase": null,
+ "optional": true,
+ "damage_kind": "Any",
+ "secondary": false,
+ "valid_target": null,
+ "valid_source": null,
+ "description": "When ~ enters, you may discard a card. If you do, draw a card.",
+ "constraint": null,
+ "condition": null,
+ "batched": false
+}
+
+===== #25: Virtue of Knowledge | f0bbcabf-29e7-4c7e-893f-86b64d3620a9 | static_abilities[0] =====
+ORACLE TEXT:
+If a permanent entering causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time.
+MATCHED ITEM:
+{
+ "mode": "Panharmonicon",
+ "affected": null,
+ "modifications": [],
+ "condition": null,
+ "affected_zone": null,
+ "effect_zone": null,
+ "active_zones": [],
+ "characteristic_defining": false,
+ "description": "If a permanent entering causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time."
+}
+
+===== #26: Nacatl Hunt-Pride | 094bc780-3c37-4863-b6ed-e2d16ed94544 | abilities[1] =====
+ORACLE TEXT:
+Vigilance
+{R}, {T}: Target creature can't block this turn.
+{G}, {T}: Target creature blocks this turn if able.
+MATCHED ITEM:
+{
+ "kind": "Activated",
+ "effect": {
+  "type": "ForceBlock",
+  "target": {
+   "type": "Typed",
+   "type_filters": [
+    "Creature"
+   ],
+   "controller": null,
+   "properties": []
+  }
+ },
+ "cost": {
+  "type": "Composite",
+  "costs": [
+   {
+    "type": "Mana",
+    "cost": {
+     "type": "Cost",
+     "shards": [
+      "Green"
+     ],
+     "generic": 0
+    }
+   },
+   {
+    "type": "Tap"
+   }
+  ]
+ },
+ "sub_ability": null,
+ "duration": null,
+ "description": "{G}, {T}: Target creature blocks this turn if able.",
+ "target_prompt": null,
+ "sorcery_speed": false,
+ "condition": null,
+ "optional_targeting": false,
+ "optional": false,
+ "forward_result": false
+}
+
+===== #27: Chance Encounter | 8bd33b5c-0777-41ef-9e17-fb30ce69ec25 | triggers[1] =====
+ORACLE TEXT:
+Whenever you win a coin flip, put a luck counter on this enchantment.
+At the beginning of your upkeep, if this enchantment has ten or more luck counters on it, you win the game.
+MATCHED ITEM:
+{
+ "mode": "Phase",
+ "execute": {
+  "kind": "Spell",
+  "effect": {
+   "type": "WinTheGame"
+  },
+  "cost": null,
+  "sub_ability": null,
+  "duration": null,
+  "description": null,
+  "target_prompt": null,
+  "sorcery_speed": false,
+  "condition": null,
+  "optional_targeting": false,
+  "optional": false,
+  "forward_result": false
+ },
+ "valid_card": null,
+ "origin": null,
+ "destination": null,
+ "trigger_zones": [
+  "Battlefield"
+ ],
+ "phase": "Upkeep",
+ "optional": false,
+ "damage_kind": "Any",
+ "secondary": false,
+ "valid_target": null,
+ "valid_source": null,
+ "description": "At the beginning of your upkeep, if this enchantment has ten or more luck counters on it, you win the game.",
+ "constraint": {
+  "type": "OnlyDuringYourTurn"
+ },
+ "condition": null,
+ "batched": false
+}
+
+===== #28: Time Reaper | a3f9126f-5797-4436-ac5c-c6911d22ffc2 | triggers[0] =====
+ORACLE TEXT:
+Flying, haste
+Consume Anomaly — Whenever this creature deals combat damage to a player, put target face-up card they own in exile on the bottom of their library. If you do, you gain 3 life.
+MATCHED ITEM:
+{
+ "mode": "DamageDone",
+ "execute": {
+  "kind": "Spell",
+  "effect": {
+   "type": "PutAtLibraryPosition",
+   "target": {
+    "type": "Typed",
+    "type_filters": [],
+    "controller": null,
+    "properties": []
+   },
+   "position": {
+    "type": "Bottom"
+   }
+  },
+  "cost": null,
+  "sub_ability": {
+   "kind": "Spell",
+   "effect": {
+    "type": "GainLife",
+    "amount": {
+     "type": "Fixed",
+     "value": 3
+    },
+    "player": "controller"
+   },
+   "cost": null,
+   "sub_ability": null,
+   "duration": null,
+   "description": null,
+   "target_prompt": null,
+   "sorcery_speed": false,
+   "condition": {
+    "type": "IfYouDo"
+   },
+   "optional_targeting": false,
+   "optional": false,
+   "forward_result": false
+  },
+  "duration": null,
+  "description": null,
+  "target_prompt": null,
+  "sorcery_speed": false,
+  "condition": null,
+  "optional_targeting": false,
+  "optional": false,
+  "forward_result": false
+ },
+ "valid_card": null,
+ "origin": null,
+ "destination": null,
+ "trigger_zones": [
+  "Battlefield"
+ ],
+ "phase": null,
+ "optional": false,
+ "damage_kind": "CombatOnly",
+ "secondary": false,
+ "valid_target": {
+  "type": "Player"
+ },
+ "valid_source": {
+  "type": "SelfRef"
+ },
+ "description": "Whenever this creature deals combat damage to a player, put target face-up card they own in exile on the bottom of their library. If you do, you gain 3 life.",
+ "constraint": null,
+ "condition": null,
+ "batched": false
+}
+
+===== #29: Chilling Trap | 7ac49129-7da2-4729-b48c-b6da279c212e | abilities[0] =====
+ORACLE TEXT:
+Target creature gets -4/-0 until end of turn. If you control a Wizard, draw a card.
+MATCHED ITEM:
+{
+ "kind": "Spell",
+ "effect": {
+  "type": "Pump",
+  "power": {
+   "type": "Fixed",
+   "value": -4
+  },
+  "toughness": {
+   "type": "Fixed",
+   "value": 0
+  },
+  "target": {
+   "type": "Typed",
+   "type_filters": [
+    "Creature"
+   ],
+   "controller": null,
+   "properties": []
+  }
+ },
+ "cost": null,
+ "sub_ability": {
+  "kind": "Spell",
+  "effect": {
+   "type": "Draw",
+   "count": {
+    "type": "Fixed",
+    "value": 1
+   }
+  },
+  "cost": null,
+  "sub_ability": null,
+  "duration": null,
+  "description": null,
+  "target_prompt": null,
+  "sorcery_speed": false,
+  "condition": {
+   "type": "QuantityCheck",
+   "lhs": {
+    "type": "Ref",
+    "qty": {
+     "type": "ObjectCount",
+     "filter": {
+      "type": "Typed",
+      "type_filters": [
+       {
+        "Subtype": "Wizard"
+       }
+      ],
+      "controller": "You",
+      "properties": []
+     }
+    }
+   },
+   "comparator": "GE",
+   "rhs": {
+    "type": "Fixed",
+    "value": 1
+   }
+  },
+  "optional_targeting": false,
+  "optional": false,
+  "forward_result": false
+ },
+ "duration": "UntilEndOfTurn",
+ "description": "Target creature gets -4/-0 until end of turn. If you control a Wizard, draw a card.",
+ "target_prompt": null,
+ "sorcery_speed": false,
+ "condition": null,
+ "optional_targeting": false,
+ "optional": false,
+ "forward_result": false
+}
+
+===== #30: Sorcerer's Strongbox | c4f58768-35b2-4e17-9129-c9e39b8ed339 | abilities[0] =====
+ORACLE TEXT:
+{2}, {T}: Flip a coin. If you win the flip, sacrifice this artifact and draw three cards.
+MATCHED ITEM:
+{
+ "kind": "Activated",
+ "effect": {
+  "type": "FlipCoin",
+  "win_effect": {
+   "kind": "Spell",
+   "effect": {
+    "type": "Sacrifice",
+    "target": {
+     "type": "SelfRef"
+    },
+    "count": {
+     "type": "Fixed",
+     "value": 1
+    }
+   },
+   "cost": null,
+   "sub_ability": null,
+   "duration": null,
+   "description": null,
+   "target_prompt": null,
+   "sorcery_speed": false,
+   "condition": null,
+   "optional_targeting": false,
+   "optional": false,
+   "forward_result": false
+  },
+  "lose_effect": null
+ },
+ "cost": {
+  "type": "Composite",
+  "costs": [
+   {
+    "type": "Mana",
+    "cost": {
+     "type": "Cost",
+     "shards": [],
+     "generic": 2
+    }
+   },
+   {
+    "type": "Tap"
+   }
+  ]
+ },
+ "sub_ability": {
+  "kind": "Activated",
+  "effect": {
+   "type": "Draw",
+   "count": {
+    "type": "Fixed",
+    "value": 3
+   }
+  },
+  "cost": null,
+  "sub_ability": null,
+  "duration": null,
+  "description": null,
+  "target_prompt": null,
+  "sorcery_speed": false,
+  "condition": null,
+  "optional_targeting": false,
+  "optional": false,
+  "forward_result": false
+ },
+ "duration": null,
+ "description": "{2}, {T}: Flip a coin. If you win the flip, sacrifice this artifact and draw three cards.",
+ "target_prompt": null,
+ "sorcery_speed": false,
+ "condition": null,
+ "optional_targeting": false,
+ "optional": false,
+ "forward_result": false
+}
+
+===== #31: Menacing Ogre | 8efcd591-c576-4d25-9670-578c5e3263a1 | triggers[0] =====
+ORACLE TEXT:
+Trample, haste
+When this creature enters, each player secretly chooses a number. Then those numbers are revealed. Each player with the highest number loses that much life. If you are one of those players, put two +1/+1 counters on this creature.
+MATCHED ITEM:
+{
+ "mode": "ChangesZone",
+ "execute": {
+  "kind": "Spell",
+  "effect": {
+   "type": "Unimplemented",
+   "name": "secretly",
+   "description": "secretly chooses a number"
+  },
+  "cost": null,
+  "sub_ability": {
+   "kind": "Spell",
+   "effect": {
+    "type": "Unimplemented",
+    "name": "those",
+    "description": "those numbers are revealed"
+   },
+   "cost": null,
+   "sub_ability": {
+    "kind": "Spell",
+    "effect": {
+     "type": "LoseLife",
+     "amount": {
+      "type": "Fixed",
+      "value": 1
+     }
+    },
+    "cost": null,
+    "sub_ability": {
+     "kind": "Spell",
+     "effect": {
+      "type": "PutCounter",
+      "counter_type": "P1P1",
+      "count": {
+       "type": "Fixed",
+       "value": 2
+      },
+      "target": {
+       "type": "SelfRef"
+      }
+     },
+     "cost": null,
+     "sub_ability": null,
+     "duration": null,
+     "description": null,
+     "target_prompt": null,
+     "sorcery_speed": false,
+     "condition": null,
+     "optional_targeting": false,
+     "optional": false,
+     "forward_result": false
+    },
+    "duration": null,
+    "description": null,
+    "target_prompt": null,
+    "sorcery_speed": false,
+    "condition": null,
+    "optional_targeting": false,
+    "optional": false,
+    "forward_result": false,
+    "player_scope": {
+     "type": "All"
+    }
+   },
+   "duration": null,
+   "description": null,
+   "target_prompt": null,
+   "sorcery_speed": false,
+   "condition": null,
+   "optional_targeting": false,
+   "optional": false,
+   "forward_result": false
+  },
+  "duration": null,
+  "description": null,
+  "target_prompt": null,
+  "sorcery_speed": false,
+  "condition": null,
+  "optional_targeting": false,
+  "optional": false,
+  "forward_result": false,
+  "player_scope": {
+   "type": "All"
+  }
+ },
+ "valid_card": {
+  "type": "SelfRef"
+ },
+ "origin": null,
+ "destination": "Battlefield",
+ "trigger_zones": [
+  "Battlefield"
+ ],
+ "phase": null,
+ "optional": false,
+ "damage_kind": "Any",
+ "secondary": false,
+ "valid_target": null,
+ "valid_source": null,
+ "description": "When this creature enters, each player secretly chooses a number. Then those numbers are revealed. Each player with the highest number loses that much life. If you are one of those players, put two +1/+1 counters on this creature.",
+ "constraint": null,
+ "condition": null,
+ "batched": false
+}
+
+===== #32: Rashmi, Eternities Crafter | 01a79429-7d57-4a51-9815-a20905ed4707 | triggers[0] =====
+ORACLE TEXT:
+Whenever you cast your first spell each turn, reveal the top card of your library. You may cast it without paying its mana cost if it's a spell with lesser mana value. If you don't cast it, put it into your hand.
+MATCHED ITEM:
+{
+ "mode": "SpellCast",
+ "execute": {
+  "kind": "Spell",
+  "effect": {
+   "type": "RevealTop",
+   "player": {
+    "type": "Controller"
+   },
+   "count": 1
+  },
+  "cost": null,
+  "sub_ability": {
+   "kind": "Spell",
+   "effect": {
+    "type": "CastFromZone",
+    "target": {
+     "type": "ParentTarget"
+    },
+    "without_paying_mana_cost": true,
+    "mode": "Cast"
+   },
+   "cost": null,
+   "sub_ability": {
+    "kind": "Spell",
+    "effect": {
+     "type": "ChangeZone",
+     "origin": null,
+     "destination": "Hand",
+     "target": {
+      "type": "ParentTarget"
+     },
+     "owner_library": false,
+     "enter_transformed": false,
+     "under_your_control": false,
+     "enter_tapped": false,
+     "enters_attacking": false
+    },
+    "cost": null,
+    "sub_ability": null,
+    "duration": null,
+    "description": null,
+    "target_prompt": null,
+    "sorcery_speed": false,
+    "condition": null,
+    "optional_targeting": false,
+    "optional": false,
+    "forward_result": false
+   },
+   "duration": null,
+   "description": null,
+   "target_prompt": null,
+   "sorcery_speed": false,
+   "condition": null,
+   "optional_targeting": false,
+   "optional": true,
+   "forward_result": false
+  },
+  "duration": null,
+  "description": null,
+  "target_prompt": null,
+  "sorcery_speed": false,
+  "condition": null,
+  "optional_targeting": false,
+  "optional": false,
+  "forward_result": false
+ },
+ "valid_card": null,
+ "origin": null,
+ "destination": null,
+ "trigger_zones": [
+  "Battlefield"
+ ],
+ "phase": null,
+ "optional": false,
+ "damage_kind": "Any",
+ "secondary": false,
+ "valid_target": null,
+ "valid_source": null,
+ "description": "Whenever you cast your first spell each turn, reveal the top card of your library. You may cast it without paying its mana cost if it's a spell with lesser mana value. If you don't cast it, put it into your hand.",
+ "constraint": {
+  "type": "NthSpellThisTurn",
+  "n": 1
+ },
+ "condition": null,
+ "batched": false
+}
+
+===== #33: Barbarian Ring | eeb9377b-72c1-4214-9a66-0f55577c17d1 | abilities[1] =====
+ORACLE TEXT:
+{T}: Add {R}. This land deals 1 damage to you.
+Threshold — {R}, {T}, Sacrifice this land: It deals 2 damage to any target. Activate only if there are seven or more cards in your graveyard.
+MATCHED ITEM:
+{
+ "kind": "Activated",
+ "effect": {
+  "type": "DealDamage",
+  "amount": {
+   "type": "Fixed",
+   "value": 2
+  },
+  "target": {
+   "type": "Any"
+  }
+ },
+ "cost": {
+  "type": "Composite",
+  "costs": [
+   {
+    "type": "Mana",
+    "cost": {
+     "type": "Cost",
+     "shards": [
+      "Red"
+     ],
+     "generic": 0
+    }
+   },
+   {
+    "type": "Tap"
+   },
+   {
+    "type": "Sacrifice",
+    "target": {
+     "type": "SelfRef"
+    },
+    "count": 1
+   }
+  ]
+ },
+ "sub_ability": null,
+ "duration": null,
+ "description": "Threshold — {R}, {T}, Sacrifice this land: It deals 2 damage to any target. Activate only if there are seven or more cards in your graveyard.",
+ "target_prompt": null,
+ "sorcery_speed": false,
+ "activation_restrictions": [
+  {
+   "type": "RequiresCondition",
+   "data": {
+    "condition": {
+     "type": "GraveyardCardCountAtLeast",
+     "count": 7
+    }
+   }
+  }
+ ],
+ "condition": null,
+ "optional_targeting": false,
+ "optional": false,
+ "forward_result": false
+}
+
+===== #34: Kate Stewart | c1b9475e-a272-4820-b5f0-25f7a94ff834 | triggers[1] =====
+ORACLE TEXT:
+Whenever you put one or more time counters on a permanent you control, create a 1/1 white Soldier creature token.
+Whenever Kate Stewart attacks, you may pay {8}. If you do, attacking creatures get +X/+X until end of turn, where X is the number of time counters among permanents you control.
+MATCHED ITEM:
+{
+ "mode": "Attacks",
+ "execute": {
+  "kind": "Spell",
+  "effect": {
+   "type": "PayCost",
+   "cost": {
+    "type": "Mana",
+    "cost": {
+     "type": "Cost",
+     "shards": [],
+     "generic": 8
+    }
+   }
+  },
+  "cost": null,
+  "sub_ability": {
+   "kind": "Spell",
+   "effect": {
+    "type": "PumpAll",
+    "power": {
+     "type": "Quantity",
+     "value": {
+      "type": "Ref",
+      "qty": {
+       "type": "CountersOnObjects",
+       "counter_type": "time",
+       "filter": {
+        "type": "Typed",
+        "type_filters": [
+         "Permanent"
+        ],
+        "controller": "You",
+        "properties": []
+       }
+      }
+     }
+    },
+    "toughness": {
+     "type": "Quantity",
+     "value": {
+      "type": "Ref",
+      "qty": {
+       "type": "CountersOnObjects",
+       "counter_type": "time",
+       "filter": {
+        "type": "Typed",
+        "type_filters": [
+         "Permanent"
+        ],
+        "controller": "You",
+        "properties": []
+       }
+      }
+     }
+    },
+    "target": {
+     "type": "Typed",
+     "type_filters": [
+      "Creature"
+     ],
+     "controller": null,
+     "properties": [
+      {
+       "type": "Attacking"
+      }
+     ]
+    }
+   },
+   "cost": null,
+   "sub_ability": null,
+   "duration": "UntilEndOfTurn",
+   "description": null,
+   "target_prompt": null,
+   "sorcery_speed": false,
+   "condition": {
+    "type": "IfYouDo"
+   },
+   "optional_targeting": false,
+   "optional": false,
+   "forward_result": false
+  },
+  "duration": null,
+  "description": null,
+  "target_prompt": null,
+  "sorcery_speed": false,
+  "condition": null,
+  "optional_targeting": false,
+  "optional": true,
+  "forward_result": false
+ },
+ "valid_card": {
+  "type": "SelfRef"
+ },
+ "origin": null,
+ "destination": null,
+ "trigger_zones": [
+  "Battlefield"
+ ],
+ "phase": null,
+ "optional": true,
+ "damage_kind": "Any",
+ "secondary": false,
+ "valid_target": null,
+ "valid_source": null,
+ "description": "Whenever Kate Stewart attacks, you may pay {8}. If you do, attacking creatures get +X/+X until end of turn, where X is the number of time counters among permanents you control.",
+ "constraint": null,
+ "condition": null,
+ "batched": false
+}
+
+===== #35: Vampire's Bite | 9e88796b-f37f-4f9f-9a6f-695db2801f0e | abilities[0] =====
+ORACLE TEXT:
+Kicker {2}{B} (You may pay an additional {2}{B} as you cast this spell.)
+Target creature gets +3/+0 until end of turn. If this spell was kicked, that creature gains lifelink until end of turn. (Damage dealt by the creature also causes its controller to gain that much life.)
+MATCHED ITEM:
+{
+ "kind": "Spell",
+ "effect": {
+  "type": "Pump",
+  "power": {
+   "type": "Fixed",
+   "value": 3
+  },
+  "toughness": {
+   "type": "Fixed",
+   "value": 0
+  },
+  "target": {
+   "type": "Typed",
+   "type_filters": [
+    "Creature"
+   ],
+   "controller": null,
+   "properties": []
+  }
+ },
+ "cost": null,
+ "sub_ability": {
+  "kind": "Spell",
+  "effect": {
+   "type": "GenericEffect",
+   "static_abilities": [
+    {
+     "mode": "Continuous",
+     "affected": {
+      "type": "Typed",
+      "type_filters": [
+       "Creature"
+      ],
+      "controller": null,
+      "properties": []
+     },
+     "modifications": [
+      {
+       "type": "AddKeyword",
+       "keyword": "Lifelink"
+      }
+     ],
+     "condition": null,
+     "affected_zone": null,
+     "effect_zone": null,
+     "active_zones": [],
+     "characteristic_defining": false,
+     "description": "gain lifelink"
+    }
+   ],
+   "duration": "UntilEndOfTurn",
+   "target": {
+    "type": "ParentTarget"
+   }
+  },
+  "cost": null,
+  "sub_ability": null,
+  "duration": "UntilEndOfTurn",
+  "description": null,
+  "target_prompt": null,
+  "sorcery_speed": false,
+  "condition": {
+   "type": "AdditionalCostPaid"
+  },
+  "optional_targeting": false,
+  "optional": false,
+  "forward_result": false
+ },
+ "duration": "UntilEndOfTurn",
+ "description": "Target creature gets +3/+0 until end of turn. If this spell was kicked, that creature gains lifelink until end of turn.",
+ "target_prompt": null,
+ "sorcery_speed": false,
+ "condition": null,
+ "optional_targeting": false,
+ "optional": false,
+ "forward_result": false
+}
+
+===== #36: Accident-Prone Apprentice | 71724015-e313-46a0-a8bc-d4ad9b86c126 | triggers[0] =====
+ORACLE TEXT:
+Whenever you cast a noncreature spell, Accident-Prone Apprentice perpetually gets +1/+1. This ability also triggers if Accident-Prone Apprentice is in exile.
+MATCHED ITEM:
+{
+ "mode": "SpellCast",
+ "execute": {
+  "kind": "Spell",
+  "effect": {
+   "type": "Pump",
+   "power": {
+    "type": "Fixed",
+    "value": 1
+   },
+   "toughness": {
+    "type": "Fixed",
+    "value": 1
+   },
+   "target": {
+    "type": "Any"
+   }
+  },
+  "cost": null,
+  "sub_ability": {
+   "kind": "Spell",
+   "effect": {
+    "type": "Unimplemented",
+    "name": "exile",
+    "description": "exile"
+   },
+   "cost": null,
+   "sub_ability": null,
+   "duration": null,
+   "description": null,
+   "target_prompt": null,
+   "sorcery_speed": false,
+   "condition": null,
+   "optional_targeting": false,
+   "optional": false,
+   "forward_result": false
+  },
+  "duration": null,
+  "description": null,
+  "target_prompt": null,
+  "sorcery_speed": false,
+  "condition": null,
+  "optional_targeting": false,
+  "optional": false,
+  "forward_result": false
+ },
+ "valid_card": {
+  "type": "Typed",
+  "type_filters": [
+   {
+    "Non": "Creature"
+   }
+  ],
+  "controller": null,
+  "properties": []
+ },
+ "origin": null,
+ "destination": null,
+ "trigger_zones": [
+  "Battlefield"
+ ],
+ "phase": null,
+ "optional": false,
+ "damage_kind": "Any",
+ "secondary": false,
+ "valid_target": {
+  "type": "Controller"
+ },
+ "valid_source": null,
+ "description": "Whenever you cast a noncreature spell, Accident-Prone Apprentice perpetually gets +1/+1. This ability also triggers if Accident-Prone Apprentice is in exile.",
+ "constraint": null,
+ "condition": null,
+ "batched": false
+}
+
+===== #37: Rona, Tolarian Obliterator | cf5bd3a4-3899-4c25-ad1f-f1778c1d9c60 | triggers[0] =====
+ORACLE TEXT:
+Whenever you cast a legendary spell, untap Rona.
+{T}: Draw a card, then discard a card.
+{5}{B/P}: Transform Rona. Activate only as a sorcery. ({B/P} can be paid with either {B} or 2 life.)
+MATCHED ITEM:
+{
+ "mode": "SpellCast",
+ "execute": {
+  "kind": "Spell",
+  "effect": {
+   "type": "Untap",
+   "target": {
+    "type": "SelfRef"
+   }
+  },
+  "cost": null,
+  "sub_ability": null,
+  "duration": null,
+  "description": null,
+  "target_prompt": null,
+  "sorcery_speed": false,
+  "condition": null,
+  "optional_targeting": false,
+  "optional": false,
+  "forward_result": false
+ },
+ "valid_card": {
+  "type": "Typed",
+  "type_filters": [
+   "Card"
+  ],
+  "controller": null,
+  "properties": [
+   {
+    "type": "HasSupertype",
+    "value": "Legendary"
+   }
+  ]
+ },
+ "origin": null,
+ "destination": null,
+ "trigger_zones": [
+  "Battlefield"
+ ],
+ "phase": null,
+ "optional": false,
+ "damage_kind": "Any",
+ "secondary": false,
+ "valid_target": {
+  "type": "Controller"
+ },
+ "valid_source": null,
+ "description": "Whenever you cast a legendary spell, untap Rona.",
+ "constraint": null,
+ "condition": null,
+ "batched": false
+}
+
+===== #38: GO TO JAIL | 68e13ae5-c9fe-45e7-86ae-070b903df429 | triggers[1] =====
+ORACLE TEXT:
+When this enchantment enters, exile target creature an opponent controls until this enchantment leaves the battlefield.
+At the beginning of the upkeep of the exiled card's owner, that player rolls two six-sided dice. If they roll doubles, sacrifice this enchantment.
+MATCHED ITEM:
+{
+ "mode": "Phase",
+ "execute": {
+  "kind": "Spell",
+  "effect": {
+   "type": "Unimplemented",
+   "name": "that",
+   "description": "that player rolls two six-sided dice"
+  },
+  "cost": null,
+  "sub_ability": {
+   "kind": "Spell",
+   "effect": {
+    "type": "Sacrifice",
+    "target": {
+     "type": "SelfRef"
+    },
+    "count": {
+     "type": "Fixed",
+     "value": 1
+    }
+   },
+   "cost": null,
+   "sub_ability": null,
+   "duration": null,
+   "description": null,
+   "target_prompt": null,
+   "sorcery_speed": false,
+   "condition": null,
+   "optional_targeting": false,
+   "optional": false,
+   "forward_result": false
+  },
+  "duration": null,
+  "description": null,
+  "target_prompt": null,
+  "sorcery_speed": false,
+  "condition": null,
+  "optional_targeting": false,
+  "optional": false,
+  "forward_result": false
+ },
+ "valid_card": null,
+ "origin": null,
+ "destination": null,
+ "trigger_zones": [
+  "Battlefield"
+ ],
+ "phase": "Upkeep",
+ "optional": false,
+ "damage_kind": "Any",
+ "secondary": false,
+ "valid_target": null,
+ "valid_source": null,
+ "description": "At the beginning of the upkeep of the exiled card's owner, that player rolls two six-sided dice. If they roll doubles, sacrifice this enchantment.",
+ "constraint": null,
+ "condition": null,
+ "batched": false
+}
+
+===== #39: Orator of Ojutai | fbed6f1a-e224-413c-b13e-3555caaef02a | triggers[0] =====
+ORACLE TEXT:
+As an additional cost to cast this spell, you may reveal a Dragon card from your hand.
+Defender, flying
+When this creature enters, if you revealed a Dragon card or controlled a Dragon as you cast this spell, draw a card.
+MATCHED ITEM:
+{
+ "mode": "ChangesZone",
+ "execute": {
+  "kind": "Spell",
+  "effect": {
+   "type": "Draw",
+   "count": {
+    "type": "Fixed",
+    "value": 1
+   }
+  },
+  "cost": null,
+  "sub_ability": null,
+  "duration": null,
+  "description": null,
+  "target_prompt": null,
+  "sorcery_speed": false,
+  "condition": null,
+  "optional_targeting": false,
+  "optional": false,
+  "forward_result": false
+ },
+ "valid_card": {
+  "type": "SelfRef"
+ },
+ "origin": null,
+ "destination": "Battlefield",
+ "trigger_zones": [
+  "Battlefield"
+ ],
+ "phase": null,
+ "optional": false,
+ "damage_kind": "Any",
+ "secondary": false,
+ "valid_target": null,
+ "valid_source": null,
+ "description": "When this creature enters, if you revealed a Dragon card or controlled a Dragon as you cast this spell, draw a card.",
+ "constraint": null,
+ "condition": null,
+ "batched": false
+}
+
+===== #40: Torrential Gearhulk | a6395447-677d-4c39-8eda-2d57e527c94e | triggers[0] =====
+ORACLE TEXT:
+Flash
+When this creature enters, you may cast target instant card from your graveyard without paying its mana cost. If that spell would be put into your graveyard, exile it instead.
+MATCHED ITEM:
+{
+ "mode": "ChangesZone",
+ "execute": {
+  "kind": "Spell",
+  "effect": {
+   "type": "CastFromZone",
+   "target": {
+    "type": "Any"
+   },
+   "without_paying_mana_cost": true,
+   "mode": "Cast"
+  },
+  "cost": null,
+  "sub_ability": {
+   "kind": "Spell",
+   "effect": {
+    "type": "ChangeZone",
+    "origin": null,
+    "destination": "Exile",
+    "target": {
+     "type": "ParentTarget"
+    },
+    "owner_library": false,
+    "enter_transformed": false,
+    "under_your_control": false,
+    "enter_tapped": false,
+    "enters_attacking": false
+   },
+   "cost": null,
+   "sub_ability": null,
+   "duration": null,
+   "description": null,
+   "target_prompt": null,
+   "sorcery_speed": false,
+   "condition": null,
+   "optional_targeting": false,
+   "optional": false,
+   "forward_result": false
+  },
+  "duration": null,
+  "description": null,
+  "target_prompt": null,
+  "sorcery_speed": false,
+  "condition": null,
+  "optional_targeting": false,
+  "optional": true,
+  "forward_result": false
+ },
+ "valid_card": {
+  "type": "SelfRef"
+ },
+ "origin": null,
+ "destination": "Battlefield",
+ "trigger_zones": [
+  "Battlefield"
+ ],
+ "phase": null,
+ "optional": true,
+ "damage_kind": "Any",
+ "secondary": false,
+ "valid_target": null,
+ "valid_source": null,
+ "description": "When this creature enters, you may cast target instant card from your graveyard without paying its mana cost. If that spell would be put into your graveyard, exile it instead.",
+ "constraint": null,
+ "condition": null,
+ "batched": false
+}
+
+===== #41: Cemetery Recruitment | 07792d72-d5db-41b9-871c-e720e12ce659 | abilities[0] =====
+ORACLE TEXT:
+Return target creature card from your graveyard to your hand. If it's a Zombie card, draw a card.
+MATCHED ITEM:
+{
+ "kind": "Spell",
+ "effect": {
+  "type": "Bounce",
+  "target": {
+   "type": "Typed",
+   "type_filters": [
+    "Creature"
+   ],
+   "controller": "You",
+   "properties": [
+    {
+     "type": "InZone",
+     "zone": "Graveyard"
+    }
+   ]
+  },
+  "destination": null
+ },
+ "cost": null,
+ "sub_ability": {
+  "kind": "Spell",
+  "effect": {
+   "type": "Draw",
+   "count": {
+    "type": "Fixed",
+    "value": 1
+   }
+  },
+  "cost": null,
+  "sub_ability": null,
+  "duration": null,
+  "description": null,
+  "target_prompt": null,
+  "sorcery_speed": false,
+  "condition": null,
+  "optional_targeting": false,
+  "optional": false,
+  "forward_result": false
+ },
+ "duration": null,
+ "description": "Return target creature card from your graveyard to your hand. If it's a Zombie card, draw a card.",
+ "target_prompt": null,
+ "sorcery_speed": false,
+ "condition": null,
+ "optional_targeting": false,
+ "optional": false,
+ "forward_result": false
+}
+
+===== #42: Skullknocker Ogre | 980a0d4d-b070-46c1-be8d-31bdda0d1c33 | triggers[0] =====
+ORACLE TEXT:
+Whenever this creature deals damage to an opponent, that player discards a card at random. If the player does, they draw a card.
+MATCHED ITEM:
+{
+ "mode": "DamageDone",
+ "execute": {
+  "kind": "Spell",
+  "effect": {
+   "type": "Discard",
+   "count": {
+    "type": "Fixed",
+    "value": 1
+   },
+   "target": {
+    "type": "TriggeringPlayer"
+   },
+   "random": true
+  },
+  "cost": null,
+  "sub_ability": {
+   "kind": "Spell",
+   "effect": {
+    "type": "Draw",
+    "count": {
+     "type": "Fixed",
+     "value": 1
+    }
+   },
+   "cost": null,
+   "sub_ability": null,
+   "duration": null,
+   "description": null,
+   "target_prompt": null,
+   "sorcery_speed": false,
+   "condition": null,
+   "optional_targeting": false,
+   "optional": false,
+   "forward_result": false
+  },
+  "duration": null,
+  "description": null,
+  "target_prompt": null,
+  "sorcery_speed": false,
+  "condition": null,
+  "optional_targeting": false,
+  "optional": false,
+  "forward_result": false,
+  "player_scope": {
+   "type": "TriggeringPlayer"
+  }
+ },
+ "valid_card": null,
+ "origin": null,
+ "destination": null,
+ "trigger_zones": [
+  "Battlefield"
+ ],
+ "phase": null,
+ "optional": false,
+ "damage_kind": "Any",
+ "secondary": false,
+ "valid_target": {
+  "type": "Typed",
+  "type_filters": [],
+  "controller": "Opponent",
+  "properties": []
+ },
+ "valid_source": {
+  "type": "SelfRef"
+ },
+ "description": "Whenever this creature deals damage to an opponent, that player discards a card at random. If the player does, they draw a card.",
+ "constraint": null,
+ "condition": null,
+ "batched": false
+}
+
+===== #43: The Octopus Official | 3b110c44-aa85-48d6-b5cd-10b07ada43ac | triggers[0] =====
+ORACLE TEXT:
+Hexproof
+When The Octopus Official enters, if you didn't have an active tournament, announce the top 8. (Reveal cards from your library until you reveal eight nonland cards. Randomly distribute them into four two-card piles, like a tournament bracket. Put land cards on the bottom in a random order.)
+At the beginning of your upkeep, randomly put a card from each pile into your hand. The other cards advance to the next round. If only one card remains, you may cast it without paying its mana cost four times.
+MATCHED ITEM:
+{
+ "mode": "ChangesZone",
+ "execute": {
+  "kind": "Spell",
+  "effect": {
+   "type": "Unimplemented",
+   "name": "announce",
+   "description": "announce the top 8"
+  },
+  "cost": null,
+  "sub_ability": null,
+  "duration": null,
+  "description": null,
+  "target_prompt": null,
+  "sorcery_speed": false,
+  "condition": null,
+  "optional_targeting": false,
+  "optional": false,
+  "forward_result": false
+ },
+ "valid_card": {
+  "type": "SelfRef"
+ },
+ "origin": null,
+ "destination": "Battlefield",
+ "trigger_zones": [
+  "Battlefield"
+ ],
+ "phase": null,
+ "optional": false,
+ "damage_kind": "Any",
+ "secondary": false,
+ "valid_target": null,
+ "valid_source": null,
+ "description": "When The Octopus Official enters, if you didn't have an active tournament, announce the top 8.",
+ "constraint": null,
+ "condition": null,
+ "batched": false
+}
+
+===== #44: Giant Opportunity | 395aa62e-0786-4bd8-a88f-998e4700742e | abilities[0] =====
+ORACLE TEXT:
+You may sacrifice two Foods. If you do, create a 7/7 green Giant creature token. Otherwise, create three Food tokens. (They're artifacts with "{2}, {T}, Sacrifice this token: You gain 3 life.")
+MATCHED ITEM:
+{
+ "kind": "Spell",
+ "effect": {
+  "type": "Sacrifice",
+  "target": {
+   "type": "Typed",
+   "type_filters": [
+    {
+     "Subtype": "Food"
+    }
+   ],
+   "controller": null,
+   "properties": []
+  },
+  "count": {
+   "type": "Fixed",
+   "value": 2
+  }
+ },
+ "cost": null,
+ "sub_ability": {
+  "kind": "Spell",
+  "effect": {
+   "type": "Token",
+   "name": "Giant",
+   "power": {
+    "type": "Fixed",
+    "value": 7
+   },
+   "toughness": {
+    "type": "Fixed",
+    "value": 7
+   },
+   "types": [
+    "Creature",
+    "Giant"
+   ],
+   "colors": [
+    "Green"
+   ],
+   "keywords": [],
+   "tapped": false,
+   "count": {
+    "type": "Fixed",
+    "value": 1
+   },
+   "owner": {
+    "type": "Controller"
+   },
+   "enters_attacking": false
+  },
+  "cost": null,
+  "sub_ability": null,
+  "else_ability": {
+   "kind": "Spell",
+   "effect": {
+    "type": "Token",
+    "name": "Food",
+    "power": {
+     "type": "Fixed",
+     "value": 0
+    },
+    "toughness": {
+     "type": "Fixed",
+     "value": 0
+    },
+    "types": [
+     "Artifact",
+     "Food"
+    ],
+    "colors": [],
+    "keywords": [],
+    "tapped": false,
+    "count": {
+     "type": "Fixed",
+     "value": 3
+    },
+    "owner": {
+     "type": "Controller"
+    },
+    "enters_attacking": false
+   },
+   "cost": null,
+   "sub_ability": null,
+   "duration": null,
+   "description": null,
+   "target_prompt": null,
+   "sorcery_speed": false,
+   "condition": null,
+   "optional_targeting": false,
+   "optional": false,
+   "forward_result": false
+  },
+  "duration": null,
+  "description": null,
+  "target_prompt": null,
+  "sorcery_speed": false,
+  "condition": {
+   "type": "IfYouDo"
+  },
+  "optional_targeting": false,
+  "optional": false,
+  "forward_result": false
+ },
+ "duration": null,
+ "description": "You may sacrifice two Foods. If you do, create a 7/7 green Giant creature token. Otherwise, create three Food tokens.",
+ "target_prompt": null,
+ "sorcery_speed": false,
+ "condition": null,
+ "optional_targeting": false,
+ "optional": true,
+ "forward_result": false
+}
+
+===== #45: Skyclaw Thrash | 5d11cdb2-5a44-4e0e-b357-bb1be59f68fb | triggers[0] =====
+ORACLE TEXT:
+Whenever this creature attacks, flip a coin. If you win the flip, this creature gets +1/+1 and gains flying until end of turn.
+MATCHED ITEM:
+{
+ "mode": "Attacks",
+ "execute": {
+  "kind": "Spell",
+  "effect": {
+   "type": "FlipCoin",
+   "win_effect": {
+    "kind": "Spell",
+    "effect": {
+     "type": "GenericEffect",
+     "static_abilities": [
+      {
+       "mode": "Continuous",
+       "affected": {
+        "type": "SelfRef"
+       },
+       "modifications": [
+        {
+         "type": "AddPower",
+         "value": 1
+        },
+        {
+         "type": "AddToughness",
+         "value": 1
+        },
+        {
+         "type": "AddKeyword",
+         "keyword": "Flying"
+        }
+       ],
+       "condition": null,
+       "affected_zone": null,
+       "effect_zone": null,
+       "active_zones": [],
+       "characteristic_defining": false,
+       "description": "get +1/+1 and gains flying"
+      }
+     ],
+     "duration": "UntilEndOfTurn",
+     "target": null
+    },
+    "cost": null,
+    "sub_ability": null,
+    "duration": "UntilEndOfTurn",
+    "description": null,
+    "target_prompt": null,
+    "sorcery_speed": false,
+    "condition": null,
+    "optional_targeting": false,
+    "optional": false,
+    "forward_result": false
+   },
+   "lose_effect": null
+  },
+  "cost": null,
+  "sub_ability": null,
+  "duration": null,
+  "description": null,
+  "target_prompt": null,
+  "sorcery_speed": false,
+  "condition": null,
+  "optional_targeting": false,
+  "optional": false,
+  "forward_result": false
+ },
+ "valid_card": {
+  "type": "SelfRef"
+ },
+ "origin": null,
+ "destination": null,
+ "trigger_zones": [
+  "Battlefield"
+ ],
+ "phase": null,
+ "optional": false,
+ "damage_kind": "Any",
+ "secondary": false,
+ "valid_target": null,
+ "valid_source": null,
+ "description": "Whenever this creature attacks, flip a coin. If you win the flip, this creature gets +1/+1 and gains flying until end of turn.",
+ "constraint": null,
+ "condition": null,
+ "batched": false
+}
+
+===== #46: Blind Fury | 5dbfd316-a0a9-4caa-99b1-069931d2aaa4 | replacements[0] =====
+ORACLE TEXT:
+All creatures lose trample until end of turn. If a creature would deal combat damage to a creature this turn, it deals double that damage to that creature instead.
+MATCHED ITEM:
+{
+ "event": "DamageDone",
+ "execute": null,
+ "mode": {
+  "type": "Mandatory"
+ },
+ "valid_card": null,
+ "description": "All creatures lose trample until end of turn. If a creature would deal combat damage to a creature this turn, it deals double that damage to that creature instead.",
+ "condition": null,
+ "damage_modification": {
+  "type": "Double"
+ },
+ "damage_target_filter": "CreatureOnly",
+ "combat_scope": "CombatOnly"
+}
+
+===== #47: Of One Mind | 5a23c734-cbfb-419a-9bf1-126cb07fe427 | static_abilities[0] =====
+ORACLE TEXT:
+This spell costs {2} less to cast if you control a Human creature and a non-Human creature.
+Draw two cards.
+MATCHED ITEM:
+{
+ "mode": {
+  "ReduceCost": {
+   "amount": {
+    "type": "Cost",
+    "shards": [],
+    "generic": 2
+   },
+   "spell_filter": null,
+   "dynamic_count": null
+  }
+ },
+ "affected": {
+  "type": "Typed",
+  "type_filters": [
+   "Card"
+  ],
+  "controller": null,
+  "properties": []
+ },
+ "modifications": [],
+ "condition": null,
+ "affected_zone": null,
+ "effect_zone": null,
+ "active_zones": [],
+ "characteristic_defining": false,
+ "description": "This spell costs {2} less to cast if you control a Human creature and a non-Human creature."
+}
+
+===== #48: Dire Fleet Warmonger | ee08435b-a2c1-491a-87cb-e60789b09c25 | triggers[0] =====
+ORACLE TEXT:
+At the beginning of combat on your turn, you may sacrifice another creature. If you do, this creature gets +2/+2 and gains trample until end of turn. (It can deal excess combat damage to the player or planeswalker it's attacking.)
+MATCHED ITEM:
+{
+ "mode": "Phase",
+ "execute": {
+  "kind": "Spell",
+  "effect": {
+   "type": "Sacrifice",
+   "target": {
+    "type": "Typed",
+    "type_filters": [
+     "Creature"
+    ],
+    "controller": null,
+    "properties": [
+     {
+      "type": "Another"
+     }
+    ]
+   },
+   "count": {
+    "type": "Fixed",
+    "value": 1
+   }
+  },
+  "cost": null,
+  "sub_ability": {
+   "kind": "Spell",
+   "effect": {
+    "type": "GenericEffect",
+    "static_abilities": [
+     {
+      "mode": "Continuous",
+      "affected": {
+       "type": "SelfRef"
+      },
+      "modifications": [
+       {
+        "type": "AddPower",
+        "value": 2
+       },
+       {
+        "type": "AddToughness",
+        "value": 2
+       },
+       {
+        "type": "AddKeyword",
+        "keyword": "Trample"
+       }
+      ],
+      "condition": null,
+      "affected_zone": null,
+      "effect_zone": null,
+      "active_zones": [],
+      "characteristic_defining": false,
+      "description": "get +2/+2 and gains trample"
+     }
+    ],
+    "duration": "UntilEndOfTurn",
+    "target": null
+   },
+   "cost": null,
+   "sub_ability": null,
+   "duration": "UntilEndOfTurn",
+   "description": null,
+   "target_prompt": null,
+   "sorcery_speed": false,
+   "condition": {
+    "type": "IfYouDo"
+   },
+   "optional_targeting": false,
+   "optional": false,
+   "forward_result": false
+  },
+  "duration": null,
+  "description": null,
+  "target_prompt": null,
+  "sorcery_speed": false,
+  "condition": null,
+  "optional_targeting": false,
+  "optional": true,
+  "forward_result": false
+ },
+ "valid_card": null,
+ "origin": null,
+ "destination": null,
+ "trigger_zones": [
+  "Battlefield"
+ ],
+ "phase": "BeginCombat",
+ "optional": true,
+ "damage_kind": "Any",
+ "secondary": false,
+ "valid_target": null,
+ "valid_source": null,
+ "description": "At the beginning of combat on your turn, you may sacrifice another creature. If you do, this creature gets +2/+2 and gains trample until end of turn.",
+ "constraint": {
+  "type": "OnlyDuringYourTurn"
+ },
+ "condition": null,
+ "batched": false
+}
+
+===== #49: Grist, the Plague Swarm | 196f8f13-d4df-4740-8746-8fed3bc71840 | abilities[0] =====
+ORACLE TEXT:
+[+1]: Create a 1/1 black and green Insect creature token, then mill two cards. Put a deathtouch counter on the token if a black card was milled this way.
+[−2]: Destroy target artifact or enchantment.
+[−6]: For each creature card in your graveyard, create a token that's a copy of it, except it's a 1/1 black and green Insect.
+MATCHED ITEM:
+{
+ "kind": "Activated",
+ "effect": {
+  "type": "Token",
+  "name": "Insect",
+  "power": {
+   "type": "Fixed",
+   "value": 1
+  },
+  "toughness": {
+   "type": "Fixed",
+   "value": 1
+  },
+  "types": [
+   "Creature",
+   "Insect"
+  ],
+  "colors": [
+   "Black",
+   "Green"
+  ],
+  "keywords": [],
+  "tapped": false,
+  "count": {
+   "type": "Fixed",
+   "value": 1
+  },
+  "owner": {
+   "type": "Controller"
+  },
+  "enters_attacking": false
+ },
+ "cost": {
+  "type": "Loyalty",
+  "amount": 1
+ },
+ "sub_ability": {
+  "kind": "Activated",
+  "effect": {
+   "type": "Mill",
+   "count": {
+    "type": "Fixed",
+    "value": 2
+   },
+   "target": {
+    "type": "Controller"
+   },
+   "destination": "Graveyard"
+  },
+  "cost": null,
+  "sub_ability": {
+   "kind": "Activated",
+   "effect": {
+    "type": "PutCounter",
+    "counter_type": "deathtouch",
+    "count": {
+     "type": "Fixed",
+     "value": 1
+    },
+    "target": {
+     "type": "ParentTarget"
+    }
+   },
+   "cost": null,
+   "sub_ability": null,
+   "duration": null,
+   "description": null,
+   "target_prompt": null,
+   "sorcery_speed": false,
+   "condition": null,
+   "optional_targeting": false,
+   "optional": false,
+   "forward_result": false
+  },
+  "duration": null,
+  "description": null,
+  "target_prompt": null,
+  "sorcery_speed": false,
+  "condition": null,
+  "optional_targeting": false,
+  "optional": false,
+  "forward_result": false
+ },
+ "duration": null,
+ "description": "[+1]: Create a 1/1 black and green Insect creature token, then mill two cards. Put a deathtouch counter on the token if a black card was milled this way.",
+ "target_prompt": null,
+ "sorcery_speed": false,
+ "condition": null,
+ "optional_targeting": false,
+ "optional": false,
+ "forward_result": false
+}
+
+===== #50: Expel from Orazca | a6e12be3-4166-4bd7-8254-e28b7c8588c7 | abilities[0] =====
+ORACLE TEXT:
+Ascend (If you control ten or more permanents, you get the city's blessing for the rest of the game.)
+Return target nonland permanent to its owner's hand. If you have the city's blessing, you may put that permanent on top of its owner's library instead.
+MATCHED ITEM:
+{
+ "kind": "Spell",
+ "effect": {
+  "type": "Bounce",
+  "target": {
+   "type": "Typed",
+   "type_filters": [
+    "Permanent",
+    {
+     "Non": "Land"
+    }
+   ],
+   "controller": null,
+   "properties": []
+  },
+  "destination": null
+ },
+ "cost": null,
+ "sub_ability": {
+  "kind": "Spell",
+  "effect": {
+   "type": "PutAtLibraryPosition",
+   "target": {
+    "type": "Any"
+   },
+   "position": {
+    "type": "Top"
+   }
+  },
+  "cost": null,
+  "sub_ability": null,
+  "duration": null,
+  "description": null,
+  "target_prompt": null,
+  "sorcery_speed": false,
+  "condition": null,
+  "optional_targeting": false,
+  "optional": false,
+  "forward_result": false
+ },
+ "duration": null,
+ "description": "Return target nonland permanent to its owner's hand. If you have the city's blessing, you may put that permanent on top of its owner's library instead.",
+ "target_prompt": null,
+ "sorcery_speed": false,
+ "condition": null,
+ "optional_targeting": false,
+ "optional": false,
+ "forward_result": false
+}
+

@@ -1,0 +1,2675 @@
+{
+ "0a28c098-e1e2-4bc4-ba3a-431e7f565a75": [
+  {
+   "name": "A-Phylath, World Sculptor",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [
+     "Red",
+     "Green"
+    ],
+    "generic": 4
+   },
+   "card_type": {
+    "supertypes": [
+     "Legendary"
+    ],
+    "core_types": [
+     "Creature"
+    ],
+    "subtypes": [
+     "Elemental"
+    ]
+   },
+   "power": {
+    "type": "Fixed",
+    "value": 5
+   },
+   "toughness": {
+    "type": "Fixed",
+    "value": 5
+   },
+   "loyalty": null,
+   "defense": null,
+   "oracle_text": "Trample\nWhen Phylath, World Sculptor enters, create a 0/1 green Plant creature token for each basic land you control.\nLandfall — Whenever a land enters under your control, put four +1/+1 counters on target Plant you control. It gains trample until end of turn.",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [
+    "Trample"
+   ],
+   "abilities": [],
+   "triggers": [
+    {
+     "mode": "ChangesZone",
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "Token",
+       "name": "Plant",
+       "power": {
+        "type": "Fixed",
+        "value": 0
+       },
+       "toughness": {
+        "type": "Fixed",
+        "value": 1
+       },
+       "types": [
+        "Creature",
+        "Plant"
+       ],
+       "colors": [
+        "Green"
+       ],
+       "keywords": [],
+       "tapped": false,
+       "count": {
+        "type": "Ref",
+        "qty": {
+         "type": "ObjectCount",
+         "filter": {
+          "type": "Typed",
+          "type_filters": [
+           "Land"
+          ],
+          "controller": "You",
+          "properties": [
+           {
+            "type": "HasSupertype",
+            "value": "Basic"
+           }
+          ]
+         }
+        }
+       },
+       "owner": {
+        "type": "Controller"
+       },
+       "enters_attacking": false
+      },
+      "cost": null,
+      "sub_ability": null,
+      "duration": null,
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "forward_result": false
+     },
+     "valid_card": {
+      "type": "SelfRef"
+     },
+     "origin": null,
+     "destination": "Battlefield",
+     "trigger_zones": [
+      "Battlefield"
+     ],
+     "phase": null,
+     "optional": false,
+     "damage_kind": "Any",
+     "secondary": false,
+     "valid_target": null,
+     "valid_source": null,
+     "description": "When Phylath, World Sculptor enters, create a 0/1 green Plant creature token for each basic land you control.",
+     "constraint": null,
+     "condition": null,
+     "batched": false
+    },
+    {
+     "mode": "ChangesZone",
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "PutCounter",
+       "counter_type": "P1P1",
+       "count": {
+        "type": "Fixed",
+        "value": 4
+       },
+       "target": {
+        "type": "Typed",
+        "type_filters": [
+         {
+          "Subtype": "Plant"
+         }
+        ],
+        "controller": "You",
+        "properties": []
+       }
+      },
+      "cost": null,
+      "sub_ability": {
+       "kind": "Spell",
+       "effect": {
+        "type": "GenericEffect",
+        "static_abilities": [
+         {
+          "mode": "Continuous",
+          "affected": {
+           "type": "TriggeringSource"
+          },
+          "modifications": [
+           {
+            "type": "AddKeyword",
+            "keyword": "Trample"
+           }
+          ],
+          "condition": null,
+          "affected_zone": null,
+          "effect_zone": null,
+          "active_zones": [],
+          "characteristic_defining": false,
+          "description": "gain trample"
+         }
+        ],
+        "duration": "UntilEndOfTurn",
+        "target": {
+         "type": "ParentTarget"
+        }
+       },
+       "cost": null,
+       "sub_ability": null,
+       "duration": "UntilEndOfTurn",
+       "description": null,
+       "target_prompt": null,
+       "sorcery_speed": false,
+       "condition": null,
+       "optional_targeting": false,
+       "optional": false,
+       "forward_result": false
+      },
+      "duration": null,
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "forward_result": false
+     },
+     "valid_card": {
+      "type": "Typed",
+      "type_filters": [
+       "Land"
+      ],
+      "controller": null,
+      "properties": []
+     },
+     "origin": null,
+     "destination": "Battlefield",
+     "trigger_zones": [
+      "Battlefield"
+     ],
+     "phase": null,
+     "optional": false,
+     "damage_kind": "Any",
+     "secondary": false,
+     "valid_target": null,
+     "valid_source": null,
+     "description": "Whenever a land enters under your control, put four +1/+1 counters on target Plant you control. It gains trample until end of turn.",
+     "constraint": null,
+     "condition": null,
+     "batched": false
+    }
+   ],
+   "static_abilities": [],
+   "replacements": [],
+   "color_override": [
+    "Green",
+    "Red"
+   ],
+   "scryfall_oracle_id": "0a28c098-e1e2-4bc4-ba3a-431e7f565a75",
+   "brawl_commander": true,
+   "legalities": {
+    "brawl": "legal",
+    "historic": "legal"
+   },
+   "printings": [
+    "ZNR"
+   ]
+  }
+ ],
+ "2f959c67-2b0b-4ba8-a8aa-90c25a3806ec": [
+  {
+   "name": "Angelic Guardian",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [
+     "White",
+     "White"
+    ],
+    "generic": 4
+   },
+   "card_type": {
+    "supertypes": [],
+    "core_types": [
+     "Creature"
+    ],
+    "subtypes": [
+     "Angel"
+    ]
+   },
+   "power": {
+    "type": "Fixed",
+    "value": 5
+   },
+   "toughness": {
+    "type": "Fixed",
+    "value": 5
+   },
+   "loyalty": null,
+   "defense": null,
+   "oracle_text": "Flying (This creature can't be blocked except by creatures with flying or reach.)\nWhenever one or more creatures you control attack, they gain indestructible until end of turn. (Damage and effects that say \"destroy\" don't destroy them.)",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [
+    "Flying"
+   ],
+   "abilities": [],
+   "triggers": [
+    {
+     "mode": "YouAttack",
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "GenericEffect",
+       "static_abilities": [
+        {
+         "mode": "Continuous",
+         "affected": {
+          "type": "TriggeringSource"
+         },
+         "modifications": [
+          {
+           "type": "AddKeyword",
+           "keyword": "Indestructible"
+          }
+         ],
+         "condition": null,
+         "affected_zone": null,
+         "effect_zone": null,
+         "active_zones": [],
+         "characteristic_defining": false,
+         "description": "gain indestructible"
+        }
+       ],
+       "duration": "UntilEndOfTurn",
+       "target": null
+      },
+      "cost": null,
+      "sub_ability": null,
+      "duration": "UntilEndOfTurn",
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "forward_result": false
+     },
+     "valid_card": {
+      "type": "Typed",
+      "type_filters": [
+       "Creature"
+      ],
+      "controller": "You",
+      "properties": []
+     },
+     "origin": null,
+     "destination": null,
+     "trigger_zones": [
+      "Battlefield"
+     ],
+     "phase": null,
+     "optional": false,
+     "damage_kind": "Any",
+     "secondary": false,
+     "valid_target": null,
+     "valid_source": null,
+     "description": "Whenever one or more creatures you control attack, they gain indestructible until end of turn.",
+     "constraint": null,
+     "condition": null,
+     "batched": true
+    }
+   ],
+   "static_abilities": [],
+   "replacements": [],
+   "color_override": null,
+   "scryfall_oracle_id": "2f959c67-2b0b-4ba8-a8aa-90c25a3806ec",
+   "legalities": {
+    "brawl": "legal",
+    "commander": "legal",
+    "historic": "legal",
+    "legacy": "legal",
+    "modern": "legal",
+    "pioneer": "legal",
+    "vintage": "legal"
+   },
+   "printings": [
+    "ANB",
+    "G18",
+    "M20",
+    "PZ2"
+   ]
+  }
+ ],
+ "092ceffb-1ee4-452c-b15e-5b79267d42a6": [
+  {
+   "name": "Angrath, the Flame-Chained",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [
+     "Black",
+     "Red"
+    ],
+    "generic": 3
+   },
+   "card_type": {
+    "supertypes": [
+     "Legendary"
+    ],
+    "core_types": [
+     "Planeswalker"
+    ],
+    "subtypes": [
+     "Angrath"
+    ]
+   },
+   "power": null,
+   "toughness": null,
+   "loyalty": "4",
+   "defense": null,
+   "oracle_text": "[+1]: Each opponent discards a card and loses 2 life.\n[−3]: Gain control of target creature until end of turn. Untap it. It gains haste until end of turn. Sacrifice it at the beginning of the next end step if it has mana value 3 or less.\n[−8]: Each opponent loses life equal to the number of cards in their graveyard.",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [],
+   "abilities": [
+    {
+     "kind": "Activated",
+     "effect": {
+      "type": "Discard",
+      "count": {
+       "type": "Fixed",
+       "value": 1
+      },
+      "target": {
+       "type": "Controller"
+      }
+     },
+     "cost": {
+      "type": "Loyalty",
+      "amount": 1
+     },
+     "sub_ability": null,
+     "duration": null,
+     "description": "[+1]: Each opponent discards a card and loses 2 life.",
+     "target_prompt": null,
+     "sorcery_speed": false,
+     "condition": null,
+     "optional_targeting": false,
+     "optional": false,
+     "forward_result": false,
+     "player_scope": {
+      "type": "Opponent"
+     }
+    },
+    {
+     "kind": "Activated",
+     "effect": {
+      "type": "GainControl",
+      "target": {
+       "type": "Typed",
+       "type_filters": [
+        "Creature"
+       ],
+       "controller": null,
+       "properties": []
+      }
+     },
+     "cost": {
+      "type": "Loyalty",
+      "amount": -3
+     },
+     "sub_ability": {
+      "kind": "Activated",
+      "effect": {
+       "type": "Untap",
+       "target": {
+        "type": "ParentTarget"
+       }
+      },
+      "cost": null,
+      "sub_ability": {
+       "kind": "Activated",
+       "effect": {
+        "type": "GenericEffect",
+        "static_abilities": [
+         {
+          "mode": "Continuous",
+          "affected": {
+           "type": "SelfRef"
+          },
+          "modifications": [
+           {
+            "type": "AddKeyword",
+            "keyword": "Haste"
+           }
+          ],
+          "condition": null,
+          "affected_zone": null,
+          "effect_zone": null,
+          "active_zones": [],
+          "characteristic_defining": false,
+          "description": "gain haste"
+         }
+        ],
+        "duration": "UntilEndOfTurn",
+        "target": null
+       },
+       "cost": null,
+       "sub_ability": {
+        "kind": "Activated",
+        "effect": {
+         "type": "CreateDelayedTrigger",
+         "condition": {
+          "type": "AtNextPhase",
+          "phase": "End"
+         },
+         "effect": {
+          "kind": "Activated",
+          "effect": {
+           "type": "Sacrifice",
+           "target": {
+            "type": "ParentTarget"
+           },
+           "count": {
+            "type": "Fixed",
+            "value": 1
+           }
+          },
+          "cost": null,
+          "sub_ability": null,
+          "duration": null,
+          "description": null,
+          "target_prompt": null,
+          "sorcery_speed": false,
+          "condition": {
+           "type": "TargetMatchesFilter",
+           "filter": {
+            "type": "Typed",
+            "type_filters": [],
+            "controller": null,
+            "properties": [
+             {
+              "type": "CmcLE",
+              "value": {
+               "type": "Fixed",
+               "value": 3
+              }
+             }
+            ]
+           },
+           "use_lki": false,
+           "negated": false
+          },
+          "optional_targeting": false,
+          "optional": false,
+          "forward_result": false
+         },
+         "uses_tracked_set": false
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": {
+         "type": "TargetMatchesFilter",
+         "filter": {
+          "type": "Typed",
+          "type_filters": [],
+          "controller": null,
+          "properties": [
+           {
+            "type": "CmcLE",
+            "value": {
+             "type": "Fixed",
+             "value": 3
+            }
+           }
+          ]
+         },
+         "use_lki": false,
+         "negated": false
+        },
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       },
+       "duration": "UntilEndOfTurn",
+       "description": null,
+       "target_prompt": null,
+       "sorcery_speed": false,
+       "condition": null,
+       "optional_targeting": false,
+       "optional": false,
+       "forward_result": false
+      },
+      "duration": null,
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "forward_result": false
+     },
+     "duration": "UntilEndOfTurn",
+     "description": "[−3]: Gain control of target creature until end of turn. Untap it. It gains haste until end of turn. Sacrifice it at the beginning of the next end step if it has mana value 3 or less.",
+     "target_prompt": null,
+     "sorcery_speed": false,
+     "condition": null,
+     "optional_targeting": false,
+     "optional": false,
+     "forward_result": false
+    },
+    {
+     "kind": "Activated",
+     "effect": {
+      "type": "LoseLife",
+      "amount": {
+       "type": "Fixed",
+       "value": 1
+      }
+     },
+     "cost": {
+      "type": "Loyalty",
+      "amount": -8
+     },
+     "sub_ability": null,
+     "duration": null,
+     "description": "[−8]: Each opponent loses life equal to the number of cards in their graveyard.",
+     "target_prompt": null,
+     "sorcery_speed": false,
+     "condition": null,
+     "optional_targeting": false,
+     "optional": false,
+     "forward_result": false,
+     "player_scope": {
+      "type": "Opponent"
+     }
+    }
+   ],
+   "triggers": [],
+   "static_abilities": [],
+   "replacements": [],
+   "color_override": null,
+   "scryfall_oracle_id": "092ceffb-1ee4-452c-b15e-5b79267d42a6",
+   "brawl_commander": true,
+   "legalities": {
+    "brawl": "legal",
+    "commander": "legal",
+    "historic": "legal",
+    "legacy": "legal",
+    "modern": "legal",
+    "pioneer": "legal",
+    "vintage": "legal"
+   },
+   "printings": [
+    "PL21",
+    "PRIX",
+    "RIX",
+    "SLD"
+   ],
+   "rulings": [
+    {
+     "date": "2018-01-19",
+     "text": "Angrath’s first ability causes each opponent to lose 2 life even if some or all of those players were unable to discard a card."
+    },
+    {
+     "date": "2018-01-19",
+     "text": "In a Two-Headed Giant game, Angrath’s first ability causes the opposing team to lose 4 life, and each player on that team discards a card. His last ability causes the opposing team to lose life equal to the number of cards in both graveyards."
+    },
+    {
+     "date": "2018-01-19",
+     "text": "Whether the target creature has mana value 3 or less is checked only as the delayed triggered ability from Angrath’s second ability resolves during the end step."
+    },
+    {
+     "date": "2018-01-19",
+     "text": "You can target and gain control of an untapped creature with Angrath’s second ability. You can also untap a creature you already control and give it haste."
+    }
+   ]
+  }
+ ],
+ "92d8b956-87db-43e4-bbb5-436ba01b5714": [
+  {
+   "name": "Bant Battlemage",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [
+     "White"
+    ],
+    "generic": 2
+   },
+   "card_type": {
+    "supertypes": [],
+    "core_types": [
+     "Creature"
+    ],
+    "subtypes": [
+     "Human",
+     "Wizard"
+    ]
+   },
+   "power": {
+    "type": "Fixed",
+    "value": 2
+   },
+   "toughness": {
+    "type": "Fixed",
+    "value": 2
+   },
+   "loyalty": null,
+   "defense": null,
+   "oracle_text": "{G}, {T}: Target creature gains trample until end of turn.\n{U}, {T}: Target creature gains flying until end of turn.",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [],
+   "abilities": [
+    {
+     "kind": "Activated",
+     "effect": {
+      "type": "GenericEffect",
+      "static_abilities": [
+       {
+        "mode": "Continuous",
+        "affected": {
+         "type": "ParentTarget"
+        },
+        "modifications": [
+         {
+          "type": "AddKeyword",
+          "keyword": "Trample"
+         }
+        ],
+        "condition": null,
+        "affected_zone": null,
+        "effect_zone": null,
+        "active_zones": [],
+        "characteristic_defining": false,
+        "description": "gain trample"
+       }
+      ],
+      "duration": "UntilEndOfTurn",
+      "target": {
+       "type": "Typed",
+       "type_filters": [
+        "Creature"
+       ],
+       "controller": null,
+       "properties": []
+      }
+     },
+     "cost": {
+      "type": "Composite",
+      "costs": [
+       {
+        "type": "Mana",
+        "cost": {
+         "type": "Cost",
+         "shards": [
+          "Green"
+         ],
+         "generic": 0
+        }
+       },
+       {
+        "type": "Tap"
+       }
+      ]
+     },
+     "sub_ability": null,
+     "duration": "UntilEndOfTurn",
+     "description": "{G}, {T}: Target creature gains trample until end of turn.",
+     "target_prompt": null,
+     "sorcery_speed": false,
+     "condition": null,
+     "optional_targeting": false,
+     "optional": false,
+     "forward_result": false
+    },
+    {
+     "kind": "Activated",
+     "effect": {
+      "type": "GenericEffect",
+      "static_abilities": [
+       {
+        "mode": "Continuous",
+        "affected": {
+         "type": "ParentTarget"
+        },
+        "modifications": [
+         {
+          "type": "AddKeyword",
+          "keyword": "Flying"
+         }
+        ],
+        "condition": null,
+        "affected_zone": null,
+        "effect_zone": null,
+        "active_zones": [],
+        "characteristic_defining": false,
+        "description": "gain flying"
+       }
+      ],
+      "duration": "UntilEndOfTurn",
+      "target": {
+       "type": "Typed",
+       "type_filters": [
+        "Creature"
+       ],
+       "controller": null,
+       "properties": []
+      }
+     },
+     "cost": {
+      "type": "Composite",
+      "costs": [
+       {
+        "type": "Mana",
+        "cost": {
+         "type": "Cost",
+         "shards": [
+          "Blue"
+         ],
+         "generic": 0
+        }
+       },
+       {
+        "type": "Tap"
+       }
+      ]
+     },
+     "sub_ability": null,
+     "duration": "UntilEndOfTurn",
+     "description": "{U}, {T}: Target creature gains flying until end of turn.",
+     "target_prompt": null,
+     "sorcery_speed": false,
+     "condition": null,
+     "optional_targeting": false,
+     "optional": false,
+     "forward_result": false
+    }
+   ],
+   "triggers": [],
+   "static_abilities": [],
+   "replacements": [],
+   "color_override": null,
+   "scryfall_oracle_id": "92d8b956-87db-43e4-bbb5-436ba01b5714",
+   "legalities": {
+    "commander": "legal",
+    "legacy": "legal",
+    "modern": "legal",
+    "vintage": "legal"
+   },
+   "printings": [
+    "ALA"
+   ]
+  }
+ ],
+ "f4490b09-dc55-47ed-a573-4ae0b95725b1": [
+  {
+   "name": "Bloodfeather Phoenix",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [
+     "Red"
+    ],
+    "generic": 1
+   },
+   "card_type": {
+    "supertypes": [],
+    "core_types": [
+     "Creature"
+    ],
+    "subtypes": [
+     "Phoenix"
+    ]
+   },
+   "power": {
+    "type": "Fixed",
+    "value": 2
+   },
+   "toughness": {
+    "type": "Fixed",
+    "value": 2
+   },
+   "loyalty": null,
+   "defense": null,
+   "oracle_text": "Flying\nThis creature can't block.\nWhenever an instant or sorcery spell you control deals damage to an opponent or battle, you may pay {R}. If you do, return this card from your graveyard to the battlefield. It gains haste until end of turn.",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [
+    "Flying"
+   ],
+   "abilities": [],
+   "triggers": [
+    {
+     "mode": "DamageDone",
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "PayCost",
+       "cost": {
+        "type": "Mana",
+        "cost": {
+         "type": "Cost",
+         "shards": [
+          "Red"
+         ],
+         "generic": 0
+        }
+       }
+      },
+      "cost": null,
+      "sub_ability": {
+       "kind": "Spell",
+       "effect": {
+        "type": "ChangeZone",
+        "origin": "Graveyard",
+        "destination": "Battlefield",
+        "target": {
+         "type": "SelfRef"
+        },
+        "owner_library": false,
+        "enter_transformed": false,
+        "under_your_control": false,
+        "enter_tapped": false,
+        "enters_attacking": false
+       },
+       "cost": null,
+       "sub_ability": {
+        "kind": "Spell",
+        "effect": {
+         "type": "GenericEffect",
+         "static_abilities": [
+          {
+           "mode": "Continuous",
+           "affected": {
+            "type": "TriggeringSource"
+           },
+           "modifications": [
+            {
+             "type": "AddKeyword",
+             "keyword": "Haste"
+            }
+           ],
+           "condition": null,
+           "affected_zone": null,
+           "effect_zone": null,
+           "active_zones": [],
+           "characteristic_defining": false,
+           "description": "gain haste"
+          }
+         ],
+         "duration": "UntilEndOfTurn",
+         "target": null
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": "UntilEndOfTurn",
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       },
+       "duration": null,
+       "description": null,
+       "target_prompt": null,
+       "sorcery_speed": false,
+       "condition": {
+        "type": "IfYouDo"
+       },
+       "optional_targeting": false,
+       "optional": false,
+       "forward_result": false
+      },
+      "duration": null,
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": true,
+      "forward_result": false
+     },
+     "valid_card": null,
+     "origin": null,
+     "destination": null,
+     "trigger_zones": [
+      "Graveyard"
+     ],
+     "phase": null,
+     "optional": true,
+     "damage_kind": "Any",
+     "secondary": false,
+     "valid_target": {
+      "type": "Typed",
+      "type_filters": [],
+      "controller": "Opponent",
+      "properties": []
+     },
+     "valid_source": {
+      "type": "Or",
+      "filters": [
+       {
+        "type": "Typed",
+        "type_filters": [
+         "Instant"
+        ],
+        "controller": "You",
+        "properties": []
+       },
+       {
+        "type": "Typed",
+        "type_filters": [
+         "Sorcery"
+        ],
+        "controller": "You",
+        "properties": []
+       }
+      ]
+     },
+     "description": "Whenever an instant or sorcery spell you control deals damage to an opponent or battle, you may pay {R}. If you do, return this card from your graveyard to the battlefield. It gains haste until end of turn.",
+     "constraint": null,
+     "condition": null,
+     "batched": false
+    }
+   ],
+   "static_abilities": [
+    {
+     "mode": "CantBlock",
+     "affected": {
+      "type": "SelfRef"
+     },
+     "modifications": [],
+     "condition": null,
+     "affected_zone": null,
+     "effect_zone": null,
+     "active_zones": [],
+     "characteristic_defining": false,
+     "description": "~ can't block."
+    }
+   ],
+   "replacements": [],
+   "color_override": null,
+   "scryfall_oracle_id": "f4490b09-dc55-47ed-a573-4ae0b95725b1",
+   "legalities": {
+    "brawl": "legal",
+    "commander": "legal",
+    "historic": "legal",
+    "legacy": "legal",
+    "modern": "legal",
+    "pioneer": "legal",
+    "vintage": "legal"
+   },
+   "printings": [
+    "MOM",
+    "PMOM"
+   ],
+   "rulings": [
+    {
+     "date": "2023-04-14",
+     "text": "Bloodfeather Phoenix's last ability triggers only if Bloodfeather Phoenix is in your graveyard at the moment the instant or sorcery spell you control deals damage to an opponent or battle. For example, if you cast a sorcery spell that deals damage to an opponent and also enough damage to Bloodfeather Phoenix to destroy it at the same time, Bloodfeather Phoenix's ability won't trigger."
+    },
+    {
+     "date": "2023-04-14",
+     "text": "Most instant or sorcery spells deal damage themselves, but a few cause other sources to deal damage. For example, a sorcery spell that says \"Target creature you control deals damage equal to its power to any target\" wouldn't cause Bloodfeather Phoenix's ability to trigger even if an opponent or battle was dealt damage, as it's the creature dealing the damage, not the spell."
+    },
+    {
+     "date": "2023-04-14",
+     "text": "You choose whether to pay {R} as the triggered ability is resolving. Once the ability starts resolving, it's too late for anyone to respond by removing Bloodfeather Phoenix from your graveyard to stop you from bringing it back."
+    }
+   ]
+  }
+ ],
+ "54884040-b426-43da-9bb1-016621e1446d": [
+  {
+   "name": "Dragon Whisperer",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [
+     "Red",
+     "Red"
+    ],
+    "generic": 0
+   },
+   "card_type": {
+    "supertypes": [],
+    "core_types": [
+     "Creature"
+    ],
+    "subtypes": [
+     "Human",
+     "Shaman"
+    ]
+   },
+   "power": {
+    "type": "Fixed",
+    "value": 2
+   },
+   "toughness": {
+    "type": "Fixed",
+    "value": 2
+   },
+   "loyalty": null,
+   "defense": null,
+   "oracle_text": "{R}: This creature gains flying until end of turn.\n{1}{R}: This creature gets +1/+0 until end of turn.\nFormidable — {4}{R}{R}: Create a 4/4 red Dragon creature token with flying. Activate only if creatures you control have total power 8 or greater.",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [],
+   "abilities": [
+    {
+     "kind": "Activated",
+     "effect": {
+      "type": "GenericEffect",
+      "static_abilities": [
+       {
+        "mode": "Continuous",
+        "affected": {
+         "type": "SelfRef"
+        },
+        "modifications": [
+         {
+          "type": "AddKeyword",
+          "keyword": "Flying"
+         }
+        ],
+        "condition": null,
+        "affected_zone": null,
+        "effect_zone": null,
+        "active_zones": [],
+        "characteristic_defining": false,
+        "description": "gain flying"
+       }
+      ],
+      "duration": "UntilEndOfTurn",
+      "target": null
+     },
+     "cost": {
+      "type": "Mana",
+      "cost": {
+       "type": "Cost",
+       "shards": [
+        "Red"
+       ],
+       "generic": 0
+      }
+     },
+     "sub_ability": null,
+     "duration": "UntilEndOfTurn",
+     "description": "{R}: This creature gains flying until end of turn.",
+     "target_prompt": null,
+     "sorcery_speed": false,
+     "condition": null,
+     "optional_targeting": false,
+     "optional": false,
+     "forward_result": false
+    },
+    {
+     "kind": "Activated",
+     "effect": {
+      "type": "Pump",
+      "power": {
+       "type": "Fixed",
+       "value": 1
+      },
+      "toughness": {
+       "type": "Fixed",
+       "value": 0
+      },
+      "target": {
+       "type": "SelfRef"
+      }
+     },
+     "cost": {
+      "type": "Mana",
+      "cost": {
+       "type": "Cost",
+       "shards": [
+        "Red"
+       ],
+       "generic": 1
+      }
+     },
+     "sub_ability": null,
+     "duration": "UntilEndOfTurn",
+     "description": "{1}{R}: This creature gets +1/+0 until end of turn.",
+     "target_prompt": null,
+     "sorcery_speed": false,
+     "condition": null,
+     "optional_targeting": false,
+     "optional": false,
+     "forward_result": false
+    },
+    {
+     "kind": "Activated",
+     "effect": {
+      "type": "Token",
+      "name": "Dragon",
+      "power": {
+       "type": "Fixed",
+       "value": 4
+      },
+      "toughness": {
+       "type": "Fixed",
+       "value": 4
+      },
+      "types": [
+       "Creature",
+       "Dragon"
+      ],
+      "colors": [
+       "Red"
+      ],
+      "keywords": [
+       "Flying"
+      ],
+      "tapped": false,
+      "count": {
+       "type": "Fixed",
+       "value": 1
+      },
+      "owner": {
+       "type": "Controller"
+      },
+      "enters_attacking": false
+     },
+     "cost": {
+      "type": "Mana",
+      "cost": {
+       "type": "Cost",
+       "shards": [
+        "Red",
+        "Red"
+       ],
+       "generic": 4
+      }
+     },
+     "sub_ability": null,
+     "duration": null,
+     "description": "Formidable — {4}{R}{R}: Create a 4/4 red Dragon creature token with flying. Activate only if creatures you control have total power 8 or greater.",
+     "target_prompt": null,
+     "sorcery_speed": false,
+     "activation_restrictions": [
+      {
+       "type": "RequiresCondition",
+       "data": {
+        "condition": {
+         "type": "CreaturesYouControlTotalPowerAtLeast",
+         "minimum": 8
+        }
+       }
+      }
+     ],
+     "condition": null,
+     "optional_targeting": false,
+     "optional": false,
+     "forward_result": false
+    }
+   ],
+   "triggers": [],
+   "static_abilities": [],
+   "replacements": [],
+   "color_override": null,
+   "scryfall_oracle_id": "54884040-b426-43da-9bb1-016621e1446d",
+   "legalities": {
+    "commander": "legal",
+    "legacy": "legal",
+    "modern": "legal",
+    "pioneer": "legal",
+    "vintage": "legal"
+   },
+   "printings": [
+    "DTK"
+   ],
+   "rulings": [
+    {
+     "date": "2015-02-25",
+     "text": "If you control a creature with power less than 0, use its actual power when calculating the total power of creatures you control. For example, if you control three creatures with powers 4, 5, and -2, the total power of creatures you control is 7."
+    },
+    {
+     "date": "2015-02-25",
+     "text": "Other formidable abilities are triggered abilities with an \"intervening 'if'\" clause. Such abilities check the total power of creatures you control twice: once at the appropriate time to see if the ability will trigger, and again as the ability tries to resolve. If, at that time, the total power of creatures you control is no longer 8 or greater, the ability will have no effect."
+    },
+    {
+     "date": "2015-02-25",
+     "text": "Some formidable abilities are activated abilities that require creatures you control to have total power 8 or greater. Once you activate these abilities, it doesn't matter what happens to the total power of creatures you control."
+    }
+   ]
+  }
+ ],
+ "2387edac-765b-4502-bd3d-88be8ba7d0a4": [
+  {
+   "name": "Gavony",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [],
+    "generic": 0
+   },
+   "card_type": {
+    "supertypes": [],
+    "core_types": [],
+    "subtypes": [
+     "Innistrad"
+    ]
+   },
+   "power": null,
+   "toughness": null,
+   "loyalty": null,
+   "defense": null,
+   "oracle_text": "All creatures have vigilance.\nWhenever chaos ensues, creatures you control gain indestructible until end of turn.",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [],
+   "abilities": [],
+   "triggers": [
+    {
+     "mode": "ChaosEnsues",
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "GenericEffect",
+       "static_abilities": [
+        {
+         "mode": "Continuous",
+         "affected": {
+          "type": "Typed",
+          "type_filters": [
+           "Creature"
+          ],
+          "controller": "You",
+          "properties": []
+         },
+         "modifications": [
+          {
+           "type": "AddKeyword",
+           "keyword": "Indestructible"
+          }
+         ],
+         "condition": null,
+         "affected_zone": null,
+         "effect_zone": null,
+         "active_zones": [],
+         "characteristic_defining": false,
+         "description": "gain indestructible"
+        }
+       ],
+       "duration": "UntilEndOfTurn",
+       "target": null
+      },
+      "cost": null,
+      "sub_ability": null,
+      "duration": "UntilEndOfTurn",
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "forward_result": false
+     },
+     "valid_card": null,
+     "origin": null,
+     "destination": null,
+     "trigger_zones": [
+      "Battlefield"
+     ],
+     "phase": null,
+     "optional": false,
+     "damage_kind": "Any",
+     "secondary": false,
+     "valid_target": null,
+     "valid_source": null,
+     "description": "Whenever chaos ensues, creatures you control gain indestructible until end of turn.",
+     "constraint": null,
+     "condition": null,
+     "batched": false
+    }
+   ],
+   "static_abilities": [
+    {
+     "mode": "Continuous",
+     "affected": {
+      "type": "Typed",
+      "type_filters": [
+       "Creature"
+      ],
+      "controller": null,
+      "properties": []
+     },
+     "modifications": [
+      {
+       "type": "AddKeyword",
+       "keyword": "Vigilance"
+      }
+     ],
+     "condition": null,
+     "affected_zone": null,
+     "effect_zone": null,
+     "active_zones": [],
+     "characteristic_defining": false,
+     "description": "All creatures have vigilance."
+    }
+   ],
+   "replacements": [],
+   "color_override": null,
+   "scryfall_oracle_id": "2387edac-765b-4502-bd3d-88be8ba7d0a4",
+   "legalities": {},
+   "printings": [
+    "MOC",
+    "OPC2",
+    "OPCA"
+   ],
+   "rulings": [
+    {
+     "date": "2013-07-01",
+     "text": "If another player gains control of one of your creatures after the chaos ability resolves, that creature will continue to have indestructible until end of turn."
+    },
+    {
+     "date": "2013-07-01",
+     "text": "The chaos ability grants indestructible only to creatures that you control at the time it resovles. Creatures that you gain control of later in the turn will not have indestructible."
+    }
+   ]
+  }
+ ],
+ "5eb8bb1d-7567-4c24-913b-463b5fe463c4": [
+  {
+   "name": "Gilt-Leaf's Embrace",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [
+     "Green"
+    ],
+    "generic": 2
+   },
+   "card_type": {
+    "supertypes": [],
+    "core_types": [
+     "Enchantment"
+    ],
+    "subtypes": [
+     "Aura"
+    ]
+   },
+   "power": null,
+   "toughness": null,
+   "loyalty": null,
+   "defense": null,
+   "oracle_text": "Flash\nEnchant creature\nWhen this Aura enters, enchanted creature gains trample and indestructible until end of turn. (Damage and effects that say \"destroy\" don't destroy it. If its toughness is 0 or less, it still dies.)\nEnchanted creature gets +2/+0.",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [
+    "Flash",
+    {
+     "Enchant": {
+      "type": "Typed",
+      "type_filters": [
+       "Creature"
+      ],
+      "controller": null,
+      "properties": []
+     }
+    }
+   ],
+   "abilities": [],
+   "triggers": [
+    {
+     "mode": "ChangesZone",
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "GenericEffect",
+       "static_abilities": [
+        {
+         "mode": "Continuous",
+         "affected": {
+          "type": "Typed",
+          "type_filters": [
+           "Creature"
+          ],
+          "controller": null,
+          "properties": [
+           {
+            "type": "EnchantedBy"
+           }
+          ]
+         },
+         "modifications": [
+          {
+           "type": "AddKeyword",
+           "keyword": "Trample"
+          },
+          {
+           "type": "AddKeyword",
+           "keyword": "Indestructible"
+          }
+         ],
+         "condition": null,
+         "affected_zone": null,
+         "effect_zone": null,
+         "active_zones": [],
+         "characteristic_defining": false,
+         "description": "gain trample and indestructible"
+        }
+       ],
+       "duration": "UntilEndOfTurn",
+       "target": null
+      },
+      "cost": null,
+      "sub_ability": null,
+      "duration": "UntilEndOfTurn",
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "forward_result": false
+     },
+     "valid_card": {
+      "type": "SelfRef"
+     },
+     "origin": null,
+     "destination": "Battlefield",
+     "trigger_zones": [
+      "Battlefield"
+     ],
+     "phase": null,
+     "optional": false,
+     "damage_kind": "Any",
+     "secondary": false,
+     "valid_target": null,
+     "valid_source": null,
+     "description": "When this Aura enters, enchanted creature gains trample and indestructible until end of turn.",
+     "constraint": null,
+     "condition": null,
+     "batched": false
+    }
+   ],
+   "static_abilities": [
+    {
+     "mode": "Continuous",
+     "affected": {
+      "type": "Typed",
+      "type_filters": [
+       "Creature"
+      ],
+      "controller": null,
+      "properties": [
+       {
+        "type": "EnchantedBy"
+       }
+      ]
+     },
+     "modifications": [
+      {
+       "type": "AddPower",
+       "value": 2
+      },
+      {
+       "type": "AddToughness",
+       "value": 0
+      }
+     ],
+     "condition": null,
+     "affected_zone": null,
+     "effect_zone": null,
+     "active_zones": [],
+     "characteristic_defining": false,
+     "description": "Enchanted creature gets +2/+0."
+    }
+   ],
+   "replacements": [],
+   "color_override": null,
+   "scryfall_oracle_id": "5eb8bb1d-7567-4c24-913b-463b5fe463c4",
+   "legalities": {
+    "brawl": "legal",
+    "commander": "legal",
+    "historic": "legal",
+    "legacy": "legal",
+    "modern": "legal",
+    "pauper": "legal",
+    "pioneer": "legal",
+    "standard": "legal",
+    "standardbrawl": "legal",
+    "vintage": "legal"
+   },
+   "printings": [
+    "ECL"
+   ]
+  }
+ ],
+ "4d47e598-690e-4850-97e4-7136bc7b497e": [
+  {
+   "name": "Kelsinko Ranger",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [
+     "White"
+    ],
+    "generic": 0
+   },
+   "card_type": {
+    "supertypes": [],
+    "core_types": [
+     "Creature"
+    ],
+    "subtypes": [
+     "Human",
+     "Ranger"
+    ]
+   },
+   "power": {
+    "type": "Fixed",
+    "value": 1
+   },
+   "toughness": {
+    "type": "Fixed",
+    "value": 1
+   },
+   "loyalty": null,
+   "defense": null,
+   "oracle_text": "{1}{W}: Target green creature gains first strike until end of turn.",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [],
+   "abilities": [
+    {
+     "kind": "Activated",
+     "effect": {
+      "type": "GenericEffect",
+      "static_abilities": [
+       {
+        "mode": "Continuous",
+        "affected": {
+         "type": "ParentTarget"
+        },
+        "modifications": [
+         {
+          "type": "AddKeyword",
+          "keyword": "FirstStrike"
+         }
+        ],
+        "condition": null,
+        "affected_zone": null,
+        "effect_zone": null,
+        "active_zones": [],
+        "characteristic_defining": false,
+        "description": "gain first strike"
+       }
+      ],
+      "duration": "UntilEndOfTurn",
+      "target": {
+       "type": "Typed",
+       "type_filters": [
+        "Creature"
+       ],
+       "controller": null,
+       "properties": [
+        {
+         "type": "HasColor",
+         "color": "Green"
+        }
+       ]
+      }
+     },
+     "cost": {
+      "type": "Mana",
+      "cost": {
+       "type": "Cost",
+       "shards": [
+        "White"
+       ],
+       "generic": 1
+      }
+     },
+     "sub_ability": null,
+     "duration": "UntilEndOfTurn",
+     "description": "{1}{W}: Target green creature gains first strike until end of turn.",
+     "target_prompt": null,
+     "sorcery_speed": false,
+     "condition": null,
+     "optional_targeting": false,
+     "optional": false,
+     "forward_result": false
+    }
+   ],
+   "triggers": [],
+   "static_abilities": [],
+   "replacements": [],
+   "color_override": null,
+   "scryfall_oracle_id": "4d47e598-690e-4850-97e4-7136bc7b497e",
+   "legalities": {
+    "commander": "legal",
+    "legacy": "legal",
+    "pauper": "legal",
+    "vintage": "legal"
+   },
+   "printings": [
+    "ICE"
+   ]
+  }
+ ],
+ "0790c8bd-a094-49b5-8843-e8b02cba145b": [
+  {
+   "name": "Kolaghan Stormsinger",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [
+     "Red"
+    ],
+    "generic": 0
+   },
+   "card_type": {
+    "supertypes": [],
+    "core_types": [
+     "Creature"
+    ],
+    "subtypes": [
+     "Human",
+     "Shaman"
+    ]
+   },
+   "power": {
+    "type": "Fixed",
+    "value": 1
+   },
+   "toughness": {
+    "type": "Fixed",
+    "value": 1
+   },
+   "loyalty": null,
+   "defense": null,
+   "oracle_text": "Haste\nMegamorph {R} (You may cast this card face down as a 2/2 creature for {3}. Turn it face up any time for its megamorph cost and put a +1/+1 counter on it.)\nWhen this creature is turned face up, target creature gains haste until end of turn.",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [
+    "Haste",
+    {
+     "Megamorph": {
+      "type": "Cost",
+      "shards": [
+       "Red"
+      ],
+      "generic": 0
+     }
+    }
+   ],
+   "abilities": [],
+   "triggers": [
+    {
+     "mode": "TurnFaceUp",
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "GenericEffect",
+       "static_abilities": [
+        {
+         "mode": "Continuous",
+         "affected": {
+          "type": "ParentTarget"
+         },
+         "modifications": [
+          {
+           "type": "AddKeyword",
+           "keyword": "Haste"
+          }
+         ],
+         "condition": null,
+         "affected_zone": null,
+         "effect_zone": null,
+         "active_zones": [],
+         "characteristic_defining": false,
+         "description": "gain haste"
+        }
+       ],
+       "duration": "UntilEndOfTurn",
+       "target": {
+        "type": "Typed",
+        "type_filters": [
+         "Creature"
+        ],
+        "controller": null,
+        "properties": []
+       }
+      },
+      "cost": null,
+      "sub_ability": null,
+      "duration": "UntilEndOfTurn",
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "forward_result": false
+     },
+     "valid_card": {
+      "type": "SelfRef"
+     },
+     "origin": null,
+     "destination": null,
+     "trigger_zones": [
+      "Battlefield"
+     ],
+     "phase": null,
+     "optional": false,
+     "damage_kind": "Any",
+     "secondary": false,
+     "valid_target": null,
+     "valid_source": null,
+     "description": "When this creature is turned face up, target creature gains haste until end of turn.",
+     "constraint": null,
+     "condition": null,
+     "batched": false
+    }
+   ],
+   "static_abilities": [],
+   "replacements": [],
+   "color_override": null,
+   "scryfall_oracle_id": "0790c8bd-a094-49b5-8843-e8b02cba145b",
+   "legalities": {
+    "commander": "legal",
+    "legacy": "legal",
+    "modern": "legal",
+    "pauper": "legal",
+    "pioneer": "legal",
+    "vintage": "legal"
+   },
+   "printings": [
+    "DTK",
+    "PLST"
+   ],
+   "rulings": [
+    {
+     "date": "2015-02-25",
+     "text": "If a face-down creature with megamorph is turned face up some other way (for example, if you manifest a card with megamorph and then pay its mana cost to turn it face up), you won’t put a +1/+1 counter on it."
+    },
+    {
+     "date": "2015-02-25",
+     "text": "Megamorph is a variant of the morph ability. You can find more information on morph on cards with morph from the Khans of Tarkir set."
+    },
+    {
+     "date": "2015-02-25",
+     "text": "Turning a face-down creature with megamorph face up and putting a +1/+1 counter on it is a special action. It doesn’t use the stack and can’t be responded to."
+    }
+   ]
+  }
+ ],
+ "e6377683-1c36-4786-bd8d-c62ff2d25767": [
+  {
+   "name": "Popular Egotist",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [
+     "Black"
+    ],
+    "generic": 2
+   },
+   "card_type": {
+    "supertypes": [],
+    "core_types": [
+     "Creature"
+    ],
+    "subtypes": [
+     "Human",
+     "Rogue"
+    ]
+   },
+   "power": {
+    "type": "Fixed",
+    "value": 3
+   },
+   "toughness": {
+    "type": "Fixed",
+    "value": 2
+   },
+   "loyalty": null,
+   "defense": null,
+   "oracle_text": "{1}{B}, Sacrifice another creature or enchantment: This creature gains indestructible until end of turn. Tap it. (Damage and effects that say \"destroy\" don't destroy it.)\nWhenever you sacrifice a permanent, target opponent loses 1 life and you gain 1 life.",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [],
+   "abilities": [
+    {
+     "kind": "Activated",
+     "effect": {
+      "type": "GenericEffect",
+      "static_abilities": [
+       {
+        "mode": "Continuous",
+        "affected": {
+         "type": "SelfRef"
+        },
+        "modifications": [
+         {
+          "type": "AddKeyword",
+          "keyword": "Indestructible"
+         }
+        ],
+        "condition": null,
+        "affected_zone": null,
+        "effect_zone": null,
+        "active_zones": [],
+        "characteristic_defining": false,
+        "description": "gain indestructible"
+       }
+      ],
+      "duration": "UntilEndOfTurn",
+      "target": null
+     },
+     "cost": {
+      "type": "Composite",
+      "costs": [
+       {
+        "type": "Mana",
+        "cost": {
+         "type": "Cost",
+         "shards": [
+          "Black"
+         ],
+         "generic": 1
+        }
+       },
+       {
+        "type": "Sacrifice",
+        "target": {
+         "type": "Or",
+         "filters": [
+          {
+           "type": "Typed",
+           "type_filters": [
+            "Creature"
+           ],
+           "controller": null,
+           "properties": [
+            {
+             "type": "Another"
+            }
+           ]
+          },
+          {
+           "type": "Typed",
+           "type_filters": [
+            "Enchantment"
+           ],
+           "controller": null,
+           "properties": [
+            {
+             "type": "Another"
+            }
+           ]
+          }
+         ]
+        },
+        "count": 1
+       }
+      ]
+     },
+     "sub_ability": {
+      "kind": "Activated",
+      "effect": {
+       "type": "Tap",
+       "target": {
+        "type": "ParentTarget"
+       }
+      },
+      "cost": null,
+      "sub_ability": null,
+      "duration": null,
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "forward_result": false
+     },
+     "duration": "UntilEndOfTurn",
+     "description": "{1}{B}, Sacrifice another creature or enchantment: This creature gains indestructible until end of turn. Tap it.",
+     "target_prompt": null,
+     "sorcery_speed": false,
+     "condition": null,
+     "optional_targeting": false,
+     "optional": false,
+     "forward_result": false
+    }
+   ],
+   "triggers": [
+    {
+     "mode": "Sacrificed",
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "LoseLife",
+       "amount": {
+        "type": "Fixed",
+        "value": 1
+       },
+       "target": {
+        "type": "Typed",
+        "type_filters": [],
+        "controller": "Opponent",
+        "properties": []
+       }
+      },
+      "cost": null,
+      "sub_ability": {
+       "kind": "Spell",
+       "effect": {
+        "type": "GainLife",
+        "amount": {
+         "type": "Fixed",
+         "value": 1
+        },
+        "player": "controller"
+       },
+       "cost": null,
+       "sub_ability": null,
+       "duration": null,
+       "description": null,
+       "target_prompt": null,
+       "sorcery_speed": false,
+       "condition": null,
+       "optional_targeting": false,
+       "optional": false,
+       "forward_result": false
+      },
+      "duration": null,
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "forward_result": false
+     },
+     "valid_card": {
+      "type": "Typed",
+      "type_filters": [
+       "Permanent"
+      ],
+      "controller": "You",
+      "properties": []
+     },
+     "origin": null,
+     "destination": null,
+     "trigger_zones": [
+      "Battlefield"
+     ],
+     "phase": null,
+     "optional": false,
+     "damage_kind": "Any",
+     "secondary": false,
+     "valid_target": null,
+     "valid_source": null,
+     "description": "Whenever you sacrifice a permanent, target opponent loses 1 life and you gain 1 life.",
+     "constraint": null,
+     "condition": null,
+     "batched": false
+    }
+   ],
+   "static_abilities": [],
+   "replacements": [],
+   "color_override": null,
+   "scryfall_oracle_id": "e6377683-1c36-4786-bd8d-c62ff2d25767",
+   "legalities": {
+    "brawl": "legal",
+    "commander": "legal",
+    "historic": "legal",
+    "legacy": "legal",
+    "modern": "legal",
+    "pioneer": "legal",
+    "standard": "legal",
+    "standardbrawl": "legal",
+    "vintage": "legal"
+   },
+   "printings": [
+    "DSK"
+   ],
+   "rulings": [
+    {
+     "date": "2024-09-20",
+     "text": "If you sacrifice Popular Egotist, its last ability will trigger. If you sacrifice other permanents at the same time, its last ability will trigger for each of those permanents as well."
+    },
+    {
+     "date": "2024-09-20",
+     "text": "If you sacrifice a permanent as part of casting a spell or activating an ability, Popular Egotist's last ability will resolve before that spell or ability. It will resolve even if that spell or ability is countered."
+    }
+   ]
+  }
+ ],
+ "c2248d3d-3157-4610-868d-2b3fae2b1ec8": [
+  {
+   "name": "Raking Claws",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [
+     "Red"
+    ],
+    "generic": 1
+   },
+   "card_type": {
+    "supertypes": [],
+    "core_types": [
+     "Instant"
+    ],
+    "subtypes": []
+   },
+   "power": null,
+   "toughness": null,
+   "loyalty": null,
+   "defense": null,
+   "oracle_text": "Target creature gains double strike until end of turn.\nCycling {2} ({2}, Discard this card: Draw a card.)",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [
+    {
+     "Cycling": {
+      "type": "Cost",
+      "shards": [],
+      "generic": 2
+     }
+    }
+   ],
+   "abilities": [
+    {
+     "kind": "Spell",
+     "effect": {
+      "type": "GenericEffect",
+      "static_abilities": [
+       {
+        "mode": "Continuous",
+        "affected": {
+         "type": "ParentTarget"
+        },
+        "modifications": [
+         {
+          "type": "AddKeyword",
+          "keyword": "DoubleStrike"
+         }
+        ],
+        "condition": null,
+        "affected_zone": null,
+        "effect_zone": null,
+        "active_zones": [],
+        "characteristic_defining": false,
+        "description": "gain double strike"
+       }
+      ],
+      "duration": "UntilEndOfTurn",
+      "target": {
+       "type": "Typed",
+       "type_filters": [
+        "Creature"
+       ],
+       "controller": null,
+       "properties": []
+      }
+     },
+     "cost": null,
+     "sub_ability": null,
+     "duration": "UntilEndOfTurn",
+     "description": "Target creature gains double strike until end of turn.",
+     "target_prompt": null,
+     "sorcery_speed": false,
+     "condition": null,
+     "optional_targeting": false,
+     "optional": false,
+     "forward_result": false
+    },
+    {
+     "kind": "Activated",
+     "effect": {
+      "type": "Draw",
+      "count": {
+       "type": "Fixed",
+       "value": 1
+      }
+     },
+     "cost": {
+      "type": "Composite",
+      "costs": [
+       {
+        "type": "Mana",
+        "cost": {
+         "type": "Cost",
+         "shards": [],
+         "generic": 2
+        }
+       },
+       {
+        "type": "Discard",
+        "count": 1,
+        "filter": null,
+        "random": false,
+        "self_ref": true
+       }
+      ]
+     },
+     "sub_ability": null,
+     "duration": null,
+     "description": null,
+     "target_prompt": null,
+     "sorcery_speed": false,
+     "activation_zone": "Hand",
+     "condition": null,
+     "optional_targeting": false,
+     "optional": false,
+     "forward_result": false
+    }
+   ],
+   "triggers": [],
+   "static_abilities": [],
+   "replacements": [],
+   "color_override": null,
+   "scryfall_oracle_id": "c2248d3d-3157-4610-868d-2b3fae2b1ec8",
+   "legalities": {
+    "brawl": "legal",
+    "commander": "legal",
+    "historic": "legal",
+    "legacy": "legal",
+    "modern": "legal",
+    "pauper": "legal",
+    "pioneer": "legal",
+    "vintage": "legal"
+   },
+   "printings": [
+    "IKO",
+    "J22"
+   ]
+  }
+ ],
+ "d3c68573-95b1-4db5-bbea-363b86f713c1": [
+  {
+   "name": "Searing Spear Askari",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [
+     "Red"
+    ],
+    "generic": 2
+   },
+   "card_type": {
+    "supertypes": [],
+    "core_types": [
+     "Creature"
+    ],
+    "subtypes": [
+     "Human",
+     "Knight"
+    ]
+   },
+   "power": {
+    "type": "Fixed",
+    "value": 2
+   },
+   "toughness": {
+    "type": "Fixed",
+    "value": 2
+   },
+   "loyalty": null,
+   "defense": null,
+   "oracle_text": "Flanking (Whenever a creature without flanking blocks this creature, the blocking creature gets -1/-1 until end of turn.)\n{1}{R}: This creature gains menace until end of turn. (It can't be blocked except by two or more creatures.)",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [
+    "Flanking"
+   ],
+   "abilities": [
+    {
+     "kind": "Activated",
+     "effect": {
+      "type": "GenericEffect",
+      "static_abilities": [
+       {
+        "mode": "Continuous",
+        "affected": {
+         "type": "SelfRef"
+        },
+        "modifications": [
+         {
+          "type": "AddKeyword",
+          "keyword": "Menace"
+         }
+        ],
+        "condition": null,
+        "affected_zone": null,
+        "effect_zone": null,
+        "active_zones": [],
+        "characteristic_defining": false,
+        "description": "gain menace"
+       }
+      ],
+      "duration": "UntilEndOfTurn",
+      "target": null
+     },
+     "cost": {
+      "type": "Mana",
+      "cost": {
+       "type": "Cost",
+       "shards": [
+        "Red"
+       ],
+       "generic": 1
+      }
+     },
+     "sub_ability": null,
+     "duration": "UntilEndOfTurn",
+     "description": "{1}{R}: This creature gains menace until end of turn.",
+     "target_prompt": null,
+     "sorcery_speed": false,
+     "condition": null,
+     "optional_targeting": false,
+     "optional": false,
+     "forward_result": false
+    }
+   ],
+   "triggers": [],
+   "static_abilities": [],
+   "replacements": [],
+   "color_override": null,
+   "scryfall_oracle_id": "d3c68573-95b1-4db5-bbea-363b86f713c1",
+   "legalities": {
+    "commander": "legal",
+    "legacy": "legal",
+    "pauper": "legal",
+    "vintage": "legal"
+   },
+   "printings": [
+    "MIR"
+   ],
+   "rulings": [
+    {
+     "date": "2004-10-04",
+     "text": "The ability only does something if used before blockers are declared. You can use it afterwards but to no useful effect."
+    }
+   ]
+  }
+ ],
+ "25d40d28-1b46-4055-959a-45719040ed30": [
+  {
+   "name": "Terra, Herald of Hope",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [
+     "Red",
+     "White",
+     "Black"
+    ],
+    "generic": 0
+   },
+   "card_type": {
+    "supertypes": [
+     "Legendary"
+    ],
+    "core_types": [
+     "Creature"
+    ],
+    "subtypes": [
+     "Human",
+     "Wizard",
+     "Warrior"
+    ]
+   },
+   "power": {
+    "type": "Fixed",
+    "value": 3
+   },
+   "toughness": {
+    "type": "Fixed",
+    "value": 3
+   },
+   "loyalty": null,
+   "defense": null,
+   "oracle_text": "Trance — At the beginning of combat on your turn, mill two cards. Terra gains flying until end of turn.\nWhenever Terra deals combat damage to a player, you may pay {2}. When you do, return target creature card with power 3 or less from your graveyard to the battlefield tapped.",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [],
+   "abilities": [],
+   "triggers": [
+    {
+     "mode": "Phase",
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "Mill",
+       "count": {
+        "type": "Fixed",
+        "value": 2
+       },
+       "target": {
+        "type": "Controller"
+       },
+       "destination": "Graveyard"
+      },
+      "cost": null,
+      "sub_ability": {
+       "kind": "Spell",
+       "effect": {
+        "type": "GenericEffect",
+        "static_abilities": [
+         {
+          "mode": "Continuous",
+          "affected": {
+           "type": "SelfRef"
+          },
+          "modifications": [
+           {
+            "type": "AddKeyword",
+            "keyword": "Flying"
+           }
+          ],
+          "condition": null,
+          "affected_zone": null,
+          "effect_zone": null,
+          "active_zones": [],
+          "characteristic_defining": false,
+          "description": "gain flying"
+         }
+        ],
+        "duration": "UntilEndOfTurn",
+        "target": null
+       },
+       "cost": null,
+       "sub_ability": null,
+       "duration": "UntilEndOfTurn",
+       "description": null,
+       "target_prompt": null,
+       "sorcery_speed": false,
+       "condition": null,
+       "optional_targeting": false,
+       "optional": false,
+       "forward_result": false
+      },
+      "duration": null,
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "forward_result": false
+     },
+     "valid_card": null,
+     "origin": null,
+     "destination": null,
+     "trigger_zones": [
+      "Battlefield"
+     ],
+     "phase": "BeginCombat",
+     "optional": false,
+     "damage_kind": "Any",
+     "secondary": false,
+     "valid_target": null,
+     "valid_source": null,
+     "description": "At the beginning of combat on your turn, mill two cards. Terra gains flying until end of turn.",
+     "constraint": {
+      "type": "OnlyDuringYourTurn"
+     },
+     "condition": null,
+     "batched": false
+    },
+    {
+     "mode": "DamageDone",
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "PayCost",
+       "cost": {
+        "type": "Mana",
+        "cost": {
+         "type": "Cost",
+         "shards": [],
+         "generic": 2
+        }
+       }
+      },
+      "cost": null,
+      "sub_ability": {
+       "kind": "Spell",
+       "effect": {
+        "type": "ChangeZone",
+        "origin": "Graveyard",
+        "destination": "Battlefield",
+        "target": {
+         "type": "Typed",
+         "type_filters": [
+          "Creature"
+         ],
+         "controller": "You",
+         "properties": [
+          {
+           "type": "PowerLE",
+           "value": {
+            "type": "Fixed",
+            "value": 3
+           }
+          },
+          {
+           "type": "InZone",
+           "zone": "Graveyard"
+          }
+         ]
+        },
+        "owner_library": false,
+        "enter_transformed": false,
+        "under_your_control": false,
+        "enter_tapped": true,
+        "enters_attacking": false
+       },
+       "cost": null,
+       "sub_ability": null,
+       "duration": null,
+       "description": null,
+       "target_prompt": null,
+       "sorcery_speed": false,
+       "condition": {
+        "type": "WhenYouDo"
+       },
+       "optional_targeting": false,
+       "optional": false,
+       "forward_result": false
+      },
+      "duration": null,
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": true,
+      "forward_result": false
+     },
+     "valid_card": null,
+     "origin": null,
+     "destination": null,
+     "trigger_zones": [
+      "Battlefield"
+     ],
+     "phase": null,
+     "optional": true,
+     "damage_kind": "CombatOnly",
+     "secondary": false,
+     "valid_target": {
+      "type": "Player"
+     },
+     "valid_source": {
+      "type": "SelfRef"
+     },
+     "description": "Whenever Terra deals combat damage to a player, you may pay {2}. When you do, return target creature card with power 3 or less from your graveyard to the battlefield tapped.",
+     "constraint": null,
+     "condition": null,
+     "batched": false
+    }
+   ],
+   "static_abilities": [],
+   "replacements": [],
+   "color_override": [
+    "Black",
+    "Red",
+    "White"
+   ],
+   "scryfall_oracle_id": "25d40d28-1b46-4055-959a-45719040ed30",
+   "brawl_commander": true,
+   "legalities": {
+    "brawl": "legal",
+    "commander": "legal",
+    "historic": "legal",
+    "legacy": "legal",
+    "vintage": "legal"
+   },
+   "printings": [
+    "FIC"
+   ],
+   "rulings": [
+    {
+     "date": "2025-06-06",
+     "text": "You don't choose a target for Terra's last ability at the time it triggers. Rather, a second \"reflexive\" ability triggers when you pay {2} this way. You choose a target for that ability as it goes on the stack. Each player may respond to this triggered ability as normal."
+    }
+   ]
+  }
+ ],
+ "1e23457f-1ed9-4597-9f73-6f5b7206f5a1": [
+  {
+   "name": "Vampiric Fury",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [
+     "Red"
+    ],
+    "generic": 1
+   },
+   "card_type": {
+    "supertypes": [],
+    "core_types": [
+     "Instant"
+    ],
+    "subtypes": []
+   },
+   "power": null,
+   "toughness": null,
+   "loyalty": null,
+   "defense": null,
+   "oracle_text": "Vampire creatures you control get +2/+0 and gain first strike until end of turn. (They deal combat damage before creatures without first strike.)",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [],
+   "abilities": [
+    {
+     "kind": "Spell",
+     "effect": {
+      "type": "PumpAll",
+      "power": {
+       "type": "Fixed",
+       "value": 2
+      },
+      "toughness": {
+       "type": "Fixed",
+       "value": 0
+      },
+      "target": {
+       "type": "Typed",
+       "type_filters": [
+        "Creature",
+        {
+         "Subtype": "Vampire"
+        }
+       ],
+       "controller": "You",
+       "properties": []
+      }
+     },
+     "cost": null,
+     "sub_ability": {
+      "kind": "Spell",
+      "effect": {
+       "type": "GenericEffect",
+       "static_abilities": [
+        {
+         "mode": "Continuous",
+         "affected": {
+          "type": "SelfRef"
+         },
+         "modifications": [
+          {
+           "type": "AddKeyword",
+           "keyword": "FirstStrike"
+          }
+         ],
+         "condition": null,
+         "affected_zone": null,
+         "effect_zone": null,
+         "active_zones": [],
+         "characteristic_defining": false,
+         "description": "gain first strike"
+        }
+       ],
+       "duration": "UntilEndOfTurn",
+       "target": null
+      },
+      "cost": null,
+      "sub_ability": null,
+      "duration": "UntilEndOfTurn",
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "forward_result": false
+     },
+     "duration": null,
+     "description": "Vampire creatures you control get +2/+0 and gain first strike until end of turn.",
+     "target_prompt": null,
+     "sorcery_speed": false,
+     "condition": null,
+     "optional_targeting": false,
+     "optional": false,
+     "forward_result": false
+    }
+   ],
+   "triggers": [],
+   "static_abilities": [],
+   "replacements": [],
+   "color_override": null,
+   "scryfall_oracle_id": "1e23457f-1ed9-4597-9f73-6f5b7206f5a1",
+   "legalities": {
+    "brawl": "legal",
+    "commander": "legal",
+    "historic": "legal",
+    "legacy": "legal",
+    "modern": "legal",
+    "pauper": "legal",
+    "vintage": "legal"
+   },
+   "printings": [
+    "ISD",
+    "J25",
+    "SIS"
+   ],
+   "rulings": [
+    {
+     "date": "2011-09-22",
+     "text": "Only Vampires you control when Vampiric Fury resolves will receive the bonus. Creatures that enter later in the turn, that you gain control of later in the turn, or that become Vampires later in the turn won't be affected."
+    }
+   ]
+  }
+ ]
+}

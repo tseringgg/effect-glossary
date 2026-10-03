@@ -1,0 +1,179 @@
+====================================================================================================
+Banquet Guests | 7f2579ef-0422-4cb1-a0f8-6ad0d942515b
+ORACLE TEXT:
+Affinity for Foods (This spell costs {1} less to cast for each Food you control.)
+Trample
+This creature enters with twice X +1/+1 counters on it.
+{2}, Sacrifice a Food: This creature gains indestructible until end of turn.
+-- GenericEffect nodes (AddKeyword ones only) --
+ path: abilities[0].effect
+ node: {"type": "GenericEffect", "static_abilities": [{"mode": "Continuous", "affected": {"type": "SelfRef"}, "modifications": [{"type": "AddKeyword", "keyword": "Indestructible"}], "condition": null, "affected_zone": null, "effect_zone": null, "active_zones": [], "characteristic_defining": false, "description": "gain indestructible"}], "duration": "UntilEndOfTurn", "target": null}
+
+====================================================================================================
+Bronzehide Lion | 0db3b29e-e21c-4240-8e5e-959ba6bcf706
+ORACLE TEXT:
+{G}{W}: This creature gains indestructible until end of turn.
+When this creature dies, return it to the battlefield. It's an Aura enchantment with enchant creature you control and "{G}{W}: Enchanted creature gains indestructible until end of turn," and it loses all other abilities.
+-- GenericEffect nodes (AddKeyword ones only) --
+ path: abilities[0].effect
+ node: {"type": "GenericEffect", "static_abilities": [{"mode": "Continuous", "affected": {"type": "SelfRef"}, "modifications": [{"type": "AddKeyword", "keyword": "Indestructible"}], "condition": null, "affected_zone": null, "effect_zone": null, "active_zones": [], "characteristic_defining": false, "description": "gain indestructible"}], "duration": "UntilEndOfTurn", "target": null}
+
+====================================================================================================
+Doctor Doom, King of Latveria | 9c9cd0fd-bfe9-409c-a9a9-146f5f4a2ef4
+ORACLE TEXT:
+Whenever you discard one or more land cards, each opponent loses 2 life.
+At the beginning of combat on your turn, target Villain you control gains menace until end of turn. It connives. (Draw a card, then discard a card. If you discarded a nonland card, put a +1/+1 counter on that creature.)
+-- GenericEffect nodes (AddKeyword ones only) --
+ path: triggers[1].execute.effect
+ node: {"type": "GenericEffect", "static_abilities": [{"mode": "Continuous", "affected": {"type": "ParentTarget"}, "modifications": [{"type": "AddKeyword", "keyword": "Menace"}], "condition": null, "affected_zone": null, "effect_zone": null, "active_zones": [], "characteristic_defining": false, "description": "gain menace"}], "duration": "UntilEndOfTurn", "target": {"type": "Typed", "type_filters": [], "controller": null, "properties": []}}
+
+====================================================================================================
+Hapatra's Mark | 143d3fcf-2152-4911-b95a-d23b91662f33
+ORACLE TEXT:
+Target creature you control gains hexproof until end of turn. Remove all -1/-1 counters from it. (A creature with hexproof can't be the target of spells or abilities your opponents control.)
+-- GenericEffect nodes (AddKeyword ones only) --
+ path: abilities[0].effect
+ node: {"type": "GenericEffect", "static_abilities": [{"mode": "Continuous", "affected": {"type": "ParentTarget"}, "modifications": [{"type": "AddKeyword", "keyword": "Hexproof"}], "condition": null, "affected_zone": null, "effect_zone": null, "active_zones": [], "characteristic_defining": false, "description": "gain hexproof"}], "duration": "UntilEndOfTurn", "target": {"type": "Typed", "type_filters": ["Creature"], "controller": "You", "properties": []}}
+
+====================================================================================================
+Helm of Chatzuk | 948e3bb7-8265-4e95-acd1-a0c4f22441df
+ORACLE TEXT:
+{1}, {T}: Target creature gains banding until end of turn. (Any creatures with banding, and up to one without, can attack in a band. Bands are blocked as a group. If any creatures with banding a player controls are blocking or being blocked by a creature, that player divides that creature's combat damage, not its controller, among any of the creatures it's being blocked by or is blocking.)
+-- GenericEffect nodes (AddKeyword ones only) --
+ path: abilities[0].effect
+ node: {"type": "GenericEffect", "static_abilities": [{"mode": "Continuous", "affected": {"type": "ParentTarget"}, "modifications": [{"type": "AddKeyword", "keyword": "Banding"}], "condition": null, "affected_zone": null, "effect_zone": null, "active_zones": [], "characteristic_defining": false, "description": "gain banding"}], "duration": "UntilEndOfTurn", "target": {"type": "Typed", "type_filters": ["Creature"], "controller": null, "properties": []}}
+
+====================================================================================================
+Junkyard Genius | 68d4d753-5e53-48a6-8ba2-56020893c239
+ORACLE TEXT:
+When this creature enters, create a tapped Powerstone token. (It's an artifact with "{T}: Add {C}. This mana can't be spent to cast a nonartifact spell.")
+{1}{B}{R}, Sacrifice another creature or artifact: Until end of turn, other creatures you control get +1/+0 and gain menace and haste.
+-- GenericEffect nodes (AddKeyword ones only) --
+ path: abilities[0].sub_ability.effect
+ node: {"type": "GenericEffect", "static_abilities": [{"mode": "Continuous", "affected": {"type": "SelfRef"}, "modifications": [{"type": "AddKeyword", "keyword": "Menace"}, {"type": "AddKeyword", "keyword": "Haste"}], "condition": null, "affected_zone": null, "effect_zone": null, "active_zones": [], "characteristic_defining": false, "description": "gain menace and haste"}], "duration": "UntilEndOfTurn", "target": null}
+
+====================================================================================================
+Kami of the Painted Road | 1335c655-35f5-4561-8e12-d79124e52ce6
+ORACLE TEXT:
+Whenever you cast a Spirit or Arcane spell, this creature gains protection from the color of your choice until end of turn.
+-- GenericEffect nodes (AddKeyword ones only) --
+ path: triggers[0].execute.effect
+ node: {"type": "GenericEffect", "static_abilities": [{"mode": "Continuous", "affected": {"type": "SelfRef"}, "modifications": [{"type": "AddKeyword", "keyword": {"Protection": {"CardType": "the color of your choice"}}}], "condition": null, "affected_zone": null, "effect_zone": null, "active_zones": [], "characteristic_defining": false, "description": "gain protection from the color of your choice"}], "duration": "UntilEndOfTurn", "target": null}
+
+====================================================================================================
+Lord Skitter's Butcher | 467f756f-75db-4748-99d3-62651776adfe
+ORACLE TEXT:
+When this creature enters, choose one —
+• Create a 1/1 black Rat creature token with "This token can't block."
+• You may sacrifice another creature. If you do, scry 2, then draw a card.
+• Creatures you control gain menace until end of turn.
+-- GenericEffect nodes (AddKeyword ones only) --
+ path: triggers[0].execute.mode_abilities[2].effect
+ node: {"type": "GenericEffect", "static_abilities": [{"mode": "Continuous", "affected": {"type": "Typed", "type_filters": ["Creature"], "controller": "You", "properties": []}, "modifications": [{"type": "AddKeyword", "keyword": "Menace"}], "condition": null, "affected_zone": null, "effect_zone": null, "active_zones": [], "characteristic_defining": false, "description": "gain menace"}], "duration": "UntilEndOfTurn", "target": null}
+
+====================================================================================================
+Pacesetter Paragon | 1acb289f-fb7f-4d83-aaef-4e7b9462c593
+ORACLE TEXT:
+Exhaust — {2}{R}: Put a +1/+1 counter on this creature. It gains double strike until end of turn. (Activate each exhaust ability only once.)
+-- GenericEffect nodes (AddKeyword ones only) --
+ path: abilities[0].sub_ability.effect
+ node: {"type": "GenericEffect", "static_abilities": [{"mode": "Continuous", "affected": {"type": "SelfRef"}, "modifications": [{"type": "AddKeyword", "keyword": "DoubleStrike"}], "condition": null, "affected_zone": null, "effect_zone": null, "active_zones": [], "characteristic_defining": false, "description": "gain double strike"}], "duration": "UntilEndOfTurn", "target": null}
+
+====================================================================================================
+Ravenous Sailback | 17e74c4b-435c-469e-a9a4-32bf0cb7634c
+ORACLE TEXT:
+When this creature enters, choose one —
+• This creature gains haste until end of turn.
+• Destroy target artifact or enchantment.
+-- GenericEffect nodes (AddKeyword ones only) --
+ path: triggers[0].execute.mode_abilities[0].effect
+ node: {"type": "GenericEffect", "static_abilities": [{"mode": "Continuous", "affected": {"type": "SelfRef"}, "modifications": [{"type": "AddKeyword", "keyword": "Haste"}], "condition": null, "affected_zone": null, "effect_zone": null, "active_zones": [], "characteristic_defining": false, "description": "gain haste"}], "duration": "UntilEndOfTurn", "target": null}
+
+====================================================================================================
+Reaper of the Wilds | 10494ce1-7a38-44ae-9881-a83e44daaf7b
+ORACLE TEXT:
+Whenever another creature dies, scry 1.
+{B}: This creature gains deathtouch until end of turn.
+{1}{G}: This creature gains hexproof until end of turn.
+-- GenericEffect nodes (AddKeyword ones only) --
+ path: abilities[0].effect
+ node: {"type": "GenericEffect", "static_abilities": [{"mode": "Continuous", "affected": {"type": "SelfRef"}, "modifications": [{"type": "AddKeyword", "keyword": "Deathtouch"}], "condition": null, "affected_zone": null, "effect_zone": null, "active_zones": [], "characteristic_defining": false, "description": "gain deathtouch"}], "duration": "UntilEndOfTurn", "target": null}
+ path: abilities[1].effect
+ node: {"type": "GenericEffect", "static_abilities": [{"mode": "Continuous", "affected": {"type": "SelfRef"}, "modifications": [{"type": "AddKeyword", "keyword": "Hexproof"}], "condition": null, "affected_zone": null, "effect_zone": null, "active_zones": [], "characteristic_defining": false, "description": "gain hexproof"}], "duration": "UntilEndOfTurn", "target": null}
+
+====================================================================================================
+Roofstalker Wight | c2f2fd39-4a21-489b-893e-4258f8d2aa63
+ORACLE TEXT:
+{1}{U}: This creature gains flying until end of turn.
+-- GenericEffect nodes (AddKeyword ones only) --
+ path: abilities[0].effect
+ node: {"type": "GenericEffect", "static_abilities": [{"mode": "Continuous", "affected": {"type": "SelfRef"}, "modifications": [{"type": "AddKeyword", "keyword": "Flying"}], "condition": null, "affected_zone": null, "effect_zone": null, "active_zones": [], "characteristic_defining": false, "description": "gain flying"}], "duration": "UntilEndOfTurn", "target": null}
+
+====================================================================================================
+Season of Gathering | 3ea060d8-449c-4a5e-8883-b45bd7707b5b
+ORACLE TEXT:
+Choose up to five {P} worth of modes. You may choose the same mode more than once.
+{P} — Put a +1/+1 counter on a creature you control. It gains vigilance and trample until end of turn.
+{P}{P} — Choose artifact or enchantment. Destroy all permanents of the chosen type.
+{P}{P}{P} — Draw cards equal to the greatest power among creatures you control.
+-- GenericEffect nodes (AddKeyword ones only) --
+ path: abilities[1].sub_ability.effect
+ node: {"type": "GenericEffect", "static_abilities": [{"mode": "Continuous", "affected": {"type": "SelfRef"}, "modifications": [{"type": "AddKeyword", "keyword": "Vigilance"}, {"type": "AddKeyword", "keyword": "Trample"}], "condition": null, "affected_zone": null, "effect_zone": null, "active_zones": [], "characteristic_defining": false, "description": "gain vigilance and trample"}], "duration": "UntilEndOfTurn", "target": null}
+
+====================================================================================================
+Seshiro's Living Legacy | 096fbb51-be73-4edc-a051-770a12c09005
+ORACLE TEXT:
+Vigilance, haste
+-- GenericEffect nodes (AddKeyword ones only) --
+
+====================================================================================================
+Skorpekh Destroyer | f96fcb37-5f17-4231-b1a2-64f5fe45730b
+ORACLE TEXT:
+Deathtouch
+Hyperphase Threshers — Whenever an artifact you control enters, this creature gains first strike until end of turn.
+-- GenericEffect nodes (AddKeyword ones only) --
+ path: triggers[0].execute.effect
+ node: {"type": "GenericEffect", "static_abilities": [{"mode": "Continuous", "affected": {"type": "SelfRef"}, "modifications": [{"type": "AddKeyword", "keyword": "FirstStrike"}], "condition": null, "affected_zone": null, "effect_zone": null, "active_zones": [], "characteristic_defining": false, "description": "gain first strike"}], "duration": "UntilEndOfTurn", "target": null}
+
+====================================================================================================
+Tel-Jilad Defiance | 73c7d938-5cec-4f96-b649-3f67bef29407
+ORACLE TEXT:
+Target creature gains protection from artifacts until end of turn.
+Draw a card.
+-- GenericEffect nodes (AddKeyword ones only) --
+ path: abilities[0].effect
+ node: {"type": "GenericEffect", "static_abilities": [{"mode": "Continuous", "affected": {"type": "ParentTarget"}, "modifications": [{"type": "AddKeyword", "keyword": {"Protection": {"CardType": "artifacts"}}}], "condition": null, "affected_zone": null, "effect_zone": null, "active_zones": [], "characteristic_defining": false, "description": "gain protection from artifacts"}], "duration": "UntilEndOfTurn", "target": {"type": "Typed", "type_filters": ["Creature"], "controller": null, "properties": []}}
+
+====================================================================================================
+The Warrior | 7a6b3559-9a10-4f95-b912-e890a069dc96
+ORACLE TEXT:
+{T}: Target creature you control gains haste until end of turn.
+-- GenericEffect nodes (AddKeyword ones only) --
+ path: abilities[0].effect
+ node: {"type": "GenericEffect", "static_abilities": [{"mode": "Continuous", "affected": {"type": "ParentTarget"}, "modifications": [{"type": "AddKeyword", "keyword": "Haste"}], "condition": null, "affected_zone": null, "effect_zone": null, "active_zones": [], "characteristic_defining": false, "description": "gain haste"}], "duration": "UntilEndOfTurn", "target": {"type": "Typed", "type_filters": ["Creature"], "controller": "You", "properties": []}}
+
+====================================================================================================
+Tower of the Magistrate | ac08fae8-208c-4602-8d39-9bfd29b53a5e
+ORACLE TEXT:
+{T}: Add {C}.
+{1}, {T}: Target creature gains protection from artifacts until end of turn.
+-- GenericEffect nodes (AddKeyword ones only) --
+ path: abilities[1].effect
+ node: {"type": "GenericEffect", "static_abilities": [{"mode": "Continuous", "affected": {"type": "ParentTarget"}, "modifications": [{"type": "AddKeyword", "keyword": {"Protection": {"CardType": "artifacts"}}}], "condition": null, "affected_zone": null, "effect_zone": null, "active_zones": [], "characteristic_defining": false, "description": "gain protection from artifacts"}], "duration": "UntilEndOfTurn", "target": {"type": "Typed", "type_filters": ["Creature"], "controller": null, "properties": []}}
+
+====================================================================================================
+Twilight Panther | 5e19aa52-5b76-40d7-ba9c-0e5d64f2b773
+ORACLE TEXT:
+{B}: This creature gains deathtouch until end of turn.
+-- GenericEffect nodes (AddKeyword ones only) --
+ path: abilities[0].effect
+ node: {"type": "GenericEffect", "static_abilities": [{"mode": "Continuous", "affected": {"type": "SelfRef"}, "modifications": [{"type": "AddKeyword", "keyword": "Deathtouch"}], "condition": null, "affected_zone": null, "effect_zone": null, "active_zones": [], "characteristic_defining": false, "description": "gain deathtouch"}], "duration": "UntilEndOfTurn", "target": null}
+
+====================================================================================================
+Wily Bandar | 2b0ba5a5-649a-4d7a-8136-6bcf692337f5
+ORACLE TEXT:
+{2}{G}: This creature gains indestructible until end of turn. (Damage and effects that say "destroy" don't destroy it.)
+-- GenericEffect nodes (AddKeyword ones only) --
+ path: abilities[0].effect
+ node: {"type": "GenericEffect", "static_abilities": [{"mode": "Continuous", "affected": {"type": "SelfRef"}, "modifications": [{"type": "AddKeyword", "keyword": "Indestructible"}], "condition": null, "affected_zone": null, "effect_zone": null, "active_zones": [], "characteristic_defining": false, "description": "gain indestructible"}], "duration": "UntilEndOfTurn", "target": null}
+

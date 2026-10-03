@@ -1,0 +1,311 @@
+====================================================================================================
+A Good Thing | 9cfdc604-71de-44e4-8ba7-2a3ee03aab68
+ORACLE TEXT:
+Spells and abilities you control can't destroy, exile, target, or cause you to sacrifice A Good Thing.
+At the beginning of your upkeep, double your life total. Then, if you have 1,000 or more life, you lose the game.
+-- Unimplemented:unknown nodes --
+ path: abilities[0].effect
+ description: "Spells and abilities you control can't destroy, exile, target, or cause you to sacrifice A Good Thing."
+
+====================================================================================================
+Angel of Jubilation | 36c2fc4c-7d8b-47c2-91c3-e356df60b219
+ORACLE TEXT:
+Flying
+Other nonblack creatures you control get +1/+1.
+Players can't pay life or sacrifice creatures to cast spells or activate abilities.
+-- Unimplemented:unknown nodes --
+ path: abilities[0].effect
+ description: "Players can't pay life or sacrifice creatures to cast spells or activate abilities."
+
+====================================================================================================
+Arco-Flagellant | b48e7e87-3adf-417d-b93b-bf67ad6cbf1d
+ORACLE TEXT:
+Squad {2} (As an additional cost to cast this spell, you may pay {2} any number of times. When this creature enters, create that many tokens that are copies of it.)
+This creature can't block.
+Endurant — Pay 3 life: This creature gains indestructible until end of turn.
+-- Unimplemented:unknown nodes --
+ path: abilities[0].effect
+ description: "Endurant — Pay 3 life: This creature gains indestructible until end of turn."
+
+====================================================================================================
+Assemble the Players | 180ba940-2b11-4953-b7ce-74847e1aebfd
+ORACLE TEXT:
+You may look at the top card of your library any time.
+Once each turn, you may cast a creature spell with power 2 or less from the top of your library.
+-- Unimplemented:unknown nodes --
+ path: abilities[0].effect
+ description: "Once each turn, you may cast a creature spell with power 2 or less from the top of your library."
+
+====================================================================================================
+Bitter Feud | e4add901-3f2b-4f92-bb26-7f599e288802
+ORACLE TEXT:
+As this enchantment enters, choose two players.
+If a source controlled by one of the chosen players would deal damage to the other chosen player or a permanent that player controls, that source deals double that damage to that player or permanent instead.
+-- Unimplemented:unknown nodes --
+ path: abilities[0].effect
+ description: "As this enchantment enters, choose two players."
+
+====================================================================================================
+Booby Trap | 3e46381a-7850-4e50-9213-e1a180299977
+ORACLE TEXT:
+As this artifact enters, choose an opponent and a card name other than a basic land card name.
+The chosen player reveals each card they draw.
+When the chosen player draws a card with the chosen name, sacrifice this artifact. If you do, this artifact deals 10 damage to that player.
+-- Unimplemented:unknown nodes --
+ path: abilities[0].effect
+ description: "The chosen player reveals each card they draw."
+
+====================================================================================================
+Cornered Market | 1784bbaa-67b1-4bd1-bf77-53da2bfbf7fc
+ORACLE TEXT:
+Players can't cast spells with the same name as a nontoken permanent.
+Players can't play nonbasic lands with the same name as a nontoken permanent.
+-- Unimplemented:unknown nodes --
+ path: abilities[0].effect
+ description: "Players can't play nonbasic lands with the same name as a nontoken permanent."
+
+====================================================================================================
+Costume Shop | 24c52448-03f2-43cd-9172-487384baeb18
+ORACLE TEXT:
+Visit — You may put a sticker on a nonland permanent you own.
+-- Unimplemented:unknown nodes --
+ path: abilities[0].effect
+ description: "Visit — You may put a sticker on a nonland permanent you own."
+
+====================================================================================================
+Dream Halls | d901e17f-a5f4-49d9-8a6d-ab771949af24
+ORACLE TEXT:
+Rather than pay the mana cost for a spell, its controller may discard a card that shares a color with that spell.
+-- Unimplemented:unknown nodes --
+ path: abilities[0].effect
+ description: "Rather than pay the mana cost for a spell, its controller may discard a card that shares a color with that spell."
+
+====================================================================================================
+Drought | ecba74bd-850e-4cbe-9b1c-b0d4d6f27d1c
+ORACLE TEXT:
+At the beginning of your upkeep, sacrifice this enchantment unless you pay {W}{W}.
+Spells cost an additional "Sacrifice a Swamp" to cast for each black mana symbol in their mana costs.
+Activated abilities cost an additional "Sacrifice a Swamp" to activate for each black mana symbol in their activation costs.
+-- Unimplemented:unknown nodes --
+ path: abilities[0].effect
+ description: "Spells cost an additional \"Sacrifice a Swamp\" to cast for each black mana symbol in their mana costs."
+ path: abilities[1].effect
+ description: "Activated abilities cost an additional \"Sacrifice a Swamp\" to activate for each black mana symbol in their activation costs."
+
+====================================================================================================
+Earl of Squirrel | edc4d1fb-f482-4f2b-985e-1e4d5941e574
+ORACLE TEXT:
+Squirrellink (Damage dealt by this creature also causes you to create that many 1/1 green Squirrel creature tokens.)
+Creature tokens you control are Squirrels in addition to their other creature types.
+Other Squirrels you control get +1/+1.
+-- Unimplemented:unknown nodes --
+ path: abilities[0].effect
+ description: "Squirrellink"
+ path: abilities[1].effect
+ description: "Creature tokens you control are Squirrels in addition to their other creature types."
+
+====================================================================================================
+Elvish Impersonation Contest | 23a1cd82-75bc-4e3b-bbab-8a1ca9b9be88
+ORACLE TEXT:
+Whenever you planeswalk here and at the beginning of your upkeep, create an Elvish Impersonators token. (It's a {3}{G} Elf creature with "As this creature enters, roll a six-sided die twice. Its base power becomes the first result and its base toughness becomes the second result.")
+Thank you very much—Whenever Chaos ensues, target Elvish Impersonators becomes a 6/6. Its controller creates a Treasure token.
+-- Unimplemented:unknown nodes --
+ path: abilities[0].effect
+ description: "Thank you very much—Whenever Chaos ensues, target Elvish Impersonators becomes a 6/6. Its controller creates a Treasure token."
+
+====================================================================================================
+Entirely Normal Armchair | b4950445-a069-41a6-a080-602c159b1d56
+ORACLE TEXT:
+During your turn, if this card is in your hand, you may hide it on the battlefield.
+{0}: Return this artifact to its owner's hand. Only your opponents may activate this ability and only if they see this artifact.
+{2}, Sacrifice this artifact: Destroy target attacking creature.
+-- Unimplemented:unknown nodes --
+ path: abilities[0].effect
+ description: "During your turn, if this card is in your hand, you may hide it on the battlefield."
+
+====================================================================================================
+Evelyn, the Covetous | 4ab6f615-1f04-4ed2-88b2-49faa8356dd0
+ORACLE TEXT:
+Flash
+Whenever Evelyn or another Vampire you control enters, exile the top card of each player's library with a collection counter on it.
+Once each turn, you may play a card from exile with a collection counter on it if it was exiled by an ability you controlled, and you may spend mana as though it were mana of any color to cast it.
+-- Unimplemented:unknown nodes --
+ path: abilities[0].effect
+ description: "Once each turn, you may play a card from exile with a collection counter on it if it was exiled by an ability you controlled, and you may spend mana as though it were mana of any color to cast it."
+
+====================================================================================================
+Evendo Brushrazer | 795bc0b0-4b0a-49d6-ac8e-a52a10a93be8
+ORACLE TEXT:
+Whenever you sacrifice a nontoken permanent, exile the top card of your library.
+During your turn, as long as you've sacrificed a nontoken permanent this turn, you may play cards exiled with this creature.
+{T}, Sacrifice a land: Add {R}{R}.
+-- Unimplemented:unknown nodes --
+ path: abilities[0].effect
+ description: "During your turn, as long as you've sacrificed a nontoken permanent this turn, you may play cards exiled with this creature."
+
+====================================================================================================
+Extremely Slow Zombie | 058aaeab-289e-43a8-9718-e38089a235d5
+ORACLE TEXT:
+Last strike (This creature deals combat damage after creatures without last strike.)
+-- Unimplemented:unknown nodes --
+ path: abilities[0].effect
+ description: "Last strike"
+
+====================================================================================================
+Garbage Elemental | f6900374-1862-4195-9e12-c2592f4b9b8f
+ORACLE TEXT:
+Last strike (This creature deals combat damage after creatures without last strike.)
+Battalion — Whenever this creature and at least two other creatures attack, target creature can't block this turn.
+-- Unimplemented:unknown nodes --
+ path: abilities[0].effect
+ description: "Last strike"
+
+====================================================================================================
+Jeska, Thrice Reborn | b1fbfcf3-6921-4417-a58e-0f5e5d34a105
+ORACLE TEXT:
+Jeska enters with a loyalty counter on her for each time you've cast a commander from the command zone this game.
+[0]: Choose target creature. Until your next turn, if that creature would deal combat damage to one of your opponents, it deals triple that damage to that player instead.
+[−X]: Jeska deals X damage to each of up to three targets.
+Jeska, Thrice Reborn can be your commander.
+Partner
+-- Unimplemented:unknown nodes --
+ path: abilities[1].effect
+ description: "[−X]: Jeska deals X damage to each of up to three targets."
+ path: abilities[2].effect
+ description: "Jeska, Thrice Reborn can be your commander."
+
+====================================================================================================
+Merciless Harlequin | 10e0ccdf-9a31-402a-9fbf-f501ce63fa52
+ORACLE TEXT:
+Freerunning {1}{B} (You may cast this spell for its freerunning cost if you dealt combat damage to a player this turn with an Assassin or commander.)
+When this creature enters, you draw a card and you lose 1 life.
+-- Unimplemented:unknown nodes --
+ path: abilities[0].effect
+ description: "Freerunning {1}{B}"
+
+====================================================================================================
+Monstrous War-Leech | b92f2a4c-36dc-40a6-a874-7405fc97fb7a
+ORACLE TEXT:
+Kicker {U} (You may pay an additional {U} as you cast this spell.)
+As this creature enters, if it was kicked, mill four cards. (To mill a card, put the top card of your library into your graveyard.)
+Monstrous War-Leech's power and toughness are each equal to the greatest mana value among cards in your graveyard.
+-- Unimplemented:unknown nodes --
+ path: abilities[0].effect
+ description: "As this creature enters, if it was kicked, mill four cards."
+
+====================================================================================================
+Omnipresent Impostor | fef7369d-ebd6-4616-8a37-1f57b12bf2c8
+ORACLE TEXT:
+Changeling
+Omnipresent Impostor has all card names.
+As you search your library for one or more cards, you may choose Omnipresent Impostor as one of those cards. (For example, if you search for two land cards, you may find Omnipresent Impostor and a land card.)
+-- Unimplemented:unknown nodes --
+ path: abilities[1].effect
+ description: "As you search your library for one or more cards, you may choose Omnipresent Impostor as one of those cards."
+
+====================================================================================================
+Saheeli, the Gifted | 0e084342-31ff-47a5-9fd8-5b385add7a1a
+ORACLE TEXT:
+[+1]: Create a 1/1 colorless Servo artifact creature token.
+[+1]: The next spell you cast this turn has affinity for artifacts. (It costs {1} less to cast for each artifact you control as you cast it.)
+[−7]: For each artifact you control, create a token that's a copy of it. Those tokens gain haste. Exile those tokens at the beginning of the next end step.
+Saheeli, the Gifted can be your commander.
+-- Unimplemented:unknown nodes --
+ path: abilities[3].effect
+ description: "Saheeli, the Gifted can be your commander."
+
+====================================================================================================
+Sarpadian Empires, Vol. VII | f71d55f5-f220-4cb0-9468-b8d339ab8535
+ORACLE TEXT:
+As this artifact enters, choose white Citizen, blue Camarid, black Thrull, red Goblin, or green Saproling.
+{3}, {T}: Create a 1/1 creature token of the chosen color and type.
+-- Unimplemented:unknown nodes --
+ path: abilities[0].effect
+ description: "As this artifact enters, choose white Citizen, blue Camarid, black Thrull, red Goblin, or green Saproling."
+
+====================================================================================================
+Space Fungus Snickerdoodle | fd29fdbd-b4c5-4d23-9388-df0a798fbbba
+ORACLE TEXT:
+{TK}{TK} — Skulk (This creature can't be blocked by creatures with greater power.)
+{TK}{TK}{TK} — Battle cry (Whenever this creature attacks, each other attacking creature gets +1/+0 until end of turn.)
+{TK}{TK} — 3/2
+{TK}{TK}{TK}{TK}{TK} — 6/8
+-- Unimplemented:unknown nodes --
+ path: abilities[0].effect
+ description: "{TK}{TK} — Skulk"
+ path: abilities[1].effect
+ description: "{TK}{TK}{TK} — Battle cry"
+ path: abilities[2].effect
+ description: "{TK}{TK} — 3/2"
+ path: abilities[3].effect
+ description: "{TK}{TK}{TK}{TK}{TK} — 6/8"
+
+====================================================================================================
+Tezzeret the Seeker | 4aeafdf3-7828-4114-8c74-3bd46357caec
+ORACLE TEXT:
+[+1]: Untap up to two target artifacts.
+[−X]: Search your library for an artifact card with mana value X or less, put it onto the battlefield, then shuffle.
+[−5]: Artifacts you control become artifact creatures with base power and toughness 5/5 until end of turn.
+-- Unimplemented:unknown nodes --
+ path: abilities[1].effect
+ description: "[−X]: Search your library for an artifact card with mana value X or less, put it onto the battlefield, then shuffle."
+
+====================================================================================================
+The Bear Force Pilot Runner | cae2a057-95fe-46de-a479-a40c4b3a4b9d
+ORACLE TEXT:
+When The Bear Force Pilot Runner enters, create a 0/0 colorless Vehicle artifact token with flying, "This creature gets +1/+1 for each Bear you control," and crew 2.
+Ready to run (You can have two commanders if both have ready to run.)
+-- Unimplemented:unknown nodes --
+ path: abilities[0].effect
+ description: "Ready to run"
+
+====================================================================================================
+The Wheeling Runner | d4199531-b8b2-4c3d-b0a2-534f38d7f3bb
+ORACLE TEXT:
+You may spend any type of mana to cast cards that didn't start in your deck.
+Whenever The Wheeling Runner deals combat damage to a player, you may discard your hand. If you do, choose four Vintage-legal cards at random. Add those cards to your hand. (The "Random Card" feature on a search site may help.)
+Ready to run (You can have two commanders if both have ready to run.)
+-- Unimplemented:unknown nodes --
+ path: abilities[1].effect
+ description: "Ready to run"
+
+====================================================================================================
+Vampire Champion Fury | be19d5ef-15ed-422d-8799-63eabfdbaae3
+ORACLE TEXT:
+{TK}{TK} — Hellbent — This creature gets +3/+3 as long as you have no cards in hand.
+{TK}{TK}{TK}{TK} — {2}, Sacrifice this creature: It deals X damage divided as you choose among any number of target creatures, where X is its power.
+{TK}{TK} — 1/5
+{TK}{TK}{TK} — 6/3
+-- Unimplemented:unknown nodes --
+ path: abilities[1].effect
+ description: "{TK}{TK} — 1/5"
+ path: abilities[2].effect
+ description: "{TK}{TK}{TK} — 6/3"
+
+====================================================================================================
+Veiled Ascension | cbf0190a-198b-49cc-8c79-4028da07fa77
+ORACLE TEXT:
+When this enchantment enters, put a flying counter on each face-down creature you control.
+Face-down creatures you control enter with a flying counter on them.
+At the beginning of your upkeep, you may cloak the top card of your library.
+-- Unimplemented:unknown nodes --
+ path: abilities[0].effect
+ description: "Face-down creatures you control enter with a flying counter on them."
+
+====================================================================================================
+Yawgmoth Merfolk Soul | 4c02ee30-8681-45ed-adb5-edf06409eee4
+ORACLE TEXT:
+{TK}{TK} — When this permanent leaves the battlefield, target player discards a card.
+{TK}{TK}{TK}{TK}{TK} — When this permanent leaves the battlefield, create five 1/1 white Clown Robot artifact creature tokens.
+{TK}{TK} — 3/3
+{TK}{TK}{TK}{TK} — 6/5
+-- Unimplemented:unknown nodes --
+ path: abilities[0].effect
+ description: "{TK}{TK} — When this permanent leaves the battlefield, target player discards a card."
+ path: abilities[1].effect
+ description: "{TK}{TK}{TK}{TK}{TK} — When this permanent leaves the battlefield, create five 1/1 white Clown Robot artifact creature tokens."
+ path: abilities[2].effect
+ description: "{TK}{TK} — 3/3"
+ path: abilities[3].effect
+ description: "{TK}{TK}{TK}{TK} — 6/5"
+

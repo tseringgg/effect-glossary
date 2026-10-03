@@ -1,0 +1,157 @@
+====================================================================================================
+A-Phylath, World Sculptor | 0a28c098-e1e2-4bc4-ba3a-431e7f565a75
+TYPE: {"supertypes": ["Legendary"], "core_types": ["Creature"], "subtypes": ["Elemental"]}
+ORACLE TEXT:
+Trample
+When Phylath, World Sculptor enters, create a 0/1 green Plant creature token for each basic land you control.
+Landfall — Whenever a land enters under your control, put four +1/+1 counters on target Plant you control. It gains trample until end of turn.
+-- GenericEffect nodes --
+ path: triggers[1].execute.sub_ability.effect
+ node: {"type": "GenericEffect", "static_abilities": [{"mode": "Continuous", "affected": {"type": "TriggeringSource"}, "modifications": [{"type": "AddKeyword", "keyword": "Trample"}], "condition": null, "affected_zone": null, "effect_zone": null, "active_zones": [], "characteristic_defining": false, "description": "gain trample"}], "duration": "UntilEndOfTurn", "target": {"type": "ParentTarget"}}
+
+====================================================================================================
+Angelic Guardian | 2f959c67-2b0b-4ba8-a8aa-90c25a3806ec
+TYPE: {"supertypes": [], "core_types": ["Creature"], "subtypes": ["Angel"]}
+ORACLE TEXT:
+Flying (This creature can't be blocked except by creatures with flying or reach.)
+Whenever one or more creatures you control attack, they gain indestructible until end of turn. (Damage and effects that say "destroy" don't destroy them.)
+-- GenericEffect nodes --
+ path: triggers[0].execute.effect
+ node: {"type": "GenericEffect", "static_abilities": [{"mode": "Continuous", "affected": {"type": "TriggeringSource"}, "modifications": [{"type": "AddKeyword", "keyword": "Indestructible"}], "condition": null, "affected_zone": null, "effect_zone": null, "active_zones": [], "characteristic_defining": false, "description": "gain indestructible"}], "duration": "UntilEndOfTurn", "target": null}
+
+====================================================================================================
+Angrath, the Flame-Chained | 092ceffb-1ee4-452c-b15e-5b79267d42a6
+TYPE: {"supertypes": ["Legendary"], "core_types": ["Planeswalker"], "subtypes": ["Angrath"]}
+ORACLE TEXT:
+[+1]: Each opponent discards a card and loses 2 life.
+[−3]: Gain control of target creature until end of turn. Untap it. It gains haste until end of turn. Sacrifice it at the beginning of the next end step if it has mana value 3 or less.
+[−8]: Each opponent loses life equal to the number of cards in their graveyard.
+-- GenericEffect nodes --
+ path: abilities[1].sub_ability.sub_ability.effect
+ node: {"type": "GenericEffect", "static_abilities": [{"mode": "Continuous", "affected": {"type": "SelfRef"}, "modifications": [{"type": "AddKeyword", "keyword": "Haste"}], "condition": null, "affected_zone": null, "effect_zone": null, "active_zones": [], "characteristic_defining": false, "description": "gain haste"}], "duration": "UntilEndOfTurn", "target": null}
+
+====================================================================================================
+Bant Battlemage | 92d8b956-87db-43e4-bbb5-436ba01b5714
+TYPE: {"supertypes": [], "core_types": ["Creature"], "subtypes": ["Human", "Wizard"]}
+ORACLE TEXT:
+{G}, {T}: Target creature gains trample until end of turn.
+{U}, {T}: Target creature gains flying until end of turn.
+-- GenericEffect nodes --
+ path: abilities[0].effect
+ node: {"type": "GenericEffect", "static_abilities": [{"mode": "Continuous", "affected": {"type": "ParentTarget"}, "modifications": [{"type": "AddKeyword", "keyword": "Trample"}], "condition": null, "affected_zone": null, "effect_zone": null, "active_zones": [], "characteristic_defining": false, "description": "gain trample"}], "duration": "UntilEndOfTurn", "target": {"type": "Typed", "type_filters": ["Creature"], "controller": null, "properties": []}}
+ path: abilities[1].effect
+ node: {"type": "GenericEffect", "static_abilities": [{"mode": "Continuous", "affected": {"type": "ParentTarget"}, "modifications": [{"type": "AddKeyword", "keyword": "Flying"}], "condition": null, "affected_zone": null, "effect_zone": null, "active_zones": [], "characteristic_defining": false, "description": "gain flying"}], "duration": "UntilEndOfTurn", "target": {"type": "Typed", "type_filters": ["Creature"], "controller": null, "properties": []}}
+
+====================================================================================================
+Bloodfeather Phoenix | f4490b09-dc55-47ed-a573-4ae0b95725b1
+TYPE: {"supertypes": [], "core_types": ["Creature"], "subtypes": ["Phoenix"]}
+ORACLE TEXT:
+Flying
+This creature can't block.
+Whenever an instant or sorcery spell you control deals damage to an opponent or battle, you may pay {R}. If you do, return this card from your graveyard to the battlefield. It gains haste until end of turn.
+-- GenericEffect nodes --
+ path: triggers[0].execute.sub_ability.sub_ability.effect
+ node: {"type": "GenericEffect", "static_abilities": [{"mode": "Continuous", "affected": {"type": "TriggeringSource"}, "modifications": [{"type": "AddKeyword", "keyword": "Haste"}], "condition": null, "affected_zone": null, "effect_zone": null, "active_zones": [], "characteristic_defining": false, "description": "gain haste"}], "duration": "UntilEndOfTurn", "target": null}
+
+====================================================================================================
+Dragon Whisperer | 54884040-b426-43da-9bb1-016621e1446d
+TYPE: {"supertypes": [], "core_types": ["Creature"], "subtypes": ["Human", "Shaman"]}
+ORACLE TEXT:
+{R}: This creature gains flying until end of turn.
+{1}{R}: This creature gets +1/+0 until end of turn.
+Formidable — {4}{R}{R}: Create a 4/4 red Dragon creature token with flying. Activate only if creatures you control have total power 8 or greater.
+-- GenericEffect nodes --
+ path: abilities[0].effect
+ node: {"type": "GenericEffect", "static_abilities": [{"mode": "Continuous", "affected": {"type": "SelfRef"}, "modifications": [{"type": "AddKeyword", "keyword": "Flying"}], "condition": null, "affected_zone": null, "effect_zone": null, "active_zones": [], "characteristic_defining": false, "description": "gain flying"}], "duration": "UntilEndOfTurn", "target": null}
+
+====================================================================================================
+Gavony | 2387edac-765b-4502-bd3d-88be8ba7d0a4
+TYPE: {"supertypes": [], "core_types": [], "subtypes": ["Innistrad"]}
+ORACLE TEXT:
+All creatures have vigilance.
+Whenever chaos ensues, creatures you control gain indestructible until end of turn.
+-- GenericEffect nodes --
+ path: triggers[0].execute.effect
+ node: {"type": "GenericEffect", "static_abilities": [{"mode": "Continuous", "affected": {"type": "Typed", "type_filters": ["Creature"], "controller": "You", "properties": []}, "modifications": [{"type": "AddKeyword", "keyword": "Indestructible"}], "condition": null, "affected_zone": null, "effect_zone": null, "active_zones": [], "characteristic_defining": false, "description": "gain indestructible"}], "duration": "UntilEndOfTurn", "target": null}
+
+====================================================================================================
+Gilt-Leaf's Embrace | 5eb8bb1d-7567-4c24-913b-463b5fe463c4
+TYPE: {"supertypes": [], "core_types": ["Enchantment"], "subtypes": ["Aura"]}
+ORACLE TEXT:
+Flash
+Enchant creature
+When this Aura enters, enchanted creature gains trample and indestructible until end of turn. (Damage and effects that say "destroy" don't destroy it. If its toughness is 0 or less, it still dies.)
+Enchanted creature gets +2/+0.
+-- GenericEffect nodes --
+ path: triggers[0].execute.effect
+ node: {"type": "GenericEffect", "static_abilities": [{"mode": "Continuous", "affected": {"type": "Typed", "type_filters": ["Creature"], "controller": null, "properties": [{"type": "EnchantedBy"}]}, "modifications": [{"type": "AddKeyword", "keyword": "Trample"}, {"type": "AddKeyword", "keyword": "Indestructible"}], "condition": null, "affected_zone": null, "effect_zone": null, "active_zones": [], "characteristic_defining": false, "description": "gain trample and indestructible"}], "duration": "UntilEndOfTurn", "target": null}
+
+====================================================================================================
+Kelsinko Ranger | 4d47e598-690e-4850-97e4-7136bc7b497e
+TYPE: {"supertypes": [], "core_types": ["Creature"], "subtypes": ["Human", "Ranger"]}
+ORACLE TEXT:
+{1}{W}: Target green creature gains first strike until end of turn.
+-- GenericEffect nodes --
+ path: abilities[0].effect
+ node: {"type": "GenericEffect", "static_abilities": [{"mode": "Continuous", "affected": {"type": "ParentTarget"}, "modifications": [{"type": "AddKeyword", "keyword": "FirstStrike"}], "condition": null, "affected_zone": null, "effect_zone": null, "active_zones": [], "characteristic_defining": false, "description": "gain first strike"}], "duration": "UntilEndOfTurn", "target": {"type": "Typed", "type_filters": ["Creature"], "controller": null, "properties": [{"type": "HasColor", "color": "Green"}]}}
+
+====================================================================================================
+Kolaghan Stormsinger | 0790c8bd-a094-49b5-8843-e8b02cba145b
+TYPE: {"supertypes": [], "core_types": ["Creature"], "subtypes": ["Human", "Shaman"]}
+ORACLE TEXT:
+Haste
+Megamorph {R} (You may cast this card face down as a 2/2 creature for {3}. Turn it face up any time for its megamorph cost and put a +1/+1 counter on it.)
+When this creature is turned face up, target creature gains haste until end of turn.
+-- GenericEffect nodes --
+ path: triggers[0].execute.effect
+ node: {"type": "GenericEffect", "static_abilities": [{"mode": "Continuous", "affected": {"type": "ParentTarget"}, "modifications": [{"type": "AddKeyword", "keyword": "Haste"}], "condition": null, "affected_zone": null, "effect_zone": null, "active_zones": [], "characteristic_defining": false, "description": "gain haste"}], "duration": "UntilEndOfTurn", "target": {"type": "Typed", "type_filters": ["Creature"], "controller": null, "properties": []}}
+
+====================================================================================================
+Popular Egotist | e6377683-1c36-4786-bd8d-c62ff2d25767
+TYPE: {"supertypes": [], "core_types": ["Creature"], "subtypes": ["Human", "Rogue"]}
+ORACLE TEXT:
+{1}{B}, Sacrifice another creature or enchantment: This creature gains indestructible until end of turn. Tap it. (Damage and effects that say "destroy" don't destroy it.)
+Whenever you sacrifice a permanent, target opponent loses 1 life and you gain 1 life.
+-- GenericEffect nodes --
+ path: abilities[0].effect
+ node: {"type": "GenericEffect", "static_abilities": [{"mode": "Continuous", "affected": {"type": "SelfRef"}, "modifications": [{"type": "AddKeyword", "keyword": "Indestructible"}], "condition": null, "affected_zone": null, "effect_zone": null, "active_zones": [], "characteristic_defining": false, "description": "gain indestructible"}], "duration": "UntilEndOfTurn", "target": null}
+
+====================================================================================================
+Raking Claws | c2248d3d-3157-4610-868d-2b3fae2b1ec8
+TYPE: {"supertypes": [], "core_types": ["Instant"], "subtypes": []}
+ORACLE TEXT:
+Target creature gains double strike until end of turn.
+Cycling {2} ({2}, Discard this card: Draw a card.)
+-- GenericEffect nodes --
+ path: abilities[0].effect
+ node: {"type": "GenericEffect", "static_abilities": [{"mode": "Continuous", "affected": {"type": "ParentTarget"}, "modifications": [{"type": "AddKeyword", "keyword": "DoubleStrike"}], "condition": null, "affected_zone": null, "effect_zone": null, "active_zones": [], "characteristic_defining": false, "description": "gain double strike"}], "duration": "UntilEndOfTurn", "target": {"type": "Typed", "type_filters": ["Creature"], "controller": null, "properties": []}}
+
+====================================================================================================
+Searing Spear Askari | d3c68573-95b1-4db5-bbea-363b86f713c1
+TYPE: {"supertypes": [], "core_types": ["Creature"], "subtypes": ["Human", "Knight"]}
+ORACLE TEXT:
+Flanking (Whenever a creature without flanking blocks this creature, the blocking creature gets -1/-1 until end of turn.)
+{1}{R}: This creature gains menace until end of turn. (It can't be blocked except by two or more creatures.)
+-- GenericEffect nodes --
+ path: abilities[0].effect
+ node: {"type": "GenericEffect", "static_abilities": [{"mode": "Continuous", "affected": {"type": "SelfRef"}, "modifications": [{"type": "AddKeyword", "keyword": "Menace"}], "condition": null, "affected_zone": null, "effect_zone": null, "active_zones": [], "characteristic_defining": false, "description": "gain menace"}], "duration": "UntilEndOfTurn", "target": null}
+
+====================================================================================================
+Terra, Herald of Hope | 25d40d28-1b46-4055-959a-45719040ed30
+TYPE: {"supertypes": ["Legendary"], "core_types": ["Creature"], "subtypes": ["Human", "Wizard", "Warrior"]}
+ORACLE TEXT:
+Trance — At the beginning of combat on your turn, mill two cards. Terra gains flying until end of turn.
+Whenever Terra deals combat damage to a player, you may pay {2}. When you do, return target creature card with power 3 or less from your graveyard to the battlefield tapped.
+-- GenericEffect nodes --
+ path: triggers[0].execute.sub_ability.effect
+ node: {"type": "GenericEffect", "static_abilities": [{"mode": "Continuous", "affected": {"type": "SelfRef"}, "modifications": [{"type": "AddKeyword", "keyword": "Flying"}], "condition": null, "affected_zone": null, "effect_zone": null, "active_zones": [], "characteristic_defining": false, "description": "gain flying"}], "duration": "UntilEndOfTurn", "target": null}
+
+====================================================================================================
+Vampiric Fury | 1e23457f-1ed9-4597-9f73-6f5b7206f5a1
+TYPE: {"supertypes": [], "core_types": ["Instant"], "subtypes": []}
+ORACLE TEXT:
+Vampire creatures you control get +2/+0 and gain first strike until end of turn. (They deal combat damage before creatures without first strike.)
+-- GenericEffect nodes --
+ path: abilities[0].sub_ability.effect
+ node: {"type": "GenericEffect", "static_abilities": [{"mode": "Continuous", "affected": {"type": "SelfRef"}, "modifications": [{"type": "AddKeyword", "keyword": "FirstStrike"}], "condition": null, "affected_zone": null, "effect_zone": null, "active_zones": [], "characteristic_defining": false, "description": "gain first strike"}], "duration": "UntilEndOfTurn", "target": null}
+

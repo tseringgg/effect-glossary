@@ -1,0 +1,7166 @@
+{
+ "5cf4f1b7-a6ce-4f68-9376-51a6c4769bcb": [
+  {
+   "name": "A-Dreamshackle Geist",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [
+     "Blue",
+     "Blue"
+    ],
+    "generic": 1
+   },
+   "card_type": {
+    "supertypes": [],
+    "core_types": [
+     "Creature"
+    ],
+    "subtypes": [
+     "Spirit"
+    ]
+   },
+   "power": {
+    "type": "Fixed",
+    "value": 3
+   },
+   "toughness": {
+    "type": "Fixed",
+    "value": 2
+   },
+   "loyalty": null,
+   "defense": null,
+   "oracle_text": "Flying\nAt the beginning of combat on your turn, choose up to one —\n• Tap target creature.\n• Target creature doesn't untap during its controller's next untap step.",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [
+    "Flying"
+   ],
+   "abilities": [],
+   "triggers": [
+    {
+     "mode": "Phase",
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "GenericEffect",
+       "static_abilities": [],
+       "duration": null,
+       "target": null
+      },
+      "cost": null,
+      "sub_ability": null,
+      "duration": null,
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "modal": {
+       "min_choices": 0,
+       "max_choices": 1,
+       "mode_count": 2,
+       "mode_descriptions": [
+        "Tap target creature.",
+        "Target creature doesn't untap during its controller's next untap step."
+       ],
+       "allow_repeat_modes": false
+      },
+      "mode_abilities": [
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "Tap",
+         "target": {
+          "type": "Typed",
+          "type_filters": [
+           "Creature"
+          ],
+          "controller": null,
+          "properties": []
+         }
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       },
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "GenericEffect",
+         "static_abilities": [
+          {
+           "mode": "CantUntap",
+           "affected": {
+            "type": "ParentTarget"
+           },
+           "modifications": [
+            {
+             "type": "AddStaticMode",
+             "mode": "CantUntap"
+            }
+           ],
+           "condition": null,
+           "affected_zone": null,
+           "effect_zone": null,
+           "active_zones": [],
+           "characteristic_defining": false,
+           "description": "doesn't untap during its controller's next untap step"
+          }
+         ],
+         "duration": "UntilControllerNextUntapStep",
+         "target": {
+          "type": "Typed",
+          "type_filters": [
+           "Creature"
+          ],
+          "controller": null,
+          "properties": []
+         }
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": "UntilControllerNextUntapStep",
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       }
+      ],
+      "forward_result": false
+     },
+     "valid_card": null,
+     "origin": null,
+     "destination": null,
+     "trigger_zones": [
+      "Battlefield"
+     ],
+     "phase": "BeginCombat",
+     "optional": false,
+     "damage_kind": "Any",
+     "secondary": false,
+     "valid_target": null,
+     "valid_source": null,
+     "description": "At the beginning of combat on your turn",
+     "constraint": {
+      "type": "OnlyDuringYourTurn"
+     },
+     "condition": null,
+     "batched": false
+    }
+   ],
+   "static_abilities": [],
+   "replacements": [],
+   "color_override": null,
+   "scryfall_oracle_id": "5cf4f1b7-a6ce-4f68-9376-51a6c4769bcb",
+   "legalities": {
+    "brawl": "legal",
+    "historic": "legal"
+   },
+   "printings": [
+    "VOW"
+   ]
+  }
+ ],
+ "06bea0b2-1d0f-4d64-a13e-723d08042e83": [
+  {
+   "name": "Arbalest Engineers",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [
+     "Red",
+     "Green"
+    ],
+    "generic": 1
+   },
+   "card_type": {
+    "supertypes": [],
+    "core_types": [
+     "Creature"
+    ],
+    "subtypes": [
+     "Human",
+     "Artificer"
+    ]
+   },
+   "power": {
+    "type": "Fixed",
+    "value": 2
+   },
+   "toughness": {
+    "type": "Fixed",
+    "value": 2
+   },
+   "loyalty": null,
+   "defense": null,
+   "oracle_text": "When this creature enters, choose one —\n• This creature deals 1 damage to any target.\n• Put a +1/+1 counter on target creature. It gains trample and haste until end of turn.\n• Create a tapped Powerstone token. (It's an artifact with \"{T}: Add {C}. This mana can't be spent to cast a nonartifact spell.\")",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [],
+   "abilities": [],
+   "triggers": [
+    {
+     "mode": "ChangesZone",
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "GenericEffect",
+       "static_abilities": [],
+       "duration": null,
+       "target": null
+      },
+      "cost": null,
+      "sub_ability": null,
+      "duration": null,
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "modal": {
+       "min_choices": 1,
+       "max_choices": 1,
+       "mode_count": 3,
+       "mode_descriptions": [
+        "This creature deals 1 damage to any target.",
+        "Put a +1/+1 counter on target creature. It gains trample and haste until end of turn.",
+        "Create a tapped Powerstone token."
+       ],
+       "allow_repeat_modes": false
+      },
+      "mode_abilities": [
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "DealDamage",
+         "amount": {
+          "type": "Fixed",
+          "value": 1
+         },
+         "target": {
+          "type": "Any"
+         }
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       },
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "PutCounter",
+         "counter_type": "P1P1",
+         "count": {
+          "type": "Fixed",
+          "value": 1
+         },
+         "target": {
+          "type": "Typed",
+          "type_filters": [
+           "Creature"
+          ],
+          "controller": null,
+          "properties": []
+         }
+        },
+        "cost": null,
+        "sub_ability": {
+         "kind": "Spell",
+         "effect": {
+          "type": "GenericEffect",
+          "static_abilities": [
+           {
+            "mode": "Continuous",
+            "affected": {
+             "type": "SelfRef"
+            },
+            "modifications": [
+             {
+              "type": "AddKeyword",
+              "keyword": "Trample"
+             },
+             {
+              "type": "AddKeyword",
+              "keyword": "Haste"
+             }
+            ],
+            "condition": null,
+            "affected_zone": null,
+            "effect_zone": null,
+            "active_zones": [],
+            "characteristic_defining": false,
+            "description": "gain trample and haste"
+           }
+          ],
+          "duration": "UntilEndOfTurn",
+          "target": {
+           "type": "ParentTarget"
+          }
+         },
+         "cost": null,
+         "sub_ability": null,
+         "duration": "UntilEndOfTurn",
+         "description": null,
+         "target_prompt": null,
+         "sorcery_speed": false,
+         "condition": null,
+         "optional_targeting": false,
+         "optional": false,
+         "forward_result": false
+        },
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       },
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "Token",
+         "name": "Powerstone",
+         "power": {
+          "type": "Fixed",
+          "value": 0
+         },
+         "toughness": {
+          "type": "Fixed",
+          "value": 0
+         },
+         "types": [
+          "Artifact",
+          "Powerstone"
+         ],
+         "colors": [],
+         "keywords": [],
+         "tapped": true,
+         "count": {
+          "type": "Fixed",
+          "value": 1
+         },
+         "owner": {
+          "type": "Controller"
+         },
+         "enters_attacking": false
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       }
+      ],
+      "forward_result": false
+     },
+     "valid_card": {
+      "type": "SelfRef"
+     },
+     "origin": null,
+     "destination": "Battlefield",
+     "trigger_zones": [
+      "Battlefield"
+     ],
+     "phase": null,
+     "optional": false,
+     "damage_kind": "Any",
+     "secondary": false,
+     "valid_target": null,
+     "valid_source": null,
+     "description": "When this creature enters",
+     "constraint": null,
+     "condition": null,
+     "batched": false
+    }
+   ],
+   "static_abilities": [],
+   "replacements": [],
+   "color_override": [
+    "Green",
+    "Red"
+   ],
+   "scryfall_oracle_id": "06bea0b2-1d0f-4d64-a13e-723d08042e83",
+   "legalities": {
+    "brawl": "legal",
+    "commander": "legal",
+    "historic": "legal",
+    "legacy": "legal",
+    "modern": "legal",
+    "pioneer": "legal",
+    "vintage": "legal"
+   },
+   "printings": [
+    "BRO"
+   ],
+   "rulings": [
+    {
+     "date": "2022-10-14",
+     "text": "Although all the cards in The Brothers' War that create Powerstone tokens create a tapped Powerstone token, entering the battlefield tapped isn't part of the token's definition. Notably, if you create a token that is a copy of a Powerstone token, the token copy won't enter the battlefield tapped."
+    },
+    {
+     "date": "2022-10-14",
+     "text": "Powerstone tokens are a kind of predefined token. Each one has the artifact subtype \"Powerstone\" and the ability \"{T}: Add {C}. This mana can't be spent to cast a nonartifact spell.\""
+    },
+    {
+     "date": "2022-10-14",
+     "text": "You can use the {C} added by a Powerstone token on anything that isn't a nonartifact spell. This includes paying costs to activate abilities of both artifact and nonartifact permanents, paying ward costs, and so on."
+    }
+   ]
+  }
+ ],
+ "9eb9e4c1-fabf-45ff-a584-fbe4b94fb41c": [
+  {
+   "name": "Avatar Roku, Firebender",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [
+     "Red",
+     "Red",
+     "Red"
+    ],
+    "generic": 3
+   },
+   "card_type": {
+    "supertypes": [
+     "Legendary"
+    ],
+    "core_types": [
+     "Creature"
+    ],
+    "subtypes": [
+     "Human",
+     "Avatar"
+    ]
+   },
+   "power": {
+    "type": "Fixed",
+    "value": 6
+   },
+   "toughness": {
+    "type": "Fixed",
+    "value": 6
+   },
+   "loyalty": null,
+   "defense": null,
+   "oracle_text": "Whenever a player attacks, add six {R}. Until end of combat, you don't lose this mana as steps end.\n{R}{R}{R}: Target creature gets +3/+0 until end of turn.",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [],
+   "abilities": [
+    {
+     "kind": "Activated",
+     "effect": {
+      "type": "Pump",
+      "power": {
+       "type": "Fixed",
+       "value": 3
+      },
+      "toughness": {
+       "type": "Fixed",
+       "value": 0
+      },
+      "target": {
+       "type": "Typed",
+       "type_filters": [
+        "Creature"
+       ],
+       "controller": null,
+       "properties": []
+      }
+     },
+     "cost": {
+      "type": "Mana",
+      "cost": {
+       "type": "Cost",
+       "shards": [
+        "Red",
+        "Red",
+        "Red"
+       ],
+       "generic": 0
+      }
+     },
+     "sub_ability": null,
+     "duration": "UntilEndOfTurn",
+     "description": "{R}{R}{R}: Target creature gets +3/+0 until end of turn.",
+     "target_prompt": null,
+     "sorcery_speed": false,
+     "condition": null,
+     "optional_targeting": false,
+     "optional": false,
+     "forward_result": false
+    }
+   ],
+   "triggers": [
+    {
+     "mode": "Attacks",
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "Mana",
+       "produced": {
+        "type": "AnyOneColor",
+        "count": {
+         "type": "Fixed",
+         "value": 6
+        },
+        "color_options": [
+         "Red"
+        ]
+       }
+      },
+      "cost": null,
+      "sub_ability": {
+       "kind": "Spell",
+       "effect": {
+        "type": "GenericEffect",
+        "static_abilities": [],
+        "duration": null,
+        "target": null
+       },
+       "cost": null,
+       "sub_ability": null,
+       "duration": null,
+       "description": null,
+       "target_prompt": null,
+       "sorcery_speed": false,
+       "condition": null,
+       "optional_targeting": false,
+       "optional": false,
+       "forward_result": false
+      },
+      "duration": null,
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "forward_result": false
+     },
+     "valid_card": {
+      "type": "Player"
+     },
+     "origin": null,
+     "destination": null,
+     "trigger_zones": [
+      "Battlefield"
+     ],
+     "phase": null,
+     "optional": false,
+     "damage_kind": "Any",
+     "secondary": false,
+     "valid_target": null,
+     "valid_source": null,
+     "description": "Whenever a player attacks, add six {R}. Until end of combat, you don't lose this mana as steps end.",
+     "constraint": null,
+     "condition": null,
+     "batched": false
+    }
+   ],
+   "static_abilities": [],
+   "replacements": [],
+   "color_override": null,
+   "scryfall_oracle_id": "9eb9e4c1-fabf-45ff-a584-fbe4b94fb41c",
+   "brawl_commander": true,
+   "legalities": {
+    "brawl": "legal",
+    "commander": "legal",
+    "historic": "legal",
+    "legacy": "legal",
+    "vintage": "legal"
+   },
+   "printings": [
+    "TLE"
+   ]
+  }
+ ],
+ "f20a5297-31ba-4bbd-810e-be23175a116f": [
+  {
+   "name": "Casey & Raph, Hotheads",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [
+     "Red"
+    ],
+    "generic": 4
+   },
+   "card_type": {
+    "supertypes": [
+     "Legendary"
+    ],
+    "core_types": [
+     "Creature"
+    ],
+    "subtypes": [
+     "Mutant",
+     "Ninja",
+     "Human",
+     "Turtle"
+    ]
+   },
+   "power": {
+    "type": "Fixed",
+    "value": 4
+   },
+   "toughness": {
+    "type": "Fixed",
+    "value": 4
+   },
+   "loyalty": null,
+   "defense": null,
+   "oracle_text": "When Casey & Raph enter, choose one or both. Each mode must target a different player.\n• Target player exiles the top card of their library. Until that player's next end step, they may play that card without paying its mana cost.\n• Target player creates two Treasure tokens.",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [],
+   "abilities": [],
+   "triggers": [
+    {
+     "mode": "ChangesZone",
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "GenericEffect",
+       "static_abilities": [],
+       "duration": null,
+       "target": null
+      },
+      "cost": null,
+      "sub_ability": null,
+      "duration": null,
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "modal": {
+       "min_choices": 1,
+       "max_choices": 2,
+       "mode_count": 2,
+       "mode_descriptions": [
+        "Target player exiles the top card of their library. Until that player's next end step, they may play that card without paying its mana cost.",
+        "Target player creates two Treasure tokens."
+       ],
+       "allow_repeat_modes": false,
+       "constraints": [
+        {
+         "type": "DifferentTargetPlayers"
+        }
+       ]
+      },
+      "mode_abilities": [
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "ExileTop",
+         "player": {
+          "type": "Player"
+         },
+         "count": {
+          "type": "Fixed",
+          "value": 1
+         }
+        },
+        "cost": null,
+        "sub_ability": {
+         "kind": "Spell",
+         "effect": {
+          "type": "Unimplemented",
+          "name": "until",
+          "description": "Until that player's next end step, they may play that card without paying its mana cost"
+         },
+         "cost": null,
+         "sub_ability": null,
+         "duration": null,
+         "description": null,
+         "target_prompt": null,
+         "sorcery_speed": false,
+         "condition": null,
+         "optional_targeting": false,
+         "optional": false,
+         "forward_result": false
+        },
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       },
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "Token",
+         "name": "Treasure",
+         "power": {
+          "type": "Fixed",
+          "value": 0
+         },
+         "toughness": {
+          "type": "Fixed",
+          "value": 0
+         },
+         "types": [
+          "Artifact",
+          "Treasure"
+         ],
+         "colors": [],
+         "keywords": [],
+         "tapped": false,
+         "count": {
+          "type": "Fixed",
+          "value": 2
+         },
+         "owner": {
+          "type": "Player"
+         },
+         "enters_attacking": false
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       }
+      ],
+      "forward_result": false
+     },
+     "valid_card": {
+      "type": "SelfRef"
+     },
+     "origin": null,
+     "destination": "Battlefield",
+     "trigger_zones": [
+      "Battlefield"
+     ],
+     "phase": null,
+     "optional": false,
+     "damage_kind": "Any",
+     "secondary": false,
+     "valid_target": null,
+     "valid_source": null,
+     "description": "When Casey & Raph enter",
+     "constraint": null,
+     "condition": null,
+     "batched": false
+    }
+   ],
+   "static_abilities": [],
+   "replacements": [],
+   "color_override": null,
+   "scryfall_oracle_id": "f20a5297-31ba-4bbd-810e-be23175a116f",
+   "brawl_commander": true,
+   "legalities": {
+    "commander": "legal",
+    "legacy": "legal",
+    "vintage": "legal"
+   },
+   "printings": [
+    "TMC"
+   ],
+   "rulings": [
+    {
+     "date": "2026-01-27",
+     "text": "If a spell has {X} in its mana cost, you must choose 0 as the value of X when playing it without paying its mana cost."
+    },
+    {
+     "date": "2026-01-27",
+     "text": "If you cast a spell \"without paying its mana cost,\" you can't choose to cast it for any alternative costs. You can, however, pay additional costs. If the spell has any mandatory additional costs, those must be paid to cast the spell."
+    },
+    {
+     "date": "2026-01-27",
+     "text": "The target of the first mode must follow all timing rules for cards played this way. For example, if the exiled card is a land card, they may play it only during their main phase while the stack is empty and only if they have an available land play remaining."
+    }
+   ]
+  }
+ ],
+ "12e0321b-1cd7-4519-8929-3261cf11a1a9": [
+  {
+   "name": "Cleanup Crew",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [
+     "Green",
+     "Green"
+    ],
+    "generic": 4
+   },
+   "card_type": {
+    "supertypes": [],
+    "core_types": [
+     "Creature"
+    ],
+    "subtypes": [
+     "Human",
+     "Citizen"
+    ]
+   },
+   "power": {
+    "type": "Fixed",
+    "value": 6
+   },
+   "toughness": {
+    "type": "Fixed",
+    "value": 6
+   },
+   "loyalty": null,
+   "defense": null,
+   "oracle_text": "When this creature enters, choose one —\n• Destroy target artifact.\n• Destroy target enchantment.\n• Exile target card from a graveyard.\n• You gain 4 life.",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [],
+   "abilities": [],
+   "triggers": [
+    {
+     "mode": "ChangesZone",
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "GenericEffect",
+       "static_abilities": [],
+       "duration": null,
+       "target": null
+      },
+      "cost": null,
+      "sub_ability": null,
+      "duration": null,
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "modal": {
+       "min_choices": 1,
+       "max_choices": 1,
+       "mode_count": 4,
+       "mode_descriptions": [
+        "Destroy target artifact.",
+        "Destroy target enchantment.",
+        "Exile target card from a graveyard.",
+        "You gain 4 life."
+       ],
+       "allow_repeat_modes": false
+      },
+      "mode_abilities": [
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "Destroy",
+         "target": {
+          "type": "Typed",
+          "type_filters": [
+           "Artifact"
+          ],
+          "controller": null,
+          "properties": []
+         },
+         "cant_regenerate": false
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       },
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "Destroy",
+         "target": {
+          "type": "Typed",
+          "type_filters": [
+           "Enchantment"
+          ],
+          "controller": null,
+          "properties": []
+         },
+         "cant_regenerate": false
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       },
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "ChangeZone",
+         "origin": "Graveyard",
+         "destination": "Exile",
+         "target": {
+          "type": "Typed",
+          "type_filters": [
+           "Card"
+          ],
+          "controller": null,
+          "properties": [
+           {
+            "type": "InZone",
+            "zone": "Graveyard"
+           }
+          ]
+         },
+         "owner_library": false,
+         "enter_transformed": false,
+         "under_your_control": false,
+         "enter_tapped": false,
+         "enters_attacking": false
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       },
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "GainLife",
+         "amount": {
+          "type": "Fixed",
+          "value": 4
+         },
+         "player": "controller"
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       }
+      ],
+      "forward_result": false
+     },
+     "valid_card": {
+      "type": "SelfRef"
+     },
+     "origin": null,
+     "destination": "Battlefield",
+     "trigger_zones": [
+      "Battlefield"
+     ],
+     "phase": null,
+     "optional": false,
+     "damage_kind": "Any",
+     "secondary": false,
+     "valid_target": null,
+     "valid_source": null,
+     "description": "When this creature enters",
+     "constraint": null,
+     "condition": null,
+     "batched": false
+    }
+   ],
+   "static_abilities": [],
+   "replacements": [],
+   "color_override": null,
+   "scryfall_oracle_id": "12e0321b-1cd7-4519-8929-3261cf11a1a9",
+   "legalities": {
+    "brawl": "legal",
+    "commander": "legal",
+    "historic": "legal",
+    "legacy": "legal",
+    "modern": "legal",
+    "pioneer": "legal",
+    "vintage": "legal"
+   },
+   "printings": [
+    "SNC"
+   ]
+  }
+ ],
+ "bec04768-c573-4886-9ca1-2511abc05a14": [
+  {
+   "name": "Concord with the Kami",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [
+     "Green"
+    ],
+    "generic": 3
+   },
+   "card_type": {
+    "supertypes": [],
+    "core_types": [
+     "Enchantment"
+    ],
+    "subtypes": []
+   },
+   "power": null,
+   "toughness": null,
+   "loyalty": null,
+   "defense": null,
+   "oracle_text": "At the beginning of your end step, choose one or more —\n• Put a +1/+1 counter on target creature with a counter on it.\n• Draw a card if you control an enchanted creature.\n• Create a 1/1 colorless Spirit creature token if you control an equipped creature.",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [],
+   "abilities": [],
+   "triggers": [
+    {
+     "mode": "Phase",
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "GenericEffect",
+       "static_abilities": [],
+       "duration": null,
+       "target": null
+      },
+      "cost": null,
+      "sub_ability": null,
+      "duration": null,
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "modal": {
+       "min_choices": 1,
+       "max_choices": 3,
+       "mode_count": 3,
+       "mode_descriptions": [
+        "Put a +1/+1 counter on target creature with a counter on it.",
+        "Draw a card if you control an enchanted creature.",
+        "Create a 1/1 colorless Spirit creature token if you control an equipped creature."
+       ],
+       "allow_repeat_modes": false
+      },
+      "mode_abilities": [
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "PutCounter",
+         "counter_type": "P1P1",
+         "count": {
+          "type": "Fixed",
+          "value": 1
+         },
+         "target": {
+          "type": "Typed",
+          "type_filters": [
+           "Creature"
+          ],
+          "controller": null,
+          "properties": []
+         }
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       },
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "Draw",
+         "count": {
+          "type": "Fixed",
+          "value": 1
+         }
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       },
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "Token",
+         "name": "Spirit",
+         "power": {
+          "type": "Fixed",
+          "value": 1
+         },
+         "toughness": {
+          "type": "Fixed",
+          "value": 1
+         },
+         "types": [
+          "Creature",
+          "Spirit"
+         ],
+         "colors": [],
+         "keywords": [],
+         "tapped": false,
+         "count": {
+          "type": "Fixed",
+          "value": 1
+         },
+         "owner": {
+          "type": "Controller"
+         },
+         "enters_attacking": false
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       }
+      ],
+      "forward_result": false
+     },
+     "valid_card": null,
+     "origin": null,
+     "destination": null,
+     "trigger_zones": [
+      "Battlefield"
+     ],
+     "phase": "End",
+     "optional": false,
+     "damage_kind": "Any",
+     "secondary": false,
+     "valid_target": null,
+     "valid_source": null,
+     "description": "At the beginning of your end step",
+     "constraint": {
+      "type": "OnlyDuringYourTurn"
+     },
+     "condition": null,
+     "batched": false
+    }
+   ],
+   "static_abilities": [],
+   "replacements": [],
+   "color_override": null,
+   "scryfall_oracle_id": "bec04768-c573-4886-9ca1-2511abc05a14",
+   "legalities": {
+    "commander": "legal",
+    "legacy": "legal",
+    "vintage": "legal"
+   },
+   "printings": [
+    "NEC"
+   ],
+   "rulings": [
+    {
+     "date": "2022-02-18",
+     "text": "If you choose the first mode, and the target creature becomes an illegal target by the time the ability tries to resolve, the ability won't resolve and none of its effects will happen, even if you chose other modes."
+    },
+    {
+     "date": "2022-02-18",
+     "text": "You cannot choose the first mode unless you have a legal target for it. You may choose the second and third mode even if you don't have an enchanted or equipped creature at the time this ability triggers."
+    }
+   ]
+  }
+ ],
+ "b46b282a-5cb1-4ef2-8a07-6af922cf09c2": [
+  {
+   "name": "Drover of the Swine",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [
+     "White",
+     "Black",
+     "Green"
+    ],
+    "generic": 2
+   },
+   "card_type": {
+    "supertypes": [],
+    "core_types": [
+     "Creature"
+    ],
+    "subtypes": [
+     "Human",
+     "Warlock"
+    ]
+   },
+   "power": {
+    "type": "Fixed",
+    "value": 5
+   },
+   "toughness": {
+    "type": "Fixed",
+    "value": 5
+   },
+   "loyalty": null,
+   "defense": null,
+   "oracle_text": "When Drover of the Swine enters, choose one —\n• Conjure a card of your choice from the Three Pigs spellbook onto the battlefield.\n• Return up to three target Boar creature cards with different names from your graveyard to the battlefield.",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [],
+   "abilities": [],
+   "triggers": [
+    {
+     "mode": "ChangesZone",
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "GenericEffect",
+       "static_abilities": [],
+       "duration": null,
+       "target": null
+      },
+      "cost": null,
+      "sub_ability": null,
+      "duration": null,
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "modal": {
+       "min_choices": 1,
+       "max_choices": 1,
+       "mode_count": 2,
+       "mode_descriptions": [
+        "Conjure a card of your choice from the Three Pigs spellbook onto the battlefield.",
+        "Return up to three target Boar creature cards with different names from your graveyard to the battlefield."
+       ],
+       "allow_repeat_modes": false
+      },
+      "mode_abilities": [
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "Unimplemented",
+         "name": "conjure",
+         "description": "Conjure a card of your choice from the Three Pigs spellbook onto the battlefield"
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       },
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "ChangeZone",
+         "origin": "Graveyard",
+         "destination": "Battlefield",
+         "target": {
+          "type": "Typed",
+          "type_filters": [
+           "Creature",
+           {
+            "Subtype": "Boar"
+           }
+          ],
+          "controller": null,
+          "properties": []
+         },
+         "owner_library": false,
+         "enter_transformed": false,
+         "under_your_control": false,
+         "enter_tapped": false,
+         "enters_attacking": false
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "multi_target": {
+         "min": 0,
+         "max": 3
+        },
+        "forward_result": false
+       }
+      ],
+      "forward_result": false
+     },
+     "valid_card": {
+      "type": "SelfRef"
+     },
+     "origin": null,
+     "destination": "Battlefield",
+     "trigger_zones": [
+      "Battlefield"
+     ],
+     "phase": null,
+     "optional": false,
+     "damage_kind": "Any",
+     "secondary": false,
+     "valid_target": null,
+     "valid_source": null,
+     "description": "When Drover of the Swine enters",
+     "constraint": null,
+     "condition": null,
+     "batched": false
+    }
+   ],
+   "static_abilities": [],
+   "replacements": [],
+   "color_override": [
+    "Black",
+    "Green",
+    "White"
+   ],
+   "scryfall_oracle_id": "b46b282a-5cb1-4ef2-8a07-6af922cf09c2",
+   "legalities": {
+    "brawl": "legal",
+    "historic": "legal"
+   },
+   "printings": [
+    "YWOE"
+   ]
+  }
+ ],
+ "3d038f7c-95fa-4b71-8f74-b9b4dd45cde0": [
+  {
+   "name": "Ertai Resurrected",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [
+     "Blue",
+     "Black"
+    ],
+    "generic": 2
+   },
+   "card_type": {
+    "supertypes": [
+     "Legendary"
+    ],
+    "core_types": [
+     "Creature"
+    ],
+    "subtypes": [
+     "Phyrexian",
+     "Human",
+     "Wizard"
+    ]
+   },
+   "power": {
+    "type": "Fixed",
+    "value": 3
+   },
+   "toughness": {
+    "type": "Fixed",
+    "value": 2
+   },
+   "loyalty": null,
+   "defense": null,
+   "oracle_text": "Flash\nWhen Ertai Resurrected enters, choose up to one —\n• Counter target spell, activated ability, or triggered ability. Its controller draws a card.\n• Destroy another target creature or planeswalker. Its controller draws a card.",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [
+    "Flash"
+   ],
+   "abilities": [],
+   "triggers": [
+    {
+     "mode": "ChangesZone",
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "GenericEffect",
+       "static_abilities": [],
+       "duration": null,
+       "target": null
+      },
+      "cost": null,
+      "sub_ability": null,
+      "duration": null,
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "modal": {
+       "min_choices": 0,
+       "max_choices": 1,
+       "mode_count": 2,
+       "mode_descriptions": [
+        "Counter target spell, activated ability, or triggered ability. Its controller draws a card.",
+        "Destroy another target creature or planeswalker. Its controller draws a card."
+       ],
+       "allow_repeat_modes": false
+      },
+      "mode_abilities": [
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "Counter",
+         "target": {
+          "type": "Typed",
+          "type_filters": [
+           "Card"
+          ],
+          "controller": null,
+          "properties": [
+           {
+            "type": "InZone",
+            "zone": "Stack"
+           }
+          ]
+         },
+         "source_static": null,
+         "unless_payment": null
+        },
+        "cost": null,
+        "sub_ability": {
+         "kind": "Spell",
+         "effect": {
+          "type": "Draw",
+          "count": {
+           "type": "Fixed",
+           "value": 1
+          }
+         },
+         "cost": null,
+         "sub_ability": null,
+         "duration": null,
+         "description": null,
+         "target_prompt": null,
+         "sorcery_speed": false,
+         "condition": null,
+         "optional_targeting": false,
+         "optional": false,
+         "forward_result": false
+        },
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       },
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "Destroy",
+         "target": {
+          "type": "Or",
+          "filters": [
+           {
+            "type": "Typed",
+            "type_filters": [
+             "Creature"
+            ],
+            "controller": null,
+            "properties": [
+             {
+              "type": "Another"
+             }
+            ]
+           },
+           {
+            "type": "Typed",
+            "type_filters": [
+             "Planeswalker"
+            ],
+            "controller": null,
+            "properties": [
+             {
+              "type": "Another"
+             }
+            ]
+           }
+          ]
+         },
+         "cant_regenerate": false
+        },
+        "cost": null,
+        "sub_ability": {
+         "kind": "Spell",
+         "effect": {
+          "type": "Draw",
+          "count": {
+           "type": "Fixed",
+           "value": 1
+          }
+         },
+         "cost": null,
+         "sub_ability": null,
+         "duration": null,
+         "description": null,
+         "target_prompt": null,
+         "sorcery_speed": false,
+         "condition": null,
+         "optional_targeting": false,
+         "optional": false,
+         "forward_result": false
+        },
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       }
+      ],
+      "forward_result": false
+     },
+     "valid_card": {
+      "type": "SelfRef"
+     },
+     "origin": null,
+     "destination": "Battlefield",
+     "trigger_zones": [
+      "Battlefield"
+     ],
+     "phase": null,
+     "optional": false,
+     "damage_kind": "Any",
+     "secondary": false,
+     "valid_target": null,
+     "valid_source": null,
+     "description": "When Ertai Resurrected enters",
+     "constraint": null,
+     "condition": null,
+     "batched": false
+    }
+   ],
+   "static_abilities": [],
+   "replacements": [],
+   "color_override": [
+    "Black",
+    "Blue"
+   ],
+   "scryfall_oracle_id": "3d038f7c-95fa-4b71-8f74-b9b4dd45cde0",
+   "brawl_commander": true,
+   "legalities": {
+    "brawl": "legal",
+    "commander": "legal",
+    "historic": "legal",
+    "legacy": "legal",
+    "modern": "legal",
+    "pioneer": "legal",
+    "vintage": "legal"
+   },
+   "printings": [
+    "DMU",
+    "PDMU"
+   ],
+   "rulings": [
+    {
+     "date": "2022-09-09",
+     "text": "Abilities that create replacement effects, such as a permanent entering the battlefield tapped or with counters on it, can’t be targeted. Abilities that apply “as [this creature] enters the battlefield” are also replacement effects and can’t be targeted. Similarly, the replacement effect that prevents a creature with a stun counter on it from untapping can’t be countered."
+    },
+    {
+     "date": "2022-09-09",
+     "text": "Activated abilities are written in the form “Cost: Effect.” Some keyword abilities, such as equip and crew, are activated abilities and will have colons in their reminder texts."
+    },
+    {
+     "date": "2022-09-09",
+     "text": "If you counter a delayed triggered ability that triggers at the beginning of the “next” occurrence of a specified step or phase, that ability won’t trigger again the following time that phase or step occurs."
+    },
+    {
+     "date": "2022-09-09",
+     "text": "Triggered abilities use the word “when,” “whenever,” or “at.” They’re often written as “[Trigger condition], [effect].” Some keyword abilities, such as prowess and fabricate, are triggered abilities and will have “when,” “whenever,” or “at” in their reminder text."
+    }
+   ]
+  }
+ ],
+ "8d75c41f-8318-4944-ac20-b12904c7883f": [
+  {
+   "name": "Fate Reforged",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [],
+    "generic": 0
+   },
+   "card_type": {
+    "supertypes": [],
+    "core_types": [
+     "Enchantment"
+    ],
+    "subtypes": [
+     "Saga"
+    ]
+   },
+   "power": null,
+   "toughness": null,
+   "loyalty": null,
+   "defense": null,
+   "oracle_text": "I — (Bolas) Each opponent discards their hand. You draw seven cards.\nI — (Ugin) Manifest your hand, then draw seven cards.\nII — (Both) Create a token that's a copy of any Elder Dragon from the Legends expansion.\nIII — (Both) Exile Fate Reforged, then return it to the battlefield (Front face up).",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [],
+   "abilities": [],
+   "triggers": [
+    {
+     "mode": "CounterAdded",
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "Discard",
+       "count": {
+        "type": "Ref",
+        "qty": {
+         "type": "HandSize"
+        }
+       },
+       "target": {
+        "type": "Controller"
+       }
+      },
+      "cost": null,
+      "sub_ability": {
+       "kind": "Spell",
+       "effect": {
+        "type": "Draw",
+        "count": {
+         "type": "Fixed",
+         "value": 7
+        }
+       },
+       "cost": null,
+       "sub_ability": null,
+       "duration": null,
+       "description": null,
+       "target_prompt": null,
+       "sorcery_speed": false,
+       "condition": null,
+       "optional_targeting": false,
+       "optional": false,
+       "forward_result": false
+      },
+      "duration": null,
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "forward_result": false,
+      "player_scope": {
+       "type": "Opponent"
+      }
+     },
+     "valid_card": {
+      "type": "SelfRef"
+     },
+     "origin": null,
+     "destination": null,
+     "trigger_zones": [
+      "Battlefield"
+     ],
+     "phase": null,
+     "optional": false,
+     "damage_kind": "Any",
+     "secondary": false,
+     "valid_target": null,
+     "valid_source": null,
+     "description": "Chapter 1",
+     "constraint": null,
+     "condition": null,
+     "counter_filter": {
+      "counter_type": "lore",
+      "threshold": 1
+     },
+     "batched": false
+    },
+    {
+     "mode": "CounterAdded",
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "Unimplemented",
+       "name": "manifest",
+       "description": "Manifest your hand"
+      },
+      "cost": null,
+      "sub_ability": {
+       "kind": "Spell",
+       "effect": {
+        "type": "Draw",
+        "count": {
+         "type": "Fixed",
+         "value": 7
+        }
+       },
+       "cost": null,
+       "sub_ability": null,
+       "duration": null,
+       "description": null,
+       "target_prompt": null,
+       "sorcery_speed": false,
+       "condition": null,
+       "optional_targeting": false,
+       "optional": false,
+       "forward_result": false
+      },
+      "duration": null,
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "forward_result": false
+     },
+     "valid_card": {
+      "type": "SelfRef"
+     },
+     "origin": null,
+     "destination": null,
+     "trigger_zones": [
+      "Battlefield"
+     ],
+     "phase": null,
+     "optional": false,
+     "damage_kind": "Any",
+     "secondary": false,
+     "valid_target": null,
+     "valid_source": null,
+     "description": "Chapter 1",
+     "constraint": null,
+     "condition": null,
+     "counter_filter": {
+      "counter_type": "lore",
+      "threshold": 1
+     },
+     "batched": false
+    },
+    {
+     "mode": "CounterAdded",
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "CopyTokenOf",
+       "target": {
+        "type": "Any"
+       },
+       "enters_attacking": false,
+       "tapped": false,
+       "count": {
+        "type": "Fixed",
+        "value": 1
+       }
+      },
+      "cost": null,
+      "sub_ability": null,
+      "duration": null,
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "forward_result": false
+     },
+     "valid_card": {
+      "type": "SelfRef"
+     },
+     "origin": null,
+     "destination": null,
+     "trigger_zones": [
+      "Battlefield"
+     ],
+     "phase": null,
+     "optional": false,
+     "damage_kind": "Any",
+     "secondary": false,
+     "valid_target": null,
+     "valid_source": null,
+     "description": "Chapter 2",
+     "constraint": null,
+     "condition": null,
+     "counter_filter": {
+      "counter_type": "lore",
+      "threshold": 2
+     },
+     "batched": false
+    },
+    {
+     "mode": "CounterAdded",
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "ChangeZone",
+       "origin": null,
+       "destination": "Exile",
+       "target": {
+        "type": "Any"
+       },
+       "owner_library": false,
+       "enter_transformed": false,
+       "under_your_control": false,
+       "enter_tapped": false,
+       "enters_attacking": false
+      },
+      "cost": null,
+      "sub_ability": {
+       "kind": "Spell",
+       "effect": {
+        "type": "ChangeZone",
+        "origin": null,
+        "destination": "Battlefield",
+        "target": {
+         "type": "ParentTarget"
+        },
+        "owner_library": false,
+        "enter_transformed": false,
+        "under_your_control": false,
+        "enter_tapped": false,
+        "enters_attacking": false
+       },
+       "cost": null,
+       "sub_ability": null,
+       "duration": null,
+       "description": null,
+       "target_prompt": null,
+       "sorcery_speed": false,
+       "condition": null,
+       "optional_targeting": false,
+       "optional": false,
+       "forward_result": false
+      },
+      "duration": null,
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "forward_result": false
+     },
+     "valid_card": {
+      "type": "SelfRef"
+     },
+     "origin": null,
+     "destination": null,
+     "trigger_zones": [
+      "Battlefield"
+     ],
+     "phase": null,
+     "optional": false,
+     "damage_kind": "Any",
+     "secondary": false,
+     "valid_target": null,
+     "valid_source": null,
+     "description": "Chapter 3",
+     "constraint": null,
+     "condition": null,
+     "counter_filter": {
+      "counter_type": "lore",
+      "threshold": 3
+     },
+     "batched": false
+    }
+   ],
+   "static_abilities": [],
+   "replacements": [
+    {
+     "event": "Moved",
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "PutCounter",
+       "counter_type": "lore",
+       "count": {
+        "type": "Fixed",
+        "value": 1
+       },
+       "target": {
+        "type": "SelfRef"
+       }
+      },
+      "cost": null,
+      "sub_ability": null,
+      "duration": null,
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "forward_result": false
+     },
+     "mode": {
+      "type": "Mandatory"
+     },
+     "valid_card": {
+      "type": "SelfRef"
+     },
+     "description": "Saga ETB lore counter",
+     "condition": null,
+     "destination_zone": "Battlefield"
+    }
+   ],
+   "color_override": null,
+   "scryfall_oracle_id": "8d75c41f-8318-4944-ac20-b12904c7883f",
+   "parse_warnings": [
+    "target-fallback: parse_target could not classify 'any Elder Dragon from the Legends expansion'",
+    "target-fallback: parse_target could not classify 'Fate Reforged'"
+   ],
+   "legalities": {},
+   "layout": "transform",
+   "printings": [
+    "UNK"
+   ]
+  },
+  {
+   "name": "The Battle of Dragon Brothers",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [],
+    "generic": 7
+   },
+   "card_type": {
+    "supertypes": [],
+    "core_types": [
+     "Battle"
+    ],
+    "subtypes": [
+     "Siege"
+    ]
+   },
+   "power": null,
+   "toughness": null,
+   "loyalty": null,
+   "defense": "6",
+   "oracle_text": "(As a Siege enters, choose an opponent to protect it. You and others can attack it. When it's defeated, exile it, then cast it transformed.)\nWhen The Battle of Dragon Brothers Enters, choose Bolas or Ugin.\n• Bolas — Destroy all creatures.\n• Ugin — Manifest the top three cards of your library.",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [],
+   "abilities": [],
+   "triggers": [
+    {
+     "mode": "ChangesZone",
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "GenericEffect",
+       "static_abilities": [],
+       "duration": null,
+       "target": null
+      },
+      "cost": null,
+      "sub_ability": null,
+      "duration": null,
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "modal": {
+       "min_choices": 1,
+       "max_choices": 1,
+       "mode_count": 2,
+       "mode_descriptions": [
+        "Bolas — Destroy all creatures.",
+        "Ugin — Manifest the top three cards of your library."
+       ],
+       "allow_repeat_modes": false
+      },
+      "mode_abilities": [
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "DestroyAll",
+         "target": {
+          "type": "Typed",
+          "type_filters": [
+           "Creature"
+          ],
+          "controller": null,
+          "properties": []
+         },
+         "cant_regenerate": false
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       },
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "Manifest",
+         "target": {
+          "type": "Controller"
+         },
+         "count": {
+          "type": "Fixed",
+          "value": 3
+         }
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       }
+      ],
+      "forward_result": false
+     },
+     "valid_card": {
+      "type": "SelfRef"
+     },
+     "origin": null,
+     "destination": "Battlefield",
+     "trigger_zones": [
+      "Battlefield"
+     ],
+     "phase": null,
+     "optional": false,
+     "damage_kind": "Any",
+     "secondary": false,
+     "valid_target": null,
+     "valid_source": null,
+     "description": "When The Battle of Dragon Brothers Enters",
+     "constraint": null,
+     "condition": null,
+     "batched": false
+    },
+    {
+     "mode": "CounterRemoved",
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "ChangeZone",
+       "origin": "Battlefield",
+       "destination": "Exile",
+       "target": {
+        "type": "SelfRef"
+       },
+       "owner_library": false,
+       "enter_transformed": false,
+       "under_your_control": false,
+       "enter_tapped": false,
+       "enters_attacking": false
+      },
+      "cost": null,
+      "sub_ability": {
+       "kind": "Spell",
+       "effect": {
+        "type": "CastFromZone",
+        "target": {
+         "type": "SelfRef"
+        },
+        "without_paying_mana_cost": true,
+        "mode": "Cast",
+        "cast_transformed": true
+       },
+       "cost": null,
+       "sub_ability": null,
+       "duration": null,
+       "description": null,
+       "target_prompt": null,
+       "sorcery_speed": false,
+       "condition": null,
+       "optional_targeting": false,
+       "optional": true,
+       "forward_result": false
+      },
+      "duration": null,
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "forward_result": false
+     },
+     "valid_card": {
+      "type": "SelfRef"
+     },
+     "origin": null,
+     "destination": null,
+     "trigger_zones": [],
+     "phase": null,
+     "optional": false,
+     "damage_kind": "Any",
+     "secondary": false,
+     "valid_target": null,
+     "valid_source": null,
+     "description": "CR 310.11b: When the last defense counter is removed from this Siege, exile it, then you may cast it transformed without paying its mana cost.",
+     "constraint": null,
+     "condition": null,
+     "counter_filter": {
+      "counter_type": "defense",
+      "threshold": 0
+     },
+     "batched": false
+    }
+   ],
+   "static_abilities": [],
+   "replacements": [
+    {
+     "event": "Moved",
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "Choose",
+       "choice_type": "Opponent",
+       "persist": true
+      },
+      "cost": null,
+      "sub_ability": null,
+      "duration": null,
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "forward_result": false
+     },
+     "mode": {
+      "type": "Mandatory"
+     },
+     "valid_card": {
+      "type": "SelfRef"
+     },
+     "description": "CR 310.11a: As a Siege enters, its controller chooses an opponent as its protector.",
+     "condition": null,
+     "destination_zone": "Battlefield"
+    }
+   ],
+   "color_override": null,
+   "scryfall_oracle_id": "8d75c41f-8318-4944-ac20-b12904c7883f",
+   "legalities": {},
+   "layout": "transform",
+   "printings": [
+    "UNK"
+   ]
+  }
+ ],
+ "cce081eb-8820-415a-a7b2-3c5b9d4a2601": [
+  {
+   "name": "Gala Greeters",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [
+     "Green"
+    ],
+    "generic": 1
+   },
+   "card_type": {
+    "supertypes": [],
+    "core_types": [
+     "Creature"
+    ],
+    "subtypes": [
+     "Elf",
+     "Druid"
+    ]
+   },
+   "power": {
+    "type": "Fixed",
+    "value": 1
+   },
+   "toughness": {
+    "type": "Fixed",
+    "value": 1
+   },
+   "loyalty": null,
+   "defense": null,
+   "oracle_text": "Alliance — Whenever another creature you control enters, choose one that hasn't been chosen this turn —\n• Put a +1/+1 counter on this creature.\n• Create a tapped Treasure token.\n• You gain 2 life.",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [],
+   "abilities": [],
+   "triggers": [
+    {
+     "mode": "ChangesZone",
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "GenericEffect",
+       "static_abilities": [],
+       "duration": null,
+       "target": null
+      },
+      "cost": null,
+      "sub_ability": null,
+      "duration": null,
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "modal": {
+       "min_choices": 1,
+       "max_choices": 1,
+       "mode_count": 3,
+       "mode_descriptions": [
+        "Put a +1/+1 counter on this creature.",
+        "Create a tapped Treasure token.",
+        "You gain 2 life."
+       ],
+       "allow_repeat_modes": false,
+       "constraints": [
+        {
+         "type": "NoRepeatThisTurn"
+        }
+       ]
+      },
+      "mode_abilities": [
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "PutCounter",
+         "counter_type": "P1P1",
+         "count": {
+          "type": "Fixed",
+          "value": 1
+         },
+         "target": {
+          "type": "SelfRef"
+         }
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       },
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "Token",
+         "name": "Treasure",
+         "power": {
+          "type": "Fixed",
+          "value": 0
+         },
+         "toughness": {
+          "type": "Fixed",
+          "value": 0
+         },
+         "types": [
+          "Artifact",
+          "Treasure"
+         ],
+         "colors": [],
+         "keywords": [],
+         "tapped": true,
+         "count": {
+          "type": "Fixed",
+          "value": 1
+         },
+         "owner": {
+          "type": "Controller"
+         },
+         "enters_attacking": false
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       },
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "GainLife",
+         "amount": {
+          "type": "Fixed",
+          "value": 2
+         },
+         "player": "controller"
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       }
+      ],
+      "forward_result": false
+     },
+     "valid_card": {
+      "type": "Typed",
+      "type_filters": [
+       "Creature"
+      ],
+      "controller": "You",
+      "properties": [
+       {
+        "type": "Another"
+       }
+      ]
+     },
+     "origin": null,
+     "destination": "Battlefield",
+     "trigger_zones": [
+      "Battlefield"
+     ],
+     "phase": null,
+     "optional": false,
+     "damage_kind": "Any",
+     "secondary": false,
+     "valid_target": null,
+     "valid_source": null,
+     "description": "Whenever another creature you control enters",
+     "constraint": null,
+     "condition": null,
+     "batched": false
+    }
+   ],
+   "static_abilities": [],
+   "replacements": [],
+   "color_override": null,
+   "scryfall_oracle_id": "cce081eb-8820-415a-a7b2-3c5b9d4a2601",
+   "legalities": {
+    "brawl": "legal",
+    "commander": "legal",
+    "historic": "legal",
+    "legacy": "legal",
+    "modern": "legal",
+    "pioneer": "legal",
+    "vintage": "legal"
+   },
+   "printings": [
+    "PRM",
+    "PSNC",
+    "SNC"
+   ],
+   "rulings": [
+    {
+     "date": "2022-04-29",
+     "text": "If multiple creatures enter the battlefield simultaneously, you must still choose different modes for each instance of the triggered ability that's put onto the stack. If more than three creatures enter the battlefield simultaneously, that choice is made only for the first three."
+    }
+   ]
+  }
+ ],
+ "31061e34-042e-40c3-99ab-752795ab4324": [
+  {
+   "name": "Hollowmurk Siege",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [
+     "Black",
+     "Green"
+    ],
+    "generic": 0
+   },
+   "card_type": {
+    "supertypes": [],
+    "core_types": [
+     "Enchantment"
+    ],
+    "subtypes": []
+   },
+   "power": null,
+   "toughness": null,
+   "loyalty": null,
+   "defense": null,
+   "oracle_text": "As this enchantment enters, choose Sultai or Abzan.\n• Sultai — Whenever a counter is put on a creature you control, draw a card. This ability triggers only once each turn.\n• Abzan — Whenever you attack, put a +1/+1 counter on target attacking creature. It gains menace until end of turn.",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [],
+   "abilities": [],
+   "triggers": [
+    {
+     "mode": {
+      "Unknown": "As ~ enters"
+     },
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "GenericEffect",
+       "static_abilities": [],
+       "duration": null,
+       "target": null
+      },
+      "cost": null,
+      "sub_ability": null,
+      "duration": null,
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "modal": {
+       "min_choices": 1,
+       "max_choices": 1,
+       "mode_count": 2,
+       "mode_descriptions": [
+        "Sultai — Whenever a counter is put on a creature you control, draw a card. This ability triggers only once each turn.",
+        "Abzan — Whenever you attack, put a +1/+1 counter on target attacking creature. It gains menace until end of turn."
+       ],
+       "allow_repeat_modes": false
+      },
+      "mode_abilities": [
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "Unimplemented",
+         "name": "whenever",
+         "description": "Whenever a counter is put on a creature you control, draw a card"
+        },
+        "cost": null,
+        "sub_ability": {
+         "kind": "Spell",
+         "effect": {
+          "type": "Unimplemented",
+          "name": "this",
+          "description": "This ability triggers only once each turn"
+         },
+         "cost": null,
+         "sub_ability": null,
+         "duration": null,
+         "description": null,
+         "target_prompt": null,
+         "sorcery_speed": false,
+         "condition": null,
+         "optional_targeting": false,
+         "optional": false,
+         "forward_result": false
+        },
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       },
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "Unimplemented",
+         "name": "whenever",
+         "description": "Whenever you attack, put a +1/+1 counter on target attacking creature"
+        },
+        "cost": null,
+        "sub_ability": {
+         "kind": "Spell",
+         "effect": {
+          "type": "GenericEffect",
+          "static_abilities": [
+           {
+            "mode": "Continuous",
+            "affected": {
+             "type": "SelfRef"
+            },
+            "modifications": [
+             {
+              "type": "AddKeyword",
+              "keyword": "Menace"
+             }
+            ],
+            "condition": null,
+            "affected_zone": null,
+            "effect_zone": null,
+            "active_zones": [],
+            "characteristic_defining": false,
+            "description": "gain menace"
+           }
+          ],
+          "duration": "UntilEndOfTurn",
+          "target": null
+         },
+         "cost": null,
+         "sub_ability": null,
+         "duration": "UntilEndOfTurn",
+         "description": null,
+         "target_prompt": null,
+         "sorcery_speed": false,
+         "condition": null,
+         "optional_targeting": false,
+         "optional": false,
+         "forward_result": false
+        },
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       }
+      ],
+      "forward_result": false
+     },
+     "valid_card": null,
+     "origin": null,
+     "destination": null,
+     "trigger_zones": [
+      "Battlefield"
+     ],
+     "phase": null,
+     "optional": false,
+     "damage_kind": "Any",
+     "secondary": false,
+     "valid_target": null,
+     "valid_source": null,
+     "description": "As this enchantment enters",
+     "constraint": null,
+     "condition": null,
+     "batched": false
+    }
+   ],
+   "static_abilities": [],
+   "replacements": [],
+   "color_override": null,
+   "scryfall_oracle_id": "31061e34-042e-40c3-99ab-752795ab4324",
+   "legalities": {
+    "brawl": "legal",
+    "commander": "legal",
+    "historic": "legal",
+    "legacy": "legal",
+    "modern": "legal",
+    "pioneer": "legal",
+    "standard": "legal",
+    "standardbrawl": "legal",
+    "vintage": "legal"
+   },
+   "printings": [
+    "PTDM",
+    "TDM"
+   ],
+   "rulings": [
+    {
+     "date": "2025-04-04",
+     "text": "An ability that triggers when counters are put on a permanent will trigger if that permanent somehow enters the battlefield with those counters."
+    },
+    {
+     "date": "2025-04-04",
+     "text": "If you somehow control Hollowmurk Siege and no choice was made for it (perhaps because another permanent on the battlefield became a copy of it), it has neither of the two abilities."
+    }
+   ]
+  }
+ ],
+ "54f8acb1-58f3-49d1-bff8-c1b578245936": [
+  {
+   "name": "Kessig Naturalist",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [
+     "Red",
+     "Green"
+    ],
+    "generic": 0
+   },
+   "card_type": {
+    "supertypes": [],
+    "core_types": [
+     "Creature"
+    ],
+    "subtypes": [
+     "Human",
+     "Werewolf"
+    ]
+   },
+   "power": {
+    "type": "Fixed",
+    "value": 2
+   },
+   "toughness": {
+    "type": "Fixed",
+    "value": 2
+   },
+   "loyalty": null,
+   "defense": null,
+   "oracle_text": "Whenever this creature attacks, add {R} or {G}. Until end of turn, you don't lose this mana as steps and phases end.\nDaybound (If a player casts no spells during their own turn, it becomes night next turn.)",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [
+    "Daybound"
+   ],
+   "abilities": [],
+   "triggers": [
+    {
+     "mode": "Attacks",
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "Mana",
+       "produced": {
+        "type": "AnyOneColor",
+        "count": {
+         "type": "Fixed",
+         "value": 1
+        },
+        "color_options": [
+         "Red",
+         "Green"
+        ]
+       }
+      },
+      "cost": null,
+      "sub_ability": {
+       "kind": "Spell",
+       "effect": {
+        "type": "GenericEffect",
+        "static_abilities": [],
+        "duration": null,
+        "target": null
+       },
+       "cost": null,
+       "sub_ability": null,
+       "duration": null,
+       "description": null,
+       "target_prompt": null,
+       "sorcery_speed": false,
+       "condition": null,
+       "optional_targeting": false,
+       "optional": false,
+       "forward_result": false
+      },
+      "duration": null,
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "forward_result": false
+     },
+     "valid_card": {
+      "type": "SelfRef"
+     },
+     "origin": null,
+     "destination": null,
+     "trigger_zones": [
+      "Battlefield"
+     ],
+     "phase": null,
+     "optional": false,
+     "damage_kind": "Any",
+     "secondary": false,
+     "valid_target": null,
+     "valid_source": null,
+     "description": "Whenever this creature attacks, add {R} or {G}. Until end of turn, you don't lose this mana as steps and phases end.",
+     "constraint": null,
+     "condition": null,
+     "batched": false
+    }
+   ],
+   "static_abilities": [],
+   "replacements": [],
+   "color_override": [
+    "Green",
+    "Red"
+   ],
+   "scryfall_oracle_id": "54f8acb1-58f3-49d1-bff8-c1b578245936",
+   "legalities": {
+    "brawl": "legal",
+    "commander": "legal",
+    "historic": "legal",
+    "legacy": "legal",
+    "modern": "legal",
+    "pioneer": "legal",
+    "vintage": "legal"
+   },
+   "layout": "transform",
+   "printings": [
+    "DBL",
+    "MID"
+   ],
+   "rulings": [
+    {
+     "date": "2021-09-24",
+     "text": "Before a player untaps their permanents during the untap step, the game checks to see if the day/night designation should change."
+    },
+    {
+     "date": "2021-09-24",
+     "text": "Day and night are designations that the game itself can have. The game starts as neither. Once the game becomes day (or less commonly, night), the game will be exactly one of them—day or night—going back and forth for the rest of the game."
+    },
+    {
+     "date": "2021-09-24",
+     "text": "Double-faced permanents with daybound transform to their nightbound faces as it becomes night. Similarly, double-faced permanents with nightbound transform to their daybound faces as it becomes day. This happens immediately and is not a state-based action. It happens any time it becomes day or night, not just during the untap step."
+    },
+    {
+     "date": "2021-09-24",
+     "text": "If it is day, and the active player of the previous turn cast no spells during their turn, it becomes night."
+    },
+    {
+     "date": "2021-09-24",
+     "text": "If it is night, and the active player of the previous turn cast two or more spells during their turn, it becomes day."
+    },
+    {
+     "date": "2021-09-24",
+     "text": "If it is night, permanents with daybound that enter the battlefield without being cast will enter with their nightbound faces up."
+    },
+    {
+     "date": "2021-09-24",
+     "text": "If it's neither day nor night, and a creature with daybound and a creature with nightbound somehow appear on the battlefield at the same time, it becomes day. The creature with nightbound will transform."
+    },
+    {
+     "date": "2021-09-24",
+     "text": "If you cast a spell with daybound during night, that spell will be front face up (that is, daybound face up) on the stack. However, it will enter the battlefield with its back face up (that is, with its nightbound face up). It won't enter with its daybound face up and then transform."
+    },
+    {
+     "date": "2021-09-24",
+     "text": "Permanents with daybound and nightbound can't transform via any means other than their daybound and nightbound abilities. Notably, older cards such as Moonmist that instruct a player to transform permanents don't affect permanents with daybound or nightbound."
+    }
+   ]
+  },
+  {
+   "name": "Lord of the Ulvenwald",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [],
+    "generic": 0
+   },
+   "card_type": {
+    "supertypes": [],
+    "core_types": [
+     "Creature"
+    ],
+    "subtypes": [
+     "Werewolf"
+    ]
+   },
+   "power": {
+    "type": "Fixed",
+    "value": 3
+   },
+   "toughness": {
+    "type": "Fixed",
+    "value": 3
+   },
+   "loyalty": null,
+   "defense": null,
+   "oracle_text": "Other Wolves and Werewolves you control get +1/+1.\nWhenever this creature attacks, add {R} or {G}. Until end of turn, you don't lose this mana as steps and phases end.\nNightbound (If a player casts at least two spells during their own turn, it becomes day next turn.)",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [
+    "Nightbound"
+   ],
+   "abilities": [],
+   "triggers": [
+    {
+     "mode": "Attacks",
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "Mana",
+       "produced": {
+        "type": "AnyOneColor",
+        "count": {
+         "type": "Fixed",
+         "value": 1
+        },
+        "color_options": [
+         "Red",
+         "Green"
+        ]
+       }
+      },
+      "cost": null,
+      "sub_ability": {
+       "kind": "Spell",
+       "effect": {
+        "type": "GenericEffect",
+        "static_abilities": [],
+        "duration": null,
+        "target": null
+       },
+       "cost": null,
+       "sub_ability": null,
+       "duration": null,
+       "description": null,
+       "target_prompt": null,
+       "sorcery_speed": false,
+       "condition": null,
+       "optional_targeting": false,
+       "optional": false,
+       "forward_result": false
+      },
+      "duration": null,
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "forward_result": false
+     },
+     "valid_card": {
+      "type": "SelfRef"
+     },
+     "origin": null,
+     "destination": null,
+     "trigger_zones": [
+      "Battlefield"
+     ],
+     "phase": null,
+     "optional": false,
+     "damage_kind": "Any",
+     "secondary": false,
+     "valid_target": null,
+     "valid_source": null,
+     "description": "Whenever this creature attacks, add {R} or {G}. Until end of turn, you don't lose this mana as steps and phases end.",
+     "constraint": null,
+     "condition": null,
+     "batched": false
+    }
+   ],
+   "static_abilities": [
+    {
+     "mode": "Continuous",
+     "affected": {
+      "type": "Or",
+      "filters": [
+       {
+        "type": "Typed",
+        "type_filters": [
+         "Creature",
+         {
+          "Subtype": "Wolf"
+         }
+        ],
+        "controller": "You",
+        "properties": [
+         {
+          "type": "Another"
+         }
+        ]
+       },
+       {
+        "type": "Typed",
+        "type_filters": [
+         "Creature",
+         {
+          "Subtype": "Werewolves"
+         }
+        ],
+        "controller": "You",
+        "properties": [
+         {
+          "type": "Another"
+         }
+        ]
+       }
+      ]
+     },
+     "modifications": [
+      {
+       "type": "AddPower",
+       "value": 1
+      },
+      {
+       "type": "AddToughness",
+       "value": 1
+      }
+     ],
+     "condition": null,
+     "affected_zone": null,
+     "effect_zone": null,
+     "active_zones": [],
+     "characteristic_defining": false,
+     "description": "Wolves and Werewolves you control get +1/+1."
+    }
+   ],
+   "replacements": [],
+   "color_override": [
+    "Green",
+    "Red"
+   ],
+   "scryfall_oracle_id": "54f8acb1-58f3-49d1-bff8-c1b578245936",
+   "legalities": {
+    "brawl": "legal",
+    "commander": "legal",
+    "historic": "legal",
+    "legacy": "legal",
+    "modern": "legal",
+    "pioneer": "legal",
+    "vintage": "legal"
+   },
+   "layout": "transform",
+   "printings": [
+    "DBL",
+    "MID"
+   ]
+  }
+ ],
+ "b57f9ed0-db4e-46dd-9fe6-956958ce6434": [
+  {
+   "name": "Koma and Toski, Compleated",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [
+     "Blue",
+     "Green"
+    ],
+    "generic": 6
+   },
+   "card_type": {
+    "supertypes": [
+     "Legendary"
+    ],
+    "core_types": [
+     "Creature"
+    ],
+    "subtypes": [
+     "Phyrexian",
+     "Serpent",
+     "Squirrel"
+    ]
+   },
+   "power": {
+    "type": "Fixed",
+    "value": 7
+   },
+   "toughness": {
+    "type": "Fixed",
+    "value": 7
+   },
+   "loyalty": null,
+   "defense": null,
+   "oracle_text": "This spell can't be countered.\nAt the beginning of each upkeep, create a 1/1 Phyrexian Serpent Squirrel artifact creature token named Toski's Coil with \"Whenever this creature deals combat damage to a player, draw a card.\"\nSacrifice another Serpent or Squirrel: Choose one —\n• Target creature attacks this turn if able. Its activated abilities can't be activated this turn.\n• Koma and Toski, Compleated gains indestructible until end of turn.",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [],
+   "abilities": [
+    {
+     "kind": "Activated",
+     "effect": {
+      "type": "GenericEffect",
+      "static_abilities": [],
+      "duration": null,
+      "target": null
+     },
+     "cost": {
+      "type": "Sacrifice",
+      "target": {
+       "type": "Or",
+       "filters": [
+        {
+         "type": "Typed",
+         "type_filters": [
+          {
+           "Subtype": "Serpent"
+          }
+         ],
+         "controller": null,
+         "properties": [
+          {
+           "type": "Another"
+          }
+         ]
+        },
+        {
+         "type": "Typed",
+         "type_filters": [
+          {
+           "Subtype": "Squirrel"
+          }
+         ],
+         "controller": null,
+         "properties": [
+          {
+           "type": "Another"
+          }
+         ]
+        }
+       ]
+      },
+      "count": 1
+     },
+     "sub_ability": null,
+     "duration": null,
+     "description": null,
+     "target_prompt": null,
+     "sorcery_speed": false,
+     "condition": null,
+     "optional_targeting": false,
+     "optional": false,
+     "modal": {
+      "min_choices": 1,
+      "max_choices": 1,
+      "mode_count": 2,
+      "mode_descriptions": [
+       "Target creature attacks this turn if able. Its activated abilities can't be activated this turn.",
+       "Koma and Toski, Compleated gains indestructible until end of turn."
+      ],
+      "allow_repeat_modes": false
+     },
+     "mode_abilities": [
+      {
+       "kind": "Activated",
+       "effect": {
+        "type": "GenericEffect",
+        "static_abilities": [
+         {
+          "mode": "MustAttack",
+          "affected": null,
+          "modifications": [],
+          "condition": null,
+          "affected_zone": null,
+          "effect_zone": null,
+          "active_zones": [],
+          "characteristic_defining": false,
+          "description": null
+         }
+        ],
+        "duration": "UntilEndOfTurn",
+        "target": null
+       },
+       "cost": null,
+       "sub_ability": {
+        "kind": "Activated",
+        "effect": {
+         "type": "Unimplemented",
+         "name": "its",
+         "description": "Its activated abilities can't be activated"
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": "UntilEndOfTurn",
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       },
+       "duration": null,
+       "description": null,
+       "target_prompt": null,
+       "sorcery_speed": false,
+       "condition": null,
+       "optional_targeting": false,
+       "optional": false,
+       "forward_result": false
+      },
+      {
+       "kind": "Activated",
+       "effect": {
+        "type": "Unimplemented",
+        "name": "koma",
+        "description": "Koma and Toski, Compleated gains indestructible"
+       },
+       "cost": null,
+       "sub_ability": null,
+       "duration": "UntilEndOfTurn",
+       "description": null,
+       "target_prompt": null,
+       "sorcery_speed": false,
+       "condition": null,
+       "optional_targeting": false,
+       "optional": false,
+       "forward_result": false
+      }
+     ],
+     "forward_result": false
+    }
+   ],
+   "triggers": [
+    {
+     "mode": "Phase",
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "Token",
+       "name": "toski's coil",
+       "power": {
+        "type": "Fixed",
+        "value": 1
+       },
+       "toughness": {
+        "type": "Fixed",
+        "value": 1
+       },
+       "types": [
+        "Artifact",
+        "Creature",
+        "Phyrexian",
+        "Serpent",
+        "Squirrel"
+       ],
+       "colors": [],
+       "keywords": [],
+       "tapped": false,
+       "count": {
+        "type": "Fixed",
+        "value": 1
+       },
+       "owner": {
+        "type": "Controller"
+       },
+       "enters_attacking": false
+      },
+      "cost": null,
+      "sub_ability": null,
+      "duration": null,
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "forward_result": false
+     },
+     "valid_card": null,
+     "origin": null,
+     "destination": null,
+     "trigger_zones": [
+      "Battlefield"
+     ],
+     "phase": "Upkeep",
+     "optional": false,
+     "damage_kind": "Any",
+     "secondary": false,
+     "valid_target": null,
+     "valid_source": null,
+     "description": "At the beginning of each upkeep, create a 1/1 Phyrexian Serpent Squirrel artifact creature token named Toski's Coil with \"Whenever this creature deals combat damage to a player, draw a card.\"",
+     "constraint": null,
+     "condition": null,
+     "batched": false
+    }
+   ],
+   "static_abilities": [
+    {
+     "mode": "CantBeCountered",
+     "affected": {
+      "type": "SelfRef"
+     },
+     "modifications": [],
+     "condition": null,
+     "affected_zone": null,
+     "effect_zone": null,
+     "active_zones": [],
+     "characteristic_defining": false,
+     "description": "This spell can't be countered."
+    }
+   ],
+   "replacements": [],
+   "color_override": [
+    "Green",
+    "Blue"
+   ],
+   "scryfall_oracle_id": "b57f9ed0-db4e-46dd-9fe6-956958ce6434",
+   "brawl_commander": true,
+   "legalities": {},
+   "printings": [
+    "UNK"
+   ]
+  }
+ ],
+ "6ba0656f-e0d2-4735-9c66-3a00afa9fc23": [
+  {
+   "name": "Koma, Cosmos Serpent",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [
+     "Green",
+     "Green",
+     "Blue",
+     "Blue"
+    ],
+    "generic": 3
+   },
+   "card_type": {
+    "supertypes": [
+     "Legendary"
+    ],
+    "core_types": [
+     "Creature"
+    ],
+    "subtypes": [
+     "Serpent"
+    ]
+   },
+   "power": {
+    "type": "Fixed",
+    "value": 6
+   },
+   "toughness": {
+    "type": "Fixed",
+    "value": 6
+   },
+   "loyalty": null,
+   "defense": null,
+   "oracle_text": "This spell can't be countered.\nAt the beginning of each upkeep, create a 3/3 blue Serpent creature token named Koma's Coil.\nSacrifice another Serpent: Choose one —\n• Tap target permanent. Its activated abilities can't be activated this turn.\n• Koma gains indestructible until end of turn.",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [],
+   "abilities": [
+    {
+     "kind": "Activated",
+     "effect": {
+      "type": "GenericEffect",
+      "static_abilities": [],
+      "duration": null,
+      "target": null
+     },
+     "cost": {
+      "type": "Sacrifice",
+      "target": {
+       "type": "Typed",
+       "type_filters": [
+        {
+         "Subtype": "Serpent"
+        }
+       ],
+       "controller": null,
+       "properties": [
+        {
+         "type": "Another"
+        }
+       ]
+      },
+      "count": 1
+     },
+     "sub_ability": null,
+     "duration": null,
+     "description": null,
+     "target_prompt": null,
+     "sorcery_speed": false,
+     "condition": null,
+     "optional_targeting": false,
+     "optional": false,
+     "modal": {
+      "min_choices": 1,
+      "max_choices": 1,
+      "mode_count": 2,
+      "mode_descriptions": [
+       "Tap target permanent. Its activated abilities can't be activated this turn.",
+       "Koma gains indestructible until end of turn."
+      ],
+      "allow_repeat_modes": false
+     },
+     "mode_abilities": [
+      {
+       "kind": "Activated",
+       "effect": {
+        "type": "Tap",
+        "target": {
+         "type": "Typed",
+         "type_filters": [
+          "Permanent"
+         ],
+         "controller": null,
+         "properties": []
+        }
+       },
+       "cost": null,
+       "sub_ability": {
+        "kind": "Activated",
+        "effect": {
+         "type": "Unimplemented",
+         "name": "its",
+         "description": "Its activated abilities can't be activated"
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": "UntilEndOfTurn",
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       },
+       "duration": null,
+       "description": null,
+       "target_prompt": null,
+       "sorcery_speed": false,
+       "condition": null,
+       "optional_targeting": false,
+       "optional": false,
+       "forward_result": false
+      },
+      {
+       "kind": "Activated",
+       "effect": {
+        "type": "Unimplemented",
+        "name": "koma",
+        "description": "Koma gains indestructible"
+       },
+       "cost": null,
+       "sub_ability": null,
+       "duration": "UntilEndOfTurn",
+       "description": null,
+       "target_prompt": null,
+       "sorcery_speed": false,
+       "condition": null,
+       "optional_targeting": false,
+       "optional": false,
+       "forward_result": false
+      }
+     ],
+     "forward_result": false
+    }
+   ],
+   "triggers": [
+    {
+     "mode": "Phase",
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "Token",
+       "name": "koma",
+       "power": {
+        "type": "Fixed",
+        "value": 3
+       },
+       "toughness": {
+        "type": "Fixed",
+        "value": 3
+       },
+       "types": [
+        "Creature",
+        "Serpent"
+       ],
+       "colors": [
+        "Blue"
+       ],
+       "keywords": [],
+       "tapped": false,
+       "count": {
+        "type": "Fixed",
+        "value": 1
+       },
+       "owner": {
+        "type": "Controller"
+       },
+       "enters_attacking": false
+      },
+      "cost": null,
+      "sub_ability": null,
+      "duration": null,
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "forward_result": false
+     },
+     "valid_card": null,
+     "origin": null,
+     "destination": null,
+     "trigger_zones": [
+      "Battlefield"
+     ],
+     "phase": "Upkeep",
+     "optional": false,
+     "damage_kind": "Any",
+     "secondary": false,
+     "valid_target": null,
+     "valid_source": null,
+     "description": "At the beginning of each upkeep, create a 3/3 blue Serpent creature token named Koma's Coil.",
+     "constraint": null,
+     "condition": null,
+     "batched": false
+    }
+   ],
+   "static_abilities": [
+    {
+     "mode": "CantBeCountered",
+     "affected": {
+      "type": "SelfRef"
+     },
+     "modifications": [],
+     "condition": null,
+     "affected_zone": null,
+     "effect_zone": null,
+     "active_zones": [],
+     "characteristic_defining": false,
+     "description": "This spell can't be countered."
+    }
+   ],
+   "replacements": [],
+   "color_override": null,
+   "scryfall_oracle_id": "6ba0656f-e0d2-4735-9c66-3a00afa9fc23",
+   "brawl_commander": true,
+   "legalities": {
+    "brawl": "legal",
+    "commander": "legal",
+    "historic": "legal",
+    "legacy": "legal",
+    "modern": "legal",
+    "pioneer": "legal",
+    "vintage": "legal"
+   },
+   "printings": [
+    "KHM",
+    "MKC",
+    "PKHM",
+    "PRM",
+    "SLD",
+    "TLE"
+   ],
+   "rulings": [
+    {
+     "date": "2021-02-05",
+     "text": "A spell or ability that counters spells can still target Koma, Cosmos Serpent. When that spell or ability resolves, Koma won't be countered, but any additional effects of the countering spell or ability will still happen."
+    },
+    {
+     "date": "2021-02-05",
+     "text": "Activated abilities contain a colon and appear in the form \"[Cost]: [Effect].\" Some keywords such as equip are activated abilities and will have colons in their reminder texts. Loyalty abilities of planeswalkers are also activated abilities."
+    },
+    {
+     "date": "2021-02-05",
+     "text": "If you choose the first mode of Koma's activated ability, you can choose a permanent that's already tapped as the target. The effect stopping its activated abilities will still apply."
+    },
+    {
+     "date": "2021-02-05",
+     "text": "The first mode of Koma's activated ability doesn't stop static abilities from affecting the game, and it doesn't stop triggered abilities from triggering. Unlike similar effects, it does stop mana abilities from being activated. Most activated abilities that produce mana as they resolve are mana abilities."
+    },
+    {
+     "date": "2021-02-05",
+     "text": "You can't sacrifice Koma itself to activate its last ability, but you can sacrifice any other Serpent you control, including Koma's Coil."
+    }
+   ]
+  }
+ ],
+ "ba557e19-a409-4c02-a9ac-a8fb77762e43": [
+  {
+   "name": "Kutzil's Flanker",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [
+     "White"
+    ],
+    "generic": 2
+   },
+   "card_type": {
+    "supertypes": [],
+    "core_types": [
+     "Creature"
+    ],
+    "subtypes": [
+     "Cat",
+     "Warrior"
+    ]
+   },
+   "power": {
+    "type": "Fixed",
+    "value": 3
+   },
+   "toughness": {
+    "type": "Fixed",
+    "value": 1
+   },
+   "loyalty": null,
+   "defense": null,
+   "oracle_text": "Flash\nWhen this creature enters, choose one —\n• Put a +1/+1 counter on this creature for each creature that left the battlefield under your control this turn.\n• You gain 2 life and scry 2.\n• Exile target player's graveyard.",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [
+    "Flash"
+   ],
+   "abilities": [],
+   "triggers": [
+    {
+     "mode": "ChangesZone",
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "GenericEffect",
+       "static_abilities": [],
+       "duration": null,
+       "target": null
+      },
+      "cost": null,
+      "sub_ability": null,
+      "duration": null,
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "modal": {
+       "min_choices": 1,
+       "max_choices": 1,
+       "mode_count": 3,
+       "mode_descriptions": [
+        "Put a +1/+1 counter on this creature for each creature that left the battlefield under your control this turn.",
+        "You gain 2 life and scry 2.",
+        "Exile target player's graveyard."
+       ],
+       "allow_repeat_modes": false
+      },
+      "mode_abilities": [
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "PutCounter",
+         "counter_type": "P1P1",
+         "count": {
+          "type": "Fixed",
+          "value": 1
+         },
+         "target": {
+          "type": "SelfRef"
+         }
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": "UntilEndOfTurn",
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       },
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "GainLife",
+         "amount": {
+          "type": "Fixed",
+          "value": 2
+         },
+         "player": "controller"
+        },
+        "cost": null,
+        "sub_ability": {
+         "kind": "Spell",
+         "effect": {
+          "type": "Scry",
+          "count": {
+           "type": "Fixed",
+           "value": 2
+          }
+         },
+         "cost": null,
+         "sub_ability": null,
+         "duration": null,
+         "description": null,
+         "target_prompt": null,
+         "sorcery_speed": false,
+         "condition": null,
+         "optional_targeting": false,
+         "optional": false,
+         "forward_result": false
+        },
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       },
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "ChangeZone",
+         "origin": "Graveyard",
+         "destination": "Exile",
+         "target": {
+          "type": "Player"
+         },
+         "owner_library": false,
+         "enter_transformed": false,
+         "under_your_control": false,
+         "enter_tapped": false,
+         "enters_attacking": false
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       }
+      ],
+      "forward_result": false
+     },
+     "valid_card": {
+      "type": "SelfRef"
+     },
+     "origin": null,
+     "destination": "Battlefield",
+     "trigger_zones": [
+      "Battlefield"
+     ],
+     "phase": null,
+     "optional": false,
+     "damage_kind": "Any",
+     "secondary": false,
+     "valid_target": null,
+     "valid_source": null,
+     "description": "When this creature enters",
+     "constraint": null,
+     "condition": null,
+     "batched": false
+    }
+   ],
+   "static_abilities": [],
+   "replacements": [],
+   "color_override": null,
+   "scryfall_oracle_id": "ba557e19-a409-4c02-a9ac-a8fb77762e43",
+   "legalities": {
+    "brawl": "legal",
+    "commander": "legal",
+    "historic": "legal",
+    "legacy": "legal",
+    "modern": "legal",
+    "pioneer": "legal",
+    "standard": "legal",
+    "standardbrawl": "legal",
+    "vintage": "legal"
+   },
+   "printings": [
+    "LCI",
+    "PLCI"
+   ]
+  }
+ ],
+ "8a782e99-78f8-4de4-b46e-3465fe6c8da5": [
+  {
+   "name": "Mindslaver Toolkit",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [],
+    "generic": 0
+   },
+   "card_type": {
+    "supertypes": [],
+    "core_types": [
+     "Artifact"
+    ],
+    "subtypes": []
+   },
+   "power": null,
+   "toughness": null,
+   "loyalty": null,
+   "defense": null,
+   "oracle_text": "{T}: Target opponent gains control of Mindslaver Toolkit.\n{X}, {T}: Choose any number —\n• You lose X life.\n• You discard X cards.\n• You sacrifice X permanents.",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [],
+   "abilities": [
+    {
+     "kind": "Activated",
+     "effect": {
+      "type": "GainControl",
+      "target": {
+       "type": "SelfRef"
+      }
+     },
+     "cost": {
+      "type": "Tap"
+     },
+     "sub_ability": null,
+     "duration": null,
+     "description": "{T}: Target opponent gains control of Mindslaver Toolkit.",
+     "target_prompt": null,
+     "sorcery_speed": false,
+     "condition": null,
+     "optional_targeting": false,
+     "optional": false,
+     "forward_result": false
+    },
+    {
+     "kind": "Activated",
+     "effect": {
+      "type": "GenericEffect",
+      "static_abilities": [],
+      "duration": null,
+      "target": null
+     },
+     "cost": {
+      "type": "Composite",
+      "costs": [
+       {
+        "type": "Mana",
+        "cost": {
+         "type": "Cost",
+         "shards": [
+          "X"
+         ],
+         "generic": 0
+        }
+       },
+       {
+        "type": "Tap"
+       }
+      ]
+     },
+     "sub_ability": null,
+     "duration": null,
+     "description": null,
+     "target_prompt": null,
+     "sorcery_speed": false,
+     "condition": null,
+     "optional_targeting": false,
+     "optional": false,
+     "modal": {
+      "min_choices": 1,
+      "max_choices": 3,
+      "mode_count": 3,
+      "mode_descriptions": [
+       "You lose X life.",
+       "You discard X cards.",
+       "You sacrifice X permanents."
+      ],
+      "allow_repeat_modes": false
+     },
+     "mode_abilities": [
+      {
+       "kind": "Activated",
+       "effect": {
+        "type": "LoseLife",
+        "amount": {
+         "type": "Ref",
+         "qty": {
+          "type": "Variable",
+          "name": "X"
+         }
+        },
+        "target": {
+         "type": "Controller"
+        }
+       },
+       "cost": null,
+       "sub_ability": null,
+       "duration": null,
+       "description": null,
+       "target_prompt": null,
+       "sorcery_speed": false,
+       "condition": null,
+       "optional_targeting": false,
+       "optional": false,
+       "forward_result": false
+      },
+      {
+       "kind": "Activated",
+       "effect": {
+        "type": "Discard",
+        "count": {
+         "type": "Ref",
+         "qty": {
+          "type": "Variable",
+          "name": "X"
+         }
+        },
+        "target": {
+         "type": "Controller"
+        }
+       },
+       "cost": null,
+       "sub_ability": null,
+       "duration": null,
+       "description": null,
+       "target_prompt": null,
+       "sorcery_speed": false,
+       "condition": null,
+       "optional_targeting": false,
+       "optional": false,
+       "forward_result": false
+      },
+      {
+       "kind": "Activated",
+       "effect": {
+        "type": "Sacrifice",
+        "target": {
+         "type": "Typed",
+         "type_filters": [
+          "Permanent"
+         ],
+         "controller": null,
+         "properties": []
+        },
+        "count": {
+         "type": "Ref",
+         "qty": {
+          "type": "Variable",
+          "name": "X"
+         }
+        }
+       },
+       "cost": null,
+       "sub_ability": null,
+       "duration": null,
+       "description": null,
+       "target_prompt": null,
+       "sorcery_speed": false,
+       "condition": null,
+       "optional_targeting": false,
+       "optional": false,
+       "forward_result": false
+      }
+     ],
+     "forward_result": false
+    }
+   ],
+   "triggers": [],
+   "static_abilities": [],
+   "replacements": [],
+   "color_override": null,
+   "scryfall_oracle_id": "8a782e99-78f8-4de4-b46e-3465fe6c8da5",
+   "legalities": {},
+   "printings": [
+    "UNK"
+   ]
+  }
+ ],
+ "3989308a-4c0f-493a-b38f-cb4f5019dfe7": [
+  {
+   "name": "Mishra, Lost to Phyrexia",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [],
+    "generic": 0
+   },
+   "card_type": {
+    "supertypes": [
+     "Legendary"
+    ],
+    "core_types": [
+     "Artifact",
+     "Creature"
+    ],
+    "subtypes": [
+     "Phyrexian",
+     "Artificer"
+    ]
+   },
+   "power": {
+    "type": "Fixed",
+    "value": 9
+   },
+   "toughness": {
+    "type": "Fixed",
+    "value": 9
+   },
+   "loyalty": null,
+   "defense": null,
+   "oracle_text": "Whenever Mishra enters or attacks, choose three —\n• Target opponent discards two cards.\n• Mishra deals 3 damage to any target.\n• Destroy target artifact or planeswalker.\n• Creatures you control gain menace and trample until end of turn.\n• Creatures you don't control get -1/-1 until end of turn.\n• Create two tapped Powerstone tokens.",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [],
+   "abilities": [],
+   "triggers": [
+    {
+     "mode": "EntersOrAttacks",
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "GenericEffect",
+       "static_abilities": [],
+       "duration": null,
+       "target": null
+      },
+      "cost": null,
+      "sub_ability": null,
+      "duration": null,
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "modal": {
+       "min_choices": 3,
+       "max_choices": 3,
+       "mode_count": 6,
+       "mode_descriptions": [
+        "Target opponent discards two cards.",
+        "Mishra deals 3 damage to any target.",
+        "Destroy target artifact or planeswalker.",
+        "Creatures you control gain menace and trample until end of turn.",
+        "Creatures you don't control get -1/-1 until end of turn.",
+        "Create two tapped Powerstone tokens."
+       ],
+       "allow_repeat_modes": false
+      },
+      "mode_abilities": [
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "Discard",
+         "count": {
+          "type": "Fixed",
+          "value": 2
+         },
+         "target": {
+          "type": "Typed",
+          "type_filters": [],
+          "controller": "Opponent",
+          "properties": []
+         }
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       },
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "DealDamage",
+         "amount": {
+          "type": "Fixed",
+          "value": 3
+         },
+         "target": {
+          "type": "Any"
+         }
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       },
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "Destroy",
+         "target": {
+          "type": "Or",
+          "filters": [
+           {
+            "type": "Typed",
+            "type_filters": [
+             "Artifact"
+            ],
+            "controller": null,
+            "properties": []
+           },
+           {
+            "type": "Typed",
+            "type_filters": [
+             "Planeswalker"
+            ],
+            "controller": null,
+            "properties": []
+           }
+          ]
+         },
+         "cant_regenerate": false
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       },
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "GenericEffect",
+         "static_abilities": [
+          {
+           "mode": "Continuous",
+           "affected": {
+            "type": "Typed",
+            "type_filters": [
+             "Creature"
+            ],
+            "controller": "You",
+            "properties": []
+           },
+           "modifications": [
+            {
+             "type": "AddKeyword",
+             "keyword": "Menace"
+            },
+            {
+             "type": "AddKeyword",
+             "keyword": "Trample"
+            }
+           ],
+           "condition": null,
+           "affected_zone": null,
+           "effect_zone": null,
+           "active_zones": [],
+           "characteristic_defining": false,
+           "description": "gain menace and trample"
+          }
+         ],
+         "duration": "UntilEndOfTurn",
+         "target": null
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": "UntilEndOfTurn",
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       },
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "PumpAll",
+         "power": {
+          "type": "Fixed",
+          "value": -1
+         },
+         "toughness": {
+          "type": "Fixed",
+          "value": -1
+         },
+         "target": {
+          "type": "Typed",
+          "type_filters": [
+           "Creature"
+          ],
+          "controller": "Opponent",
+          "properties": []
+         }
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": "UntilEndOfTurn",
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       },
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "Token",
+         "name": "Powerstone",
+         "power": {
+          "type": "Fixed",
+          "value": 0
+         },
+         "toughness": {
+          "type": "Fixed",
+          "value": 0
+         },
+         "types": [
+          "Artifact",
+          "Powerstone"
+         ],
+         "colors": [],
+         "keywords": [],
+         "tapped": true,
+         "count": {
+          "type": "Fixed",
+          "value": 2
+         },
+         "owner": {
+          "type": "Controller"
+         },
+         "enters_attacking": false
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       }
+      ],
+      "forward_result": false
+     },
+     "valid_card": {
+      "type": "SelfRef"
+     },
+     "origin": null,
+     "destination": "Battlefield",
+     "trigger_zones": [
+      "Battlefield"
+     ],
+     "phase": null,
+     "optional": false,
+     "damage_kind": "Any",
+     "secondary": false,
+     "valid_target": null,
+     "valid_source": null,
+     "description": "Whenever Mishra enters or attacks",
+     "constraint": null,
+     "condition": null,
+     "batched": false
+    }
+   ],
+   "static_abilities": [],
+   "replacements": [],
+   "color_override": [
+    "Black",
+    "Red"
+   ],
+   "scryfall_oracle_id": "3989308a-4c0f-493a-b38f-cb4f5019dfe7",
+   "brawl_commander": true,
+   "legalities": {
+    "brawl": "legal",
+    "commander": "legal",
+    "historic": "legal",
+    "legacy": "legal",
+    "modern": "legal",
+    "pioneer": "legal",
+    "vintage": "legal"
+   },
+   "printings": [
+    "BRO",
+    "PBRO"
+   ],
+   "rulings": [
+    {
+     "date": "2022-10-14",
+     "text": "A player prompted to name a card may name the combined back face, and each player has the right to know that combined back face's characteristics at all times."
+    },
+    {
+     "date": "2022-10-14",
+     "text": "Although all the cards in The Brothers' War that create Powerstone tokens create a tapped Powerstone token, entering the battlefield tapped isn't part of the token's definition. Notably, if you create a token that is a copy of a Powerstone token, the token copy won't enter the battlefield tapped."
+    },
+    {
+     "date": "2022-10-14",
+     "text": "If an effect moves a melded permanent to a new zone and then affects \"that card,\" it affects both cards."
+    },
+    {
+     "date": "2022-10-14",
+     "text": "In the Commander variant, a meld card's color identity is determined only by the mana costs and mana symbols in the rules text of its front face. No symbols or rules text of the permanent it melds into are considered."
+    },
+    {
+     "date": "2022-10-14",
+     "text": "Note that the permanent represented by the combined back faces has a color indicator."
+    },
+    {
+     "date": "2022-10-14",
+     "text": "One card in each pair of meld cards has an ability that instructs you to exile the two cards and meld them. If you control more than one object with one of those names, you select one object with that name to exile."
+    },
+    {
+     "date": "2022-10-14",
+     "text": "Only two cards belonging to the same meld pair can be melded. Tokens, cards that aren't meld cards, or meld cards that don't form a meld pair can't be melded. If an effect instructs a player to meld cards that can't be melded, those cards remain in exile."
+    },
+    {
+     "date": "2022-10-14",
+     "text": "Powerstone tokens are a kind of predefined token. Each one has the artifact subtype \"Powerstone\" and the ability \"{T}: Add {C}. This mana can't be spent to cast a nonartifact spell.\""
+    },
+    {
+     "date": "2022-10-14",
+     "text": "The mana value of a melded permanent is the sum of the mana values of its front faces. A creature that becomes a copy of a melded permanent has only the characteristics of that combined back face, and its mana value is 0."
+    },
+    {
+     "date": "2022-10-14",
+     "text": "When a pair of cards are melded, the result is a single creature that's represented by two cards. If the melded creature dies, both cards are put into your graveyard. As it leaves the battlefield, both of those cards are turned face up again. If the cards are put on the top or bottom of your library, you choose their relative order."
+    },
+    {
+     "date": "2022-10-14",
+     "text": "When two cards are exiled and melded, they each leave the battlefield, then return together as one new object with no relation to either of the objects that left the battlefield. Counters, Auras, Equipment, and other effects that affected those two cards don't affect the melded permanent."
+    },
+    {
+     "date": "2022-10-14",
+     "text": "While a meld card is in any zone other than the battlefield, it has only the characteristics of its front face. The same is true while it's on the battlefield with its front face up."
+    },
+    {
+     "date": "2022-10-14",
+     "text": "While a melded permanent is on the battlefield, it has only the characteristics of its combined back face. Any effects that modify how the new object enters the battlefield will consider only the combined back face."
+    },
+    {
+     "date": "2022-10-14",
+     "text": "You can use the {C} added by a Powerstone token on anything that isn't a nonartifact spell. This includes paying costs to activate abilities of both artifact and nonartifact permanents, paying ward costs, and so on."
+    }
+   ]
+  }
+ ],
+ "2dd61a72-6478-471d-bb74-33adda530176": [
+  {
+   "name": "Night Out in Vegas",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [
+     "Black",
+     "Black"
+    ],
+    "generic": 2
+   },
+   "card_type": {
+    "supertypes": [],
+    "core_types": [
+     "Enchantment"
+    ],
+    "subtypes": []
+   },
+   "power": null,
+   "toughness": null,
+   "loyalty": null,
+   "defense": null,
+   "oracle_text": "At the beginning of your upkeep, choose one that hasn't been chosen —\n• Buffet — Create three Food tokens.\n• See a Show — Create two 2/2 white Performer creature tokens.\n• Play Games — Search your library for a card, put that card into your hand, discard a card at random, then shuffle.\n• Go to Sleep — You lose 15 life. Sacrifice Night Out in Vegas.",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [],
+   "abilities": [],
+   "triggers": [
+    {
+     "mode": "Phase",
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "GenericEffect",
+       "static_abilities": [],
+       "duration": null,
+       "target": null
+      },
+      "cost": null,
+      "sub_ability": null,
+      "duration": null,
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "modal": {
+       "min_choices": 1,
+       "max_choices": 1,
+       "mode_count": 4,
+       "mode_descriptions": [
+        "Buffet — Create three Food tokens.",
+        "See a Show — Create two 2/2 white Performer creature tokens.",
+        "Play Games — Search your library for a card, put that card into your hand, discard a card at random, then shuffle.",
+        "Go to Sleep — You lose 15 life. Sacrifice Night Out in Vegas."
+       ],
+       "allow_repeat_modes": false,
+       "constraints": [
+        {
+         "type": "NoRepeatThisGame"
+        }
+       ]
+      },
+      "mode_abilities": [
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "Token",
+         "name": "Food",
+         "power": {
+          "type": "Fixed",
+          "value": 0
+         },
+         "toughness": {
+          "type": "Fixed",
+          "value": 0
+         },
+         "types": [
+          "Artifact",
+          "Food"
+         ],
+         "colors": [],
+         "keywords": [],
+         "tapped": false,
+         "count": {
+          "type": "Fixed",
+          "value": 3
+         },
+         "owner": {
+          "type": "Controller"
+         },
+         "enters_attacking": false
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       },
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "Token",
+         "name": "Performer",
+         "power": {
+          "type": "Fixed",
+          "value": 2
+         },
+         "toughness": {
+          "type": "Fixed",
+          "value": 2
+         },
+         "types": [
+          "Creature",
+          "Performer"
+         ],
+         "colors": [
+          "White"
+         ],
+         "keywords": [],
+         "tapped": false,
+         "count": {
+          "type": "Fixed",
+          "value": 2
+         },
+         "owner": {
+          "type": "Controller"
+         },
+         "enters_attacking": false
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       },
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "SearchLibrary",
+         "filter": {
+          "type": "Typed",
+          "type_filters": [
+           "Card"
+          ],
+          "controller": null,
+          "properties": []
+         },
+         "count": {
+          "type": "Fixed",
+          "value": 1
+         },
+         "reveal": false
+        },
+        "cost": null,
+        "sub_ability": {
+         "kind": "Spell",
+         "effect": {
+          "type": "ChangeZone",
+          "origin": "Library",
+          "destination": "Hand",
+          "target": {
+           "type": "Any"
+          },
+          "owner_library": false,
+          "enter_transformed": false,
+          "under_your_control": false,
+          "enter_tapped": false,
+          "enters_attacking": false
+         },
+         "cost": null,
+         "sub_ability": {
+          "kind": "Spell",
+          "effect": {
+           "type": "Discard",
+           "count": {
+            "type": "Fixed",
+            "value": 1
+           },
+           "target": {
+            "type": "Controller"
+           },
+           "random": true
+          },
+          "cost": null,
+          "sub_ability": {
+           "kind": "Spell",
+           "effect": {
+            "type": "Shuffle",
+            "target": {
+             "type": "Controller"
+            }
+           },
+           "cost": null,
+           "sub_ability": null,
+           "duration": null,
+           "description": null,
+           "target_prompt": null,
+           "sorcery_speed": false,
+           "condition": null,
+           "optional_targeting": false,
+           "optional": false,
+           "forward_result": false
+          },
+          "duration": null,
+          "description": null,
+          "target_prompt": null,
+          "sorcery_speed": false,
+          "condition": null,
+          "optional_targeting": false,
+          "optional": false,
+          "forward_result": false
+         },
+         "duration": null,
+         "description": null,
+         "target_prompt": null,
+         "sorcery_speed": false,
+         "condition": null,
+         "optional_targeting": false,
+         "optional": false,
+         "forward_result": false
+        },
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       },
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "LoseLife",
+         "amount": {
+          "type": "Fixed",
+          "value": 15
+         },
+         "target": {
+          "type": "Controller"
+         }
+        },
+        "cost": null,
+        "sub_ability": {
+         "kind": "Spell",
+         "effect": {
+          "type": "Sacrifice",
+          "target": {
+           "type": "Any"
+          },
+          "count": {
+           "type": "Fixed",
+           "value": 1
+          }
+         },
+         "cost": null,
+         "sub_ability": null,
+         "duration": null,
+         "description": null,
+         "target_prompt": null,
+         "sorcery_speed": false,
+         "condition": null,
+         "optional_targeting": false,
+         "optional": false,
+         "forward_result": false
+        },
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       }
+      ],
+      "forward_result": false
+     },
+     "valid_card": null,
+     "origin": null,
+     "destination": null,
+     "trigger_zones": [
+      "Battlefield"
+     ],
+     "phase": "Upkeep",
+     "optional": false,
+     "damage_kind": "Any",
+     "secondary": false,
+     "valid_target": null,
+     "valid_source": null,
+     "description": "At the beginning of your upkeep",
+     "constraint": {
+      "type": "OnlyDuringYourTurn"
+     },
+     "condition": null,
+     "batched": false
+    }
+   ],
+   "static_abilities": [],
+   "replacements": [],
+   "color_override": null,
+   "scryfall_oracle_id": "2dd61a72-6478-471d-bb74-33adda530176",
+   "parse_warnings": [
+    "target-fallback: parse_target could not classify 'Night Out in Vegas'"
+   ],
+   "legalities": {},
+   "printings": [
+    "UNK"
+   ]
+  }
+ ],
+ "224f5f1a-4f31-4935-bf5a-910fd0a666a1": [
+  {
+   "name": "Prophetic Titan",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [
+     "Blue",
+     "Red"
+    ],
+    "generic": 4
+   },
+   "card_type": {
+    "supertypes": [],
+    "core_types": [
+     "Creature"
+    ],
+    "subtypes": [
+     "Giant",
+     "Wizard"
+    ]
+   },
+   "power": {
+    "type": "Fixed",
+    "value": 4
+   },
+   "toughness": {
+    "type": "Fixed",
+    "value": 4
+   },
+   "loyalty": null,
+   "defense": null,
+   "oracle_text": "Delirium — When this creature enters, choose one. If there are four or more card types among cards in your graveyard, choose both instead.\n• This creature deals 4 damage to any target.\n• Look at the top four cards of your library. Put one of them into your hand and the rest on the bottom of your library in a random order.",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [],
+   "abilities": [],
+   "triggers": [
+    {
+     "mode": "ChangesZone",
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "GenericEffect",
+       "static_abilities": [],
+       "duration": null,
+       "target": null
+      },
+      "cost": null,
+      "sub_ability": null,
+      "duration": null,
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "modal": {
+       "min_choices": 1,
+       "max_choices": 2,
+       "mode_count": 2,
+       "mode_descriptions": [
+        "This creature deals 4 damage to any target.",
+        "Look at the top four cards of your library. Put one of them into your hand and the rest on the bottom of your library in a random order."
+       ],
+       "allow_repeat_modes": false
+      },
+      "mode_abilities": [
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "DealDamage",
+         "amount": {
+          "type": "Fixed",
+          "value": 4
+         },
+         "target": {
+          "type": "Any"
+         }
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       },
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "Dig",
+         "count": {
+          "type": "Fixed",
+          "value": 4
+         },
+         "destination": "Hand",
+         "keep_count": 1,
+         "up_to": false,
+         "filter": {
+          "type": "Any"
+         },
+         "rest_destination": "Library",
+         "reveal": false
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       }
+      ],
+      "forward_result": false
+     },
+     "valid_card": {
+      "type": "SelfRef"
+     },
+     "origin": null,
+     "destination": "Battlefield",
+     "trigger_zones": [
+      "Battlefield"
+     ],
+     "phase": null,
+     "optional": false,
+     "damage_kind": "Any",
+     "secondary": false,
+     "valid_target": null,
+     "valid_source": null,
+     "description": "When this creature enters",
+     "constraint": null,
+     "condition": null,
+     "batched": false
+    }
+   ],
+   "static_abilities": [],
+   "replacements": [],
+   "color_override": [
+    "Red",
+    "Blue"
+   ],
+   "scryfall_oracle_id": "224f5f1a-4f31-4935-bf5a-910fd0a666a1",
+   "legalities": {
+    "brawl": "legal",
+    "commander": "legal",
+    "historic": "legal",
+    "legacy": "legal",
+    "modern": "legal",
+    "vintage": "legal"
+   },
+   "printings": [
+    "J21",
+    "MH2"
+   ],
+   "rulings": [
+    {
+     "date": "2021-06-18",
+     "text": "If only the first mode is chosen, or if both modes are chosen, and the chosen target is illegal as the ability tries to resolve, the ability won't resolve and none of its effects will happen."
+    },
+    {
+     "date": "2021-06-18",
+     "text": "Prophetic Titan's ability checks the number of card types in your graveyard as it's put on the stack. If you have four or more types in your graveyard at that time, but fewer than four as it resolves, you will still get to use both modes chosen."
+    },
+    {
+     "date": "2021-06-18",
+     "text": "The card types that can appear in a graveyard are artifact, battle, creature, enchantment, instant, kindred, land, planeswalker, and sorcery. Legendary, basic, and snow are supertypes, not card types; Giant and Wizard are subtypes, not card types."
+    }
+   ]
+  }
+ ],
+ "58a1f533-5559-4897-9cbf-ff6066770330": [
+  {
+   "name": "Salacinder and Soot, Rascals",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [
+     "Blue",
+     "Red"
+    ],
+    "generic": 2
+   },
+   "card_type": {
+    "supertypes": [
+     "Legendary"
+    ],
+    "core_types": [
+     "Creature"
+    ],
+    "subtypes": [
+     "Elemental"
+    ]
+   },
+   "power": {
+    "type": "Fixed",
+    "value": 3
+   },
+   "toughness": {
+    "type": "Fixed",
+    "value": 3
+   },
+   "loyalty": null,
+   "defense": null,
+   "oracle_text": "Prowess, Trample\nWhen Salacinder and Soot enters and whenever you cast an Elemental spell, choose one —\n• Conjure a card named Rite of Flame into your hand.\n• Conjure a card named Take Inventory into your hand.",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [
+    "Prowess",
+    "Trample"
+   ],
+   "abilities": [],
+   "triggers": [
+    {
+     "mode": "ChangesZone",
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "GenericEffect",
+       "static_abilities": [],
+       "duration": null,
+       "target": null
+      },
+      "cost": null,
+      "sub_ability": null,
+      "duration": null,
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "modal": {
+       "min_choices": 1,
+       "max_choices": 1,
+       "mode_count": 2,
+       "mode_descriptions": [
+        "Conjure a card named Rite of Flame into your hand.",
+        "Conjure a card named Take Inventory into your hand."
+       ],
+       "allow_repeat_modes": false
+      },
+      "mode_abilities": [
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "Conjure",
+         "cards": [
+          {
+           "name": "Rite of Flame",
+           "count": {
+            "type": "Fixed",
+            "value": 1
+           }
+          }
+         ],
+         "destination": "Hand",
+         "tapped": false
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       },
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "Conjure",
+         "cards": [
+          {
+           "name": "Take Inventory",
+           "count": {
+            "type": "Fixed",
+            "value": 1
+           }
+          }
+         ],
+         "destination": "Hand",
+         "tapped": false
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       }
+      ],
+      "forward_result": false
+     },
+     "valid_card": {
+      "type": "SelfRef"
+     },
+     "origin": null,
+     "destination": "Battlefield",
+     "trigger_zones": [
+      "Battlefield"
+     ],
+     "phase": null,
+     "optional": false,
+     "damage_kind": "Any",
+     "secondary": false,
+     "valid_target": null,
+     "valid_source": null,
+     "description": "When ~ enters",
+     "constraint": null,
+     "condition": null,
+     "batched": false
+    },
+    {
+     "mode": "SpellCast",
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "GenericEffect",
+       "static_abilities": [],
+       "duration": null,
+       "target": null
+      },
+      "cost": null,
+      "sub_ability": null,
+      "duration": null,
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "modal": {
+       "min_choices": 1,
+       "max_choices": 1,
+       "mode_count": 2,
+       "mode_descriptions": [
+        "Conjure a card named Rite of Flame into your hand.",
+        "Conjure a card named Take Inventory into your hand."
+       ],
+       "allow_repeat_modes": false
+      },
+      "mode_abilities": [
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "Conjure",
+         "cards": [
+          {
+           "name": "Rite of Flame",
+           "count": {
+            "type": "Fixed",
+            "value": 1
+           }
+          }
+         ],
+         "destination": "Hand",
+         "tapped": false
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       },
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "Conjure",
+         "cards": [
+          {
+           "name": "Take Inventory",
+           "count": {
+            "type": "Fixed",
+            "value": 1
+           }
+          }
+         ],
+         "destination": "Hand",
+         "tapped": false
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       }
+      ],
+      "forward_result": false
+     },
+     "valid_card": {
+      "type": "Typed",
+      "type_filters": [
+       {
+        "Subtype": "Elemental"
+       }
+      ],
+      "controller": null,
+      "properties": []
+     },
+     "origin": null,
+     "destination": null,
+     "trigger_zones": [
+      "Battlefield"
+     ],
+     "phase": null,
+     "optional": false,
+     "damage_kind": "Any",
+     "secondary": false,
+     "valid_target": {
+      "type": "Controller"
+     },
+     "valid_source": null,
+     "description": "Whenever you cast an Elemental spell",
+     "constraint": null,
+     "condition": null,
+     "batched": false
+    }
+   ],
+   "static_abilities": [],
+   "replacements": [],
+   "color_override": [
+    "Red",
+    "Blue"
+   ],
+   "scryfall_oracle_id": "58a1f533-5559-4897-9cbf-ff6066770330",
+   "brawl_commander": true,
+   "legalities": {
+    "brawl": "legal",
+    "historic": "legal"
+   },
+   "printings": [
+    "YECL"
+   ]
+  }
+ ],
+ "544f35f0-56b7-44f9-ae82-3a425553c5cd": [
+  {
+   "name": "Shellephant",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [
+     "Green",
+     "Green"
+    ],
+    "generic": 1
+   },
+   "card_type": {
+    "supertypes": [],
+    "core_types": [
+     "Creature"
+    ],
+    "subtypes": [
+     "Turtle",
+     "and/or",
+     "Elephant"
+    ]
+   },
+   "power": {
+    "type": "Variable",
+    "value": "?"
+   },
+   "toughness": {
+    "type": "Variable",
+    "value": "?"
+   },
+   "loyalty": null,
+   "defense": null,
+   "oracle_text": "{0}: Choose one. You may activate this ability while Shellephant is in any zone.\n• Shellephant has base power and toughness 1/4.\n• Shellephant has base power and toughness 3/3.",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [],
+   "abilities": [
+    {
+     "kind": "Activated",
+     "effect": {
+      "type": "GenericEffect",
+      "static_abilities": [],
+      "duration": null,
+      "target": null
+     },
+     "cost": {
+      "type": "Mana",
+      "cost": {
+       "type": "Cost",
+       "shards": [],
+       "generic": 0
+      }
+     },
+     "sub_ability": null,
+     "duration": null,
+     "description": null,
+     "target_prompt": null,
+     "sorcery_speed": false,
+     "condition": null,
+     "optional_targeting": false,
+     "optional": false,
+     "modal": {
+      "min_choices": 1,
+      "max_choices": 1,
+      "mode_count": 2,
+      "mode_descriptions": [
+       "Shellephant has base power and toughness 1/4.",
+       "Shellephant has base power and toughness 3/3."
+      ],
+      "allow_repeat_modes": false
+     },
+     "mode_abilities": [
+      {
+       "kind": "Activated",
+       "effect": {
+        "type": "Unimplemented",
+        "name": "shellephant",
+        "description": "Shellephant has base power and toughness 1/4"
+       },
+       "cost": null,
+       "sub_ability": null,
+       "duration": null,
+       "description": null,
+       "target_prompt": null,
+       "sorcery_speed": false,
+       "condition": null,
+       "optional_targeting": false,
+       "optional": false,
+       "forward_result": false
+      },
+      {
+       "kind": "Activated",
+       "effect": {
+        "type": "Unimplemented",
+        "name": "shellephant",
+        "description": "Shellephant has base power and toughness 3/3"
+       },
+       "cost": null,
+       "sub_ability": null,
+       "duration": null,
+       "description": null,
+       "target_prompt": null,
+       "sorcery_speed": false,
+       "condition": null,
+       "optional_targeting": false,
+       "optional": false,
+       "forward_result": false
+      }
+     ],
+     "forward_result": false
+    }
+   ],
+   "triggers": [],
+   "static_abilities": [],
+   "replacements": [],
+   "color_override": null,
+   "scryfall_oracle_id": "544f35f0-56b7-44f9-ae82-3a425553c5cd",
+   "legalities": {},
+   "printings": [
+    "UST"
+   ],
+   "rulings": [
+    {
+     "date": "2018-01-19",
+     "text": "If Shellephant has first strike, double strike, or triple strike, you can have it deal combat damage as a 3/3 and then change it to a 1/4 before normal combat damage happens. This will also work if the creature Shellephant is in combat with has last strike."
+    },
+    {
+     "date": "2018-01-19",
+     "text": "If you haven’t activated Shellephant’s ability, its power and toughness are 0/0."
+    },
+    {
+     "date": "2018-01-19",
+     "text": "You can change Shellephant’s creature types at any time and while Shellephant is in any zone. It can be a Turtle, an Elephant, or both. “And/or” isn’t a creature type."
+    }
+   ]
+  }
+ ],
+ "3afe854a-7daa-4745-a5d9-04879e5d940a": [
+  {
+   "name": "Shivan Sand-Mage",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [
+     "Red",
+     "Red"
+    ],
+    "generic": 2
+   },
+   "card_type": {
+    "supertypes": [],
+    "core_types": [
+     "Creature"
+    ],
+    "subtypes": [
+     "Lizard",
+     "Shaman"
+    ]
+   },
+   "power": {
+    "type": "Fixed",
+    "value": 3
+   },
+   "toughness": {
+    "type": "Fixed",
+    "value": 2
+   },
+   "loyalty": null,
+   "defense": null,
+   "oracle_text": "When this creature enters, choose one —\n• Remove two time counters from target permanent or suspended card.\n• Put two time counters on target permanent with a time counter on it or suspended card.\nSuspend 4—{R}",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [
+    {
+     "Suspend": {
+      "count": 4,
+      "cost": {
+       "type": "Cost",
+       "shards": [
+        "Red"
+       ],
+       "generic": 0
+      }
+     }
+    }
+   ],
+   "abilities": [],
+   "triggers": [
+    {
+     "mode": "ChangesZone",
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "GenericEffect",
+       "static_abilities": [],
+       "duration": null,
+       "target": null
+      },
+      "cost": null,
+      "sub_ability": null,
+      "duration": null,
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "modal": {
+       "min_choices": 1,
+       "max_choices": 1,
+       "mode_count": 2,
+       "mode_descriptions": [
+        "Remove two time counters from target permanent or suspended card.",
+        "Put two time counters on target permanent with a time counter on it or suspended card."
+       ],
+       "allow_repeat_modes": false
+      },
+      "mode_abilities": [
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "RemoveCounter",
+         "counter_type": "time",
+         "count": 2,
+         "target": {
+          "type": "Typed",
+          "type_filters": [
+           "Permanent"
+          ],
+          "controller": null,
+          "properties": []
+         }
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       },
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "PutCounter",
+         "counter_type": "time",
+         "count": {
+          "type": "Fixed",
+          "value": 2
+         },
+         "target": {
+          "type": "Typed",
+          "type_filters": [
+           "Permanent"
+          ],
+          "controller": null,
+          "properties": [
+           {
+            "type": "CountersGE",
+            "counter_type": "time",
+            "count": {
+             "type": "Fixed",
+             "value": 1
+            }
+           }
+          ]
+         }
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       }
+      ],
+      "forward_result": false
+     },
+     "valid_card": {
+      "type": "SelfRef"
+     },
+     "origin": null,
+     "destination": "Battlefield",
+     "trigger_zones": [
+      "Battlefield"
+     ],
+     "phase": null,
+     "optional": false,
+     "damage_kind": "Any",
+     "secondary": false,
+     "valid_target": null,
+     "valid_source": null,
+     "description": "When this creature enters",
+     "constraint": null,
+     "condition": null,
+     "batched": false
+    }
+   ],
+   "static_abilities": [],
+   "replacements": [],
+   "color_override": null,
+   "scryfall_oracle_id": "3afe854a-7daa-4745-a5d9-04879e5d940a",
+   "legalities": {
+    "commander": "legal",
+    "legacy": "legal",
+    "modern": "legal",
+    "vintage": "legal"
+   },
+   "printings": [
+    "FUT",
+    "TSR"
+   ],
+   "rulings": [
+    {
+     "date": "2007-05-01",
+     "text": "When Shivan Sand-Mage enters, if there are no suspended cards and no permanents with time counters on them, you can't choose the second mode. You'll have to choose the first mode, and will have to choose a permanent as a target (though, in this case, the ability won't do anything when it resolves)."
+    },
+    {
+     "date": "2024-02-02",
+     "text": "A creature cast using suspend will enter the battlefield with haste. It will have haste until another player gains control of it. (In some rare cases, another player may gain control of the creature spell itself. If this happens, the creature won't enter the battlefield with haste.)"
+    },
+    {
+     "date": "2024-02-02",
+     "text": "Cards exiled with suspend are exiled face up."
+    },
+    {
+     "date": "2024-02-02",
+     "text": "Due to a recent rules change to suspend, you are no longer required to cast the suspended card as the second triggered ability of suspend resolves. Instead, as the second triggered ability resolves, you may cast the card. Timing permissions based on the card's type are ignored. If you don't cast the card, it remains exiled with no time counters on it, and it's no longer suspended."
+    },
+    {
+     "date": "2024-02-02",
+     "text": "Exiling a card with suspend isn't casting that card. This action doesn't use the stack and can't be responded to."
+    },
+    {
+     "date": "2024-02-02",
+     "text": "If an effect refers to a \"suspended card,\" that means a card that (1) has suspend, (2) is in exile, and (3) has one or more time counters on it."
+    },
+    {
+     "date": "2024-02-02",
+     "text": "If the card has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost."
+    },
+    {
+     "date": "2024-02-02",
+     "text": "If the first triggered ability of suspend (the one that removes time counters) is countered, no time counter is removed. The ability will trigger again at the beginning of the card's owner's next upkeep."
+    },
+    {
+     "date": "2024-02-02",
+     "text": "If the second triggered ability is countered, the card can't be cast. It remains exiled with no time counters on it, and it's no longer suspended."
+    },
+    {
+     "date": "2024-02-02",
+     "text": "If the spell requires any targets, those targets are chosen when the spell is finally cast, not when it's exiled."
+    },
+    {
+     "date": "2024-02-02",
+     "text": "If you cast a card \"without paying its mana cost,\" such as with suspend, you can't choose to cast it for any alternative costs. You can, however, pay additional costs. If the card has any mandatory additional costs, you must pay those if you want to cast the card."
+    },
+    {
+     "date": "2024-02-02",
+     "text": "Suspend is a keyword that represents three abilities. The first is a static ability that allows you to exile the card from your hand with the specified number of time counters (the number before the dash) on it by paying its suspend cost (listed after the dash). The second is a triggered ability that removes a time counter from the suspended card at the beginning of each of your upkeeps. The third is a triggered ability that gives you the option to cast the card when the last time counter is removed."
+    },
+    {
+     "date": "2024-02-02",
+     "text": "The mana value of a spell cast without paying its mana cost is determined by its mana cost, even though that cost wasn't paid."
+    },
+    {
+     "date": "2024-02-02",
+     "text": "When the last time counter is removed, the second triggered ability of suspend (the one that lets you cast the card) triggers. It doesn't matter why the last time counter was removed or what effect removed it."
+    },
+    {
+     "date": "2024-02-02",
+     "text": "You can exile a card in your hand using suspend any time you could cast that card. Consider its card type, any effects that modify when you could cast it (such as flash) and any other effects that stop you from casting it (such as from Meddling Mage's ability) to determine if and when you can do this. Whether you could actually complete all steps in casting the card is irrelevant. For example, you can exile a card with suspend that has no mana cost or that requires a target even if no legal targets are available at that time."
+    }
+   ]
+  }
+ ],
+ "66837faa-fbde-456d-b00f-eb17fbdd04aa": [
+  {
+   "name": "Tax Collector",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [
+     "White"
+    ],
+    "generic": 1
+   },
+   "card_type": {
+    "supertypes": [],
+    "core_types": [
+     "Creature"
+    ],
+    "subtypes": [
+     "Human",
+     "Advisor"
+    ]
+   },
+   "power": {
+    "type": "Fixed",
+    "value": 2
+   },
+   "toughness": {
+    "type": "Fixed",
+    "value": 2
+   },
+   "loyalty": null,
+   "defense": null,
+   "oracle_text": "When this creature enters, choose one —\n• Tax — Until your next turn, spells your opponents cast cost {1} more to cast.\n• Arrest — Detain target creature an opponent controls. (Until your next turn, that creature can't attack or block and its activated abilities can't be activated.)",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [],
+   "abilities": [],
+   "triggers": [
+    {
+     "mode": "ChangesZone",
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "GenericEffect",
+       "static_abilities": [],
+       "duration": null,
+       "target": null
+      },
+      "cost": null,
+      "sub_ability": null,
+      "duration": null,
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "modal": {
+       "min_choices": 1,
+       "max_choices": 1,
+       "mode_count": 2,
+       "mode_descriptions": [
+        "Tax — Until your next turn, spells your opponents cast cost {1} more to cast.",
+        "Arrest — Detain target creature an opponent controls."
+       ],
+       "allow_repeat_modes": false
+      },
+      "mode_abilities": [
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "Unimplemented",
+         "name": "spells",
+         "description": "spells your opponents cast cost {1} more to cast"
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": "UntilYourNextTurn",
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       },
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "Detain",
+         "target": {
+          "type": "Typed",
+          "type_filters": [
+           "Creature"
+          ],
+          "controller": "Opponent",
+          "properties": []
+         }
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       }
+      ],
+      "forward_result": false
+     },
+     "valid_card": {
+      "type": "SelfRef"
+     },
+     "origin": null,
+     "destination": "Battlefield",
+     "trigger_zones": [
+      "Battlefield"
+     ],
+     "phase": null,
+     "optional": false,
+     "damage_kind": "Any",
+     "secondary": false,
+     "valid_target": null,
+     "valid_source": null,
+     "description": "When this creature enters",
+     "constraint": null,
+     "condition": null,
+     "batched": false
+    }
+   ],
+   "static_abilities": [],
+   "replacements": [],
+   "color_override": null,
+   "scryfall_oracle_id": "66837faa-fbde-456d-b00f-eb17fbdd04aa",
+   "legalities": {
+    "commander": "legal",
+    "legacy": "legal",
+    "modern": "legal",
+    "vintage": "legal"
+   },
+   "printings": [
+    "ACR"
+   ],
+   "rulings": [
+    {
+     "date": "2024-07-05",
+     "text": "Activated abilities include a colon and are written in the form “[cost]: [effect].” No one can activate any activated abilities, including mana abilities, of a detained permanent."
+    },
+    {
+     "date": "2024-07-05",
+     "text": "If a creature is already attacking or blocking when it’s detained, it won’t be removed from combat. It will continue to attack or block."
+    },
+    {
+     "date": "2024-07-05",
+     "text": "If a noncreature permanent is detained and later turns into a creature, it won’t be able to attack or block."
+    },
+    {
+     "date": "2024-07-05",
+     "text": "If a permanent’s activated ability is on the stack when that permanent is detained, the ability will be unaffected."
+    },
+    {
+     "date": "2024-07-05",
+     "text": "The static abilities of a detained permanent still apply. The triggered abilities of a detained permanent can still trigger."
+    },
+    {
+     "date": "2024-07-05",
+     "text": "When a player leaves a multiplayer game, any continuous effects with durations that last until that player’s next turn or until a specific point in that turn (such as the effect of being detained) will last until that turn would have begun. They neither expire immediately nor last indefinitely."
+    }
+   ]
+  }
+ ],
+ "39f17e13-018c-4a00-ab25-1ac5a904de63": [
+  {
+   "name": "Thornmantle Striker",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [
+     "Black"
+    ],
+    "generic": 4
+   },
+   "card_type": {
+    "supertypes": [],
+    "core_types": [
+     "Creature"
+    ],
+    "subtypes": [
+     "Elf",
+     "Rogue"
+    ]
+   },
+   "power": {
+    "type": "Fixed",
+    "value": 4
+   },
+   "toughness": {
+    "type": "Fixed",
+    "value": 3
+   },
+   "loyalty": null,
+   "defense": null,
+   "oracle_text": "When this creature enters, choose one —\n• Remove X counters from target permanent, where X is the number of Elves you control.\n• Target creature an opponent controls gets -X/-X until end of turn, where X is the number of Elves you control.",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [],
+   "abilities": [],
+   "triggers": [
+    {
+     "mode": "ChangesZone",
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "GenericEffect",
+       "static_abilities": [],
+       "duration": null,
+       "target": null
+      },
+      "cost": null,
+      "sub_ability": null,
+      "duration": null,
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "modal": {
+       "min_choices": 1,
+       "max_choices": 1,
+       "mode_count": 2,
+       "mode_descriptions": [
+        "Remove X counters from target permanent, where X is the number of Elves you control.",
+        "Target creature an opponent controls gets -X/-X until end of turn, where X is the number of Elves you control."
+       ],
+       "allow_repeat_modes": false
+      },
+      "mode_abilities": [
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "RemoveCounter",
+         "counter_type": "",
+         "count": 0,
+         "target": {
+          "type": "Typed",
+          "type_filters": [
+           "Permanent"
+          ],
+          "controller": null,
+          "properties": []
+         }
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       },
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "Pump",
+         "power": {
+          "type": "Quantity",
+          "value": {
+           "type": "Multiply",
+           "factor": -1,
+           "inner": {
+            "type": "Ref",
+            "qty": {
+             "type": "ObjectCount",
+             "filter": {
+              "type": "Typed",
+              "type_filters": [
+               {
+                "Subtype": "Elf"
+               }
+              ],
+              "controller": "You",
+              "properties": []
+             }
+            }
+           }
+          }
+         },
+         "toughness": {
+          "type": "Quantity",
+          "value": {
+           "type": "Multiply",
+           "factor": -1,
+           "inner": {
+            "type": "Ref",
+            "qty": {
+             "type": "ObjectCount",
+             "filter": {
+              "type": "Typed",
+              "type_filters": [
+               {
+                "Subtype": "Elf"
+               }
+              ],
+              "controller": "You",
+              "properties": []
+             }
+            }
+           }
+          }
+         },
+         "target": {
+          "type": "Typed",
+          "type_filters": [
+           "Creature"
+          ],
+          "controller": "Opponent",
+          "properties": []
+         }
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": "UntilEndOfTurn",
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       }
+      ],
+      "forward_result": false
+     },
+     "valid_card": {
+      "type": "SelfRef"
+     },
+     "origin": null,
+     "destination": "Battlefield",
+     "trigger_zones": [
+      "Battlefield"
+     ],
+     "phase": null,
+     "optional": false,
+     "damage_kind": "Any",
+     "secondary": false,
+     "valid_target": null,
+     "valid_source": null,
+     "description": "When this creature enters",
+     "constraint": null,
+     "condition": null,
+     "batched": false
+    }
+   ],
+   "static_abilities": [],
+   "replacements": [],
+   "color_override": null,
+   "scryfall_oracle_id": "39f17e13-018c-4a00-ab25-1ac5a904de63",
+   "legalities": {
+    "commander": "legal",
+    "legacy": "legal",
+    "modern": "legal",
+    "pioneer": "legal",
+    "vintage": "legal"
+   },
+   "printings": [
+    "KHM"
+   ],
+   "rulings": [
+    {
+     "date": "2021-02-05",
+     "text": "A planeswalker with no loyalty counters on it is put into its owner’s graveyard."
+    },
+    {
+     "date": "2021-02-05",
+     "text": "For each mode, use the number of Elves you control as the enters-the-battlefield ability resolves, including Thornmantle Striker itself if it’s still under your control."
+    },
+    {
+     "date": "2021-02-05",
+     "text": "For the first mode, you choose which counters are removed as the ability resolves. If the permanent has fewer counters on it than the number of Elves you control, you’ll remove all of them."
+    }
+   ]
+  }
+ ],
+ "ebc52f9a-ba0c-48ed-bb04-ed086efeb060": [
+  {
+   "name": "Tormentor Exarch",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [
+     "Red"
+    ],
+    "generic": 3
+   },
+   "card_type": {
+    "supertypes": [],
+    "core_types": [
+     "Creature"
+    ],
+    "subtypes": [
+     "Phyrexian",
+     "Cleric"
+    ]
+   },
+   "power": {
+    "type": "Fixed",
+    "value": 2
+   },
+   "toughness": {
+    "type": "Fixed",
+    "value": 2
+   },
+   "loyalty": null,
+   "defense": null,
+   "oracle_text": "When this creature enters, choose one —\n• Target creature gets +2/+0 until end of turn.\n• Target creature gets -0/-2 until end of turn.",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [],
+   "abilities": [],
+   "triggers": [
+    {
+     "mode": "ChangesZone",
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "GenericEffect",
+       "static_abilities": [],
+       "duration": null,
+       "target": null
+      },
+      "cost": null,
+      "sub_ability": null,
+      "duration": null,
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "modal": {
+       "min_choices": 1,
+       "max_choices": 1,
+       "mode_count": 2,
+       "mode_descriptions": [
+        "Target creature gets +2/+0 until end of turn.",
+        "Target creature gets -0/-2 until end of turn."
+       ],
+       "allow_repeat_modes": false
+      },
+      "mode_abilities": [
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "Pump",
+         "power": {
+          "type": "Fixed",
+          "value": 2
+         },
+         "toughness": {
+          "type": "Fixed",
+          "value": 0
+         },
+         "target": {
+          "type": "Typed",
+          "type_filters": [
+           "Creature"
+          ],
+          "controller": null,
+          "properties": []
+         }
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": "UntilEndOfTurn",
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       },
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "Pump",
+         "power": {
+          "type": "Fixed",
+          "value": 0
+         },
+         "toughness": {
+          "type": "Fixed",
+          "value": -2
+         },
+         "target": {
+          "type": "Typed",
+          "type_filters": [
+           "Creature"
+          ],
+          "controller": null,
+          "properties": []
+         }
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": "UntilEndOfTurn",
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       }
+      ],
+      "forward_result": false
+     },
+     "valid_card": {
+      "type": "SelfRef"
+     },
+     "origin": null,
+     "destination": "Battlefield",
+     "trigger_zones": [
+      "Battlefield"
+     ],
+     "phase": null,
+     "optional": false,
+     "damage_kind": "Any",
+     "secondary": false,
+     "valid_target": null,
+     "valid_source": null,
+     "description": "When this creature enters",
+     "constraint": null,
+     "condition": null,
+     "batched": false
+    }
+   ],
+   "static_abilities": [],
+   "replacements": [],
+   "color_override": null,
+   "scryfall_oracle_id": "ebc52f9a-ba0c-48ed-bb04-ed086efeb060",
+   "legalities": {
+    "commander": "legal",
+    "legacy": "legal",
+    "modern": "legal",
+    "vintage": "legal"
+   },
+   "printings": [
+    "NPH"
+   ]
+  }
+ ],
+ "52befc89-e895-4dd5-95e4-8f6d03e627aa": [
+  {
+   "name": "Tundra Fumarole",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [
+     "Red",
+     "Red"
+    ],
+    "generic": 1
+   },
+   "card_type": {
+    "supertypes": [
+     "Snow"
+    ],
+    "core_types": [
+     "Sorcery"
+    ],
+    "subtypes": []
+   },
+   "power": null,
+   "toughness": null,
+   "loyalty": null,
+   "defense": null,
+   "oracle_text": "Tundra Fumarole deals 4 damage to target creature or planeswalker. Add {C} for each {S} spent to cast this spell. Until end of turn, you don't lose this mana as steps and phases end. ({S} is mana from a snow source.)",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [],
+   "abilities": [
+    {
+     "kind": "Spell",
+     "effect": {
+      "type": "DealDamage",
+      "amount": {
+       "type": "Fixed",
+       "value": 4
+      },
+      "target": {
+       "type": "Or",
+       "filters": [
+        {
+         "type": "Typed",
+         "type_filters": [
+          "Creature"
+         ],
+         "controller": null,
+         "properties": []
+        },
+        {
+         "type": "Typed",
+         "type_filters": [
+          "Planeswalker"
+         ],
+         "controller": null,
+         "properties": []
+        }
+       ]
+      }
+     },
+     "cost": null,
+     "sub_ability": {
+      "kind": "Spell",
+      "effect": {
+       "type": "Unimplemented",
+       "name": "add",
+       "description": "Add {C} for each {S} spent to cast this spell"
+      },
+      "cost": null,
+      "sub_ability": {
+       "kind": "Spell",
+       "effect": {
+        "type": "GenericEffect",
+        "static_abilities": [],
+        "duration": null,
+        "target": null
+       },
+       "cost": null,
+       "sub_ability": null,
+       "duration": null,
+       "description": null,
+       "target_prompt": null,
+       "sorcery_speed": false,
+       "condition": null,
+       "optional_targeting": false,
+       "optional": false,
+       "forward_result": false
+      },
+      "duration": null,
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "forward_result": false
+     },
+     "duration": null,
+     "description": "Tundra Fumarole deals 4 damage to target creature or planeswalker. Add {C} for each {S} spent to cast this spell. Until end of turn, you don't lose this mana as steps and phases end.",
+     "target_prompt": null,
+     "sorcery_speed": false,
+     "condition": null,
+     "optional_targeting": false,
+     "optional": false,
+     "forward_result": false
+    }
+   ],
+   "triggers": [],
+   "static_abilities": [],
+   "replacements": [],
+   "color_override": null,
+   "scryfall_oracle_id": "52befc89-e895-4dd5-95e4-8f6d03e627aa",
+   "legalities": {
+    "brawl": "legal",
+    "commander": "legal",
+    "historic": "legal",
+    "legacy": "legal",
+    "modern": "legal",
+    "pioneer": "legal",
+    "vintage": "legal"
+   },
+   "printings": [
+    "KHM",
+    "PKHM",
+    "PRM"
+   ],
+   "rulings": [
+    {
+     "date": "2021-02-05",
+     "text": "If Tundra Fumarole is copied, no snow mana was spent to cast the copy, so you won’t add any mana. Damage will still be dealt."
+    },
+    {
+     "date": "2021-02-05",
+     "text": "If the target creature or planeswalker is an illegal target as Tundra Fumarole tries to resolve, it won’t resolve and none of its effects will happen. You won’t add mana."
+    },
+    {
+     "date": "2021-02-05",
+     "text": "If you cast Tundra Fumarole without spending snow mana, you won’t add any mana. Damage will still be dealt."
+    },
+    {
+     "date": "2021-02-05",
+     "text": "Snow is a supertype, not a card type. It has no rules meaning or function by itself, but spells and abilities may refer to it."
+    },
+    {
+     "date": "2021-02-05",
+     "text": "Snow isn’t a type of mana. If an effect says you may spend mana as though it were any type, you can’t pay for {S} using mana that wasn’t produced by a snow source."
+    },
+    {
+     "date": "2021-02-05",
+     "text": "Some cards have additional effects for each {S} spent to cast them. You can cast these spells even if you don’t spend any snow mana to cast them; their additional effects simply won’t do anything."
+    },
+    {
+     "date": "2021-02-05",
+     "text": "The Kaldheim set doesn’t have any cards with mana costs that include {S}, but some previous sets do. If an effect says such a spell costs {1} less to cast, that reduction doesn’t apply to any {S} costs. This is also true for activated abilities that include {S} in their activation costs and effects that reduce those costs."
+    },
+    {
+     "date": "2021-02-05",
+     "text": "The {S} symbol is a generic mana symbol. It represents a cost that can be paid by one mana that was produced by a snow source. That mana can be any color or colorless."
+    }
+   ]
+  }
+ ],
+ "0f4350ad-dc44-4942-b097-e4033e29d659": [
+  {
+   "name": "Umaro, Raging Yeti",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [
+     "Red"
+    ],
+    "generic": 5
+   },
+   "card_type": {
+    "supertypes": [
+     "Legendary"
+    ],
+    "core_types": [
+     "Creature"
+    ],
+    "subtypes": [
+     "Yeti",
+     "Berserker"
+    ]
+   },
+   "power": {
+    "type": "Fixed",
+    "value": 6
+   },
+   "toughness": {
+    "type": "Fixed",
+    "value": 6
+   },
+   "loyalty": null,
+   "defense": null,
+   "oracle_text": "Trample\nAt the beginning of combat on your turn, choose one at random —\n• Other creatures you control get +3/+0 and gain trample until end of turn.\n• Discard your hand, then draw four cards.\n• Umaro deals 5 damage to any target.",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [
+    "Trample"
+   ],
+   "abilities": [],
+   "triggers": [
+    {
+     "mode": "Phase",
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "GenericEffect",
+       "static_abilities": [],
+       "duration": null,
+       "target": null
+      },
+      "cost": null,
+      "sub_ability": null,
+      "duration": null,
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "modal": {
+       "min_choices": 1,
+       "max_choices": 1,
+       "mode_count": 3,
+       "mode_descriptions": [
+        "Other creatures you control get +3/+0 and gain trample until end of turn.",
+        "Discard your hand, then draw four cards.",
+        "Umaro deals 5 damage to any target."
+       ],
+       "allow_repeat_modes": false
+      },
+      "mode_abilities": [
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "PumpAll",
+         "power": {
+          "type": "Fixed",
+          "value": 3
+         },
+         "toughness": {
+          "type": "Fixed",
+          "value": 0
+         },
+         "target": {
+          "type": "Typed",
+          "type_filters": [
+           "Creature"
+          ],
+          "controller": "You",
+          "properties": [
+           {
+            "type": "Another"
+           }
+          ]
+         }
+        },
+        "cost": null,
+        "sub_ability": {
+         "kind": "Spell",
+         "effect": {
+          "type": "GenericEffect",
+          "static_abilities": [
+           {
+            "mode": "Continuous",
+            "affected": {
+             "type": "SelfRef"
+            },
+            "modifications": [
+             {
+              "type": "AddKeyword",
+              "keyword": "Trample"
+             }
+            ],
+            "condition": null,
+            "affected_zone": null,
+            "effect_zone": null,
+            "active_zones": [],
+            "characteristic_defining": false,
+            "description": "gain trample"
+           }
+          ],
+          "duration": "UntilEndOfTurn",
+          "target": null
+         },
+         "cost": null,
+         "sub_ability": null,
+         "duration": "UntilEndOfTurn",
+         "description": null,
+         "target_prompt": null,
+         "sorcery_speed": false,
+         "condition": null,
+         "optional_targeting": false,
+         "optional": false,
+         "forward_result": false
+        },
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       },
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "Discard",
+         "count": {
+          "type": "Ref",
+          "qty": {
+           "type": "HandSize"
+          }
+         },
+         "target": {
+          "type": "Controller"
+         }
+        },
+        "cost": null,
+        "sub_ability": {
+         "kind": "Spell",
+         "effect": {
+          "type": "Draw",
+          "count": {
+           "type": "Fixed",
+           "value": 4
+          }
+         },
+         "cost": null,
+         "sub_ability": null,
+         "duration": null,
+         "description": null,
+         "target_prompt": null,
+         "sorcery_speed": false,
+         "condition": null,
+         "optional_targeting": false,
+         "optional": false,
+         "forward_result": false
+        },
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       },
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "DealDamage",
+         "amount": {
+          "type": "Fixed",
+          "value": 5
+         },
+         "target": {
+          "type": "Any"
+         }
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       }
+      ],
+      "forward_result": false
+     },
+     "valid_card": null,
+     "origin": null,
+     "destination": null,
+     "trigger_zones": [
+      "Battlefield"
+     ],
+     "phase": "BeginCombat",
+     "optional": false,
+     "damage_kind": "Any",
+     "secondary": false,
+     "valid_target": null,
+     "valid_source": null,
+     "description": "At the beginning of combat on your turn",
+     "constraint": {
+      "type": "OnlyDuringYourTurn"
+     },
+     "condition": null,
+     "batched": false
+    }
+   ],
+   "static_abilities": [],
+   "replacements": [],
+   "color_override": null,
+   "scryfall_oracle_id": "0f4350ad-dc44-4942-b097-e4033e29d659",
+   "brawl_commander": true,
+   "legalities": {
+    "commander": "legal",
+    "legacy": "legal",
+    "vintage": "legal"
+   },
+   "printings": [
+    "FIC"
+   ],
+   "rulings": [
+    {
+     "date": "2025-06-06",
+     "text": "As you put Umaro's triggered ability on the stack, you choose a mode at random. Players can respond to the ability knowing which mode was chosen."
+    },
+    {
+     "date": "2025-06-06",
+     "text": "In the incredibly rare case where there is no legal target for the last mode, that mode can't be chosen. The first two modes are always eligible to be chosen."
+    }
+   ]
+  }
+ ],
+ "17c934a7-3480-4309-a217-ca2550538ae7": [
+  {
+   "name": "Venser, Corpse Puppet",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [
+     "Blue",
+     "Black"
+    ],
+    "generic": 0
+   },
+   "card_type": {
+    "supertypes": [
+     "Legendary"
+    ],
+    "core_types": [
+     "Creature"
+    ],
+    "subtypes": [
+     "Phyrexian",
+     "Zombie",
+     "Wizard"
+    ]
+   },
+   "power": {
+    "type": "Fixed",
+    "value": 1
+   },
+   "toughness": {
+    "type": "Fixed",
+    "value": 3
+   },
+   "loyalty": null,
+   "defense": null,
+   "oracle_text": "Lifelink, toxic 1\nWhenever you proliferate, choose one —\n• If you don't control a creature named The Hollow Sentinel, create The Hollow Sentinel, a legendary 3/3 colorless Phyrexian Golem artifact creature token.\n• Target artifact creature you control gains flying and lifelink until end of turn.",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [
+    "Lifelink",
+    {
+     "Toxic": 1
+    }
+   ],
+   "abilities": [],
+   "triggers": [
+    {
+     "mode": {
+      "Unknown": "Whenever you proliferate"
+     },
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "GenericEffect",
+       "static_abilities": [],
+       "duration": null,
+       "target": null
+      },
+      "cost": null,
+      "sub_ability": null,
+      "duration": null,
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "modal": {
+       "min_choices": 1,
+       "max_choices": 1,
+       "mode_count": 2,
+       "mode_descriptions": [
+        "If you don't control a creature named The Hollow Sentinel, create The Hollow Sentinel, a legendary 3/3 colorless Phyrexian Golem artifact creature token.",
+        "Target artifact creature you control gains flying and lifelink until end of turn."
+       ],
+       "allow_repeat_modes": false
+      },
+      "mode_abilities": [
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "Token",
+         "name": "The Hollow Sentinel",
+         "power": {
+          "type": "Fixed",
+          "value": 3
+         },
+         "toughness": {
+          "type": "Fixed",
+          "value": 3
+         },
+         "types": [
+          "Artifact",
+          "Creature",
+          "Phyrexian",
+          "Golem"
+         ],
+         "colors": [],
+         "keywords": [],
+         "tapped": false,
+         "count": {
+          "type": "Fixed",
+          "value": 1
+         },
+         "owner": {
+          "type": "Controller"
+         },
+         "enters_attacking": false
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": {
+         "type": "QuantityCheck",
+         "lhs": {
+          "type": "Ref",
+          "qty": {
+           "type": "ObjectCount",
+           "filter": {
+            "type": "Typed",
+            "type_filters": [
+             "Creature"
+            ],
+            "controller": "You",
+            "properties": [
+             {
+              "type": "Named",
+              "name": "the hollow sentinel"
+             }
+            ]
+           }
+          }
+         },
+         "comparator": "EQ",
+         "rhs": {
+          "type": "Fixed",
+          "value": 0
+         }
+        },
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       },
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "GenericEffect",
+         "static_abilities": [
+          {
+           "mode": "Continuous",
+           "affected": {
+            "type": "ParentTarget"
+           },
+           "modifications": [
+            {
+             "type": "AddKeyword",
+             "keyword": "Flying"
+            },
+            {
+             "type": "AddKeyword",
+             "keyword": "Lifelink"
+            }
+           ],
+           "condition": null,
+           "affected_zone": null,
+           "effect_zone": null,
+           "active_zones": [],
+           "characteristic_defining": false,
+           "description": "gain flying and lifelink"
+          }
+         ],
+         "duration": "UntilEndOfTurn",
+         "target": {
+          "type": "Typed",
+          "type_filters": [
+           "Artifact",
+           "Creature"
+          ],
+          "controller": "You",
+          "properties": []
+         }
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": "UntilEndOfTurn",
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       }
+      ],
+      "forward_result": false
+     },
+     "valid_card": null,
+     "origin": null,
+     "destination": null,
+     "trigger_zones": [
+      "Battlefield"
+     ],
+     "phase": null,
+     "optional": false,
+     "damage_kind": "Any",
+     "secondary": false,
+     "valid_target": null,
+     "valid_source": null,
+     "description": "Whenever you proliferate",
+     "constraint": null,
+     "condition": null,
+     "batched": false
+    }
+   ],
+   "static_abilities": [],
+   "replacements": [],
+   "color_override": [
+    "Black",
+    "Blue"
+   ],
+   "scryfall_oracle_id": "17c934a7-3480-4309-a217-ca2550538ae7",
+   "brawl_commander": true,
+   "legalities": {
+    "brawl": "legal",
+    "commander": "legal",
+    "historic": "legal",
+    "legacy": "legal",
+    "modern": "legal",
+    "pioneer": "legal",
+    "vintage": "legal"
+   },
+   "printings": [
+    "ONE",
+    "PONE"
+   ],
+   "rulings": [
+    {
+     "date": "2023-02-04",
+     "text": "A player with ten or more poison counters loses the game. This is a state-based action and doesn't use the stack. In other words, it happens immediately and players can't respond to it, just like a player losing the game due to having 0 or less life."
+    },
+    {
+     "date": "2023-02-04",
+     "text": "An ability that triggers \"Whenever you proliferate\" triggers even if you chose no permanents or players while doing so."
+    },
+    {
+     "date": "2023-02-04",
+     "text": "Any other effects of that damage, such as life gain from lifelink, still apply."
+    },
+    {
+     "date": "2023-02-04",
+     "text": "Conversely, replacement effects that apply to the number of counters put on a player can modify the counters placed this way. For example, Vorinclex, Monstrous Raider's last two abilities can apply to counters placed this way."
+    },
+    {
+     "date": "2023-02-04",
+     "text": "Damage dealt by a creature with toxic grants the same number of counters regardless of how much damage is dealt. Notably, if a replacement effect modifies the damage in some way (such as that of Gratuitous Violence), the number of counters given remains unchanged."
+    },
+    {
+     "date": "2023-02-04",
+     "text": "If a creature with toxic deals combat damage to a creature or planeswalker, or if it deals noncombat damage, toxic has no effect and no player gets poison counters."
+    },
+    {
+     "date": "2023-02-04",
+     "text": "If a permanent ever has both +1/+1 counters and -1/-1 counters on it at the same time, they're removed in pairs as a state-based action so that the permanent has only one of those kinds of counters on it."
+    },
+    {
+     "date": "2023-02-04",
+     "text": "If a player or permanent has more than one kind of counter on it, and you choose for it to get additional counters, it must get one of each kind of counter it already has. You can't have it get just one kind of counter it already has and not the others."
+    },
+    {
+     "date": "2023-02-04",
+     "text": "Multiple instances of toxic are cumulative. For example, if a creature has toxic 2 and gains toxic 1 due to another effect, combat damage that creature deals to a player will cause that player to get 3 poison counters."
+    },
+    {
+     "date": "2023-02-04",
+     "text": "Players can respond to a spell or ability whose effect includes proliferating. Once that spell or ability starts to resolve, however, and its controller chooses which permanents and players will get new counters, it's too late for anyone to respond."
+    },
+    {
+     "date": "2023-02-04",
+     "text": "To proliferate, you can choose any permanent that has a counter, including ones controlled by opponents. You can choose any player who has a counter, including opponents. You can't choose cards in any zone other than the battlefield, even if they have counters on them."
+    },
+    {
+     "date": "2023-02-04",
+     "text": "Toxic doesn't change the amount of combat damage a creature deals. For example, if a 2/2 creature with toxic 1 deals combat damage to a player, that creature will deal 2 damage. The results of that damage are the player loses 2 life and gets a poison counter."
+    },
+    {
+     "date": "2023-02-04",
+     "text": "You don't have to choose every permanent or player that has a counter, only the ones you want to add another counter to. Since \"any number\" includes zero, you don't have to choose any permanents at all, and you don't have to choose any players at all."
+    }
+   ]
+  }
+ ],
+ "062568d1-e948-4ad7-8132-a2594827c443": [
+  {
+   "name": "Yet Another Night in Vegas",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [
+     "Black",
+     "Black"
+    ],
+    "generic": 2
+   },
+   "card_type": {
+    "supertypes": [],
+    "core_types": [
+     "Enchantment"
+    ],
+    "subtypes": []
+   },
+   "power": null,
+   "toughness": null,
+   "loyalty": null,
+   "defense": null,
+   "oracle_text": "At the beginning of your upkeep, choose one that hasn't been chosen—\n• See the sights — Surveil 3.\n• Cause trouble — Target creature gets +1/+0 and gains menace until end of turn.\n• Get lost — Each player exiles a creature they control until this enchantment leaves the battlefield.\n• I'm fine! Let's go again! — All modes reset and can be chosen again. You lose 5 life.\n• Go to bed — Sacrifice this enchantment.",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [],
+   "abilities": [],
+   "triggers": [
+    {
+     "mode": "Phase",
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "GenericEffect",
+       "static_abilities": [],
+       "duration": null,
+       "target": null
+      },
+      "cost": null,
+      "sub_ability": null,
+      "duration": null,
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "modal": {
+       "min_choices": 1,
+       "max_choices": 1,
+       "mode_count": 5,
+       "mode_descriptions": [
+        "See the sights — Surveil 3.",
+        "Cause trouble — Target creature gets +1/+0 and gains menace until end of turn.",
+        "Get lost — Each player exiles a creature they control until this enchantment leaves the battlefield.",
+        "I'm fine! Let's go again! — All modes reset and can be chosen again. You lose 5 life.",
+        "Go to bed — Sacrifice this enchantment."
+       ],
+       "allow_repeat_modes": false,
+       "constraints": [
+        {
+         "type": "NoRepeatThisGame"
+        }
+       ]
+      },
+      "mode_abilities": [
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "Surveil",
+         "count": {
+          "type": "Fixed",
+          "value": 3
+         }
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       },
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "GenericEffect",
+         "static_abilities": [
+          {
+           "mode": "Continuous",
+           "affected": {
+            "type": "ParentTarget"
+           },
+           "modifications": [
+            {
+             "type": "AddPower",
+             "value": 1
+            },
+            {
+             "type": "AddToughness",
+             "value": 0
+            },
+            {
+             "type": "AddKeyword",
+             "keyword": "Menace"
+            }
+           ],
+           "condition": null,
+           "affected_zone": null,
+           "effect_zone": null,
+           "active_zones": [],
+           "characteristic_defining": false,
+           "description": "get +1/+0 and gains menace"
+          }
+         ],
+         "duration": "UntilEndOfTurn",
+         "target": {
+          "type": "Typed",
+          "type_filters": [
+           "Creature"
+          ],
+          "controller": null,
+          "properties": []
+         }
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": "UntilEndOfTurn",
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       },
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "ChangeZone",
+         "origin": null,
+         "destination": "Exile",
+         "target": {
+          "type": "Typed",
+          "type_filters": [
+           "Creature"
+          ],
+          "controller": "You",
+          "properties": []
+         },
+         "owner_library": false,
+         "enter_transformed": false,
+         "under_your_control": false,
+         "enter_tapped": false,
+         "enters_attacking": false
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false,
+        "player_scope": {
+         "type": "All"
+        }
+       },
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "Unimplemented",
+         "name": "i'm",
+         "description": "I'm fine! Let's go again! — All modes reset and can be chosen again"
+        },
+        "cost": null,
+        "sub_ability": {
+         "kind": "Spell",
+         "effect": {
+          "type": "LoseLife",
+          "amount": {
+           "type": "Fixed",
+           "value": 5
+          },
+          "target": {
+           "type": "Controller"
+          }
+         },
+         "cost": null,
+         "sub_ability": null,
+         "duration": null,
+         "description": null,
+         "target_prompt": null,
+         "sorcery_speed": false,
+         "condition": null,
+         "optional_targeting": false,
+         "optional": false,
+         "forward_result": false
+        },
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       },
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "Sacrifice",
+         "target": {
+          "type": "SelfRef"
+         },
+         "count": {
+          "type": "Fixed",
+          "value": 1
+         }
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       }
+      ],
+      "forward_result": false
+     },
+     "valid_card": null,
+     "origin": null,
+     "destination": null,
+     "trigger_zones": [
+      "Battlefield"
+     ],
+     "phase": "Upkeep",
+     "optional": false,
+     "damage_kind": "Any",
+     "secondary": false,
+     "valid_target": null,
+     "valid_source": null,
+     "description": "At the beginning of your upkeep",
+     "constraint": {
+      "type": "OnlyDuringYourTurn"
+     },
+     "condition": null,
+     "batched": false
+    }
+   ],
+   "static_abilities": [],
+   "replacements": [],
+   "color_override": null,
+   "scryfall_oracle_id": "062568d1-e948-4ad7-8132-a2594827c443",
+   "legalities": {},
+   "printings": [
+    "UNK"
+   ]
+  }
+ ],
+ "d5d719c0-d82c-4a84-a161-ebf66bd80f7a": [
+  {
+   "name": "Yotian Courier",
+   "mana_cost": {
+    "type": "Cost",
+    "shards": [
+     "Blue",
+     "Red"
+    ],
+    "generic": 0
+   },
+   "card_type": {
+    "supertypes": [],
+    "core_types": [
+     "Creature"
+    ],
+    "subtypes": [
+     "Human",
+     "Artificer"
+    ]
+   },
+   "power": {
+    "type": "Fixed",
+    "value": 2
+   },
+   "toughness": {
+    "type": "Fixed",
+    "value": 2
+   },
+   "loyalty": null,
+   "defense": null,
+   "oracle_text": "Flying\nWhenever Yotian Courier attacks, choose one that wasn't chosen during your last combat —\n• Create a tapped Powerstone token.\n• Seek a nonland card with mana value equal to the number of Powerstones you control.",
+   "non_ability_text": null,
+   "flavor_name": null,
+   "keywords": [
+    "Flying"
+   ],
+   "abilities": [],
+   "triggers": [
+    {
+     "mode": "Attacks",
+     "execute": {
+      "kind": "Spell",
+      "effect": {
+       "type": "GenericEffect",
+       "static_abilities": [],
+       "duration": null,
+       "target": null
+      },
+      "cost": null,
+      "sub_ability": null,
+      "duration": null,
+      "description": null,
+      "target_prompt": null,
+      "sorcery_speed": false,
+      "condition": null,
+      "optional_targeting": false,
+      "optional": false,
+      "modal": {
+       "min_choices": 1,
+       "max_choices": 1,
+       "mode_count": 2,
+       "mode_descriptions": [
+        "Create a tapped Powerstone token.",
+        "Seek a nonland card with mana value equal to the number of Powerstones you control."
+       ],
+       "allow_repeat_modes": false
+      },
+      "mode_abilities": [
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "Token",
+         "name": "Powerstone",
+         "power": {
+          "type": "Fixed",
+          "value": 0
+         },
+         "toughness": {
+          "type": "Fixed",
+          "value": 0
+         },
+         "types": [
+          "Artifact",
+          "Powerstone"
+         ],
+         "colors": [],
+         "keywords": [],
+         "tapped": true,
+         "count": {
+          "type": "Fixed",
+          "value": 1
+         },
+         "owner": {
+          "type": "Controller"
+         },
+         "enters_attacking": false
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       },
+       {
+        "kind": "Spell",
+        "effect": {
+         "type": "Seek",
+         "filter": {
+          "type": "Typed",
+          "type_filters": [
+           "Card",
+           {
+            "Non": "Land"
+           }
+          ],
+          "controller": null,
+          "properties": []
+         },
+         "count": {
+          "type": "Fixed",
+          "value": 1
+         },
+         "destination": "Hand",
+         "enter_tapped": false
+        },
+        "cost": null,
+        "sub_ability": null,
+        "duration": null,
+        "description": null,
+        "target_prompt": null,
+        "sorcery_speed": false,
+        "condition": null,
+        "optional_targeting": false,
+        "optional": false,
+        "forward_result": false
+       }
+      ],
+      "forward_result": false
+     },
+     "valid_card": {
+      "type": "SelfRef"
+     },
+     "origin": null,
+     "destination": null,
+     "trigger_zones": [
+      "Battlefield"
+     ],
+     "phase": null,
+     "optional": false,
+     "damage_kind": "Any",
+     "secondary": false,
+     "valid_target": null,
+     "valid_source": null,
+     "description": "Whenever Yotian Courier attacks",
+     "constraint": null,
+     "condition": null,
+     "batched": false
+    }
+   ],
+   "static_abilities": [],
+   "replacements": [],
+   "color_override": [
+    "Red",
+    "Blue"
+   ],
+   "scryfall_oracle_id": "d5d719c0-d82c-4a84-a161-ebf66bd80f7a",
+   "parse_warnings": [
+    "target-fallback: search-filter-suffix unmatched: 'with mana value equal to the number of powerstones you control'"
+   ],
+   "legalities": {
+    "brawl": "legal",
+    "historic": "legal"
+   },
+   "printings": [
+    "YBRO"
+   ]
+  }
+ ]
+}

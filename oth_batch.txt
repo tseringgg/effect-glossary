@@ -1,0 +1,256 @@
+====================================================================================================
+Agrus Kos, Spirit of Justice | 11b7ee78-fca6-4b34-93e4-e60492583d50
+ORACLE TEXT:
+Double strike, vigilance
+Whenever Agrus Kos enters or attacks, choose up to one target creature. If it's suspected, exile it. Otherwise, suspect it. (A suspected creature has menace and can't block.)
+-- Unimplemented:otherwise nodes --
+ path: triggers[0].execute.sub_ability.sub_ability.effect
+ description: "Otherwise"
+
+====================================================================================================
+Aid from the Cowl | 9597c974-6120-43a7-9ad3-7e4fddc8c9f5
+ORACLE TEXT:
+Revolt — At the beginning of your end step, if a permanent left the battlefield under your control this turn, reveal the top card of your library. If it's a permanent card, you may put it onto the battlefield. Otherwise, you may put it on the bottom of your library.
+-- Unimplemented:otherwise nodes --
+ path: triggers[0].execute.sub_ability.sub_ability.effect
+ description: "Otherwise"
+
+====================================================================================================
+Bogardan Phoenix | 72586a7a-3c73-4012-8664-1db0f268eb60
+ORACLE TEXT:
+Flying
+When this creature dies, exile it if it had a death counter on it. Otherwise, return it to the battlefield under your control and put a death counter on it.
+-- Unimplemented:otherwise nodes --
+ path: triggers[0].execute.sub_ability.effect
+ description: "Otherwise"
+
+====================================================================================================
+Bortuk Bonerattle | d965e8c2-34b1-42eb-9647-59951d9fc06b
+ORACLE TEXT:
+Domain — When Bortuk Bonerattle enters, if you cast it, choose target creature card in your graveyard. Return that card to the battlefield if its mana value is less than or equal to the number of basic land types among lands you control. Otherwise, put it into your hand.
+-- Unimplemented:otherwise nodes --
+ path: triggers[0].execute.sub_ability.sub_ability.effect
+ description: "Otherwise"
+
+====================================================================================================
+Bre of Clan Stoutarm | 59384481-3ca0-49dd-b94f-d3680b336f1e
+ORACLE TEXT:
+{1}{W}, {T}: Another target creature you control gains flying and lifelink until end of turn.
+At the beginning of your end step, if you gained life this turn, exile cards from the top of your library until you exile a nonland card. You may cast that card without paying its mana cost if the spell's mana value is less than or equal to the amount of life you gained this turn. Otherwise, put it into your hand.
+-- Unimplemented:otherwise nodes --
+ path: triggers[0].execute.sub_ability.sub_ability.effect
+ description: "Otherwise"
+
+====================================================================================================
+Breaking Point | a648b9ed-810a-41db-af40-3b5b4658db90
+ORACLE TEXT:
+Any player may have Breaking Point deal 6 damage to them. If no one does, destroy all creatures. Creatures destroyed this way can't be regenerated.
+-- Unimplemented:otherwise nodes --
+ path: abilities[0].sub_ability.effect
+ description: "Otherwise"
+
+====================================================================================================
+Browbeat | 11cd0c42-4148-4d82-9172-b1a1967fe319
+ORACLE TEXT:
+Any player may have Browbeat deal 5 damage to them. If no one does, target player draws three cards.
+-- Unimplemented:otherwise nodes --
+ path: abilities[0].sub_ability.effect
+ description: "Otherwise"
+
+====================================================================================================
+Candles of Leng | a12ac37d-02b8-4b6c-9595-74c42cfecb0a
+ORACLE TEXT:
+{4}, {T}: Reveal the top card of your library. If it has the same name as a card in your graveyard, put it into your graveyard. Otherwise, draw a card.
+-- Unimplemented:otherwise nodes --
+ path: abilities[0].sub_ability.sub_ability.effect
+ description: "Otherwise"
+
+====================================================================================================
+Captivating Glance | 11a372c7-3c7c-431c-9532-f2bae93f1c33
+ORACLE TEXT:
+Enchant creature
+At the beginning of your end step, clash with an opponent. If you win, gain control of enchanted creature. Otherwise, that player gains control of enchanted creature. (Each clashing player reveals the top card of their library, then puts that card on their choice of the top or bottom. A player wins if their card had a greater mana value.)
+-- Unimplemented:otherwise nodes --
+ path: triggers[0].execute.sub_ability.sub_ability.effect
+ description: "Otherwise"
+
+====================================================================================================
+Check for Traps | 41b2ea88-b3b9-44f0-8886-7b2f37b22ebf
+ORACLE TEXT:
+Target opponent reveals their hand. You choose a nonland card from it. Exile that card. If an instant card or a card with flash is exiled this way, they lose 1 life. Otherwise, you lose 1 life.
+-- Unimplemented:otherwise nodes --
+ path: abilities[0].sub_ability.sub_ability.sub_ability.effect
+ description: "Otherwise"
+
+====================================================================================================
+Distant Memories | 12c78cc4-7fbe-4639-bef7-bf959a0d6d68
+ORACLE TEXT:
+Search your library for a card, exile it, then shuffle. Any opponent may have you put that card into your hand. If no player does, you draw three cards.
+-- Unimplemented:otherwise nodes --
+ path: abilities[0].sub_ability.sub_ability.sub_ability.sub_ability.sub_ability.effect
+ description: "Otherwise"
+
+====================================================================================================
+Faramir, Prince of Ithilien | 8a8c7c20-beb7-4352-99ea-7f64a30b9f52
+ORACLE TEXT:
+At the beginning of your end step, choose an opponent. At the beginning of that player's next end step, you draw a card if they didn't attack you that turn. Otherwise, create three 1/1 white Human Soldier creature tokens.
+-- Unimplemented:otherwise nodes --
+ path: triggers[0].execute.sub_ability.sub_ability.effect
+ description: "Otherwise"
+
+====================================================================================================
+Identify the Culprit | 9b7d76c6-82a1-4c4a-96ed-ee47f0859c10
+ORACLE TEXT:
+Secretly choose a creature target opponent controls. Then, that player guesses which creature it is. Reveal the chosen creature. If they guessed incorrectly, exile the creature you chose. Otherwise, return Identify the Culprit to its owner's hand and you can't cast it again this turn.
+-- Unimplemented:otherwise nodes --
+ path: abilities[0].sub_ability.sub_ability.sub_ability.sub_ability.effect
+ description: "Otherwise"
+
+====================================================================================================
+Jon Irenicus, the Exile | 14c344f3-8745-43ee-98da-3f28ba35ea96
+ORACLE TEXT:
+At the beginning of your end step, draw a card if your library has more cards in it than target opponent's library. Otherwise, each opponent mills five cards.
+-- Unimplemented:otherwise nodes --
+ path: triggers[0].execute.sub_ability.effect
+ description: "Otherwise"
+
+====================================================================================================
+Last-Minute Chopping | 10796bc8-f268-4485-bde9-48121559e770
+ORACLE TEXT:
+Ask target opponent if they remembered to get you a present. If they say yes, they put a card they own from outside the game into your hand. Otherwise, you gain control of target permanent they control.
+-- Unimplemented:otherwise nodes --
+ path: abilities[0].sub_ability.sub_ability.effect
+ description: "Otherwise"
+
+====================================================================================================
+Miles "Tails" Prower | 98dd8231-5679-404a-b976-0bbfa6a8493c
+ORACLE TEXT:
+Flash
+Flying
+Whenever a Vehicle you control enters, draw a card if it has flying. Otherwise, put a flying counter on it.
+-- Unimplemented:otherwise nodes --
+ path: triggers[0].execute.sub_ability.effect
+ description: "Otherwise"
+
+====================================================================================================
+Neck Tangle | 1768adc9-5c14-4fcf-8642-ee78fcbdb1f8
+ORACLE TEXT:
+If there are five or more Heads on the battlefield, tap two of them and they don't untap during the Hydra's next untap step. Otherwise, reveal the top card of the Hydra's library and the Hydra casts that card.
+-- Unimplemented:otherwise nodes --
+ path: abilities[0].sub_ability.sub_ability.effect
+ description: "Otherwise"
+
+====================================================================================================
+Nine-Fingers Keene | e06007cf-dc6e-4b50-93d5-9a7c8ee9c023
+ORACLE TEXT:
+Menace
+Ward—Pay 9 life.
+Whenever Nine-Fingers Keene deals combat damage to a player, look at the top nine cards of your library. You may put a Gate card from among them onto the battlefield. Then if you control nine or more Gates, put the rest into your hand. Otherwise, put the rest on the bottom of your library in a random order.
+-- Unimplemented:otherwise nodes --
+ path: triggers[0].execute.sub_ability.effect
+ description: "Otherwise"
+
+====================================================================================================
+Plasma Caster | 1c50c637-750c-4e31-a69c-915430fc3194
+ORACLE TEXT:
+Equipped creature gets +1/+1.
+Whenever equipped creature attacks, you get {E}{E} (two energy counters).
+Pay {E}{E}: Choose target creature that's blocking equipped creature. Flip a coin. If you win the flip, exile the chosen creature. Otherwise, this Equipment deals 1 damage to it.
+Equip {2}
+-- Unimplemented:otherwise nodes --
+ path: abilities[0].sub_ability.sub_ability.effect
+ description: "Otherwise"
+
+====================================================================================================
+Pulling Teeth | 9c966ba3-3408-4bdd-a4cf-97c9183e1115
+ORACLE TEXT:
+Clash with an opponent. If you win, target player discards two cards. Otherwise, that player discards a card. (Each clashing player reveals the top card of their library, then puts that card on their choice of the top or bottom. A player wins if their card had a greater mana value.)
+-- Unimplemented:otherwise nodes --
+ path: abilities[0].sub_ability.sub_ability.effect
+ description: "Otherwise"
+
+====================================================================================================
+Rhystic Circle | bffb7d30-b9a4-4529-a3fc-c82d6cd4b599
+ORACLE TEXT:
+{1}: Any player may pay {1}. If no one does, the next time a source of your choice would deal damage to you this turn, prevent that damage.
+-- Unimplemented:otherwise nodes --
+ path: abilities[0].sub_ability.effect
+ description: "Otherwise"
+
+====================================================================================================
+Rose Room Treasurer | d73f02e0-53fa-4437-ab3a-89a9a1db27c5
+ORACLE TEXT:
+Alliance — Whenever another creature you control enters, create a Treasure token if this is the first or second time this ability has resolved this turn. Otherwise, you may pay {X}. When you do, this creature deals X damage to any target.
+-- Unimplemented:otherwise nodes --
+ path: triggers[0].execute.sub_ability.effect
+ description: "Otherwise"
+
+====================================================================================================
+S.N.E.A.K. Dispatcher | 4f2155dd-f694-45a0-9a68-6c5998a556d8
+ORACLE TEXT:
+{2}{U}, {T}: Look at the top card of target player's library. If it has an Agents of S.N.E.A.K. watermark, you may reveal it and put it into your hand. Otherwise, put it on your choice of the top or bottom of its owner's library.
+-- Unimplemented:otherwise nodes --
+ path: abilities[0].sub_ability.sub_ability.sub_ability.sub_ability.sub_ability.sub_ability.sub_ability.sub_ability.sub_ability.effect
+ description: "Otherwise"
+
+====================================================================================================
+Scouring Swarm | aa64f830-b9b6-4d5e-9a5d-f9e120089335
+ORACLE TEXT:
+Flying
+Whenever you sacrifice a land, create a tapped token that's a copy of this creature if seven or more land cards are in your graveyard. Otherwise, create a tapped 1/1 black Insect creature token with flying.
+-- Unimplemented:otherwise nodes --
+ path: triggers[0].execute.sub_ability.effect
+ description: "Otherwise"
+
+====================================================================================================
+Shackle Slinger | 59e8747a-3e3f-48d2-aaee-af94ecee378b
+ORACLE TEXT:
+Whenever you cast your second spell each turn, choose target creature an opponent controls. If it's tapped, put a stun counter on it. Otherwise, tap it. (If a permanent with a stun counter would become untapped, remove one from it instead.)
+-- Unimplemented:otherwise nodes --
+ path: triggers[0].execute.sub_ability.sub_ability.effect
+ description: "Otherwise"
+
+====================================================================================================
+Shape of the Wiitigo | 16950554-0e39-4705-aab4-7a8734771844
+ORACLE TEXT:
+Enchant creature
+When this Aura enters, put six +1/+1 counters on enchanted creature.
+At the beginning of your upkeep, put a +1/+1 counter on enchanted creature if it attacked or blocked since your last upkeep. Otherwise, remove a +1/+1 counter from it.
+-- Unimplemented:otherwise nodes --
+ path: triggers[1].execute.sub_ability.effect
+ description: "Otherwise"
+
+====================================================================================================
+Vexing Arcanix | 2fd5b7e5-496c-4f6d-85e0-256afb7544d1
+ORACLE TEXT:
+{3}, {T}: Target player chooses a card name, then reveals the top card of their library. If that card has the chosen name, that player puts it into their hand. Otherwise, they put it into their graveyard and this artifact deals 2 damage to them.
+-- Unimplemented:otherwise nodes --
+ path: abilities[0].sub_ability.sub_ability.sub_ability.effect
+ description: "Otherwise"
+
+====================================================================================================
+Wick, the Whorled Mind | 5af729e8-8a40-4991-8270-612e377451de
+ORACLE TEXT:
+Whenever Wick or another Rat you control enters, create a 1/1 black Snail creature token if you don't control a Snail. Otherwise, put a +1/+1 counter on a Snail you control.
+{U}{B}{R}, Sacrifice a Snail: Wick deals damage equal to the sacrificed creature's power to each opponent. Then draw cards equal to the sacrificed creature's power.
+-- Unimplemented:otherwise nodes --
+ path: triggers[0].execute.sub_ability.effect
+ description: "Otherwise"
+
+====================================================================================================
+Zimone, Mystery Unraveler | 75bf0f27-9df1-4ab4-97a8-94bb3223bdf9
+ORACLE TEXT:
+Landfall — Whenever a land you control enters, manifest dread if this is the first time this ability has resolved this turn. Otherwise, you may turn a permanent you control face up. (To manifest dread, look at the top two cards of your library. Put one onto the battlefield face down as a 2/2 creature and the other into your graveyard. Turn it face up any time for its mana cost if it's a creature card.)
+-- Unimplemented:otherwise nodes --
+ path: triggers[0].execute.sub_ability.effect
+ description: "Otherwise"
+
+====================================================================================================
+Zurgo Stormrender | 0f93d88c-9d2e-416d-a10b-99483360b1fb
+ORACLE TEXT:
+Mobilize 1 (Whenever this creature attacks, create a tapped and attacking 1/1 red Warrior creature token. Sacrifice it at the beginning of the next end step.)
+Whenever a creature token you control leaves the battlefield, draw a card if it was attacking. Otherwise, each opponent loses 1 life.
+-- Unimplemented:otherwise nodes --
+ path: triggers[0].execute.sub_ability.effect
+ description: "Otherwise"
+

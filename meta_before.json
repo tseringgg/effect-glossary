@@ -1,0 +1,41 @@
+{
+ "source_url": "https://data.phase-rs.dev/card-data.json",
+ "snapshot_last_modified": "2026-04-20T20:53:36Z",
+ "snapshot_etag": "835ec8094e883fa623b65ea7e841bb9e",
+ "fetched": "2026-09-21",
+ "source_bytes": 83388014,
+ "entries": 34645,
+ "distinct_oracle_ids": 33834,
+ "quality": {
+  "partial": 8256,
+  "clean": 24685,
+  "unparsed": 1344,
+  "vanilla": 360
+ },
+ "soft_gaps_by_quality": {
+  "partial": 401,
+  "clean": 887
+ },
+ "soft_gap_entries": 1288,
+ "corrections_file": "corrections/corrections.json",
+ "corrections_loaded": 8,
+ "corrections_applied_by_kind": {
+  "flag": 8
+ },
+ "n_chunks": 64,
+ "axis_sizes": {
+  "condition": 126,
+  "cost": 21,
+  "effect": 128,
+  "keyword": 172,
+  "quantity": 59,
+  "replacement_event": 12,
+  "static_mode": 51,
+  "target": 23,
+  "trigger_mode": 58
+ },
+ "faces_per_oracle_id": {
+  "1": 33023,
+  "2": 811
+ }
+}

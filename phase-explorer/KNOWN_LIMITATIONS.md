@@ -3,11 +3,17 @@
 Permanent record so these are not rediscovered later. All numbers are measured
 against the **2026-04-20** snapshot (`data/card-data.json`, 83,388,014 bytes,
 34,645 face entries) and are reproduced by `src/build_index.py` and
-`src/build_collisions.py` on every build. §4's spot-check findings are tracked
+`src/build_collisions.py` on every build. §3's spot-check findings are tracked
 as an ongoing log in [`corrections/corrections.json`](corrections/corrections.json).
 
 This file documents limitations of the **upstream data**, not of this tool.
 Improving phase.rs's coverage is deliberately out of scope here.
+
+**Sized, not fixed — see §4**: mid-chain conditional clauses can silently
+drop their `condition` field. A verified 50-card spot-check found a 56%
+real rate (40% fully invisible) — this is corpus-wide, not contained to the
+79-card `Unimplemented:otherwise` count that first surfaced it, and needs its
+own dedicated investigation before any fix is attempted.
 
 ---
 
@@ -218,6 +224,126 @@ The page surfaces corrections as a separate, overlapping filter
 with a permanent header note and a dedicated box in each affected card's detail
 view — never folded into or implied by phase.rs's own signals, since the entire
 point is that those signals missed all 8.
+
+---
+
+## 4. Mid-chain conditional clauses can silently drop their `condition` (size unknown)
+
+Found 2026-10-02 while investigating `Unimplemented:otherwise` (phase.rs's
+engine; this is a parser-side limitation, not a classification error of ours —
+confirmed before logging it here). **Not yet sized. This section will be
+updated once it is.**
+
+### The mechanism
+
+phase.rs has a real, working mechanism (CR 608.2c) for `"...Otherwise,
+[effect]."`: it parses the else-text, then walks the ability chain backward
+for the most recent def with a non-null `condition` and attaches the else-text
+as that def's `else_ability`. When no such def is found, it falls back to an
+`Unimplemented{name:"otherwise"}` node whose `description` is just the bare
+word `"Otherwise"` — the else-effect's own text is parsed (the fallback still
+emits it as a sibling node) but the conditional relationship to its trigger is
+lost.
+
+The fallback fires because **the clause immediately before "Otherwise" has
+already lost its own `condition` by the time the backward walk runs** — not
+because the else-attachment code is broken. That upstream clause's effect is
+present and correct; only the `if`-condition gating it is gone.
+
+### Confirmed examples
+
+| card | oracle text (relevant clause) | parsed `condition` |
+|---|---|---|
+| Candles of Leng | "...**if it has the same name as a card in your graveyard**, put it into your graveyard. Otherwise, draw a card." | `null` on the `ChangeZone` effect |
+| Bogardan Phoenix | "...exile it **if it had a death counter on it**. Otherwise, return it to the battlefield..." | `null` on the `ChangeZone` (Exile) effect |
+| Pulling Teeth | "**If you win**, target player discards two cards. Otherwise, that player discards a card." | `null` on the `Discard{count:2}` effect |
+| Jon Irenicus, the Exile | "...draw a card **if your library has more cards in it than target opponent's library**. Otherwise, each opponent mills five cards." | `null` on the `Draw` effect |
+
+All four: the gated effect is structurally present and correct; the `if`-clause
+that should gate it is simply absent from `condition`, with no
+`parse_warnings` entry — same silent-defect shape as Spark Double and Deep
+Analysis (§3), not a new kind of problem, just not yet known how large.
+
+### Why this might be much bigger than 79 cards
+
+`Unimplemented:otherwise` (79 cards, 56 sole-cause) is only the *visible* slice
+— the only reason these specific cards show a gap node at all is that the
+"Otherwise" else-handler is the one piece of code that actually notices a
+missing condition and complains. A card with the identical mid-chain
+`"[effect] if [condition]"` shape but **no** trailing "Otherwise" would have
+nothing downstream to notice the drop, and would be labelled `clean`, 0
+`parse_warnings` — invisible by every signal phase.rs or this tool currently
+has, exactly like Deep Analysis.
+
+### Sizing status: spot-checked 2026-10-03, real rate is 40-56%, not contained
+
+A quick heuristic (description contains "if", `condition` is null, effect
+itself gap-free) returned **4,889 candidate hits** — not trusted as a count on
+its own. 50 were pulled at random and individually verified against full
+parsed structure and oracle text, same discipline as §3's Spark Double / Deep
+Analysis entries:
+
+| verdict | n/50 | meaning |
+|---|---:|---|
+| Real, genuinely silent (card shows fully `clean`) | **20 (40%)** | invisible by every existing signal |
+| Real, but card already carries a visible `Unimplemented` elsewhere | 8 (16%) | condition also dropped, not contributing to an *invisible* population |
+| False positive | 22 (44%) | see reasons below |
+
+**Combined real rate: 28/50 = 56%. This is not a contained sub-case — do not
+scope a narrow fix off the `Unimplemented:otherwise` count alone.**
+
+False-positive reasons found (useful if the heuristic is revisited):
+"if able"/"if it's blocking" idioms that aren't conditions at all; "if you do"
+correctly captured via `IfYouDo` on a *nested* sub-ability (my heuristic only
+checked the outer, correctly-unconditional wrapper); conditions correctly
+living in `activation_restrictions[].data.condition`, `AdditionalCostPaid`, a
+direct `QuantityCheck`, or replacement-specific fields instead of a bucket
+item's own `condition`; `FlipCoin.win_effect`/`lose_effect` used correctly; and
+one heuristic bug of my own (checked `effect` on trigger-bucket items, which
+nest under `execute` instead, silently missing cards that already had a
+visible gap node).
+
+Real examples found span genuinely different sub-shapes, suggesting multiple
+distinct root causes, not one:
+- **Sequential chained conditionals** — Ray of Enfeeblement ("-4/-1... if
+  white, -4/-4 **instead**" parses as two unconditional Pumps, both applying
+  cumulatively), Gimli's Fury, Ritual of Hope.
+- **Result-dependent ("...this way" / "...does")** — Play with Fire ("if a
+  player is dealt damage *this way*"), Grist (deathtouch "if a black card was
+  milled *this way*"), Skullknocker Ogre (mandatory-antecedent "if the player
+  *does*", no "may" anywhere in the sentence).
+- **Compound/OR conditions** — Orator of Ojutai ("if you revealed a Dragon
+  **or** controlled a Dragon").
+- **Negative "if you don't"** (no handling found at all) — Rashmi.
+- **Dropped condition nested inside an already-present wrapper** — Groundling
+  Pouncer (`RequiresCondition` node exists; its own `data.condition` is null).
+- **Static-ability-level, not effect-chain** — Of One Mind's `ReduceCost`
+  mode.
+- **Targeting restriction dropped from the filter, not a condition field** —
+  TL;DR.
+- **Branch/structural** — Sorcerer's Strongbox (draw happens unconditionally
+  outside the coin-flip's `win_effect`, contrast Skyclaw Thrash where the same
+  mechanism is used correctly).
+
+### Recommendation: separate future effort, not a narrow fix
+
+Not a contained sub-case. A rough, order-of-magnitude-only projection (40-56%
+of 4,889) suggests hundreds to low-thousands of cards corpus-wide — but the
+heuristic's own reach is known incomplete (the trigger/`execute` bug alone
+shows it misses cases), so treat that as a floor, not a measurement. A proper
+investigation needs: (1) a real per-item detector (check the actual
+effect-bearing field per bucket type, positively exclude known-good patterns
+like `IfYouDo`/`AdditionalCostPaid`/`QuantityCheck`/restriction wrappers
+instead of a blind null-check), (2) separate characterization of each
+sub-shape above, since they likely live in different parser modules. This
+does not move the `clean`/`partial` split (these cards already show `clean`)
+— it is a correctness-fidelity investigation in the spirit of §3, not a
+coverage one, and deserves its own dedicated pass.
+
+### How this tool responds
+
+Nothing yet — no fix, no corrections.json entries, no overlay. Logged as a
+sized-but-unresolved finding, for a future, separate effort.
 
 ---
 

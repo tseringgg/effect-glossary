@@ -1,0 +1,327 @@
+====================================================================================================
+A-Dreamshackle Geist | 5cf4f1b7-a6ce-4f68-9376-51a6c4769bcb
+ORACLE TEXT:
+Flying
+At the beginning of combat on your turn, choose up to one —
+• Tap target creature.
+• Target creature doesn't untap during its controller's next untap step.
+-- empty GenericEffect nodes --
+ path: triggers[0].execute.effect
+ node: {"type": "GenericEffect", "static_abilities": [], "duration": null, "target": null}
+
+====================================================================================================
+Arbalest Engineers | 06bea0b2-1d0f-4d64-a13e-723d08042e83
+ORACLE TEXT:
+When this creature enters, choose one —
+• This creature deals 1 damage to any target.
+• Put a +1/+1 counter on target creature. It gains trample and haste until end of turn.
+• Create a tapped Powerstone token. (It's an artifact with "{T}: Add {C}. This mana can't be spent to cast a nonartifact spell.")
+-- empty GenericEffect nodes --
+ path: triggers[0].execute.effect
+ node: {"type": "GenericEffect", "static_abilities": [], "duration": null, "target": null}
+
+====================================================================================================
+Avatar Roku, Firebender | 9eb9e4c1-fabf-45ff-a584-fbe4b94fb41c
+ORACLE TEXT:
+Whenever a player attacks, add six {R}. Until end of combat, you don't lose this mana as steps end.
+{R}{R}{R}: Target creature gets +3/+0 until end of turn.
+-- empty GenericEffect nodes --
+ path: triggers[0].execute.sub_ability.effect
+ node: {"type": "GenericEffect", "static_abilities": [], "duration": null, "target": null}
+
+====================================================================================================
+Casey & Raph, Hotheads | f20a5297-31ba-4bbd-810e-be23175a116f
+ORACLE TEXT:
+When Casey & Raph enter, choose one or both. Each mode must target a different player.
+• Target player exiles the top card of their library. Until that player's next end step, they may play that card without paying its mana cost.
+• Target player creates two Treasure tokens.
+-- empty GenericEffect nodes --
+ path: triggers[0].execute.effect
+ node: {"type": "GenericEffect", "static_abilities": [], "duration": null, "target": null}
+
+====================================================================================================
+Cleanup Crew | 12e0321b-1cd7-4519-8929-3261cf11a1a9
+ORACLE TEXT:
+When this creature enters, choose one —
+• Destroy target artifact.
+• Destroy target enchantment.
+• Exile target card from a graveyard.
+• You gain 4 life.
+-- empty GenericEffect nodes --
+ path: triggers[0].execute.effect
+ node: {"type": "GenericEffect", "static_abilities": [], "duration": null, "target": null}
+
+====================================================================================================
+Concord with the Kami | bec04768-c573-4886-9ca1-2511abc05a14
+ORACLE TEXT:
+At the beginning of your end step, choose one or more —
+• Put a +1/+1 counter on target creature with a counter on it.
+• Draw a card if you control an enchanted creature.
+• Create a 1/1 colorless Spirit creature token if you control an equipped creature.
+-- empty GenericEffect nodes --
+ path: triggers[0].execute.effect
+ node: {"type": "GenericEffect", "static_abilities": [], "duration": null, "target": null}
+
+====================================================================================================
+Drover of the Swine | b46b282a-5cb1-4ef2-8a07-6af922cf09c2
+ORACLE TEXT:
+When Drover of the Swine enters, choose one —
+• Conjure a card of your choice from the Three Pigs spellbook onto the battlefield.
+• Return up to three target Boar creature cards with different names from your graveyard to the battlefield.
+-- empty GenericEffect nodes --
+ path: triggers[0].execute.effect
+ node: {"type": "GenericEffect", "static_abilities": [], "duration": null, "target": null}
+
+====================================================================================================
+Ertai Resurrected | 3d038f7c-95fa-4b71-8f74-b9b4dd45cde0
+ORACLE TEXT:
+Flash
+When Ertai Resurrected enters, choose up to one —
+• Counter target spell, activated ability, or triggered ability. Its controller draws a card.
+• Destroy another target creature or planeswalker. Its controller draws a card.
+-- empty GenericEffect nodes --
+ path: triggers[0].execute.effect
+ node: {"type": "GenericEffect", "static_abilities": [], "duration": null, "target": null}
+
+====================================================================================================
+Fate Reforged | 8d75c41f-8318-4944-ac20-b12904c7883f
+ORACLE TEXT:
+I — (Bolas) Each opponent discards their hand. You draw seven cards.
+I — (Ugin) Manifest your hand, then draw seven cards.
+II — (Both) Create a token that's a copy of any Elder Dragon from the Legends expansion.
+III — (Both) Exile Fate Reforged, then return it to the battlefield (Front face up).
+-- empty GenericEffect nodes --
+
+====================================================================================================
+Gala Greeters | cce081eb-8820-415a-a7b2-3c5b9d4a2601
+ORACLE TEXT:
+Alliance — Whenever another creature you control enters, choose one that hasn't been chosen this turn —
+• Put a +1/+1 counter on this creature.
+• Create a tapped Treasure token.
+• You gain 2 life.
+-- empty GenericEffect nodes --
+ path: triggers[0].execute.effect
+ node: {"type": "GenericEffect", "static_abilities": [], "duration": null, "target": null}
+
+====================================================================================================
+Hollowmurk Siege | 31061e34-042e-40c3-99ab-752795ab4324
+ORACLE TEXT:
+As this enchantment enters, choose Sultai or Abzan.
+• Sultai — Whenever a counter is put on a creature you control, draw a card. This ability triggers only once each turn.
+• Abzan — Whenever you attack, put a +1/+1 counter on target attacking creature. It gains menace until end of turn.
+-- empty GenericEffect nodes --
+ path: triggers[0].execute.effect
+ node: {"type": "GenericEffect", "static_abilities": [], "duration": null, "target": null}
+
+====================================================================================================
+Kessig Naturalist | 54f8acb1-58f3-49d1-bff8-c1b578245936
+ORACLE TEXT:
+Whenever this creature attacks, add {R} or {G}. Until end of turn, you don't lose this mana as steps and phases end.
+Daybound (If a player casts no spells during their own turn, it becomes night next turn.)
+-- empty GenericEffect nodes --
+ path: triggers[0].execute.sub_ability.effect
+ node: {"type": "GenericEffect", "static_abilities": [], "duration": null, "target": null}
+
+====================================================================================================
+Koma and Toski, Compleated | b57f9ed0-db4e-46dd-9fe6-956958ce6434
+ORACLE TEXT:
+This spell can't be countered.
+At the beginning of each upkeep, create a 1/1 Phyrexian Serpent Squirrel artifact creature token named Toski's Coil with "Whenever this creature deals combat damage to a player, draw a card."
+Sacrifice another Serpent or Squirrel: Choose one —
+• Target creature attacks this turn if able. Its activated abilities can't be activated this turn.
+• Koma and Toski, Compleated gains indestructible until end of turn.
+-- empty GenericEffect nodes --
+ path: abilities[0].effect
+ node: {"type": "GenericEffect", "static_abilities": [], "duration": null, "target": null}
+
+====================================================================================================
+Koma, Cosmos Serpent | 6ba0656f-e0d2-4735-9c66-3a00afa9fc23
+ORACLE TEXT:
+This spell can't be countered.
+At the beginning of each upkeep, create a 3/3 blue Serpent creature token named Koma's Coil.
+Sacrifice another Serpent: Choose one —
+• Tap target permanent. Its activated abilities can't be activated this turn.
+• Koma gains indestructible until end of turn.
+-- empty GenericEffect nodes --
+ path: abilities[0].effect
+ node: {"type": "GenericEffect", "static_abilities": [], "duration": null, "target": null}
+
+====================================================================================================
+Kutzil's Flanker | ba557e19-a409-4c02-a9ac-a8fb77762e43
+ORACLE TEXT:
+Flash
+When this creature enters, choose one —
+• Put a +1/+1 counter on this creature for each creature that left the battlefield under your control this turn.
+• You gain 2 life and scry 2.
+• Exile target player's graveyard.
+-- empty GenericEffect nodes --
+ path: triggers[0].execute.effect
+ node: {"type": "GenericEffect", "static_abilities": [], "duration": null, "target": null}
+
+====================================================================================================
+Mindslaver Toolkit | 8a782e99-78f8-4de4-b46e-3465fe6c8da5
+ORACLE TEXT:
+{T}: Target opponent gains control of Mindslaver Toolkit.
+{X}, {T}: Choose any number —
+• You lose X life.
+• You discard X cards.
+• You sacrifice X permanents.
+-- empty GenericEffect nodes --
+ path: abilities[1].effect
+ node: {"type": "GenericEffect", "static_abilities": [], "duration": null, "target": null}
+
+====================================================================================================
+Mishra, Lost to Phyrexia | 3989308a-4c0f-493a-b38f-cb4f5019dfe7
+ORACLE TEXT:
+Whenever Mishra enters or attacks, choose three —
+• Target opponent discards two cards.
+• Mishra deals 3 damage to any target.
+• Destroy target artifact or planeswalker.
+• Creatures you control gain menace and trample until end of turn.
+• Creatures you don't control get -1/-1 until end of turn.
+• Create two tapped Powerstone tokens.
+-- empty GenericEffect nodes --
+ path: triggers[0].execute.effect
+ node: {"type": "GenericEffect", "static_abilities": [], "duration": null, "target": null}
+
+====================================================================================================
+Night Out in Vegas | 2dd61a72-6478-471d-bb74-33adda530176
+ORACLE TEXT:
+At the beginning of your upkeep, choose one that hasn't been chosen —
+• Buffet — Create three Food tokens.
+• See a Show — Create two 2/2 white Performer creature tokens.
+• Play Games — Search your library for a card, put that card into your hand, discard a card at random, then shuffle.
+• Go to Sleep — You lose 15 life. Sacrifice Night Out in Vegas.
+-- empty GenericEffect nodes --
+ path: triggers[0].execute.effect
+ node: {"type": "GenericEffect", "static_abilities": [], "duration": null, "target": null}
+
+====================================================================================================
+Prophetic Titan | 224f5f1a-4f31-4935-bf5a-910fd0a666a1
+ORACLE TEXT:
+Delirium — When this creature enters, choose one. If there are four or more card types among cards in your graveyard, choose both instead.
+• This creature deals 4 damage to any target.
+• Look at the top four cards of your library. Put one of them into your hand and the rest on the bottom of your library in a random order.
+-- empty GenericEffect nodes --
+ path: triggers[0].execute.effect
+ node: {"type": "GenericEffect", "static_abilities": [], "duration": null, "target": null}
+
+====================================================================================================
+Salacinder and Soot, Rascals | 58a1f533-5559-4897-9cbf-ff6066770330
+ORACLE TEXT:
+Prowess, Trample
+When Salacinder and Soot enters and whenever you cast an Elemental spell, choose one —
+• Conjure a card named Rite of Flame into your hand.
+• Conjure a card named Take Inventory into your hand.
+-- empty GenericEffect nodes --
+ path: triggers[0].execute.effect
+ node: {"type": "GenericEffect", "static_abilities": [], "duration": null, "target": null}
+ path: triggers[1].execute.effect
+ node: {"type": "GenericEffect", "static_abilities": [], "duration": null, "target": null}
+
+====================================================================================================
+Shellephant | 544f35f0-56b7-44f9-ae82-3a425553c5cd
+ORACLE TEXT:
+{0}: Choose one. You may activate this ability while Shellephant is in any zone.
+• Shellephant has base power and toughness 1/4.
+• Shellephant has base power and toughness 3/3.
+-- empty GenericEffect nodes --
+ path: abilities[0].effect
+ node: {"type": "GenericEffect", "static_abilities": [], "duration": null, "target": null}
+
+====================================================================================================
+Shivan Sand-Mage | 3afe854a-7daa-4745-a5d9-04879e5d940a
+ORACLE TEXT:
+When this creature enters, choose one —
+• Remove two time counters from target permanent or suspended card.
+• Put two time counters on target permanent with a time counter on it or suspended card.
+Suspend 4—{R}
+-- empty GenericEffect nodes --
+ path: triggers[0].execute.effect
+ node: {"type": "GenericEffect", "static_abilities": [], "duration": null, "target": null}
+
+====================================================================================================
+Tax Collector | 66837faa-fbde-456d-b00f-eb17fbdd04aa
+ORACLE TEXT:
+When this creature enters, choose one —
+• Tax — Until your next turn, spells your opponents cast cost {1} more to cast.
+• Arrest — Detain target creature an opponent controls. (Until your next turn, that creature can't attack or block and its activated abilities can't be activated.)
+-- empty GenericEffect nodes --
+ path: triggers[0].execute.effect
+ node: {"type": "GenericEffect", "static_abilities": [], "duration": null, "target": null}
+
+====================================================================================================
+Thornmantle Striker | 39f17e13-018c-4a00-ab25-1ac5a904de63
+ORACLE TEXT:
+When this creature enters, choose one —
+• Remove X counters from target permanent, where X is the number of Elves you control.
+• Target creature an opponent controls gets -X/-X until end of turn, where X is the number of Elves you control.
+-- empty GenericEffect nodes --
+ path: triggers[0].execute.effect
+ node: {"type": "GenericEffect", "static_abilities": [], "duration": null, "target": null}
+
+====================================================================================================
+Tormentor Exarch | ebc52f9a-ba0c-48ed-bb04-ed086efeb060
+ORACLE TEXT:
+When this creature enters, choose one —
+• Target creature gets +2/+0 until end of turn.
+• Target creature gets -0/-2 until end of turn.
+-- empty GenericEffect nodes --
+ path: triggers[0].execute.effect
+ node: {"type": "GenericEffect", "static_abilities": [], "duration": null, "target": null}
+
+====================================================================================================
+Tundra Fumarole | 52befc89-e895-4dd5-95e4-8f6d03e627aa
+ORACLE TEXT:
+Tundra Fumarole deals 4 damage to target creature or planeswalker. Add {C} for each {S} spent to cast this spell. Until end of turn, you don't lose this mana as steps and phases end. ({S} is mana from a snow source.)
+-- empty GenericEffect nodes --
+ path: abilities[0].sub_ability.sub_ability.effect
+ node: {"type": "GenericEffect", "static_abilities": [], "duration": null, "target": null}
+
+====================================================================================================
+Umaro, Raging Yeti | 0f4350ad-dc44-4942-b097-e4033e29d659
+ORACLE TEXT:
+Trample
+At the beginning of combat on your turn, choose one at random —
+• Other creatures you control get +3/+0 and gain trample until end of turn.
+• Discard your hand, then draw four cards.
+• Umaro deals 5 damage to any target.
+-- empty GenericEffect nodes --
+ path: triggers[0].execute.effect
+ node: {"type": "GenericEffect", "static_abilities": [], "duration": null, "target": null}
+
+====================================================================================================
+Venser, Corpse Puppet | 17c934a7-3480-4309-a217-ca2550538ae7
+ORACLE TEXT:
+Lifelink, toxic 1
+Whenever you proliferate, choose one —
+• If you don't control a creature named The Hollow Sentinel, create The Hollow Sentinel, a legendary 3/3 colorless Phyrexian Golem artifact creature token.
+• Target artifact creature you control gains flying and lifelink until end of turn.
+-- empty GenericEffect nodes --
+ path: triggers[0].execute.effect
+ node: {"type": "GenericEffect", "static_abilities": [], "duration": null, "target": null}
+
+====================================================================================================
+Yet Another Night in Vegas | 062568d1-e948-4ad7-8132-a2594827c443
+ORACLE TEXT:
+At the beginning of your upkeep, choose one that hasn't been chosen—
+• See the sights — Surveil 3.
+• Cause trouble — Target creature gets +1/+0 and gains menace until end of turn.
+• Get lost — Each player exiles a creature they control until this enchantment leaves the battlefield.
+• I'm fine! Let's go again! — All modes reset and can be chosen again. You lose 5 life.
+• Go to bed — Sacrifice this enchantment.
+-- empty GenericEffect nodes --
+ path: triggers[0].execute.effect
+ node: {"type": "GenericEffect", "static_abilities": [], "duration": null, "target": null}
+
+====================================================================================================
+Yotian Courier | d5d719c0-d82c-4a84-a161-ebf66bd80f7a
+ORACLE TEXT:
+Flying
+Whenever Yotian Courier attacks, choose one that wasn't chosen during your last combat —
+• Create a tapped Powerstone token.
+• Seek a nonland card with mana value equal to the number of Powerstones you control.
+-- empty GenericEffect nodes --
+ path: triggers[0].execute.effect
+ node: {"type": "GenericEffect", "static_abilities": [], "duration": null, "target": null}
+

@@ -11,8 +11,10 @@ Nothing here mutates the upstream file. Facet vocabularies are derived at build
 time on purpose: phase.rs's parser is actively improving and any hardcoded list
 of effect/condition variants would silently drift out of date.
 """
+import io
 import json
 import os
+import re
 import sys
 import hashlib
 from collections import Counter, defaultdict
@@ -44,7 +46,32 @@ SLOT_OF = {key: axis for axis, keys in SLOTS.items() for key in keys}
 
 # Tags that mean "the parser could not represent this". These drive the
 # clean/partial split.
-GAP_TAGS = {"Unimplemented", "GenericEffect"}
+GAP_TAGS = {"Unimplemented"}
+
+# GenericEffect is not itself a gap tag: it's phase.rs's real, CR-cited
+# mechanism for transient continuous grants (temporary keyword/ability/P-T/
+# type/color changes -- CR 113.3, 604.1, 611.2b, 702), executed at resolution
+# by game/effects/effect.rs::resolve(), not a parser punt. It only carries
+# zero information when its own `static_abilities` list is empty -- verified
+# against the 2026-04-20 snapshot: every non-empty case uses a fully-typed
+# `ContinuousModification`/`StaticMode` variant (no catch-all "Unknown" exists
+# in either enum), so an empty list is the only way nothing was captured.
+#
+# Even then, it's not a gap when the enclosing AbilityDefinition carries a
+# populated `modal` + `mode_abilities` pair: the real content is modal-encoded
+# ("choose one -- * mode A * mode B"), and `effect` is just the placeholder
+# every AbilityDefinition requires -- it isn't meant to carry anything here.
+# 281 of the 312 empty-GenericEffect nodes in the snapshot have this shape
+# (verified against real oracle text on several: Tax Collector, Cleanup Crew,
+# Ertai Resurrected, Yotian Courier -- modal/mode_abilities fully and
+# correctly structured in every case); the other 31 have no modal sibling at
+# all and are genuine gaps.
+def generic_effect_is_gap(node, parent=None):
+    if node.get("static_abilities"):
+        return False
+    if parent is not None and parent.get("modal") and parent.get("mode_abilities"):
+        return False
+    return True
 
 # A second, weaker class of gap that GAP_TAGS does not catch: an enum slot the
 # parser left unmodelled rather than an effect it failed to build. A trigger or
@@ -114,11 +141,13 @@ def tag_name(v):
     return json.dumps(v, separators=(",", ":"))[:60]
 
 
-def scan(node, slot, found, gaps, soft):
+def scan(node, slot, found, gaps, soft, parent=None):
     """Walk a parsed subtree, recording (axis, tag) pairs by slot.
 
     List items inherit the slot of the key that owned the list, so
     `properties: [{type: Another}]` is attributed to the target axis.
+    `parent` is the nearest enclosing dict (an AbilityDefinition, typically),
+    passed down so a GenericEffect node can check its own siblings.
     """
     if isinstance(node, dict):
         tag = node.get("type")
@@ -128,13 +157,74 @@ def scan(node, slot, found, gaps, soft):
                 found[axis].add(tag)
             if tag in GAP_TAGS:
                 gaps.append(tag)
+            elif tag == "GenericEffect" and generic_effect_is_gap(node, parent):
+                gaps.append(tag)
             if tag in SOFT_TAGS:
                 soft.append(tag)
         for k, v in node.items():
-            scan(v, k, found, gaps, soft)
+            scan(v, k, found, gaps, soft, node)
     elif isinstance(node, list):
         for v in node:
-            scan(v, slot, found, gaps, soft)
+            scan(v, slot, found, gaps, soft, parent)
+
+
+def _squash(s):
+    return re.sub(r"[\s\-]+", "", s.lower())
+
+
+def parsed_elsewhere(entry):
+    """Whether a face with empty ability buckets is in fact fully parsed.
+
+    Ported from build_ledger.py's reason-labelling helper of the same name --
+    the logic is identical and already validated there (see its own
+    docstring); this just makes it feed `classify()` directly instead of
+    only annotating a `q` value classify() already decided without it.
+
+    `keywords` and `additional_cost` both hold real structure outside the
+    four ability buckets: a card whose whole text is "Flying" (Storm Crow)
+    or "As an additional cost to cast this spell, ..." parses completely,
+    just not into abilities/triggers/static_abilities/replacements.
+
+    Returns True when every oracle-text line is one of the card's OWN parsed
+    keywords or an additional cost its own parse holds. Judged per line
+    against the card's own parse, never a keyword list of ours: reminder
+    text is dropped, a keyword line must open with one of its keywords, and
+    a plain comma list ("Flying, first strike") must open with one in every
+    item. A keyword the parser DROPPED (Echo, Reinforce, Morph on some
+    cards) is absent from `keywords`, so that line fails and this correctly
+    returns False -- the face stays `unparsed` for a real, separate reason.
+    """
+    names = set()
+    for k in entry.get("keywords") or []:
+        if isinstance(k, str):
+            names.add(_squash(re.sub(r"([a-z])([A-Z])", r"\1 \2", k)))
+        elif isinstance(k, dict) and k:
+            key, val = next(iter(k.items()))
+            names.add(_squash(re.sub(r"([a-z])([A-Z])", r"\1 \2", key)))
+            if isinstance(val, str):
+                names.add(_squash(val))
+    lines = [re.sub(r"\([^)]*\)", "", ln).strip() for ln in (entry.get("oracle_text") or "").split("\n")]
+    lines = [ln for ln in lines if ln]
+    if not lines:
+        return False
+
+    def opens(seg):
+        s = _squash(seg)
+        return any(s.startswith(n) for n in names)
+
+    def keyword_line(ln):
+        if not names or not opens(ln):
+            return False
+        costed = "—" in ln or "{" in ln
+        return costed or all(opens(p) for p in re.split(r",\s*|;\s*", ln) if p.strip())
+
+    for ln in lines:
+        if keyword_line(ln):
+            continue
+        if entry.get("additional_cost") and ln.lower().startswith("as an additional cost"):
+            continue
+        return False
+    return True
 
 
 def classify(entry, gaps):
@@ -144,8 +234,13 @@ def classify(entry, gaps):
     oracle_text at all, so they are neither `unparsed` (which means "has text
     but no structure") nor meaningfully `clean`. Forcing them into either would
     misreport coverage, so they get their own bucket.
+
+    "No structure" means none of the four ability buckets AND no equivalent
+    structure in `keywords`/`additional_cost` either (parsed_elsewhere) -- a
+    keyword-only or additional-cost-only card is fully parsed, just not into
+    those four buckets.
     """
-    has_struct = any(entry.get(b) for b in BUCKETS)
+    has_struct = any(entry.get(b) for b in BUCKETS) or parsed_elsewhere(entry)
     text = entry.get("oracle_text")
     if not text:
         return "vanilla"
@@ -156,9 +251,44 @@ def classify(entry, gaps):
     return "clean"
 
 
+# Validated local parser fixes, applied on top of card-data.json at our own
+# build time -- never written back to their file, never run through their
+# engine for anything but generating these entries. Unlike corrections.json
+# (hand-asserted substitutions we can't validate because we don't run their
+# engine) these ARE real output from running phase-rs's own generator, built
+# from the local v0.1.15 checkout with a narrow, gate-verified fix; unlike
+# recovered-cards.json (cards ADDED back after being dropped by a face-name
+# collision) these REPLACE an existing entry. Each file's own `meta` records
+# the fix and its control-set gate result -- see src/apply_*_overlay.py.
+PARSER_FIX_OVERLAYS = [
+    os.path.join(HERE, "data", "overlay", "commander-eligibility-fix.json"),
+    os.path.join(HERE, "data", "overlay", "commander-creatures-fix.json"),
+]
+
+
+def apply_parser_fix_overlays(raw):
+    applied = 0
+    for path in PARSER_FIX_OVERLAYS:
+        if not os.path.exists(path):
+            continue
+        doc = json.load(io.open(path, encoding="utf-8"))
+        for faces in doc["cards"].values():
+            for face in faces:
+                key = face["name"].lower()
+                if key not in raw:
+                    raise KeyError(f"parser-fix overlay {path}: no raw entry for {key!r}")
+                raw[key] = face
+                applied += 1
+    return applied
+
+
 def main():
     with open(SRC, encoding="utf-8") as fh:
         raw = json.load(fh)
+
+    n_fixed = apply_parser_fix_overlays(raw)
+    if n_fixed:
+        sys.stderr.write(f"applied {n_fixed} face(s) from parser-fix overlays\n")
 
     os.makedirs(CHUNKS, exist_ok=True)
 

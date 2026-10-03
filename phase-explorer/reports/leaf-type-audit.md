@@ -19,9 +19,9 @@ A leaf is type-heterogeneous when no single card type reaches the **50%** bar th
 
 | tier | meaning | leaves | cards |
 |---|---|---|---|
-| **A** | two or more distinct PERMANENT types each >= 20% -- leaf 44's shape | 39 | 1,343 |
-| **B** | permanent vs non-permanent only -- same effect, different delivery | 35 | 1,441 |
-| | **total** | **74** | **2,784** |
+| **A** | two or more distinct PERMANENT types each >= 20% -- leaf 44's shape | 41 | 1,418 |
+| **B** | permanent vs non-permanent only -- same effect, different delivery | 40 | 1,584 |
+| | **total** | **81** | **3,002** |
 
 ## Where they sit now
 
@@ -29,11 +29,12 @@ The concern is not heterogeneity as such -- it is heterogeneity hiding inside so
 
 | current state | leaves | cards | reads as |
 |---|---|---|---|
-| Real branch | 53 | 2,207 | **settled -- this is the problem** |
-| Auto-named | 10 | 357 | already flagged as machine-named |
-| Unique effect | 11 | 220 | already flagged as fitting nowhere |
+| Real branch | 58 | 2,373 | **settled -- this is the problem** |
+| Auto-named | 2 | 51 | already flagged as machine-named |
+| Review queue | 11 | 351 | already known to be uncertain |
+| Unique effect | 10 | 227 | already flagged as fitting nowhere |
 
-**53 leaves / 2,207 cards** sit in real branches while mixing card types. Those branches are not wrong about the effect -- a mana dork really does make mana -- but they are less resolved than they look.
+**58 leaves / 2,373 cards** sit in real branches while mixing card types. Those branches are not wrong about the effect -- a mana dork really does make mana -- but they are less resolved than they look.
 
 ## Branch exposure
 
@@ -41,123 +42,133 @@ Share of a branch's cards that come from a type-heterogeneous leaf. This is the 
 
 | branch | het. leaves | het. cards | branch cards | share |
 |---|---|---|---|---|
-| Ramp | 6 | 623 | 1,269 | 49% |
-| Burn | 5 | 615 | 1,327 | 46% |
-| Tutor | 8 | 260 | 513 | 51% |
-| Spot removal | 13 | 230 | 2,843 | 8% |
-| Mass effect | 4 | 162 | 861 | 19% |
-| +1/+1 counters | 3 | 99 | 1,373 | 7% |
-| Card draw | 7 | 97 | 1,565 | 6% |
-| Sacrifice removal | 3 | 82 | 474 | 17% |
-| Creature removal | 4 | 66 | 741 | 9% |
-| Lifegain | 2 | 59 | 559 | 11% |
-| Discard | 2 | 50 | 362 | 14% |
-| Destroy removal | 3 | 47 | 831 | 6% |
-| Copy spell | 1 | 42 | 87 | 48% |
-| Tapper | 2 | 41 | 852 | 5% |
-| Graveyard hate | 2 | 28 | 119 | 24% |
-| Bounce removal | 2 | 28 | 802 | 3% |
-| Token maker | 4 | 26 | 1,430 | 2% |
-| Board wipe | 2 | 26 | 332 | 8% |
-| Regeneration | 1 | 23 | 151 | 15% |
-| Counterspell | 1 | 20 | 334 | 6% |
-| Reanimation | 2 | 18 | 172 | 10% |
-| Exile removal | 2 | 14 | 577 | 2% |
-| Untapper | 1 | 9 | 148 | 6% |
-| Scry | 1 | 8 | 137 | 6% |
-| Impulse | 1 | 7 | 101 | 7% |
-| Self-mill | 1 | 7 | 164 | 4% |
-| Surveil | 1 | 7 | 114 | 6% |
+| Ramp | 8 | 638 | 1,491 | 43% |
+| Burn | 5 | 629 | 1,375 | 46% |
+| Tutor | 7 | 260 | 538 | 48% |
+| Spot removal | 13 | 230 | 2,915 | 8% |
+| Mass effect | 3 | 186 | 971 | 19% |
+| Card draw | 9 | 131 | 1,768 | 7% |
+| +1/+1 counters | 4 | 98 | 1,527 | 6% |
+| Sacrifice removal | 4 | 94 | 496 | 19% |
+| Creature removal | 4 | 70 | 767 | 9% |
+| Reanimation | 2 | 64 | 241 | 27% |
+| Lifegain | 2 | 59 | 563 | 10% |
+| Discard | 2 | 50 | 365 | 14% |
+| Destroy removal | 3 | 47 | 850 | 6% |
+| Tapper | 2 | 45 | 941 | 5% |
+| Token maker | 6 | 42 | 1,560 | 3% |
+| Bounce removal | 2 | 28 | 837 | 3% |
+| Regeneration | 1 | 23 | 152 | 15% |
+| Counterspell | 1 | 21 | 339 | 6% |
+| Copy spell | 1 | 21 | 92 | 23% |
+| Opponent mill | 1 | 15 | 109 | 14% |
+| Exile removal | 2 | 15 | 615 | 2% |
+| Graveyard hate | 1 | 13 | 75 | 17% |
+| Theft | 1 | 13 | 116 | 11% |
+| Untapper | 1 | 12 | 161 | 7% |
+| Keyword grant | 1 | 11 | 47 | 23% |
+| Board wipe | 1 | 11 | 342 | 3% |
+| Scry | 1 | 8 | 150 | 5% |
+| Impulse | 1 | 7 | 105 | 7% |
+| Self-mill | 1 | 7 | 169 | 4% |
+| Surveil | 1 | 7 | 115 | 6% |
 
 ## Tier A findings -- the direct leaf-44 analogues
 
 | leaf | cards | top | state | branches | type distribution |
 |---|---|---|---|---|---|
-| 44 *(seed)* | 513 | 44% | Real branch | Ramp | Creature 44% Land 30% Artifact 28% Spell 4% |
-| 506 | 82 | 44% | Auto-named | Continuous static effect | Enchantment 44% Creature 30% Spell 21% Artifact 6% |
-| 401 | 79 | 48% | Real branch | Burn | Enchantment 48% Creature 37% Artifact 16% Spell 4% |
-| 140 | 72 | 35% | Real branch | Burn | Creature 35% Enchantment 29% Spell 26% Artifact 11% |
-| 139 | 57 | 39% | Real branch | +1/+1 counters, Ramp | Artifact 39% Creature 39% Land 23% Enchantment 5% |
-| 408 | 42 | 48% | Real branch | Copy spell | Creature 48% Enchantment 31% Spell 19% Artifact 5% |
-| 51 | 42 | 38% | Real branch | Tutor | Spell 38% Land 24% Creature 21% Artifact 19% |
-| 443 | 34 | 35% | Real branch | Tapper | Artifact 35% Creature 32% Spell 24% Enchantment 12% |
-| 137 | 32 | 38% | Real branch | Card draw, Lifegain | Artifact 38% Spell 38% Creature 34% Enchantment 3% |
-| 404 | 31 | 42% | Real branch | +1/+1 counters | Enchantment 42% Creature 39% Artifact 23% |
-| 73 | 29 | 48% | Unique effect | -- | Creature 48% Artifact 31% Spell 21% Land 3% |
-| 56 | 27 | 48% | Real branch | Lifegain, Ramp | Land 48% Artifact 33% Creature 22% Enchantment 4% |
-| 251 | 21 | 43% | Real branch | Card draw | Creature 43% Artifact 29% Enchantment 19% Spell 5% |
-| 406 | 20 | 40% | Real branch | Counterspell | Enchantment 40% Creature 30% Spell 15% Artifact 15% |
-| 357 | 19 | 37% | Real branch | Destroy removal, Spot removal | Spell 37% Creature 32% Artifact 26% Enchantment 5% |
-| 231 | 19 | 47% | Real branch | Destroy removal, Spot removal | Creature 47% Spell 26% Land 21% Enchantment 5% |
-| 215 | 15 | 47% | Real branch | Graveyard hate, Spot removal | Creature 47% Artifact 47% Spell 13% Enchantment 7% |
-| 208 | 14 | 36% | Auto-named | Continuous static effect | Creature 36% Artifact 29% Enchantment 21% Land 14% |
-| 312 | 13 | 38% | Real branch | Tutor | Creature 38% Spell 31% Artifact 31% Land 8% |
-| 143 | 13 | 46% | Real branch | Graveyard hate, Spot removal | Creature 46% Enchantment 23% Artifact 15% Spell 8% |
-| 220 | 13 | 38% | Unique effect | -- | Creature 38% Spell 38% Enchantment 23% |
-| 4 | 13 | 46% | Unique effect | -- | Spell 46% Creature 31% Enchantment 23% |
-| 57 | 13 | 38% | Auto-named | Seek | Land 38% Creature 23% Spell 23% Enchantment 15% |
-| 363 | 12 | 42% | Real branch | Ramp | Land 42% Creature 33% Artifact 17% Spell 8% |
-| 405 | 12 | 42% | Unique effect | -- | Creature 42% Enchantment 42% Spell 17% |
-| 214 | 12 | 42% | Unique effect | -- | Enchantment 42% Creature 42% Spell 17% |
-| 95 | 10 | 30% | Unique effect | -- | Spell 30% Creature 30% Enchantment 20% Artifact 20% |
-| 93 | 8 | 25% | Real branch | Card draw | Creature 25% Spell 25% Enchantment 25% Artifact 25% |
-| 229 | 8 | 25% | Real branch | Card draw, Scry | Creature 25% Artifact 25% Enchantment 25% Spell 25% |
-| 477 | 8 | 38% | Real branch | Exile removal, Spot removal | Creature 38% Artifact 38% Spell 25% |
-| 105 | 8 | 38% | Real branch | Tutor | Spell 38% Creature 38% Enchantment 25% |
-| 578 | 7 | 29% | Real branch | Bounce removal, Spot removal, Token maker | Creature 29% Kindred 29% Enchantment 29% Spell 14% |
-| 531 | 7 | 29% | Real branch | Impulse, Ramp | Planeswalker 29% Creature 29% Spell 14% Enchantment 14% |
-| 64 | 7 | 43% | Real branch | Reanimation | Spell 43% Creature 43% Artifact 29% |
-| 369 | 7 | 43% | Real branch | Token maker | Creature 43% Enchantment 29% Spell 29% |
-| 115 | 7 | 29% | Real branch | Tapper | Creature 29% Artifact 29% Land 29% Spell 14% |
-| 518 | 7 | 43% | Real branch | Ramp, Self-mill | Land 43% Creature 43% Artifact 14% |
-| 479 | 5 | 40% | Real branch | Creature removal, Sacrifice removal, Spot removal, Token maker | Creature 40% Enchantment 40% Spell 20% |
-| 286 | 5 | 40% | Auto-named | Attach | Spell 40% Creature 20% Artifact 20% Enchantment 20% |
+| 47 | 527 | 43% | Real branch | Ramp | Creature 43% Land 32% Artifact 28% Spell 4% |
+| 543 | 84 | 44% | Review queue | -- | Enchantment 44% Creature 30% Spell 20% Artifact 7% |
+| 432 | 80 | 48% | Real branch | Burn | Enchantment 48% Creature 38% Artifact 16% Spell 4% |
+| 159 | 73 | 34% | Real branch | Burn | Creature 34% Enchantment 30% Spell 25% Artifact 11% |
+| 155 | 48 | 42% | Real branch | +1/+1 counters, Ramp | Creature 42% Artifact 33% Land 25% Enchantment 6% |
+| 358 | 43 | 37% | Real branch | Tutor | Spell 37% Land 23% Artifact 21% Creature 21% |
+| 470 | 36 | 36% | Real branch | Tapper | Creature 36% Artifact 33% Spell 22% Enchantment 11% |
+| 428 | 34 | 41% | Real branch | +1/+1 counters | Creature 41% Enchantment 38% Artifact 18% Spell 6% |
+| 262 | 33 | 36% | Real branch | Creature removal, Spot removal | Spell 36% Creature 33% Enchantment 21% Artifact 6% |
+| 199 | 32 | 38% | Real branch | Card draw, Lifegain | Artifact 38% Spell 38% Creature 34% Enchantment 3% |
+| 76 | 31 | 48% | Unique effect | -- | Creature 48% Artifact 32% Spell 23% Land 3% |
+| 57 | 29 | 38% | Real branch | Card draw | Creature 38% Spell 31% Enchantment 24% Artifact 17% |
+| 58 | 27 | 48% | Real branch | Lifegain, Ramp | Land 48% Artifact 33% Creature 22% Enchantment 4% |
+| 274 | 21 | 43% | Real branch | Card draw | Creature 43% Artifact 29% Enchantment 19% Spell 5% |
+| 355 | 21 | 48% | Review queue | -- | Creature 48% Spell 24% Artifact 24% Enchantment 5% |
+| 378 | 21 | 33% | Auto-named | Raise cost static effect | Spell 33% Enchantment 24% Artifact 24% Creature 24% |
+| 452 | 21 | 38% | Real branch | Counterspell | Enchantment 38% Creature 33% Spell 14% Artifact 14% |
+| 399 | 19 | 37% | Real branch | Destroy removal, Spot removal | Spell 37% Creature 32% Artifact 26% Enchantment 5% |
+| 251 | 19 | 47% | Real branch | Destroy removal, Spot removal | Creature 47% Spell 26% Land 21% Enchantment 5% |
+| 213 | 15 | 47% | Real branch | Opponent mill | Spell 47% Creature 20% Enchantment 20% Artifact 13% |
+| 348 | 14 | 36% | Real branch | Tutor | Creature 36% Spell 29% Artifact 29% Land 14% |
+| 9 | 14 | 43% | Unique effect | -- | Spell 43% Creature 36% Enchantment 21% Artifact 7% |
+| 252 | 14 | 43% | Unique effect | -- | Enchantment 43% Creature 36% Spell 21% |
+| 225 | 14 | 36% | Review queue | -- | Creature 36% Artifact 29% Enchantment 21% Land 14% |
+| 446 | 13 | 38% | Unique effect | -- | Creature 38% Enchantment 38% Spell 23% |
+| 149 | 13 | 46% | Real branch | Graveyard hate, Spot removal | Creature 46% Enchantment 23% Artifact 15% Spell 8% |
+| 258 | 13 | 38% | Unique effect | -- | Creature 38% Spell 38% Enchantment 23% |
+| 417 | 12 | 42% | Real branch | Ramp | Land 42% Creature 25% Artifact 17% Spell 17% |
+| 370 | 11 | 45% | Real branch | Keyword grant | Creature 45% Enchantment 36% Artifact 18% Planeswalker 9% |
+| 515 | 9 | 33% | Real branch | Exile removal, Spot removal | Creature 33% Spell 33% Artifact 33% |
+| 226 | 9 | 44% | Real branch | Tapper | Creature 44% Artifact 22% Land 22% Spell 11% |
+| 242 | 8 | 25% | Real branch | Card draw | Creature 25% Spell 25% Enchantment 25% Artifact 25% |
+| 564 | 8 | 25% | Real branch | Card draw, Scry | Creature 25% Artifact 25% Enchantment 25% Spell 25% |
+| 648 | 7 | 29% | Real branch | Bounce removal, Spot removal, Token maker | Creature 29% Kindred 29% Enchantment 29% Spell 14% |
+| 626 | 7 | 43% | Real branch | Creature removal, Sacrifice removal, Spot removal, Token maker | Creature 43% Enchantment 29% Spell 14% Planeswalker 14% |
+| 600 | 7 | 29% | Real branch | Impulse, Ramp | Planeswalker 29% Creature 29% Spell 14% Enchantment 14% |
+| 380 | 7 | 43% | Real branch | Token maker | Creature 43% Enchantment 29% Spell 29% |
+| 557 | 7 | 43% | Real branch | Ramp, Self-mill | Land 43% Creature 43% Artifact 14% |
+| 104 | 7 | 43% | Real branch | Tutor | Spell 43% Creature 29% Enchantment 29% |
+| 153 | 5 | 40% | Real branch | +1/+1 counters, Ramp, Token maker | Creature 40% Artifact 40% Land 20% |
+| 661 | 5 | 40% | Real branch | Card draw, Ramp | Land 40% Artifact 40% Creature 20% |
 
 ## Tier B findings
 
 | leaf | cards | top | state | branches | type distribution |
 |---|---|---|---|---|---|
-| 567 | 391 | 44% | Real branch | Burn | Spell 44% Creature 43% Enchantment 9% Artifact 6% |
-| 428 | 164 | 49% | Auto-named | Dig | Creature 49% Spell 39% Artifact 7% Enchantment 7% |
-| 374 | 128 | 44% | Real branch | Tutor | Spell 44% Creature 40% Artifact 16% Enchantment 6% |
-| 510 | 114 | 49% | Real branch | Mass effect | Spell 49% Creature 46% Enchantment 4% Artifact 2% |
-| 279 | 77 | 49% | Unique effect | -- | Creature 49% Spell 29% Enchantment 18% Artifact 4% |
-| 397 | 50 | 46% | Real branch | Burn | Spell 46% Creature 36% Enchantment 14% Artifact 4% |
-| 364 | 44 | 45% | Real branch | Discard | Creature 45% Spell 43% Enchantment 7% Battle 2% |
-| 257 | 42 | 48% | Real branch | Sacrifice removal, Spot removal | Creature 48% Spell 36% Enchantment 10% Battle 5% |
-| 38 | 35 | 46% | Real branch | Sacrifice removal, Spot removal | Creature 46% Spell 37% Enchantment 11% Land 6% |
-| 226 | 31 | 39% | Real branch | Creature removal, Spot removal | Spell 39% Creature 32% Enchantment 19% Artifact 6% |
-| 345 | 28 | 46% | Real branch | Tutor | Creature 46% Spell 36% Artifact 14% Enchantment 4% |
-| 334 | 27 | 44% | Auto-named | Target only | Creature 44% Spell 44% Enchantment 11% Artifact 4% |
-| 316 | 23 | 48% | Real branch | Burn | Spell 48% Creature 48% Enchantment 4% Artifact 4% |
-| 201 | 23 | 39% | Real branch | Regeneration | Creature 39% Spell 35% Artifact 13% Enchantment 9% |
-| 171 | 23 | 48% | Real branch | Tutor | Spell 48% Creature 35% Artifact 13% Planeswalker 4% |
-| 365 | 22 | 45% | Real branch | Mass effect | Creature 45% Spell 41% Enchantment 9% Planeswalker 5% |
-| 380 | 21 | 48% | Real branch | Bounce removal, Creature removal, Spot removal | Creature 48% Spell 38% Artifact 10% Enchantment 10% |
-| 205 | 19 | 47% | Unique effect | -- | Spell 47% Creature 26% Artifact 16% Land 5% |
-| 108 | 17 | 47% | Auto-named | Put at library position | Creature 47% Spell 47% Artifact 6% Land 6% |
-| 267 | 15 | 47% | Unique effect | -- | Spell 47% Creature 40% Artifact 13% Enchantment 13% |
-| 154 | 15 | 47% | Real branch | Board wipe, Mass effect | Spell 47% Artifact 33% Land 7% Creature 7% |
-| 249 | 15 | 47% | Auto-named | Put at library position | Spell 47% Creature 40% Artifact 13% Enchantment 7% |
-| 278 | 14 | 43% | Unique effect | -- | Creature 43% Spell 29% Land 14% Artifact 14% |
-| 87 | 13 | 46% | Auto-named | Put at library position | Spell 46% Land 23% Creature 15% Enchantment 8% |
-| 373 | 11 | 45% | Real branch | Card draw, Tutor | Spell 45% Creature 45% Artifact 18% |
-| 121 | 11 | 45% | Real branch | Board wipe, Mass effect, Reanimation | Spell 45% Creature 27% Enchantment 18% Planeswalker 9% |
-| 584 | 11 | 45% | Real branch | +1/+1 counters, Card draw | Spell 45% Creature 36% Artifact 18% Enchantment 9% |
-| 342 | 9 | 44% | Real branch | Untapper | Spell 44% Creature 44% Planeswalker 11% |
-| 111 | 9 | 44% | Real branch | Creature removal, Destroy removal, Spot removal | Spell 44% Creature 44% Kindred 11% |
-| 135 | 7 | 43% | Auto-named | Pump | Spell 43% Creature 43% Enchantment 14% |
-| 466 | 7 | 43% | Real branch | Surveil, Token maker | Creature 43% Spell 29% Artifact 14% Enchantment 14% |
-| 45 | 7 | 43% | Real branch | Tutor | Spell 43% Creature 43% Artifact 14% |
-| 562 | 6 | 33% | Real branch | Card draw, Discard | Spell 33% Creature 33% Artifact 17% Enchantment 17% |
-| 25 | 6 | 33% | Unique effect | -- | Spell 33% Land 33% Artifact 17% Creature 17% |
-| 203 | 6 | 33% | Real branch | Exile removal, Spot removal | Creature 33% Enchantment 17% Land 17% Spell 17% |
+| 647 | 397 | 44% | Real branch | Burn | Spell 44% Creature 43% Enchantment 9% Artifact 6% |
+| 580 | 147 | 50% | Real branch | Mass effect | Creature 50% Spell 47% Enchantment 2% Artifact 2% |
+| 573 | 133 | 46% | Review queue | -- | Spell 46% Creature 44% Artifact 10% Enchantment 2% |
+| 502 | 132 | 45% | Real branch | Tutor | Spell 45% Creature 39% Artifact 16% Enchantment 6% |
+| 310 | 82 | 48% | Unique effect | -- | Creature 48% Spell 29% Enchantment 20% Artifact 4% |
+| 257 | 54 | 44% | Real branch | Burn | Spell 44% Creature 33% Enchantment 15% Artifact 4% |
+| 208 | 53 | 49% | Real branch | Reanimation | Creature 49% Spell 36% Enchantment 13% Planeswalker 2% |
+| 284 | 45 | 47% | Real branch | Sacrifice removal, Spot removal | Creature 47% Spell 33% Enchantment 11% Battle 4% |
+| 385 | 44 | 45% | Real branch | Discard | Creature 45% Spell 43% Enchantment 7% Battle 2% |
+| 41 | 35 | 46% | Real branch | Sacrifice removal, Spot removal | Creature 46% Spell 37% Enchantment 11% Land 6% |
+| 447 | 31 | 45% | Review queue | -- | Enchantment 45% Spell 32% Creature 13% Artifact 6% |
+| 367 | 30 | 47% | Auto-named | Target only | Creature 47% Spell 43% Enchantment 10% Artifact 3% |
+| 433 | 28 | 46% | Real branch | Tutor | Creature 46% Spell 36% Artifact 14% Enchantment 4% |
+| 357 | 28 | 43% | Real branch | Mass effect | Spell 43% Creature 39% Enchantment 11% Planeswalker 7% |
+| 349 | 25 | 48% | Real branch | Burn | Spell 48% Creature 48% Enchantment 4% Artifact 4% |
+| 215 | 25 | 44% | Real branch | Tutor | Spell 44% Creature 40% Artifact 12% Planeswalker 4% |
+| 207 | 23 | 39% | Real branch | Regeneration | Creature 39% Spell 35% Artifact 13% Enchantment 9% |
+| 382 | 21 | 48% | Real branch | Bounce removal, Creature removal, Spot removal | Creature 48% Spell 38% Artifact 10% Enchantment 10% |
+| 454 | 21 | 48% | Real branch | Copy spell | Creature 48% Spell 48% Enchantment 5% |
+| 224 | 19 | 47% | Unique effect | -- | Spell 47% Creature 26% Artifact 16% Land 5% |
+| 108 | 17 | 47% | Review queue | -- | Creature 47% Spell 47% Artifact 6% Land 6% |
+| 294 | 15 | 47% | Unique effect | -- | Spell 47% Creature 40% Artifact 13% Enchantment 13% |
+| 276 | 15 | 47% | Review queue | -- | Spell 47% Creature 40% Artifact 13% Enchantment 7% |
+| 316 | 14 | 43% | Unique effect | -- | Creature 43% Spell 29% Land 14% Artifact 14% |
+| 126 | 13 | 46% | Real branch | Theft | Creature 46% Spell 31% Artifact 15% Enchantment 8% |
+| 89 | 13 | 46% | Review queue | -- | Spell 46% Land 23% Creature 15% Enchantment 8% |
+| 95 | 12 | 42% | Unique effect | -- | Spell 42% Creature 25% Enchantment 17% Artifact 17% |
+| 440 | 12 | 42% | Real branch | Untapper | Spell 42% Creature 42% Planeswalker 17% |
+| 501 | 11 | 45% | Real branch | Card draw, Tutor | Spell 45% Creature 45% Artifact 18% |
+| 117 | 11 | 45% | Real branch | Board wipe, Mass effect, Reanimation | Spell 45% Creature 27% Enchantment 18% Planeswalker 9% |
+| 643 | 11 | 45% | Real branch | +1/+1 counters, Card draw | Spell 45% Creature 36% Artifact 18% Enchantment 9% |
+| 45 | 9 | 44% | Review queue | -- | Creature 44% Spell 44% Artifact 11% |
+| 641 | 9 | 44% | Real branch | Token maker | Spell 44% Creature 44% Planeswalker 11% |
+| 110 | 9 | 44% | Real branch | Creature removal, Destroy removal, Spot removal | Spell 44% Creature 44% Kindred 11% |
+| 53 | 7 | 43% | Review queue | -- | Spell 43% Enchantment 29% Artifact 14% Creature 14% |
+| 147 | 7 | 43% | Review queue | -- | Spell 43% Creature 43% Enchantment 14% |
+| 12 | 7 | 43% | Real branch | Sacrifice removal, Spot removal | Creature 43% Spell 43% Enchantment 14% |
+| 526 | 7 | 43% | Real branch | Surveil, Token maker | Creature 43% Spell 29% Artifact 14% Enchantment 14% |
+| 597 | 6 | 33% | Real branch | Card draw, Discard | Spell 33% Creature 33% Artifact 17% Enchantment 17% |
+| 210 | 6 | 33% | Real branch | Exile removal, Spot removal | Creature 33% Enchantment 17% Land 17% Spell 17% |
 
 ## Re-run against the sub-branch layer
 
 The same `type_shares` function and the same 50% bar, applied to the type sub-branches instead of the leaves. This is the proof the split worked -- the existence of sub-branches is not.
 
-- typed sub-branches checked: **89** (residual *other types* buckets excluded: mixed by construction)
+- typed sub-branches checked: **97** (residual *other types* buckets excluded: mixed by construction)
 - still type-heterogeneous: **0**
 
 **The leaf counts above are unchanged, and that is correct.** No leaf was re-clustered, so leaf 44 is still 513 cards at Creature 44% / Land 30% / Artifact 28%. The mixing was not removed -- it stopped being what you browse.

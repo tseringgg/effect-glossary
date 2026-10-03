@@ -1,0 +1,276 @@
+====================================================================================================
+Alms Beast | b221939c-93e7-4ffc-b995-5b67e173ee15
+ORACLE TEXT:
+Creatures blocking or blocked by this creature have lifelink.
+-- Unimplemented:static_structure nodes --
+ path: abilities[0].effect
+ description: "Static pattern matched but line failed static parser: Creatures blocking or blocked by this creature have lifelink."
+
+====================================================================================================
+Blue Ribbon | 95e4b2e9-2205-4ebf-a1db-b30f027c73c0
+ORACLE TEXT:
+When this Equipment enters, ask a person outside the game which creature you control is most deserving of a blue ribbon. Attach this Equipment to that creature.
+Equipped creature has best in show. (Whenever another creature becomes the target of a spell or ability you control, you may copy that spell or ability. If you do, the copy targets this creature.)
+Equip {3}
+-- Unimplemented:static_structure nodes --
+ path: abilities[0].effect
+ description: "Static pattern matched but line failed static parser: Equipped creature has best in show."
+
+====================================================================================================
+Deb Thomas | a01c3894-92de-4318-9ceb-34361d56f7de
+ORACLE TEXT:
+Whenever an Employee enters under your control, put a loyalty counter on Deb Thomas.
+[+1]: Create a 1/1 red Employee creature token.
+[−X]: Employees and Dogs you control get +X/+0 until end of turn.
+-- Unimplemented:static_structure nodes --
+ path: abilities[1].effect
+ description: "Static pattern matched but line failed static parser: [−X]: Employees and Dogs you control get +X/+0 until end of turn."
+
+====================================================================================================
+Do-It-Yourself Seraph | d69a899e-a77b-40eb-a9e0-2d9c5056122d
+ORACLE TEXT:
+Flying
+Whenever this creature attacks, you may search your library for an artifact card, exile it, then shuffle.
+This creature has the text box of each card exiled with this creature in addition to its own.
+-- Unimplemented:static_structure nodes --
+ path: abilities[0].effect
+ description: "Static pattern matched but line failed static parser: This creature has the text box of each card exiled with this creature in addition to its own."
+
+====================================================================================================
+Exiled Doomsayer | 7a4c2d47-3489-4e56-b38b-de2dddd942ad
+ORACLE TEXT:
+All morph costs cost {2} more. (This doesn't affect the cost to cast creature spells face down.)
+-- Unimplemented:static_structure nodes --
+ path: abilities[0].effect
+ description: "Static pattern matched but line failed static parser: All morph costs cost {2} more."
+
+====================================================================================================
+Finally! Left-Handed Magic Cards | 9befbb7e-a44d-448a-802f-5a0cfa616d91
+ORACLE TEXT:
+Each creature's base power is equal to its printed toughness.
+Each creature's base toughness is equal to its printed power.
+Whenever chaos ensues, draw a card from the bottom of your library.
+-- Unimplemented:static_structure nodes --
+ path: abilities[0].effect
+ description: "Static pattern matched but line failed static parser: Each creature's base power is equal to its printed toughness."
+
+====================================================================================================
+Flaming Fist | cdaefc96-4560-43bb-9514-bf87657bd481
+ORACLE TEXT:
+Commander creatures you own have "Whenever this creature attacks, it gains double strike until end of turn."
+-- Unimplemented:static_structure nodes --
+ path: abilities[0].effect
+ description: "Static pattern matched but line failed static parser: Commander creatures you own have \"Whenever this creature attacks, it gains double strike until end of turn.\""
+
+====================================================================================================
+Gaddock Teeg | 98dd6d43-cc56-4656-9e0c-240d0679b404
+ORACLE TEXT:
+Noncreature spells with mana value 4 or greater can't be cast.
+Noncreature spells with {X} in their mana costs can't be cast.
+-- Unimplemented:static_structure nodes --
+ path: abilities[0].effect
+ description: "Static pattern matched but line failed static parser: Noncreature spells with {X} in their mana costs can't be cast."
+
+====================================================================================================
+Ghostfire Blade | 093b1d8d-c836-4e9b-855b-4020361aa6ac
+ORACLE TEXT:
+Equipped creature gets +2/+2.
+Equip {3}
+This Equipment's equip ability costs {2} less to activate if it targets a colorless creature.
+-- Unimplemented:static_structure nodes --
+ path: abilities[0].effect
+ description: "Static pattern matched but line failed static parser: This Equipment's equip ability costs {2} less to activate if it targets a colorless creature."
+
+====================================================================================================
+Gosta Dirk | fb966147-1d60-4150-b4e7-acf301b2d067
+ORACLE TEXT:
+First strike
+Creatures with islandwalk can be blocked as though they didn't have islandwalk.
+-- Unimplemented:static_structure nodes --
+ path: abilities[0].effect
+ description: "Static pattern matched but line failed static parser: Creatures with islandwalk can be blocked as though they didn't have islandwalk."
+
+====================================================================================================
+Haunted One | 689cd6a8-8be0-49a6-9758-a81cc9f55cc8
+ORACLE TEXT:
+Commander creatures you own have "Whenever this creature becomes tapped, it and other creatures you control that share a creature type with it each get +2/+0 and gain undying until end of turn." (When a creature with undying dies, if it had no +1/+1 counters on it, return it to the battlefield under its owner's control with a +1/+1 counter on it.)
+-- Unimplemented:static_structure nodes --
+ path: abilities[0].effect
+ description: "Static pattern matched but line failed static parser: Commander creatures you own have \"Whenever this creature becomes tapped, it and other creatures you control that share a creature type with it each get +2/+0 and gain undying until end of turn.\""
+
+====================================================================================================
+Hellspur Posse Boss | 15260fa6-6062-423a-a248-81292ea46178
+ORACLE TEXT:
+Other outlaws you control have haste. (Assassins, Mercenaries, Pirates, Rogues, and Warlocks are outlaws.)
+When this creature enters, create two 1/1 red Mercenary creature tokens with "{T}: Target creature you control gets +1/+0 until end of turn. Activate only as a sorcery."
+-- Unimplemented:static_structure nodes --
+ path: abilities[0].effect
+ description: "Static pattern matched but line failed static parser: Other outlaws you control have haste."
+
+====================================================================================================
+Henzie "Toolbox" Torre | 5320f5a6-8066-47d4-aa0a-4c879f39d413
+ORACLE TEXT:
+Each creature spell you cast with mana value 4 or greater has blitz. The blitz cost is equal to its mana cost. (You may choose to cast that spell for its blitz cost. If you do, it gains haste and "When this creature dies, draw a card." Sacrifice it at the beginning of the next end step.)
+Blitz costs you pay cost {1} less for each time you've cast your commander from the command zone this game.
+-- Unimplemented:static_structure nodes --
+ path: abilities[0].effect
+ description: "Static pattern matched but line failed static parser: Each creature spell you cast with mana value 4 or greater has blitz. The blitz cost is equal to its mana cost."
+
+====================================================================================================
+I Am Untouchable | 9694dfb6-21db-44a1-93ef-3871c0d51b8a
+ORACLE TEXT:
+(An ongoing scheme remains face up until it's abandoned.)
+You and permanents you control have hexproof.
+When combat damage is dealt to you, create a 4/4 colorless Scarecrow artifact creature token with vigilance, then abandon this scheme.
+-- Unimplemented:static_structure nodes --
+ path: abilities[0].effect
+ description: "Static pattern matched but line failed static parser: You and permanents you control have hexproof."
+
+====================================================================================================
+Inquisitive Glimmer | 4abb227a-534e-4300-9009-065a10f10e8a
+ORACLE TEXT:
+Enchantment spells you cast cost {1} less to cast.
+Unlock costs you pay cost {1} less.
+-- Unimplemented:static_structure nodes --
+ path: abilities[0].effect
+ description: "Static pattern matched but line failed static parser: Unlock costs you pay cost {1} less."
+
+====================================================================================================
+Kasmina, Enigma Sage | 06425cb9-d157-4155-a727-78656df12458
+ORACLE TEXT:
+Each other planeswalker you control has the loyalty abilities of Kasmina.
+[+2]: Scry 1.
+[−X]: Create a 0/0 green and blue Fractal creature token. Put X +1/+1 counters on it.
+[−8]: Search your library for an instant or sorcery card that shares a color with this planeswalker, exile that card, then shuffle. You may cast that card without paying its mana cost.
+-- Unimplemented:static_structure nodes --
+ path: abilities[0].effect
+ description: "Static pattern matched but line failed static parser: Each other planeswalker you control has the loyalty abilities of Kasmina."
+
+====================================================================================================
+Metamorphic Alteration | 2518a4f2-607f-41bb-9389-2009138d6b09
+ORACLE TEXT:
+Enchant creature
+As this Aura enters, choose a creature.
+Enchanted creature is a copy of the chosen creature.
+-- Unimplemented:static_structure nodes --
+ path: abilities[1].effect
+ description: "Static pattern matched but line failed static parser: Enchanted creature is a copy of the chosen creature."
+
+====================================================================================================
+Phyrexian Cytoshaper | aff48a5e-a4ef-434b-90b9-c96a44a94b8d
+ORACLE TEXT:
+When Phyrexian Cytoshaper enters the battlefield, incubate 1.
+Incubator tokens you control have artifact evolve. (Whenever a creature enters the battlefield under your control with greater power or toughness that the number of +1/+1 counters on that token, put a +1/+1 counter on that token.)
+-- Unimplemented:static_structure nodes --
+ path: abilities[0].effect
+ description: "Static pattern matched but line failed static parser: Incubator tokens you control have artifact evolve."
+
+====================================================================================================
+Robaran Mercenaries | 1d8c8c71-d569-450d-adc1-1a1b9aea0123
+ORACLE TEXT:
+Vigilance
+This creature has all activated abilities of all legendary creatures you control.
+-- Unimplemented:static_structure nodes --
+ path: abilities[0].effect
+ description: "Static pattern matched but line failed static parser: This creature has all activated abilities of all legendary creatures you control."
+
+====================================================================================================
+Shapeshifter | 82a6d89d-9215-4540-b7d5-26cdd6afb05b
+ORACLE TEXT:
+As this creature enters, choose a number between 0 and 7.
+At the beginning of your upkeep, you may choose a number between 0 and 7.
+Shapeshifter's power is equal to the last chosen number and its toughness is equal to 7 minus that number.
+-- Unimplemented:static_structure nodes --
+ path: abilities[0].effect
+ description: "Static pattern matched but line failed static parser: Shapeshifter's power is equal to the last chosen number and its toughness is equal to 7 minus that number."
+
+====================================================================================================
+Stoic Star-Captain | b842f058-ff01-45a0-ae23-51bbb2ed2d93
+ORACLE TEXT:
+Each creature you control crews Vehicles and stations permanents as though its power were 2 greater.
+Exhaust — {1}{W}: Seek a Spacecraft card.
+-- Unimplemented:static_structure nodes --
+ path: abilities[0].effect
+ description: "Static pattern matched but line failed static parser: Each creature you control crews Vehicles and stations permanents as though its power were 2 greater."
+
+====================================================================================================
+Street Urchin | f52759f9-7aa5-4493-8fe3-7be9ec340dde
+ORACLE TEXT:
+Commander creatures you own have "{1}, Sacrifice another creature or an artifact: This creature deals 1 damage to any target."
+-- Unimplemented:static_structure nodes --
+ path: abilities[0].effect
+ description: "Static pattern matched but line failed static parser: Commander creatures you own have \"{1}, Sacrifice another creature or an artifact: This creature deals 1 damage to any target.\""
+
+====================================================================================================
+Strutting Turkey | 0aee11c8-9881-43c8-9c0e-544960c831e7
+ORACLE TEXT:
+When this creature enters,
+exile target creature card with mana value 2 or less from your graveyard. If it has augment, combine it with a host you control. Otherwise, put it onto the battlefield.
+-- Unimplemented:static_structure nodes --
+ path: abilities[0].effect
+ description: "Static pattern matched but line failed static parser: exile target creature card with mana value 2 or less from your graveyard. If it has augment, combine it with a host you control. Otherwise, put it onto the battlefield."
+
+====================================================================================================
+Taste for Mayhem | 60e7517f-7cc5-4073-9f2c-3e6acb891128
+ORACLE TEXT:
+Enchant creature
+Enchanted creature gets +2/+0.
+Hellbent — Enchanted creature gets an additional +2/+0 as long as you have no cards in hand.
+-- Unimplemented:static_structure nodes --
+ path: abilities[0].effect
+ description: "Static pattern matched but line failed static parser: Hellbent — Enchanted creature gets an additional +2/+0 as long as you have no cards in hand."
+
+====================================================================================================
+Templar Knight | f9453fe2-fadf-4cd4-8d2c-0eaa0e2d78d6
+ORACLE TEXT:
+Vigilance
+{W}, Tap five untapped attacking creatures you control named Templar Knight: Search your library for a legendary artifact card, put it onto the battlefield, then shuffle.
+A deck can have any number of cards named Templar Knight.
+-- Unimplemented:static_structure nodes --
+ path: abilities[1].effect
+ description: "Static pattern matched but line failed static parser: A deck can have any number of cards named Templar Knight."
+
+====================================================================================================
+The Fourteenth Doctor | 0afcf1eb-ac2c-4bb0-8823-9fe45968c2d9
+ORACLE TEXT:
+When you cast this spell, reveal the top fourteen cards of your library. Put all Doctor cards revealed this way into your graveyard and the rest on the bottom of your library in a random order.
+You may have The Fourteenth Doctor enter as a copy of a Doctor card in your graveyard that was put there from your library this turn. If you do, it gains haste until end of turn.
+-- Unimplemented:static_structure nodes --
+ path: abilities[0].effect
+ description: "Static pattern matched but line failed static parser: You may have The Fourteenth Doctor enter as a copy of a Doctor card in your graveyard that was put there from your library this turn. If you do, it gains haste until end of turn."
+
+====================================================================================================
+Trivia Contest | 328ba359-91c2-4268-b7ed-925acd1c0023
+ORACLE TEXT:
+Visit — An opponent chooses blue card, enchantment card, or creature type, then mills a card. You have ten seconds to name something from the chosen category that starts with the same letter as the milled card. If you do, claim the prize!
+Prize — You get {TK}{TK}{TK}, then you may put a sticker on a nonland permanent you own. Sacrifice Trivia Contest and open an Attraction.
+-- Unimplemented:static_structure nodes --
+ path: abilities[0].effect
+ description: "Static pattern matched but line failed static parser: Visit — An opponent chooses blue card, enchantment card, or creature type, then mills a card. You have ten seconds to name something from the chosen category that starts with the same letter as the milled card. If you do, claim the prize!"
+
+====================================================================================================
+Undertow | 1dc51112-ee5d-492a-9c79-80ebcad60bc8
+ORACLE TEXT:
+Creatures with islandwalk can be blocked as though they didn't have islandwalk.
+-- Unimplemented:static_structure nodes --
+ path: abilities[0].effect
+ description: "Static pattern matched but line failed static parser: Creatures with islandwalk can be blocked as though they didn't have islandwalk."
+
+====================================================================================================
+Unholy Citadel | d410027b-1c22-461e-939d-06a2c851352e
+ORACLE TEXT:
+Black legendary creatures you control have "bands with other legendary creatures." (Any legendary creatures can attack in a band as long as at least one has "bands with other legendary creatures." Bands are blocked as a group. If at least two legendary creatures you control, one of which has "bands with other legendary creatures," are blocking or being blocked by the same creature, you divide that creature's combat damage, not its controller, among any of the creatures it's being blocked by or is blocking.)
+-- Unimplemented:static_structure nodes --
+ path: abilities[0].effect
+ description: "Static pattern matched but line failed static parser: Black legendary creatures you control have \"bands with other legendary creatures.\""
+
+====================================================================================================
+Vazal, the Compleat | 6d69c0be-0fe0-4503-80b9-0365cb6aed41
+ORACLE TEXT:
+Megalegendary (Your deck can have only one copy of this card.)
+Vigilance, trample
+Vazal, the Compleat has the activated abilities of all other permanents on the battlefield.
+-- Unimplemented:static_structure nodes --
+ path: abilities[1].effect
+ description: "Static pattern matched but line failed static parser: Vazal, the Compleat has the activated abilities of all other permanents on the battlefield."
+

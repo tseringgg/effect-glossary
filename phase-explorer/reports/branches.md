@@ -12,11 +12,11 @@ Every leaf lands in exactly one of four states. None of them means 'unprocessed'
 
 | state | leaves | cards | what it means |
 |---|---|---|---|
-| **Real branches** | 413 | 13,426 | placed by a curated rule, named from sourced vocabulary |
-| **Auto-named (flagged)** | 104 | 4,409 | clean shared structure, machine-generated name, always badged |
-| **Review queue** | 21 | 484 | genuinely uncertain, awaiting a human decision |
-| **Unique effect** | 53 | 1,099 | structure shared with no other leaf -- a finding, not a gap |
-| total | 591 | 19,418 | |
+| **Real branches** | 453 | 14,534 | placed by a curated rule, named from sourced vocabulary |
+| **Auto-named (flagged)** | 33 | 1,268 | clean shared structure, machine-generated name, always badged |
+| **Review queue** | 122 | 5,458 | genuinely uncertain, awaiting a human decision |
+| **Unique effect** | 55 | 1,259 | structure shared with no other leaf -- a finding, not a gap |
+| total | 663 | 22,519 | |
 
 The four states are mutually exclusive and sum to the total: the auto-named fallback only ever claims leaves that no curated rule matched. Branch assignment is still many-to-many WITHIN a state, so the per-branch card counts further down sum to more than the corpus.
 
@@ -28,71 +28,57 @@ Mana dork and Mana rock were refused by the first pass for one stated reason -- 
 
 | branch | source | otag slugs | rule (structural) | leaves | cards |
 |---|---|---|---|---|---|
-| **Board wipe** | curated | `sweeper` | dominant effect in {DestroyAll, DamageAll, ChangeZoneAll, SacrificeAll, BounceAll, ExileAll} -- mass removal only; PumpAll deliberately excluded | 19 | 332 |
-| **One-sided sweeper** | otag | `sweeper-one-sided` | a mass-removal effect whose target controller scope is Opponent | 2 | 16 |
-| **Mass effect** | otag | `sweeper`, `mass-shrink`, `anthem` | dominant effect is any '...All' / each-player mass effect, removal or not -- the broad superset of Board wipe | 45 | 861 |
-| **Spot removal** | curated | `spot-removal` | dominant effect in {Destroy, Bounce, Sacrifice, Fight}, or a ChangeZone ending in Exile, with no mass effect dominant | 113 | 2,843 |
-| **Creature removal** | curated | `removal-creature` | a SINGLE-TARGET removal effect whose bound target filter is Typed[Creature...]; mass creature removal is Board wipe | 29 | 741 |
-| **Destroy removal** | otag | `removal-destroy` | dominant effect is Destroy | 29 | 831 |
-| **Exile removal** | otag | `removal-exile` | a dominant ChangeZone transition ending in Exile, not originating in a graveyard | 26 | 577 |
-| **Bounce removal** | otag | `removal-bounce` | dominant effect is Bounce | 34 | 802 |
-| **Sacrifice removal** | otag | `removal-sacrifice` | dominant effect is Sacrifice | 16 | 474 |
-| **Reanimation** | otag | `reanimate-creature`, `mass-reanimation` | a dominant ChangeZone transition Graveyard -> Battlefield | 8 | 172 |
-| **Graveyard hate** | otag | `hate-graveyard`, `sweeper-graveyard` | a dominant ChangeZone transition Graveyard -> Exile | 6 | 119 |
-| **Self-mill** | otag | `mill-self` | a dominant Mill effect pointed at Controller | 5 | 164 |
-| **Opponent mill** | otag | `mill-opponent`, `mill-any`, `mill-each` | a dominant Mill effect pointed at Player / an Opponent-scoped filter | 5 | 106 |
-| **Surveil** | otag | `surveil` | dominant effect is Surveil | 5 | 114 |
-| **Scry** | otag | `scry` | dominant effect is Scry | 4 | 137 |
-| **Card draw** | otag | `pure-draw`, `draw-engine`, `burst-draw` | dominant effect is Draw | 38 | 1,565 |
-| **Tutor** | otag | `tutor-to-hand` | dominant effect is SearchLibrary | 28 | 513 |
-| **Discard** | otag | `discard` | dominant effect is Discard | 9 | 362 |
-| **Counterspell** | slang | `counterspell` | dominant effect is Counter | 13 | 334 |
-| **Burn** | slang+otag | `burn-creature`, `burn-any`, `burn-player` | dominant effect is DealDamage (single target) | 26 | 1,327 |
-| **Mass burn** | otag | `burn-player-each` | dominant effect is DamageEachPlayer -- damage to every player. Damage to every creature (DamageAll) is Board wipe, not this | 4 | 112 |
-| **Lifegain** | otag | `lifegain`, `repeatable-lifegain` | dominant effect is GainLife | 8 | 559 |
-| **Ramp** | curated | `ramp` | dominant effect is Mana | 32 | 1,269 |
-| **Mana dork** | curated (glossary.yaml function:) | `mana-creature` | dominant effect is Mana AND the type line is a Creature | 1 | 6 |
-| **Mana rock** | curated (glossary.yaml function:) | `mana-artifact` | dominant effect is Mana AND the type line is an Artifact | 1 | 7 |
-| **Land ramp** | curated | `land-ramp` | a dominant ChangeZone ending on the Battlefield bound to a Typed[Land...] filter | 2 | 29 |
-| **Token maker** | curated | `repeatable-creature-tokens` | dominant effect is Token | 34 | 1,430 |
+| **Board wipe** | curated | `sweeper` | dominant effect in {DestroyAll, DamageAll, ChangeZoneAll, SacrificeAll, BounceAll, ExileAll} -- mass removal only; PumpAll deliberately excluded | 18 | 342 |
+| **One-sided sweeper** | otag | `sweeper-one-sided` | a mass-removal effect whose target controller scope is Opponent | 2 | 21 |
+| **Mass effect** | otag | `sweeper`, `mass-shrink`, `anthem` | dominant effect is any '...All' / each-player mass effect, removal or not -- the broad superset of Board wipe | 47 | 971 |
+| **Spot removal** | curated | `spot-removal` | dominant effect in {Destroy, Bounce, Sacrifice, Fight}, or a ChangeZone ending in Exile, with no mass effect dominant | 119 | 2,915 |
+| **Creature removal** | curated | `removal-creature` | a SINGLE-TARGET removal effect whose bound target filter is Typed[Creature...]; mass creature removal is Board wipe | 30 | 767 |
+| **Destroy removal** | otag | `removal-destroy` | dominant effect is Destroy | 30 | 850 |
+| **Exile removal** | otag | `removal-exile` | a dominant ChangeZone transition ending in Exile, not originating in a graveyard | 25 | 615 |
+| **Bounce removal** | otag | `removal-bounce` | dominant effect is Bounce | 38 | 837 |
+| **Sacrifice removal** | otag | `removal-sacrifice` | dominant effect is Sacrifice | 19 | 496 |
+| **Reanimation** | otag | `reanimate-creature`, `mass-reanimation` | a dominant ChangeZone transition Graveyard -> Battlefield | 9 | 241 |
+| **Graveyard hate** | otag | `hate-graveyard`, `sweeper-graveyard` | a dominant ChangeZone transition Graveyard -> Exile | 5 | 75 |
+| **Self-mill** | otag | `mill-self` | a dominant Mill effect pointed at Controller | 5 | 169 |
+| **Opponent mill** | otag | `mill-opponent`, `mill-any`, `mill-each` | a dominant Mill effect pointed at Player / an Opponent-scoped filter | 5 | 109 |
+| **Surveil** | otag | `surveil` | dominant effect is Surveil | 5 | 115 |
+| **Scry** | otag | `scry` | dominant effect is Scry | 5 | 150 |
+| **Card draw** | otag | `pure-draw`, `draw-engine`, `burst-draw` | dominant effect is Draw | 45 | 1,768 |
+| **Tutor** | otag | `tutor-to-hand` | dominant effect is SearchLibrary | 30 | 538 |
+| **Discard** | otag | `discard` | dominant effect is Discard | 9 | 365 |
+| **Counterspell** | slang | `counterspell` | dominant effect is Counter | 13 | 339 |
+| **Burn** | slang+otag | `burn-creature`, `burn-any`, `burn-player` | dominant effect is DealDamage (single target) | 27 | 1,375 |
+| **Mass burn** | otag | `burn-player-each` | dominant effect is DamageEachPlayer -- damage to every player. Damage to every creature (DamageAll) is Board wipe, not this | 4 | 113 |
+| **Lifegain** | otag | `lifegain`, `repeatable-lifegain` | dominant effect is GainLife | 8 | 563 |
+| **Ramp** | curated | `ramp` | dominant effect is Mana | 44 | 1,491 |
+| **Mana dork** | curated (glossary.yaml function:) | `mana-creature` | dominant effect is Mana AND the type line is a Creature | 2 | 13 |
+| **Mana rock** | curated (glossary.yaml function:) | `mana-artifact` | dominant effect is Mana AND the type line is an Artifact | 4 | 123 |
+| **Land ramp** | curated | `land-ramp` | a dominant ChangeZone ending on the Battlefield bound to a Typed[Land...] filter | 2 | 30 |
+| **Token maker** | curated | `repeatable-creature-tokens` | dominant effect is Token | 39 | 1,560 |
 | **Clone effect** | curated | `clone`, `copy-creature` | dominant effect is BecomeCopy | 1 | 49 |
-| **+1/+1 counters** | otag | `gives-pp-counters`, `gains-pp-counters`, `counters-matter` | dominant effect is PutCounter (single target) | 45 | 1,373 |
-| **Mass +1/+1 counters** | otag | `gives-pp-counters-to-all` | dominant effect is PutCounterAll -- counters on every matching permanent | 5 | 91 |
-| **Tapper** | otag | `tapper-creature` | dominant effect is Tap | 28 | 852 |
-| **Untapper** | otag | `untapper-creature` | dominant effect is Untap | 11 | 148 |
-| **Anthem** | otag | `anthem` | a dominant static Continuous modification adding power or toughness | 16 | 138 |
+| **+1/+1 counters** | otag | `gives-pp-counters`, `gains-pp-counters`, `counters-matter` | dominant effect is PutCounter (single target) | 54 | 1,527 |
+| **Mass +1/+1 counters** | otag | `gives-pp-counters-to-all` | dominant effect is PutCounterAll -- counters on every matching permanent | 6 | 104 |
+| **Tapper** | otag | `tapper-creature` | dominant effect is Tap | 31 | 941 |
+| **Untapper** | otag | `untapper-creature` | dominant effect is Untap | 10 | 161 |
+| **Anthem** | otag | `anthem` | a dominant static Continuous modification adding power or toughness | 19 | 166 |
 | **Evasion grant** | otag | `evasion` | a dominant static Continuous modification granting an evasion keyword (Flying, Menace, Fear, Intimidate, Shadow, Skulk, Horsemanship, Protection) | 0 | 0 |
-| **Keyword grant** | otag | `gives-trample`, `evasion` | a dominant static Continuous AddKeyword modification, or a dominant AddKeyword effect | 4 | 26 |
-| **Damage prevention** | otag | `damage-prevention` | dominant effect is PreventDamage | 4 | 126 |
-| **Cost reduction** | otag | `cost-reduction` | dominant static mode is ReduceCost | 9 | 173 |
-| **Regeneration** | otag | `regenerates-self`, `regenerates-other` | dominant effect is Regenerate | 5 | 151 |
+| **Keyword grant** | otag | `gives-trample`, `evasion` | a dominant static Continuous AddKeyword modification, or a dominant AddKeyword effect | 4 | 47 |
+| **Damage prevention** | otag | `damage-prevention` | dominant effect is PreventDamage | 4 | 127 |
+| **Cost reduction** | otag | `cost-reduction` | dominant static mode is ReduceCost | 9 | 178 |
+| **Regeneration** | otag | `regenerates-self`, `regenerates-other` | dominant effect is Regenerate | 5 | 152 |
 | **Drain** | otag | `drain-life`, `drain-creature` | LoseLife AND GainLife both dominant -- the pair is what makes it a drain rather than plain life loss, which has no sourced name of its own | 1 | 7 |
-| **Theft** | otag | `theft-creature`, `theft-permanent`, `exchange-control` | dominant effect is GainControl | 5 | 51 |
-| **Copy spell** | otag | `copy-spell` | dominant effect is CopySpell | 4 | 87 |
-| **Impulse** | otag | `impulse`, `repeatable-impulse`, `impulse-onto-battlefield` | dominant effect is ExileTop -- exile off the top, playable from exile | 3 | 101 |
-| **Attach** `AUTO` | auto-named (machine-generated) |  | fallback: dominant fact eff:Attach and no curated rule matched | 2 | 20 |
-| **Become prepared** `AUTO` | auto-named (machine-generated) |  | fallback: dominant fact eff:BecomePrepared and no curated rule matched | 2 | 40 |
-| **Copy token of** `AUTO` | auto-named (machine-generated) |  | fallback: dominant fact eff:CopyTokenOf and no curated rule matched | 4 | 63 |
-| **Dig** `AUTO` | auto-named (machine-generated) |  | fallback: dominant fact eff:Dig and no curated rule matched | 8 | 302 |
-| **Goad** `AUTO` | auto-named (machine-generated) |  | fallback: dominant fact eff:Goad and no curated rule matched | 2 | 15 |
-| **Lose life** `AUTO` | auto-named (machine-generated) |  | fallback: dominant fact eff:LoseLife and no curated rule matched | 7 | 377 |
-| **Pay cost** `AUTO` | auto-named (machine-generated) |  | fallback: dominant fact eff:PayCost and no curated rule matched | 2 | 223 |
-| **Pump** `AUTO` | auto-named (machine-generated) |  | fallback: dominant fact eff:Pump and no curated rule matched | 9 | 1,119 |
-| **Put at library position** `AUTO` | auto-named (machine-generated) |  | fallback: dominant fact eff:PutAtLibraryPosition and no curated rule matched | 9 | 117 |
-| **Put on top or bottom** `AUTO` | auto-named (machine-generated) |  | fallback: dominant fact eff:PutOnTopOrBottom and no curated rule matched | 3 | 22 |
-| **Reveal hand** `AUTO` | auto-named (machine-generated) |  | fallback: dominant fact eff:RevealHand and no curated rule matched | 4 | 167 |
-| **Reveal until** `AUTO` | auto-named (machine-generated) |  | fallback: dominant fact eff:RevealUntil and no curated rule matched | 2 | 19 |
-| **Seek** `AUTO` | auto-named (machine-generated) |  | fallback: dominant fact eff:Seek and no curated rule matched | 2 | 18 |
-| **Target only** `AUTO` | auto-named (machine-generated) |  | fallback: dominant fact eff:TargetOnly and no curated rule matched | 8 | 165 |
-| **Can't attack static effect** `AUTO` | auto-named (machine-generated) |  | fallback: dominant fact eff:static:CantAttack and no curated rule matched | 2 | 70 |
+| **Theft** | otag | `theft-creature`, `theft-permanent`, `exchange-control` | dominant effect is GainControl | 7 | 116 |
+| **Copy spell** | otag | `copy-spell` | dominant effect is CopySpell | 4 | 92 |
+| **Impulse** | otag | `impulse`, `repeatable-impulse`, `impulse-onto-battlefield` | dominant effect is ExileTop -- exile off the top, playable from exile | 3 | 105 |
+| **Choose** `AUTO` | auto-named (machine-generated) |  | fallback: dominant fact eff:Choose and no curated rule matched | 2 | 142 |
+| **Lose life** `AUTO` | auto-named (machine-generated) |  | fallback: dominant fact eff:LoseLife and no curated rule matched | 7 | 391 |
+| **Pay cost** `AUTO` | auto-named (machine-generated) |  | fallback: dominant fact eff:PayCost and no curated rule matched | 2 | 257 |
+| **Reveal hand** `AUTO` | auto-named (machine-generated) |  | fallback: dominant fact eff:RevealHand and no curated rule matched | 4 | 170 |
+| **Target only** `AUTO` | auto-named (machine-generated) |  | fallback: dominant fact eff:TargetOnly and no curated rule matched | 8 | 176 |
 | **Can't be activated static effect** `AUTO` | auto-named (machine-generated) |  | fallback: dominant fact eff:static:CantBeActivated and no curated rule matched | 2 | 28 |
-| **Can't be blocked static effect** `AUTO` | auto-named (machine-generated) |  | fallback: dominant fact eff:static:CantBeBlocked and no curated rule matched | 2 | 77 |
-| **Can't block static effect (itself)** `AUTO` | auto-named (machine-generated) |  | fallback: dominant fact eff:static:CantBlock and no curated rule matched | 2 | 91 |
 | **Can't untap static effect** `AUTO` | auto-named (machine-generated) |  | fallback: dominant fact eff:static:CantUntap and no curated rule matched | 2 | 29 |
-| **Continuous static effect** `AUTO` | auto-named (machine-generated) |  | fallback: dominant fact eff:static:Continuous and no curated rule matched | 23 | 1,338 |
-| **Graveyard cast permission static effect** `AUTO` | auto-named (machine-generated) |  | fallback: dominant fact eff:static:GraveyardCastPermission and no curated rule matched | 2 | 30 |
-| **May look at top of library static effect (typed)** `AUTO` | auto-named (machine-generated) |  | fallback: dominant fact eff:static:MayLookAtTopOfLibrary and no curated rule matched | 2 | 21 |
-| **Raise cost static effect** `AUTO` | auto-named (machine-generated) |  | fallback: dominant fact eff:static:RaiseCost and no curated rule matched | 3 | 58 |
+| **May look at top of library static effect (typed)** `AUTO` | auto-named (machine-generated) |  | fallback: dominant fact eff:static:MayLookAtTopOfLibrary and no curated rule matched | 2 | 23 |
+| **Raise cost static effect** `AUTO` | auto-named (machine-generated) |  | fallback: dominant fact eff:static:RaiseCost and no curated rule matched | 4 | 52 |
 
 **Defined but matched zero leaves:** Evasion grant. The rule is kept rather than deleted: the effect exists in the corpus but is never dominant in any leaf, which is itself the finding.
 
@@ -100,82 +86,68 @@ Mana dork and Mana rock were refused by the first pass for one stated reason -- 
 
 | branch | auto | leaves | cards |
 |---|---|---|---|
-| Spot removal |  | 113 | 2,843 |
-| Mass effect |  | 45 | 861 |
-| +1/+1 counters |  | 45 | 1,373 |
-| Card draw |  | 38 | 1,565 |
-| Bounce removal |  | 34 | 802 |
-| Token maker |  | 34 | 1,430 |
-| Ramp |  | 32 | 1,269 |
-| Creature removal |  | 29 | 741 |
-| Destroy removal |  | 29 | 831 |
-| Tutor |  | 28 | 513 |
-| Tapper |  | 28 | 852 |
-| Exile removal |  | 26 | 577 |
-| Burn |  | 26 | 1,327 |
-| Continuous static effect | yes | 23 | 1,338 |
-| Board wipe |  | 19 | 332 |
-| Sacrifice removal |  | 16 | 474 |
-| Anthem |  | 16 | 138 |
-| Counterspell |  | 13 | 334 |
-| Untapper |  | 11 | 148 |
-| Discard |  | 9 | 362 |
-| Cost reduction |  | 9 | 173 |
-| Pump | yes | 9 | 1,119 |
-| Put at library position | yes | 9 | 117 |
-| Reanimation |  | 8 | 172 |
-| Lifegain |  | 8 | 559 |
-| Dig | yes | 8 | 302 |
-| Target only | yes | 8 | 165 |
-| Lose life | yes | 7 | 377 |
-| Graveyard hate |  | 6 | 119 |
-| Self-mill |  | 5 | 164 |
-| Opponent mill |  | 5 | 106 |
-| Surveil |  | 5 | 114 |
-| Mass +1/+1 counters |  | 5 | 91 |
-| Regeneration |  | 5 | 151 |
-| Theft |  | 5 | 51 |
-| Scry |  | 4 | 137 |
-| Mass burn |  | 4 | 112 |
-| Keyword grant |  | 4 | 26 |
-| Damage prevention |  | 4 | 126 |
-| Copy spell |  | 4 | 87 |
-| Copy token of | yes | 4 | 63 |
-| Reveal hand | yes | 4 | 167 |
-| Impulse |  | 3 | 101 |
-| Put on top or bottom | yes | 3 | 22 |
-| Raise cost static effect | yes | 3 | 58 |
-| One-sided sweeper |  | 2 | 16 |
-| Land ramp |  | 2 | 29 |
-| Attach | yes | 2 | 20 |
-| Become prepared | yes | 2 | 40 |
-| Goad | yes | 2 | 15 |
-| Pay cost | yes | 2 | 223 |
-| Reveal until | yes | 2 | 19 |
-| Seek | yes | 2 | 18 |
-| Can't attack static effect | yes | 2 | 70 |
+| Spot removal |  | 119 | 2,915 |
+| +1/+1 counters |  | 54 | 1,527 |
+| Mass effect |  | 47 | 971 |
+| Card draw |  | 45 | 1,768 |
+| Ramp |  | 44 | 1,491 |
+| Token maker |  | 39 | 1,560 |
+| Bounce removal |  | 38 | 837 |
+| Tapper |  | 31 | 941 |
+| Creature removal |  | 30 | 767 |
+| Destroy removal |  | 30 | 850 |
+| Tutor |  | 30 | 538 |
+| Burn |  | 27 | 1,375 |
+| Exile removal |  | 25 | 615 |
+| Sacrifice removal |  | 19 | 496 |
+| Anthem |  | 19 | 166 |
+| Board wipe |  | 18 | 342 |
+| Counterspell |  | 13 | 339 |
+| Untapper |  | 10 | 161 |
+| Reanimation |  | 9 | 241 |
+| Discard |  | 9 | 365 |
+| Cost reduction |  | 9 | 178 |
+| Lifegain |  | 8 | 563 |
+| Target only | yes | 8 | 176 |
+| Theft |  | 7 | 116 |
+| Lose life | yes | 7 | 391 |
+| Mass +1/+1 counters |  | 6 | 104 |
+| Graveyard hate |  | 5 | 75 |
+| Self-mill |  | 5 | 169 |
+| Opponent mill |  | 5 | 109 |
+| Surveil |  | 5 | 115 |
+| Scry |  | 5 | 150 |
+| Regeneration |  | 5 | 152 |
+| Mass burn |  | 4 | 113 |
+| Mana rock |  | 4 | 123 |
+| Keyword grant |  | 4 | 47 |
+| Damage prevention |  | 4 | 127 |
+| Copy spell |  | 4 | 92 |
+| Reveal hand | yes | 4 | 170 |
+| Raise cost static effect | yes | 4 | 52 |
+| Impulse |  | 3 | 105 |
+| One-sided sweeper |  | 2 | 21 |
+| Mana dork |  | 2 | 13 |
+| Land ramp |  | 2 | 30 |
+| Choose | yes | 2 | 142 |
+| Pay cost | yes | 2 | 257 |
 | Can't be activated static effect | yes | 2 | 28 |
-| Can't be blocked static effect | yes | 2 | 77 |
-| Can't block static effect (itself) | yes | 2 | 91 |
 | Can't untap static effect | yes | 2 | 29 |
-| Graveyard cast permission static effect | yes | 2 | 30 |
-| May look at top of library static effect (typed) | yes | 2 | 21 |
-| Mana dork |  | 1 | 6 |
-| Mana rock |  | 1 | 7 |
+| May look at top of library static effect (typed) | yes | 2 | 23 |
 | Clone effect |  | 1 | 49 |
 | Drain |  | 1 | 7 |
 
-64 branches hold at least one leaf; largest 113 leaves, median 5, smallest 1.
+50 branches hold at least one leaf; largest 119 leaves, median 7, smallest 1.
 
 Branches per leaf (assignment is many-to-many):
 
 | branches on one leaf | leaves |
 |---|---|
-| 0 (Unique effect, or queued and unplaced) | 74 |
-| 1 | 307 |
-| 2 | 155 |
-| 3 | 50 |
-| 4 | 5 |
+| 0 (Unique effect, or queued and unplaced) | 177 |
+| 1 | 262 |
+| 2 | 162 |
+| 3 | 54 |
+| 4 | 8 |
 
 ## Auto-named branches
 
@@ -187,29 +159,15 @@ Renaming one is a one-line edit in `corrections/branch_names.json`, keyed by the
 
 | auto name | signature | leaves | cards | cohesion | renamed |
 |---|---|---|---|---|---|
-| **Attach** | `eff:Attach` | 2 | 20 | 83.5% | no |
-| **Become prepared** | `eff:BecomePrepared` | 2 | 40 | 88.8% | no |
-| **Copy token of** | `eff:CopyTokenOf` | 4 | 63 | 62.3% | no |
-| **Dig** | `eff:Dig` | 8 | 302 | 78.8% | no |
-| **Goad** | `eff:Goad` | 2 | 15 | 78.2% | no |
-| **Lose life** | `eff:LoseLife` | 7 | 377 | 93.3% | no |
-| **Pay cost** | `eff:PayCost` | 2 | 223 | 100.0% | no |
-| **Pump** | `eff:Pump` | 9 | 1,119 | 63.6% | no |
-| **Put at library position** | `eff:PutAtLibraryPosition` | 9 | 117 | 63.2% | no |
-| **Put on top or bottom** | `eff:PutOnTopOrBottom` | 3 | 22 | 72.7% | no |
-| **Reveal hand** | `eff:RevealHand` | 4 | 167 | 95.1% | no |
-| **Reveal until** | `eff:RevealUntil` | 2 | 19 | 96.8% | no |
-| **Seek** | `eff:Seek` | 2 | 18 | 99.1% | no |
-| **Target only** | `eff:TargetOnly` | 8 | 165 | 86.1% | no |
-| **Can't attack static effect** | `eff:static:CantAttack` | 2 | 70 | 69.1% | no |
-| **Can't be activated static effect** | `eff:static:CantBeActivated` | 2 | 28 | 99.6% | no |
-| **Can't be blocked static effect** | `eff:static:CantBeBlocked` | 2 | 77 | 98.3% | no |
-| **Can't block static effect (itself)** | `eff:static:CantBlock` | 2 | 91 | 99.1% | no |
-| **Can't untap static effect** | `eff:static:CantUntap` | 2 | 29 | 86.8% | no |
-| **Continuous static effect** | `eff:static:Continuous` | 23 | 1,338 | 85.8% | no |
-| **Graveyard cast permission static effect** | `eff:static:GraveyardCastPermission` | 2 | 30 | 97.9% | no |
-| **May look at top of library static effect (typed)** | `eff:static:MayLookAtTopOfLibrary` | 2 | 21 | 98.9% | no |
-| **Raise cost static effect** | `eff:static:RaiseCost` | 3 | 58 | 99.9% | no |
+| **Choose** | `eff:Choose` | 2 | 142 | 89.6% | no |
+| **Lose life** | `eff:LoseLife` | 7 | 391 | 62.8% | no |
+| **Pay cost** | `eff:PayCost` | 2 | 257 | 72.7% | no |
+| **Reveal hand** | `eff:RevealHand` | 4 | 170 | 61.0% | no |
+| **Target only** | `eff:TargetOnly` | 8 | 176 | 60.4% | no |
+| **Can't be activated static effect** | `eff:static:CantBeActivated` | 2 | 28 | 81.6% | no |
+| **Can't untap static effect** | `eff:static:CantUntap` | 2 | 29 | 84.1% | no |
+| **May look at top of library static effect (typed)** | `eff:static:MayLookAtTopOfLibrary` | 2 | 23 | 95.2% | no |
+| **Raise cost static effect** | `eff:static:RaiseCost` | 4 | 52 | 61.5% | no |
 
 ### Auto-name candidates rejected by the cohesion safeguard
 
@@ -217,9 +175,23 @@ Every new / loosened / auto-named rule is measured on the effect-flavoured map b
 
 | candidate | leaves | cards | cohesion | outcome |
 |---|---|---|---|---|
-| Change zone | 5 | 121 | 49.8% | routed to review queue |
-| Choose | 3 | 125 | 42.2% | routed to review queue |
-| Switch p t | 2 | 18 | 55.6% | routed to review queue |
+| Become prepared | 2 | 40 | 37.7% | routed to review queue |
+| Change zone | 6 | 148 | 58.0% | routed to review queue |
+| Copy token of | 5 | 73 | 55.2% | routed to review queue |
+| Dig | 8 | 310 | 43.0% | routed to review queue |
+| Generic effect | 21 | 1,562 | 48.9% | routed to review queue |
+| Goad | 3 | 23 | 34.5% | routed to review queue |
+| Pump | 10 | 1,192 | 48.1% | routed to review queue |
+| Put at library position | 9 | 117 | 51.2% | routed to review queue |
+| Put on top or bottom | 3 | 24 | 37.2% | routed to review queue |
+| Reveal until | 2 | 21 | 17.3% | routed to review queue |
+| Seek | 3 | 19 | 55.2% | routed to review queue |
+| Switch p t | 2 | 20 | 16.5% | routed to review queue |
+| Can't attack static effect | 2 | 70 | 24.6% | routed to review queue |
+| Can't be blocked static effect | 2 | 85 | 50.7% | routed to review queue |
+| Can't block static effect (itself) | 2 | 96 | 56.2% | routed to review queue |
+| Continuous static effect | 29 | 1,482 | 50.3% | routed to review queue |
+| Graveyard cast permission static effect | 2 | 30 | 17.2% | routed to review queue |
 
 ## Review queue
 
@@ -229,84 +201,84 @@ A **persistent, browsable** list -- not a prompt that blocks a build. It holds t
 - **type-mix** -- the leaf merges different card types; the clustering was type-blind, so a branch rule cannot separate them (see [leaf-type-audit.md](leaf-type-audit.md))
 - **cohesion** -- an auto-named candidate that scored below the floor
 
-**79 entries** awaiting a decision, covering 484 cards. Browse and resolve them at [review-queue.html](review-queue.html); decisions are written to `corrections/branch_review.json`.
+**225 entries** awaiting a decision, covering 5,458 cards. Browse and resolve them at [review-queue.html](review-queue.html); decisions are written to `corrections/branch_review.json`.
 
 | leaf | cards | kind | top candidate | dominant structure |
 |---|---|---|---|---|
-| 44 | 513 | near-miss | Mana dork | `eff:Mana (100%)` |
-| 428 | 164 | type-mix | -- | `eff:Dig (100%) · eff:Dig|tgt:Any (100%) · tgt:` |
-| 510 | 114 | type-mix | -- | `eff:PumpAll (100%) · eff:PumpAll|tgt:Typed[Cre` |
-| 157 | 97 | cohesion | Choose | `eff:Choose (100%)` |
-| 506 | 82 | type-mix | -- | `eff:static:Continuous (100%) · eff:static:Cont` |
-| 279 | 77 | type-mix | -- | `eff:RevealTop (100%)` |
-| 590 | 68 | cohesion | Change zone | `eff:ChangeZone (100%) · eff:ChangeZone|tgt:Sel` |
-| 590 | 68 | near-miss | Spot removal | `eff:ChangeZone (100%) · eff:ChangeZone|tgt:Sel` |
-| 139 | 57 | near-miss | Mana dork | `eff:Mana (100%) · eff:PutCounter (100%) · eff:` |
-| 397 | 50 | type-mix | -- | `eff:DealDamage (100%) · eff:DealDamage|tgt:Typ` |
-| 572 | 49 | near-miss | Anthem | `eff:Attach (100%) · eff:Attach|tgt:Typed[Creat` |
-| 431 | 48 | near-miss | Anthem | `eff:static:Continuous (100%) · eff:static:Cont` |
-| 343 | 46 | near-miss | Reanimation | `eff:ChangeZone (100%) · eff:ChangeZone|tgt:Typ` |
-| 364 | 44 | type-mix | -- | `eff:Discard (100%) · eff:Discard|tgt:Typed[]@O` |
-| 257 | 42 | type-mix | -- | `eff:Sacrifice (100%) · eff:Sacrifice|tgt:Or (1` |
-| 38 | 35 | type-mix | -- | `eff:Sacrifice (100%) · eff:Sacrifice|tgt:Typed` |
-| 226 | 31 | type-mix | -- | `eff:Fight (100%) · eff:Fight|tgt:Typed[Creatur` |
-| 73 | 29 | type-mix | -- | `eff:FlipCoin (100%)` |
-| 345 | 28 | type-mix | -- | `eff:SearchLibrary (100%) · eff:SearchLibrary|t` |
-| 334 | 27 | type-mix | -- | `eff:TargetOnly (100%) · eff:TargetOnly|tgt:Typ` |
-| 493 | 25 | near-miss | Reanimation | `eff:ChangeZone (100%) · eff:ChangeZone|tgt:Sel` |
-| 316 | 23 | type-mix | -- | `eff:DealDamage (100%) · eff:DealDamage|tgt:Typ` |
-| 201 | 23 | type-mix | -- | `eff:Regenerate (100%) · eff:Regenerate|tgt:Typ` |
-| 171 | 23 | type-mix | -- | `eff:SearchLibrary (100%) · eff:SearchLibrary|t` |
-| 378 | 22 | cohesion | Change zone | `eff:ChangeZone (100%) · eff:ChangeZone|tgt:Any` |
+| 33 | 785 | cohesion | Generic effect | `eff:GenericEffect (100%)` |
+| 628 | 545 | cohesion | Pump | `eff:Pump (100%) · eff:Pump|tgt:SelfRef (100%) ` |
+| 47 | 527 | near-miss | Mana dork | `eff:Mana (100%)` |
+| 45 | 527 | type-mix | -- | `eff:Mana (100%)` |
+| 612 | 440 | cohesion | Continuous static effect | `eff:static:Continuous (100%) · eff:static:Cont` |
+| 652 | 424 | cohesion | Pump | `eff:Pump (100%) · eff:Pump|tgt:Typed[Creature]` |
+| 650 | 397 | type-mix | -- | `eff:DealDamage (100%) · eff:DealDamage|tgt:Any` |
+| 640 | 383 | cohesion | Generic effect | `eff:GenericEffect (100%) · eff:GenericEffect|t` |
+| 554 | 343 | cohesion | Continuous static effect | `eff:static:Continuous (100%) · eff:static:Cont` |
+| 586 | 235 | cohesion | Continuous static effect | `eff:Attach (100%) · eff:Attach|tgt:Typed[Creat` |
+| 482 | 169 | cohesion | Dig | `eff:Dig (100%) · eff:Dig|tgt:Any (100%) · tgt:` |
+| 576 | 147 | type-mix | -- | `eff:PumpAll (100%) · eff:PumpAll|tgt:Typed[Cre` |
+| 573 | 133 | cohesion | Generic effect | `eff:GenericEffect (100%) · eff:GenericEffect|t` |
+| 504 | 132 | type-mix | -- | `eff:SearchLibrary (100%) · eff:SearchLibrary|t` |
+| 573 | 132 | type-mix | -- | `eff:GenericEffect (100%) · eff:GenericEffect|t` |
+| 543 | 84 | cohesion | Continuous static effect | `eff:static:Continuous (100%) · eff:static:Cont` |
+| 545 | 84 | type-mix | -- | `eff:static:Continuous (100%) · eff:static:Cont` |
+| 307 | 82 | type-mix | -- | `eff:RevealTop (100%)` |
+| 503 | 81 | cohesion | Can't block static effect (itself) | `eff:static:CantBlock (100%) · eff:static:CantB` |
+| 431 | 80 | type-mix | -- | `eff:DealDamage (100%) · eff:DealDamage|tgt:Tri` |
+| 383 | 79 | cohesion | Can't be blocked static effect | `tgt:SelfRef (100%) · eff:static:CantBeBlocked ` |
+| 660 | 75 | cohesion | Change zone | `eff:ChangeZone (100%) · eff:ChangeZone|tgt:Sel` |
+| 660 | 75 | near-miss | Spot removal | `eff:ChangeZone (100%) · eff:ChangeZone|tgt:Sel` |
+| 155 | 73 | type-mix | -- | `eff:DealDamage (100%) · eff:DealDamage|tgt:Par` |
+| 384 | 70 | cohesion | Pump | `eff:Pump (100%) · eff:Pump|tgt:Typed[Creature]` |
 
-*...and 54 more, in the UI.*
+*...and 200 more, in the UI.*
 
 ## Unique effect
 
-**53 leaves**, 1,099 cards. This is the terminal bucket, and it replaces 'unbranched' / 'uncategorized'. It is a **positive finding**: after the curated rules, the auto-named fallback and the review queue, these leaves' structure is not shared with the rest of the corpus. Nothing is pending on them.
+**55 leaves**, 1,259 cards. This is the terminal bucket, and it replaces 'unbranched' / 'uncategorized'. It is a **positive finding**: after the curated rules, the auto-named fallback and the review queue, these leaves' structure is not shared with the rest of the corpus. Nothing is pending on them.
 
 | leaf | cards | dominant structure | sample cards |
 |---|---|---|---|
-| 459 | 73 | `eff:Transform (100%) · eff:Transform|tgt:SelfRef (100%) · tgt:SelfRef ` | Aetherblade Agent, Afflicted Deserter, Alluring Suitor, Bereaved Survivor |
-| 275 | 64 | `eff:static:CantBeBlockedBy (100%) · eff:static:CantBeBlockedBy|tgt:Sel` | Amrou Kithkin, Arctic Foxes, Argothian Pixies, Arlinn's Wolf |
-| 552 | 64 | `eff:CreateDelayedTrigger (100%)` | A-Dorothea, Vengeful Victim, Abomination, Acidic Dagger, Adarkar Valkyrie |
-| 486 | 59 | `eff:CastFromZone (100%) · eff:CastFromZone|tgt:Any (100%) · tgt:Any (1` | Arcane Heist, Bösium Strip, Cho-Arrim Legate, Dakkon Blackblade Avatar |
-| 448 | 51 | `eff:static:MustAttack (100%) · eff:static:MustAttack|tgt:SelfRef (100%` | Akoum Firebird, Anje's Ravager, Ashen Monstrosity, Bane of Hanweir |
-| 300 | 47 | `eff:static:CantAttackOrBlock (100%) · eff:static:CantAttackOrBlock|tgt` | Blind-Spot Giant, Bonded Horncrest, Bontu the Glorified, Bound in Silence |
-| 516 | 39 | `eff:Investigate (100%)` | Alquist Proft, Master Sleuth, Angelic Sleuth, April O'Neil, Live on the Scene, Bearer of Overwhelming Truths |
-| 329 | 34 | `eff:RollDie (100%)` | Adorable Kitten, Ancient Brass Dragon, Ancient Bronze Dragon, Ancient Copper Dragon |
-| 478 | 33 | `eff:Proliferate (100%)` | Atraxa, Praetors' Voice, Blightbelly Rat, Bloated Contaminator, Bloom Hulk |
-| 385 | 30 | `eff:static:BlockRestriction (100%) · eff:static:BlockRestriction|tgt:S` | Ascending Aven, Battlefield Percher, Belbe's Percher, Brazen Borrower |
-| 471 | 27 | `eff:static:CantBeCountered (100%) · eff:static:CantBeCountered|tgt:Sel` | A-Lier, Disciple of the Drowned, Balustrade Wurm, Blurred Mongoose, Carnage Tyrant |
-| 488 | 26 | `eff:Conjure (100%)` | Brave Meadowguard, Call the Crash, Current Curriculum, Expedition Supplier |
-| 325 | 25 | `eff:static:ExtraBlockers (100%) · eff:static:ExtraBlockers|tgt:SelfRef` | Avatar of Hope, Brave the Sands, Echo Circlet, Entangler |
-| 243 | 24 | `eff:Animate (100%) · eff:Animate|tgt:Typed[Land]@You (100%) · tgt:Type` | Aang, Destined Savior, Avatar Kyoshi, Earthbender, Ba Sing Se, Badgermole |
-| 413 | 23 | `eff:VentureIntoDungeon (100%)` | A-Cloister Gargoyle, A-Dungeon Descent, A-Precipitous Drop, A-Triumphant Adventurer |
-| 420 | 23 | `eff:static:CastWithFlash (100%)` | Aluren, Final-Word Phantom, High Fae Trickster, Hungering Yeti |
-| 402 | 22 | `eff:Amass (100%)` | Assault on Osgiliath, Aven Eternal, Deceive the Messenger, Dunland Crebain |
-| 523 | 22 | `eff:GainEnergy (100%)` | Aether Hub, Aetherflux Conduit, Amped Raptor, Architect of the Untamed |
-| 349 | 21 | `eff:ForceBlock (100%) · eff:ForceBlock|tgt:Typed[Creature]@Any (100%) ` | A-Shessra, Death's Whisper, Avalanche Tusker, Culling Mark, Culvert Ambusher |
-| 417 | 19 | `eff:RuntimeHandled (100%)` | A-Moon-Circuit Hacker, A-Prosperous Thief, Blade-Blizzard Kitsune, Dokuchi Shadow-Walker |
-| 256 | 17 | `eff:static:CanAttackWithDefender (100%) · eff:static:CanAttackWithDefe` | Backstreet Bruiser, Bristlepack Sentry, Colossus of Akros, Demon Wall |
-| 361 | 17 | `eff:static:Panharmonicon (100%)` | Drivnod, Carnage Dominus, Felix Five-Boots, Fractured Realm, Gandalf the White |
-| 411 | 17 | `eff:RingTemptsYou (100%)` | Bilbo, Retired Burglar, Dúnedain Rangers, Enraged Huorn, Fiery Inscription |
-| 22 | 16 | `tgt:Typed[Non:Land,Permanent]@You (100%)` | Ancestral Statue, Brago, King Eternal, Capricious Efreet, Clever Concealment |
-| 277 | 16 | `eff:static:MayChooseNotToUntap (100%) · eff:static:MayChooseNotToUntap` | Ashnod's Battle Gear, Bottomless Vault, Dwarven Hold, Endoskeleton |
-| 285 | 16 | `eff:Incubate (100%)` | Blighted Burgeoning, Bloated Processor, Brimaz, Blight of Oreskos, Chrome Host Seedshark |
-| 396 | 16 | `eff:static:CantBeTargeted (100%) · eff:static:CantBeTargeted|tgt:SelfR` | Anti-Magic Aura, Bartel Runeaxe, Dennick, Pious Apprentice, Dense Foliage |
-| 412 | 16 | `eff:WinTheGame (100%)` | Battle of Wits, Biovisionary, Coalition Victory, Epic Struggle |
-| 131 | 15 | `eff:GiftDelivery (100%)` | Blooming Blast, Coiling Rebirth, Consumed by Greed, Dewdrop Cure |
-| 326 | 15 | `eff:static:MustBeBlocked (100%) · eff:static:MustBeBlocked|tgt:SelfRef` | Bumper Cars, Canopy Stalker, Fear of Being Hunted, Fibrous Entangler |
-| 410 | 15 | `eff:Bolster (100%)` | Abzan Skycaptain, Anafenza, Kin-Tree Spirit, Aven Tactician, Cached Defenses |
-| 264 | 14 | `eff:static:MayPlayAdditionalLand (100%) · eff:static:MayPlayAdditional` | Aesi, Tyrant of Gyre Strait, Dryad of the Ilysian Grove, Exploration, Hugs, Grisly Guardian |
-| 254 | 13 | `eff:Connive (100%) · eff:Connive|tgt:SelfRef (100%) · tgt:SelfRef (100` | A-Psionic Snoop, A-Revel Ruiner, Cyclonus, the Saboteur, Doc Ock's Henchmen |
-| 305 | 12 | `eff:AddRestriction (100%)` | Disorienting Glower, Excruciator, Fear, Fire, Foes!, Flaring Pain |
-| 423 | 12 | `eff:Monstrosity (100%) · eff:static:Continuous (58%) · eff:static:Cont` | Chillerpillar, Domesticated Hydra, Fleecemane Lion, Fleetfeather Cockatrice |
-| 160 | 11 | `eff:RemoveCounter (100%) · eff:RemoveCounter|tgt:Typed[Permanent]@Any ` | Aether Snap, Corrosion, Ferropede, Hex Parasite |
-| 206 | 11 | `eff:static:RevealTopOfLibrary (100%) · eff:static:RevealTopOfLibrary|t` | Courser of Kruphix, Field of Dreams, Future Sight, Garruk's Horde |
-| 242 | 11 | `eff:GivePlayerCounter (100%) · eff:GivePlayerCounter|tgt:Controller (1` | Ezuri, Claw of Progress, Ichor Rats, Kalemne, Disciple of Iroas, Katara, Waterbending Master |
-| 398 | 10 | `eff:Learn (100%)` | Arcane Subtraction, Cram Session, Eyetwitch, Gnarled Professor |
-| 123 | 9 | `eff:static:CastWithKeyword (100%) · eff:static:CastWithKeyword|tgt:Typ` | Imoti, Celebrant of Bounty, Myntasha, Honored One, Prismari, the Inspiration, Quandrix, the Proof |
+| 310 | 82 | `eff:RevealTop (100%)` | A Premonition of Your Demise, Ad Nauseam, Allure of the Unknown, Atraxa, Grand Unifier |
+| 487 | 73 | `eff:Transform (100%) · eff:Transform|tgt:SelfRef (100%) · tgt:SelfRef ` | Aetherblade Agent, Afflicted Deserter, Alluring Suitor, Bereaved Survivor |
+| 618 | 66 | `eff:CreateDelayedTrigger (100%)` | A-Dorothea, Vengeful Victim, Abomination, Acidic Dagger, Adarkar Valkyrie |
+| 521 | 65 | `eff:CastFromZone (100%) · eff:CastFromZone|tgt:Any (100%) · tgt:Any (1` | Aisha of Sparks and Smoke, Arcane Heist, Baral and Kari Zev, Bösium Strip |
+| 336 | 64 | `eff:static:CantBeBlockedBy (100%) · eff:static:CantBeBlockedBy|tgt:Sel` | Amrou Kithkin, Arctic Foxes, Argothian Pixies, Arlinn's Wolf |
+| 192 | 53 | `eff:static:MustAttack (100%) · eff:static:MustAttack|tgt:SelfRef (100%` | Akoum Firebird, Anje's Ravager, Ashen Monstrosity, Bane of Hanweir |
+| 329 | 47 | `eff:static:CantAttackOrBlock (100%) · eff:static:CantAttackOrBlock|tgt` | Blind-Spot Giant, Bonded Horncrest, Bontu the Glorified, Bound in Silence |
+| 566 | 41 | `eff:Investigate (100%)` | Alquist Proft, Master Sleuth, Angelic Sleuth, April O'Neil, Live on the Scene, Bearer of Overwhelming Truths |
+| 363 | 36 | `eff:RollDie (100%)` | Adorable Kitten, Ancient Brass Dragon, Ancient Bronze Dragon, Ancient Copper Dragon |
+| 512 | 34 | `eff:Proliferate (100%)` | Atraxa, Praetors' Voice, Blightbelly Rat, Bloated Contaminator, Bloom Hulk |
+| 76 | 31 | `eff:FlipCoin (100%)` | Aleatory, Boompile, Bottle of Suleiman, Chaotic Goo |
+| 498 | 31 | `eff:static:CantBeCountered (100%) · eff:static:CantBeCountered|tgt:Sel` | A-Lier, Disciple of the Drowned, Balustrade Wurm, Blurred Mongoose, Carnage Tyrant |
+| 409 | 30 | `eff:static:BlockRestriction (100%) · eff:static:BlockRestriction|tgt:S` | Ascending Aven, Battlefield Percher, Belbe's Percher, Brazen Borrower |
+| 523 | 29 | `eff:Conjure (100%)` | Brave Meadowguard, Call the Crash, Current Curriculum, Darksteel Hydra |
+| 301 | 27 | `eff:Animate (100%) · eff:Animate|tgt:Typed[Land]@You (100%) · tgt:Type` | Aang, Destined Savior, Avatar Kyoshi, Earthbender, Ba Sing Se, Badgermole |
+| 343 | 27 | `eff:static:ExtraBlockers (100%) · eff:static:ExtraBlockers|tgt:SelfRef` | Avatar of Hope, Brave the Sands, Echo Circlet, Entangler |
+| 415 | 26 | `eff:ForceBlock (100%) · eff:ForceBlock|tgt:Typed[Creature]@Any (100%) ` | A-Shessra, Death's Whisper, Academic Dispute, Avalanche Tusker, Burning-Tree Bloodscale |
+| 577 | 25 | `eff:GainEnergy (100%)` | Aether Hub, Aetherflux Conduit, Aethersphere Harvester, Amped Raptor |
+| 443 | 24 | `eff:static:CastWithFlash (100%)` | Aluren, Final-Word Phantom, High Fae Trickster, Hungering Yeti |
+| 224 | 19 | `eff:ExtraTurn (100%) · eff:ExtraTurn|tgt:Controller (100%) · tgt:Contr` | Avatar Kuruk, Capture of Jingzhou, Gonti's Aether Heart, Lighthouse Chronologist |
+| 437 | 19 | `eff:RuntimeHandled (100%)` | A-Moon-Circuit Hacker, A-Prosperous Thief, Blade-Blizzard Kitsune, Dokuchi Shadow-Walker |
+| 134 | 18 | `eff:GiftDelivery (100%)` | Blooming Blast, Coiling Rebirth, Consumed by Greed, Cruelclaw's Heist |
+| 404 | 18 | `eff:RingTemptsYou (100%)` | Bilbo, Retired Burglar, Dúnedain Rangers, Enraged Huorn, Fiery Inscription |
+| 556 | 18 | `eff:Attach (100%) · eff:Attach|tgt:Typed[Creature]@You (100%) · tgt:Ty` | A-Goggles of Night, Auriok Windwalker, Beatrix, Loyal General, Brass Squire |
+| 283 | 17 | `eff:static:CanAttackWithDefender (100%) · eff:static:CanAttackWithDefe` | Backstreet Bruiser, Bristlepack Sentry, Colossus of Akros, Demon Wall |
+| 407 | 17 | `eff:static:Panharmonicon (100%)` | Drivnod, Carnage Dominus, Felix Five-Boots, Fractured Realm, Gandalf the White |
+| 387 | 16 | `eff:Incubate (100%)` | Blighted Burgeoning, Bloated Processor, Brimaz, Blight of Oreskos, Chrome Host Seedshark |
+| 418 | 16 | `eff:static:CantBeTargeted (100%) · eff:static:CantBeTargeted|tgt:SelfR` | Anti-Magic Aura, Bartel Runeaxe, Dennick, Pious Apprentice, Dense Foliage |
+| 434 | 16 | `eff:Bolster (100%)` | Abzan Skycaptain, Anafenza, Kin-Tree Spirit, Aven Tactician, Cached Defenses |
+| 294 | 15 | `eff:ExchangeControl (100%)` | Arteeoh, Dread Scavenger, Avarice Totem, Chromeshell Crab, Eyes Everywhere |
+| 321 | 15 | `eff:AddRestriction (100%)` | Avatar's Wrath, Disorienting Glower, Excruciator, Fear, Fire, Foes! |
+| 344 | 15 | `eff:static:MustBeBlocked (100%) · eff:static:MustBeBlocked|tgt:SelfRef` | Bumper Cars, Canopy Stalker, Fear of Being Hunted, Fibrous Entangler |
+| 548 | 15 | `eff:WinTheGame (100%)` | Battle of Wits, Biovisionary, Coalition Victory, Epic Struggle |
+| 9 | 14 | `tgt:Typed[Creature]@Any{HasColor:White} (100%)` | Antler Skulkin, Aysen Highway, Crusade, Disorder |
+| 252 | 14 | `eff:Populate (100%)` | Arboreal Alliance, Determined Iteration, Full Flowering, Growing Ranks |
+| 316 | 14 | `eff:GrantNextSpellAbility (100%)` | Archway of Innovation, Crackling Spellslinger, Dark Apostle, Don & Raph, Hard Science |
+| 287 | 13 | `eff:Connive (100%) · eff:Connive|tgt:SelfRef (100%) · tgt:SelfRef (100` | A-Psionic Snoop, A-Revel Ruiner, Cyclonus, the Saboteur, Doc Ock's Henchmen |
+| 445 | 13 | `eff:Monstrosity (100%) · eff:static:Continuous (53%) · eff:static:Cont` | Chillerpillar, Domesticated Hydra, Fleecemane Lion, Fleetfeather Cockatrice |
+| 95 | 12 | `eff:Shuffle (100%) · eff:Shuffle|tgt:Controller (100%) · tgt:Controlle` | Ancestral Knowledge, Don't Blink, Hazoret's Undying Fury, Madblind Mountain |
+| 221 | 11 | `eff:static:RevealTopOfLibrary (100%) · eff:static:RevealTopOfLibrary|t` | Courser of Kruphix, Field of Dreams, Future Sight, Garruk's Horde |
 
 ## Gaps: terms deliberately left unruled
 

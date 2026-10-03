@@ -113,13 +113,22 @@ def gap_fragments(card, name):
     """Every gap and unmodelled node in a parsed face, as (kind, category, text)."""
     out = []
 
-    def walk(n):
+    def walk(n, parent=None):
         if isinstance(n, dict):
             t = n.get("type")
             if t == "Unimplemented":
                 out.append(("Unimplemented", "Unimplemented:" + str(n.get("name")),
                             norm_fragment(n.get("description"), name)))
-            elif t == "GenericEffect":
+            elif (t == "GenericEffect" and not n.get("static_abilities")
+                  and not (parent is not None and parent.get("modal") and parent.get("mode_abilities"))):
+                # A non-empty static_abilities list means the grant (keyword,
+                # P/T, type, ability, ...) was fully captured -- see
+                # build_index.py's GAP_TAGS comment. An empty list sitting
+                # alongside a populated modal/mode_abilities pair means the
+                # real content is modal-encoded and `effect` is just the
+                # placeholder every AbilityDefinition requires -- also not a
+                # gap (same comment). Only a truly empty list with no modal
+                # sibling is evidence of a real gap.
                 sig = generic_signature(n)
                 out.append(("GenericEffect", sig, sig))
             elif t == "Unrecognized":
@@ -130,10 +139,10 @@ def gap_fragments(card, name):
                 out.append(("unmodelled", "Unknown trigger mode",
                             norm_fragment(mode.get("Unknown"), name)))
             for v in n.values():
-                walk(v)
+                walk(v, n)
         elif isinstance(n, list):
             for v in n:
-                walk(v)
+                walk(v, parent)
 
     for b in BUCKETS:
         walk(card.get(b))
