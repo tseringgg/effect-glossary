@@ -186,6 +186,8 @@
   .chip-catch  { border-color:#a0651a; color:#6b3f08; background:#fbefd8; }
   .kws { color:#1d4f91; font-size:11px; }
   #tree details.kwbr > summary .bname { color:#1d4f91; }
+  #tree details.sgbr > summary .bname { color:#6b3f9a; }
+  .chip-sg     { border-color:#6b3f9a; color:#fff; background:#7d54ad; border-style:solid; }
   #tree details.vanbr > summary .bname { color:var(--vanilla); }
   .covbox label { display:block; margin-top:4px; cursor:pointer; }
   .statenote { font-size:10px; color:var(--mut); border-top:1px solid var(--line);
@@ -312,6 +314,9 @@
                       margin-right:4px; vertical-align:-1px; }
   .sw.autosw { background-image:repeating-linear-gradient(90deg,
                  rgba(255,255,255,.55) 0 2px, rgba(255,255,255,0) 2px 5px); }
+  .about { margin-top:6px; font-size:12px; line-height:1.45; max-width:860px; }
+  .about summary { cursor:pointer; font-weight:600; }
+  .about ul { margin:4px 0 6px 18px; padding:0; }
 </style>
 </head>
 <body>
@@ -329,6 +334,29 @@
     <span class="devonly">· <a href="review-queue.html">review queue</a></span>
     · <a href="branches.md">branches.md</a>
   </div>
+  <details class="about" open>
+    <summary>About this tool</summary>
+    <p>A browsing tool for finding MTG cards by what they do. Instead of searching for a card you
+    already know, you explore groups of cards that share an effect (removal, ramp, card draw, and so
+    on) and discover pieces for your deck. It's built on an open-source rules parser that is still in
+    progress. Most cards are read accurately, but some are not, and the tool shows you where.</p>
+    <b>What to expect</b>
+    <ul>
+      <li><b>Oracle text is on every card.</b> If a group or detail looks off, the card's own text is the source of truth.</li>
+      <li><b>Some cards are in &ldquo;Not yet organized.&rdquo;</b> The parser couldn't read part of them, or they don't closely match any group. Each one says why. They are findable, just not grouped.</li>
+      <li><b>&ldquo;Suggestion&rdquo; links can be wrong.</b> Where a card shows a &ldquo;closest group&rdquo; or &ldquo;also fits&rdquo; link, it's a hint, not a placement. A small share of these point to the wrong group.</li>
+      <li><b>Some group names are rough.</b> The cards in a group are right more often than its label is. If a label confuses you, tell me.</li>
+      <li><b>Cards released since April are included</b> but parsed by an older version of the parser, so a few newer mechanics may show a gap.</li>
+      <li><b>Use &ldquo;Find a card&rdquo;</b> to look up any card by name. It tells you where the card is and why, including cards that aren't in a group.</li>
+    </ul>
+    <b>What I'd like to know</b>
+    <ul>
+      <li>Could you find the kind of card you were looking for without knowing its name?</li>
+      <li>Did any group contain cards that clearly didn't belong?</li>
+      <li>Was there a card you expected to find and couldn't?</li>
+      <li>Did a label or explanation confuse you?</li>
+    </ul>
+  </details>
   <div class="caveat">
     <b>Every parse here is unverified.</b> phase.rs's <code>parse_warnings</code> is not a
     trust signal — only 544 of 34,645 entries carry one, and confirmed cases parse wrongly
@@ -369,7 +397,7 @@
     <table id="tbl">
       <thead><tr>
         <th style="width:26px"></th><th style="width:200px">card</th>
-        <th style="width:92px">quality</th><th>oracle text</th><th style="width:150px">type</th>
+        <th id="qth" style="width:92px;cursor:pointer;user-select:none" title="click to sort by parse quality; click again to reverse">quality<span id="qarrow"></span></th><th>oracle text</th><th style="width:150px">type</th>
       </tr></thead>
       <tbody id="body"></tbody>
     </table>
@@ -424,6 +452,9 @@ let LOOKUP = null, FIDX = null; // build/lookup.json + FindCard index (lazy: fir
 let KW = null;                 // build/keyword_layer.json, or null
 let KWFACE = new Map();        // face id -> {leaf, keywords}  (keyword_rule placement)
 let AB = null;                 // build/ability_layer.json, or null
+let PAB = null;                // build/partial_ability_layer.json, or null
+let SG = null;                 // build/signature_layer.json, or null
+let SGFACE = new Map();        // face id -> {leaf, keywords}  (signature_rule placement)
 let ABFACE = new Map();        // face id -> {leaf, placed:[{b,i,t,l,s}], rest:[...], also:[...]}
 let ABLEAF = new Map();        // leaf -> [face id] placed through one of its abilities
 let NEARBY = true;             // include proximity cards in card lists
@@ -511,6 +542,22 @@ async function boot() {
       ABLEAF.get(p.leaf).push(id);
     }
   } catch (e) { AB = null; }
+  // The same treatment for partial / unmodelled cards placed through one ability (gap kept as card detail).
+  try {
+    PAB = await fetch("../build/partial_ability_layer.json").then(r => r.json());
+    for (const [id, p] of Object.entries(PAB.faces)) {
+      ABFACE.set(id, { leaf: p.leaf, ...PAB.cards[p.card] });
+      if (!ABLEAF.has(p.leaf)) ABLEAF.set(p.leaf, []);
+      ABLEAF.get(p.leaf).push(id);
+    }
+  } catch (e) { PAB = null; }
+  // Signature layer: "No effect to group" cards grouped by an exact replacement signature; the newer
+  // vanilla cards join the existing "No abilities" branch.
+  try {
+    SG = await fetch("../build/signature_layer.json").then(r => r.json());
+    for (const [id, p] of Object.entries(SG.faces)) SGFACE.set(id, p);
+    for (const id of Object.keys(SG.vanilla)) VANILLA.push(id);
+  } catch (e) { SG = null; }
 
   for (const r of ROWS) ROW.set(r.id, r);
   if (PL) {
@@ -573,6 +620,8 @@ function findCtx() {
     leafLabel: l => leafPhrase(l) || (CLU.labels[String(l)] || "").slice(0, 70),
     leafBranches: l => BR.leaf_branches[String(l)] || [],
     kwLeaf: id => (KW && KW.leaves[id]) || { name: id, branches: [] },
+    sgLeaf: id => (SG && SG.leaves[id]) || { name: id, branches: [] },
+    sgBlock: SG ? SG.meta.block : "",
     group: gid => (UNORG && UNORG.groups.find(g => g.id === gid)) || { name: "(unknown group)", explain: "" },
     words: UNORG ? UNORG.strength_words : { close: 0.7, loose: 0.5 },
   };
@@ -582,6 +631,7 @@ function findButtons(a, i) {
   if (a.faces.length) b += `<button class="fbtn" data-fshow="${i}">show the card</button>`;
   if (a.kind === "grouped" || a.kind === "nearby") b += `<button class="fbtn" data-fleaf="${a.leaf}">open that group</button>`;
   if (a.kind === "keyword") b += `<button class="fbtn" data-fkw="${esc(a.leaf)}">open that keyword group</button>`;
+  if (a.kind === "signature") b += `<button class="fbtn" data-fsg="${esc(a.leaf)}">open that group</button>`;
   if (a.kind === "norules") b += `<button class="fbtn" data-fvan="1">open “No abilities”</button>`;
   if (a.kind === "unorganized") b += `<button class="fbtn" data-fgrp="${a.group}">open that group</button>`;
   return b;
@@ -621,6 +671,7 @@ async function runFind() {
       const l = +t.dataset.fleaf;
       pick({ kind: "leaf", branch: (BR.leaf_branches[String(l)] || [])[0] || null, leaf: l });
     } else if (t.dataset.fkw !== undefined) pick({ kind: "kwleaf", kwl: t.dataset.fkw });
+    else if (t.dataset.fsg !== undefined) pick({ kind: "sgleaf", sgl: t.dataset.fsg });
     else if (t.dataset.fvan !== undefined) pick({ kind: "vanilla" });
     else if (t.dataset.fgrp !== undefined) pick({ kind: "ungroup", gid: +t.dataset.fgrp });
   };
@@ -671,8 +722,10 @@ function renderCoverage() {
       `every clustered count above is unchanged. ` +
       (KW ? `${KW.meta.cards.toLocaleString()} keyword-only cards sit under “Keyword abilities”, placed by an exact ` +
             `<span class="chip chip-kw">keyword rule</span> rather than a similarity guess. ` : "") +
-      (AB ? `${AB.meta.cards.toLocaleString()} more cards sit in a group because one of their abilities matches it closely ` +
+      ((AB || PAB) ? `${((AB ? AB.meta.cards : 0) + (PAB ? PAB.meta.cards : 0)).toLocaleString()} more cards sit in a group because one of their abilities matches it closely ` +
             `(counted with that group's cards). ` : "") +
+      (SG ? `${SG.meta.cards.toLocaleString()} cards whose rules are replacement or prevention effects, or an additional cost, sit under ` +
+            `“${esc(SG.meta.block)}”, placed by an exact <span class="chip chip-sg">signature rule</span>. ` : "") +
       `${VANILLA.length.toLocaleString()} cards with no ` +
       `text sit under "${esc(PL.meta.vanilla_branch)}". Full accounting: ` +
       `<a href="ledger.html">coverage ledger</a>.` +
@@ -989,6 +1042,33 @@ function keywordBlockHTML() {
     KW.branches.map(kwBranchHTML).join("") + `</details>`;
 }
 
+// "Replacement effects and costs": cards whose rules are replacement / prevention effects with no effect of
+// their own, or only an additional cost. Grouped by an exact structural signature (src/build_signature_layer.py).
+function sgLeafRow(id) {
+  const L = SG.leaves[id];
+  return `<div class="leafrow pick" role="button" tabindex="0" data-pick="SL␟${esc(id)}" title="${esc(id)}">` +
+    `<div class="leafhead">${esc(L.name)} · <b>${L.n_cards.toLocaleString()}</b> cards</div>` +
+    `<div class="leafsays">${esc(id)}</div></div>`;
+}
+function sgBranchHTML(b) {
+  return `<details data-branch="sg:${esc(b.name)}"><summary><span class="bname">${esc(b.name)}</span> ` +
+    `<span class="bmeta">— ${b.n_cards.toLocaleString()} cards · ${b.leaves.length} group${b.leaves.length === 1 ? "" : "s"}</span></summary>` +
+    `<button class="allbtn pickbtn" data-pick="SB␟${esc(b.name)}">all ${b.n_cards.toLocaleString()} cards in this branch →</button>` +
+    `<div class="leaves">${b.leaves.map(sgLeafRow).join("")}</div></details>`;
+}
+function signatureBlockHTML() {
+  const m = SG.meta;
+  return `<details class="sgbr"><summary><span class="bname">${esc(m.block)}</span> ` +
+    `<span class="chip chip-sg" title="placed by an exact rule on the card's replacement-effect signature — not clustered, not a guess">signature rule</span> ` +
+    `<span class="bmeta">— ${m.cards.toLocaleString()} cards · ${m.branches} branches · ${m.leaves} groups</span></summary>` +
+    `<div class="brule">Cards whose rules change how something happens (“prevent all combat damage”, “if one or more +1/+1 counters ` +
+    `would be put on a creature you control …”) or only add a cost, rather than doing something themselves. The clustering compares ` +
+    `what cards do, so they had nothing to cluster on; they are grouped here by an exact signature (the kind of replacement and its ` +
+    `scope). A group needs ≥ ${m.min_group} cards; the rest stay in “No effect to group”, with the reason. Keywords on a card are shown ` +
+    `on it and never split a group. Names that are ours, not established Magic terms, are marked coined in the data.</div>` +
+    SG.branches.map(sgBranchHTML).join("") + `</details>`;
+}
+
 // "Not yet organized": every in-scope card that is in no leaf, no keyword leaf and not under
 // "No abilities", in plain-language groups (src/build_unorganized.py). Wording lives in
 // build/unorganized.json; nothing here is a placement.
@@ -1086,6 +1166,7 @@ function renderTree() {
   h += uniqueBlockHTML();
   if (VANILLA.length) h += vanillaBlockHTML();
   if (KW) h += keywordBlockHTML();
+  if (SG) h += signatureBlockHTML();
   if (UNORG) h += unorganizedBlockHTML();
 
   host.innerHTML = h;
@@ -1113,6 +1194,8 @@ function parsePick(s) {
   if (p[0] === "NG") return { kind: "ungroup", gid: +p[1] };
   if (p[0] === "KB") return { kind: "kwbranch", kwb: p[1] };
   if (p[0] === "KL") return { kind: "kwleaf", kwl: p[1] };
+  if (p[0] === "SB") return { kind: "sgbranch", sgb: p[1] };
+  if (p[0] === "SL") return { kind: "sgleaf", sgl: p[1] };
   // E␟branch␟effect; X is the same for the "no effect matched" remainder.
   if (p[0] === "E") return { kind: "effect", branch: p[1], effect: p[2] };
   if (p[0] === "X") return { kind: "other-effect", branch: p[1] };
@@ -1207,6 +1290,12 @@ function poolFor(sc) {
   } else if (sc.kind === "kwleaf") {
     // the layer's own order: by name, or by rarest keyword for the catch-all leaf
     return ((KW && KW.leaves[sc.kwl]) ? KW.leaves[sc.kwl].faces : []).map(id => ROW.get(id)).filter(Boolean);
+  } else if (sc.kind === "sgleaf") {
+    return ((SG && SG.leaves[sc.sgl]) ? SG.leaves[sc.sgl].faces : []).map(id => ROW.get(id)).filter(Boolean);
+  } else if (sc.kind === "sgbranch") {
+    const b = SG ? SG.branches.find(x => x.name === sc.sgb) : null;
+    const seen = new Set();
+    for (const l of (b ? b.leaves : [])) for (const id of SG.leaves[l].faces) if (!seen.has(id)) { seen.add(id); ids.push(id); }
   } else if (sc.kind === "kwbranch") {
     const b = KW ? KW.branches.find(x => x.name === sc.kwb) : null;
     const seen = new Set();
@@ -1234,6 +1323,8 @@ function markActive() {
             : scope.kind === "ungroup" ? `NG␟${scope.gid}`
             : scope.kind === "kwbranch" ? `KB␟${scope.kwb}`
             : scope.kind === "kwleaf" ? `KL␟${scope.kwl}`
+            : scope.kind === "sgbranch" ? `SB␟${scope.sgb}`
+            : scope.kind === "sgleaf" ? `SL␟${scope.sgl}`
             : scope.kind === "effect" ? `E␟${scope.branch}␟${scope.effect}`
             : scope.kind === "other-effect" ? `X␟${scope.branch}`
             : `L␟${scope.branch || ""}␟${scope.leaf}`;
@@ -1274,6 +1365,19 @@ function renderScope() {
   } else if (scope.kind === "found") {
     crumb = `Find a card<span class="sep">›</span><b>${esc(scope.label)}</b>`;
     state = `<div class="note">The card you asked for, shown with the same row as everywhere else.</div>`;
+  } else if (scope.kind === "sgbranch") {
+    crumb = `${esc(SG.meta.block)}<span class="sep">›</span><b>${esc(scope.sgb)}</b> <span class="chip chip-sg">signature rule</span>`;
+    state = `<div class="note">Cards in this branch's groups, placed by an exact replacement-effect signature; each card is in exactly one group.</div>`;
+  } else if (scope.kind === "sgleaf") {
+    const L = SG.leaves[scope.sgl];
+    crumb = `${esc(SG.meta.block)}<span class="sep">›</span>${L.branches.map(esc).join(" / ")}` +
+      `<span class="sep">›</span><b>${esc(L.name)}</b> <span class="chip chip-sg">signature rule</span>`;
+    state = `<div class="note">Exact membership: ` +
+      (L.signatures ? `every card here has the replacement signature <code>${L.signatures.map(esc).join("</code> or <code>")}</code>.` :
+       L.kind === "cost" ? `every card here has an additional cost to cast and nothing else the parser could compare.` :
+       `every card here has a replacement of this kind whose exact signature is held by fewer than ${SG.meta.min_group} cards.`) +
+      ` Keywords on a card are shown under its quality badge; its oracle text is in the text column.</div>` +
+      (L.basis ? `<div class="note">Name: ${esc(L.basis)}.</div>` : "");
   } else if (scope.kind === "kwbranch") {
     crumb = `Keyword abilities<span class="sep">›</span><b>${esc(scope.kwb)}</b> <span class="chip chip-kw">keyword rule</span>`;
     state = `<div class="note">Cards whose keyword set includes ${esc(scope.kwb)}, placed by rule. A card ` +
@@ -1612,8 +1716,24 @@ function syncMv() {
 
 // ---- card list -----------------------------------------------------------
 
+// Sort by parse quality: best first (clean) to worst (unparsed); no-text cards last. Ties are
+// ordered by how many gap / unmodelled / correction marks the card carries. 0 = list order.
+let qsort = 0;
+const QRANK = { clean: 0, partial: 2, unparsed: 3, vanilla: 4 };
+const qkey = r => (r.q in QRANK ? QRANK[r.q] : 5) + (r.q === "clean" && r.sg ? 1 : 0);
+function sortByQuality(list) {
+  if (!qsort) return list;
+  return list.map((r, i) => [r, i]).sort((a, b) =>
+    qsort * (qkey(a[0]) - qkey(b[0]) || ((a[0].gaps || 0) + (a[0].sg || 0) + (a[0].corr || 0)) -
+             ((b[0].gaps || 0) + (b[0].sg || 0) + (b[0].corr || 0))) || a[1] - b[1]).map(x => x[0]);
+}
+document.getElementById("qth").onclick = () => {
+  qsort = qsort === 1 ? -1 : 1;
+  page = 0; run();
+};
 function run() {
-  shown = CV.filterActive(f) ? pool.filter(r => CV.match(r, f)) : pool;
+  shown = sortByQuality(CV.filterActive(f) ? pool.filter(r => CV.match(r, f)) : pool);
+  document.getElementById("qarrow").textContent = qsort === 1 ? " ▲" : qsort === -1 ? " ▼" : "";
   const active = CV.filterActive(f);
   const nNear = pool.filter(r => isNear(r.id)).length;
   document.getElementById("scount").innerHTML =
@@ -1720,15 +1840,25 @@ function alsoFitsHTML(oid, rid) {
 const ABREASON = {
   "below_0.90": "no group fits it closely", generic_leaf: "only a very broad group fits it",
   in_between: "only a broad group fits it", no_text: "it has no text to show",
+  item_gap: "part of it could not be read", same_line_gap: "part of its line could not be read",
+  continuation_gap: "part of the text around it could not be read",
   token_blind_spot: "a match could not be confirmed", flagged: "flagged by a check",
   modal: "part of a choice card", no_tokens: "nothing to compare", second_leaf: "it fits a different group",
   not_scored: "not checked",
 };
+function abilityGapHTML(ab) {
+  if (!ab || !ab.gaps || !ab.gaps.length) return "";
+  return `<div class="note">Part of this card the tool could not read:</div>` +
+    ab.gaps.map(g => `<span class="abrest"><b>${GAPLAB[g[0]] || GAPLAB.unread}</b> \u201c${esc(g[1])}\u201d</span>`).join("") +
+    (ab.gaps_more ? `<span class="abrest">+${ab.gaps_more} more</span>` : "");
+}
 function abilityRestHTML(ab) {
-  if (!ab || !(ab.rest.length || ab.also.length)) return "";
-  return `<div class="note">Other abilities on this card, not in a group:</div>` +
+  if (!ab) return "";
+  const also = ab.also || [];
+  return abilityGapHTML(ab) + (!(ab.rest.length || also.length) ? "" :
+    `<div class="note">Other abilities on this card, not in a group:</div>` +
     ab.rest.map(x => `<span class="abrest">\u201c${esc(x.t)}\u201d \u2014 ${esc(ABREASON[x.r] || x.r)}</span>`).join("") +
-    alsoMarkup(ab.also);
+    alsoMarkup(also));
 }
 function alsoMarkup(ms) {
   return ms.map(m =>
@@ -1771,6 +1901,11 @@ function layerChips(r) {
   if (un) h += unorgChips(un, r.id);
   const abf = ABFACE.get(r.id);
   if (abf) h += `<br><span class="abm">Matched on: \u201c${esc(abf.placed[0].t)}\u201d</span>`;
+  const sgf = SGFACE.get(r.id);
+  if (sgf) {
+    h += `<br><span class="chip chip-sg" title="Placed by an exact rule on its replacement-effect signature (${esc(sgf.leaf)}) — not clustered, not a guess.">signature rule</span>` +
+         (sgf.keywords.length ? `<br><span class="kws">Keywords: ${sgf.keywords.map(esc).join(" · ")}</span>` : "");
+  }
   const kf = KWFACE.get(r.id);
   if (kf) {
     h += `<br><span class="chip chip-kw" title="Placed by an exact rule on its keyword set (leaf ${esc(kf.leaf)}) — not clustered, not a guess.">keyword rule</span>` +
@@ -1795,6 +1930,14 @@ function provBox(r) {
     return `<div class="clubox"><b class="hdr">Where this card sits</b>` +
       `<b>Not yet organized</b> › ${esc(g.name)}<div class="note">${esc(g.explain)}</div>` +
       `<div class="note">It is in no leaf, so it changes no leaf count or score.</div></div>`;
+  }
+  const sgf = SGFACE.get(r.id);
+  if (sgf) {
+    const L = SG.leaves[sgf.leaf];
+    return `<div class="clubox"><b class="hdr">Where this card sits</b>` +
+      `<b>placed by signature rule</b>, not clustered — <b>${esc(SG.meta.block)}</b> › <b>${esc(L.name)}</b> (<code>${esc(sgf.leaf)}</code>)` +
+      `<div style="margin:3px 0">branch: ${L.branches.map(b => `<span class="brbadge">${esc(b)}</span>`).join("")}</div>` +
+      `<div class="note">Membership is exact, not a similarity guess. This card changes no leaf centroid, cohesion score or count.</div></div>`;
   }
   const kf = KWFACE.get(r.id);
   if (kf) {

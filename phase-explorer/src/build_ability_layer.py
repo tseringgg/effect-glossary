@@ -41,7 +41,7 @@ BUILD = ap.BUILD
 MIN_BLENDED = 0.50
 TEXT_LIMIT = 160
 REASONS = ("no_tokens", "flagged", "modal", "below_0.90", "generic_leaf", "in_between", "no_text",
-           "token_blind_spot", "second_leaf", "not_scored")
+           "token_blind_spot", "item_gap", "same_line_gap", "continuation_gap", "second_leaf", "not_scored")
 
 
 def dump(name, obj):
@@ -183,6 +183,12 @@ def main():
 
     # ---- the ability ledger
     pl_faces = P["faces"]
+    ppath = os.path.join(BUILD, "partial_ability_layer.json")
+    PAL = ap.jl("partial_ability_layer.json") if os.path.exists(ppath) else {"cards": {}, "faces": {}, "reasons": {}}
+    pal_leaf = {c: PAL["faces"][v["face"]]["leaf"] for c, v in PAL["cards"].items()}
+    gpath = os.path.join(BUILD, "signature_layer.json")
+    SG = ap.jl("signature_layer.json") if os.path.exists(gpath) else {"faces": {}}
+    sig_leaf = {f["card"]: f["leaf"] for f in SG["faces"].values()}
     card_rows = {}
     rows_out = []
     state_n = collections.Counter()
@@ -195,6 +201,10 @@ def main():
         if oid not in card_rows:
             if oid in placed_cards:
                 st, method, cleaf = "placed_by_ability", "ability", placed_cards[oid]
+            elif oid in pal_leaf:
+                st, method, cleaf = r["status"], "ability", pal_leaf[oid]
+            elif oid in sig_leaf:
+                st, method, cleaf = r["status"], "signature_rule", sig_leaf[oid]
             else:
                 st, method = r["status"], r["placement"]["method"]
                 cleaf = r["placement"].get("leaf")
@@ -202,12 +212,15 @@ def main():
                     st, method, cleaf = r["evidence"].get("pipeline_status", st), "unplaced", None
             card_rows[oid] = [r["name"], st, method, cleaf]
         st, method, cleaf = card_rows[oid][1:]
+        pr = PAL["reasons"].get("%s|%s|%d" % (x["face"], x["b"], x["i"]))
+        if pr is not None:                       # an item of a partial / unmodelled card
+            x["reason"] = pr
         if method == "ability":
             if x["reason"] == "placed":
                 state, route, leaf, reason = "placed", "ability", x["leaf"], None
             else:
                 state, route, leaf, reason = "unplaced", None, None, x["reason"]
-        elif method in ("clustered", "proximity"):
+        elif method in ("clustered", "proximity", "signature_rule"):
             state, route, leaf, reason = "placed", method, cleaf, None
         else:
             state, route, leaf, reason = "unplaced", None, None, x["reason"]

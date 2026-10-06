@@ -158,6 +158,7 @@ def main():
     P = json.load(io.open(os.path.join(BUILD, "placements.json"), encoding="utf-8"))
     KL = json.load(io.open(os.path.join(BUILD, "keyword_layer.json"), encoding="utf-8"))
     AL = json.load(io.open(os.path.join(BUILD, "ability_layer.json"), encoding="utf-8"))
+    PAL = json.load(io.open(os.path.join(BUILD, "partial_ability_layer.json"), encoding="utf-8"))
     corr = {c["oracle_id"]: c for c in json.load(io.open(os.path.join(HERE, "corrections", "corrections.json"),
                                                          encoding="utf-8"))}
     idx = {r["id"]: r for r in json.load(io.open(os.path.join(BUILD, "index.json"), encoding="utf-8"))["rows"]}
@@ -247,7 +248,9 @@ def main():
 
     groups = []
     for gid, name, explain in GROUPS:
-        lst = cards[gid]
+        lst = cards.get(gid, [])
+        if not lst:                              # a group every card of which has since been placed is not listed
+            continue
         g = {"id": gid, "name": name, "explain": explain, "cards": len(lst),
              "faces": sum(len(c["f"]) for c in lst),
              "recovered": sum(1 for c in lst if c.get("t") == "recovered"),
@@ -293,7 +296,9 @@ def main():
         elif m == "proximity":
             code, extra = "p", [pl["leaf"], pl["similarity"]]
         elif m == "ability":
-            code, extra = "a", [pl["leaf"], AL["cards"][oid]["placed"][0]["t"][:100]]
+            code, extra = "a", [pl["leaf"], (AL["cards"].get(oid) or PAL["cards"][oid])["placed"][0]["t"][:100]]
+        elif m == "signature_rule":
+            code, extra = "g", pl["leaf"]
         elif m == "keyword_rule":
             code, extra = "k", pl["leaf"]
         elif m == "vanilla_rule":

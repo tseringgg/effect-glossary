@@ -135,6 +135,11 @@ var FindCard = (function () {
       lab = ctx.leafLabel(x[0]); br = ctx.leafBranches(x[0]);
       res.kind = "grouped"; res.leaf = x[0];
       res.text = "In the grouped tree: “" + lab + "” (leaf " + x[0] + "), placed through its ability “" + x[1].replace(/\.$/, "") + "”." + branchList(br);
+    } else if (code === "g") {
+      kl = ctx.sgLeaf(x);
+      res.kind = "signature"; res.leaf = x;
+      res.text = "In " + ctx.sgBlock + " › " + kl.name + ". Placed by an exact match on its replacement-effect signature, not by clustering." +
+        branchList(kl.branches);
     } else if (code === "k") {
       kl = ctx.kwLeaf(x);
       res.kind = "keyword"; res.leaf = x;

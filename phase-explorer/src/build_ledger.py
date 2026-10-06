@@ -75,6 +75,14 @@ KEYWORD_LAYER = "keyword_layer.json"
 # the pipeline stage it stopped at stays in evidence.pipeline_status, and the placement method is
 # `ability`. The layer file is read here; it is built from placements.json, never from this status.
 ABILITY_LAYER = "ability_layer.json"
+# Two further layers change a card's PLACEMENT only, never its status:
+#   partial_ability_layer.json  a partial / unmodelled card placed through one of its abilities (method
+#                               `ability`); its gap stays in the evidence and the gap-cause ranking
+#   signature_layer.json        "No effect to group" cards grouped by an exact replacement signature
+#                               (method `signature_rule`), and the newer vanilla cards given the existing
+#                               "No abilities" branch (method `vanilla_rule`)
+PARTIAL_LAYER = "partial_ability_layer.json"
+SIGNATURE_LAYER = "signature_layer.json"
 NEW_RELEASE_OVERLAY = "new-release-cards.json"
 NEW_RELEASE_SOURCE = "AtomicCards-20261003.json.gz"
 NEW_STAGE_ORDER = ("clean", "no_extractable_effect", "unmodelled_node", "partial", "unparsed", "vanilla")
@@ -698,6 +706,20 @@ def place(rows):
         for fid, f in json.load(io.open(apath, encoding="utf-8"))["faces"].items():
             by_card[f["card"]].append({"face": fid, "method": "ability", "leaf": f["leaf"],
                                        "similarity": f["similarity"], "source": "ability"})
+    ppath = os.path.join(BUILD, PARTIAL_LAYER)
+    if os.path.exists(ppath):
+        for fid, f in json.load(io.open(ppath, encoding="utf-8"))["faces"].items():
+            by_card[f["card"]].append({"face": fid, "method": "ability", "leaf": f["leaf"],
+                                       "similarity": f["similarity"], "source": "ability"})
+    gpath = os.path.join(BUILD, SIGNATURE_LAYER)
+    if os.path.exists(gpath):
+        SG = json.load(io.open(gpath, encoding="utf-8"))
+        for fid, f in SG["faces"].items():
+            by_card[f["card"]].append({"face": fid, "method": "signature_rule", "leaf": f["leaf"],
+                                       "source": "signature"})
+        for fid, f in SG["vanilla"].items():
+            by_card[f["card"]].append({"face": fid, "method": "vanilla_rule", "branch": f["branch"],
+                                       "source": "vanilla"})
     tally, unplaced = collections.Counter(), collections.Counter()
     for oid, r in rows.items():
         if oid in stages and stages[oid][0].get("layer", "recovered") == "recovered":
@@ -778,7 +800,9 @@ def write_report(doc, digest):
           f"the nearest leaf centroid at cosine >= {pl['floor']} (a separate, flagged layer — it "
           "changes no centroid, cohesion score, count or map); `vanilla_rule` is the "
           "\"No abilities\" branch; `ability` is a leaf matched by one of the card's own abilities "
-          "(`build/ability_layer.json`; ability-level detail in `build/ability_ledger.json`). "
+          "(`build/ability_layer.json`, and `build/partial_ability_layer.json` for partial / unmodelled cards; "
+          "ability-level detail in `build/ability_ledger.json`); `signature_rule` is an exact replacement-effect "
+          "signature (`build/signature_layer.json`). "
           "See `build/placements.json`.", "",
           "| placement | cards |", "|---|---:|"]
     for k, v in pl["by_method"].items():

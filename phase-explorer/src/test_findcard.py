@@ -31,7 +31,7 @@ def load(name):
 
 
 JS_CTX = r"""
-var LOOKUP = dukpy.lookup, UNORG = dukpy.unorg, BR = dukpy.br, KW = dukpy.kw, CLU = dukpy.clu, PHR = dukpy.phr;
+var LOOKUP = dukpy.lookup, UNORG = dukpy.unorg, BR = dukpy.br, KW = dukpy.kw, SGL = dukpy.sgl, CLU = dukpy.clu, PHR = dukpy.phr;
 var IDX = FindCard.build(LOOKUP);
 function leafLabel(l) {
   var e = PHR.leaves[String(l)];
@@ -42,6 +42,8 @@ var CTX = {
   leafLabel: leafLabel,
   leafBranches: function (l) { return BR.leaf_branches[String(l)] || []; },
   kwLeaf: function (id) { return KW.leaves[id]; },
+  sgLeaf: function (id) { return SGL.leaves[id]; },
+  sgBlock: SGL.meta.block,
   group: function (id) { var g = UNORG.groups, i; for (i = 0; i < g.length; i++) if (g[i].id === id) return g[i]; },
   words: UNORG.strength_words
 };
@@ -81,7 +83,7 @@ def main():
     js = dukpy.JSInterpreter()
     with io.open(os.path.join(HERE, "reports", "findcard.js"), encoding="utf-8") as fh:
         js.evaljs(fh.read())
-    js.evaljs(JS_CTX, lookup=lookup, unorg=unorg, br=load("branches.json"), kw=load("keyword_layer.json"),
+    js.evaljs(JS_CTX, lookup=lookup, unorg=unorg, br=load("branches.json"), kw=load("keyword_layer.json"), sgl=load("signature_layer.json"),
               clu={"labels": load("clusters.json")["labels"]}, phr=load("leaf_phrases.json"))
 
     # 2. every card is findable by its own name (every face name too)
@@ -111,9 +113,13 @@ def main():
         ("Nissa, Worldsoul Speaker", "unorganized", 1),
         ("Guul Draz Vampire", "unorganized", 1),
         ("Ravnica at War", "unorganized", 2),
-        ("Comeuppance", "unorganized", 3),
+        ("Comeuppance", "signature", None),
         ("Scavenger Hunt", "unorganized", "recovered"),
-        ("Yargle, Goliath of Otaria", "unorganized", 6),
+        ("Yargle, Goliath of Otaria", "norules", None),
+        ("Fog Bank", "signature", None),
+        ("Hardened Scales", "signature", None),
+        ("Jeska, Thrice Reborn", "unorganized", 1),
+        ("Glen Elendra's Answer", "grouped", None),
         ("Fire Covenant", "unorganized", 5),
         ("Arcbound Wanderer", "unorganized", 4),
         ("The Great Aerie", "notcard", None),
@@ -124,7 +130,7 @@ def main():
                   and r["status"] == "noise" and not r["name"].startswith("A-"))[0]
     want.append((prox, "nearby", None))
     n_ab = sum(1 for e in lookup["entries"] if e[3] == "a")
-    n_layer = len(load("ability_layer.json")["cards"])
+    n_layer = len(load("ability_layer.json")["cards"]) + len(load("partial_ability_layer.json")["cards"])
     check(n_ab == n_layer == sum(1 for r in R.values() if r["placement"]["method"] == "ability") > 0,
           "ability-placed cards: lookup %d == layer %d == ledger" % (n_ab, n_layer))
     print()

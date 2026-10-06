@@ -220,6 +220,27 @@ def main():
             cards[oid] = {"name": r["name"], "faces": faces, "kws": kws, "types": types,
                           "face_kws": {fid: (e.get("keywords") or []) for fid, (_, e) in zip(faces, ents)}}
 
+    # Recovered cards (dropped from the snapshot by a face-name collision, regenerated into the
+    # placement layer) whose whole text is keywords are placed by the same rule. They are added
+    # AFTER the corpus keyword frequency above was taken, so no other card's "rarest keyword" and no
+    # other card's leaf can change: the only rows that differ are these cards' own.
+    for oid, r in sorted(ledger.items()):
+        rec = r["evidence"].get("recovered")
+        if r["status"] != "missing_from_export" or not rec:
+            continue
+        if not all(f["stage"] == "no_extractable_effect" for f in rec["faces"]):
+            continue
+        faces = [f["id"] for f in rec["faces"]]
+        ents = [entry(fid) for fid in faces]
+        if not is_keyword_only([e for _, e in ents]):
+            continue
+        types = set()
+        for _, e in ents:
+            types |= set((e.get("card_type") or {}).get("core_types") or [])
+        cards[oid] = {"name": r["name"], "faces": faces, "types": types, "recovered": True,
+                      "kws": [k for _, e in ents for k in (e.get("keywords") or [])],
+                      "face_kws": {fid: (e.get("keywords") or []) for fid, (_, e) in zip(faces, ents)}}
+
     def key_for(kws, with_pay):
         parts = set()
         for k in kws:

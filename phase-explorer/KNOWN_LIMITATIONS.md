@@ -741,6 +741,84 @@ modes are compared by mode name only.
 
 ---
 
+## 10. Shrinking "Not yet organized": gap cards, "No effect to group", and a measurement (2026-10-10)
+
+**Ability placement for partial / unmodelled cards** (`src/build_partial_ability_layer.py` ->
+`build/partial_ability_layer.json`). The section 9 rule, on the 5,708 gap cards, plus three conditions that
+only matter when the parse has a hole: `item_gap` (the ability's own item holds an Unimplemented /
+GenericEffect[?] / Unrecognized / unknown-trigger-mode node), `same_line_gap` (a gap fragment sits in the same
+rules-text line as the ability, so the ability is a partial reading of it: the Spark Double pattern) and
+`continuation_gap` (the face has an unread clause that starts with a continuation word: it, that, the, this,
+~, then, instead, otherwise, unless, choose, ...). **456 cards placed** (334 partial, 120 unmodelled, 2
+recovered; 458 abilities). The card keeps its status (the gap stays in the gap-cause ranking); only its
+placement method becomes `ability`, and its unread parts are shown as plain card detail. A looser version
+without the continuation test would have placed 537; it was not built. Corrections-flagged cards (Spark Double,
+Toxic Deluge) are out of scope by status.
+
+*Hand check.* 40 placements, 30 ordinary + 10 "headline-lost" (the unread / gap items hold at least as much
+text as the placed ability; 194 of the 456 meet that definition). Ordinary: 0 wrong. Headline-lost: 0 wrong,
+2 doubtful (Old Man of the Sea sits under "may choose not to untap" although its point is the steal effect;
+Ashling's Prerogative's enters-tapped line carries a condition the leaf does not). The ability is true of the
+card in every case; what a headline-lost placement can mislead about is what the card is *for*. Ten cards are
+too few to call that rate stable.
+
+**Replacement effects and costs** (`src/build_signature_layer.py` -> `build/signature_layer.json`, method
+`signature_rule`). 209 of the 245 cards of "No effect to group" are grouped by an exact replacement signature
+(event + scope / amount / modification / redirect), keywords never split a group, a signature needs >= 5 cards,
+else a family group needs >= 5, else the card stays out; there is no catch-all. 13 groups in 5 branches. Left in
+"No effect to group": 8 cards with other items, 11 damage replacements the parser recorded with no parameters at
+all (unrelated cards), 6 too-rare signatures, 6 whose text redirects damage although the signature does not say
+so. Coined names are flagged `coined: true` in the data; the real terms and their basis are recorded
+(Comprehensive Rules 118.8 additional costs, 614.9 redirection effects, 615.7 "prevent the next N damage ...
+work like shields"; "prevention shield" itself is informal; "Fog" is community slang).
+
+*What went wrong first.* The parser records that all combat damage is prevented but drops who the damage is dealt
+by or to when the card limits it, so the first "Fog" group held mostly one-creature shields (first hand check of
+30: 5 wrong, over the 5% stop rule). Fixed by two text gates (Fog = the prevent clause is exactly "prevent all
+combat damage that would be dealt this turn"; a prevent-shaped signature whose text redirects damage is left out)
+and a rename of the remainder to "Prevent combat damage, limited to some creatures or players". Later draws of
+30: 1 wrong (a naming mismatch), 1 wrong (a redirect the first gate missed), then 0 wrong. The signature layer
+therefore depends on card text for these groups; the structure alone is not enough.
+
+**Newer vanilla cards.** The 7 post-snapshot cards with no rules text join the existing "No abilities" branch
+(method `vanilla_rule`); the existing rule is not changed. "No rules text: newer cards" is now empty and no
+longer listed.
+
+**Knight of the Kitchen Sink (5 recovered cards).** They are keyword-only (First strike + Protection from ...)
+but the keyword layer skipped recovered cards. Route used: `build_keyword_layer.py` now also takes recovered
+cards whose whole text is keywords, added after the corpus keyword frequency is taken so no other card's leaf
+can move. Output diff against the previous file: 5 new face rows; leaf `kw:FirstStrike+Protection` 7 -> 12;
+branch counts Protection 76 -> 81, First strike 56 -> 61 (the Protection branch's leaf order follows size);
+meta cards 1,257 -> 1,262, faces 1,264 -> 1,269, leaf-kind `sig` 711 -> 716, type-audit flagged leaves 14 ->
+15 (a derived count: the leaf's type mix changed). No other row changed; each face is in one leaf.
+
+**Result.** Placed 25,408 -> 26,085 of 34,864 in scope (74.8%; 67.0% of the 38,921 universe). "Not yet
+organized" 9,456 -> 8,779: gap 5,708 -> 5,252; no close group 3,459; no effect to group 245 -> 31; not parsed 29;
+known parse mistake 8; newer vanilla 7 -> 0.
+
+## 11. Measurement only: cards whose abilities match no leaf at 0.90 (2026-10-10)
+
+No layer was built. Population: review-queue cards (clean parse, unplaced) none of whose abilities scores >= 0.90
+against any leaf: **1,782** (1,604 single-ability; 1,551 have exactly three tokens). Clustered among themselves
+(HDBSCAN, the clustering's own tokens and weights, `min_samples=1`, leaf selection), by minimum group size:
+
+| min size | cards in groups of >= 5 | groups of >= 5 | groups with an effect token in the shared core | cards in such groups |
+|---|---:|---:|---:|---:|
+| 5 | 815 | 93 | 26 | 236 |
+| 4 | 761 | 93 | - | 249 |
+| 3 | 534 | 78 | - | 212 |
+| 2 | 254 | 40 | - | 166 |
+
+At size 5, 67 of the 93 groups are held together only by a target-shape token and 21 have no shared token at all,
+so they are not coherent (an 11-card "nonland permanent you control" group mixes exile, return and destroy). At
+size 3, 28 of 215 groups have no specific shared token. Coherent examples: 30 Sliver "All Sliver creatures ..."
+statics, 22 explore cards, 7 "counter target spell with ..." cards, 6 "entering doesn't cause abilities to
+trigger". About 13% of the population sits in coherent groups, so a general layer is not worth building; a narrow
+one limited to groups sharing an effect token might be. Measurement files: `build/nomatch_cluster_probe.json`,
+`src/probe_nomatch_cluster.py`.
+
+---
+
 ## Reproducing these numbers
 
 ```

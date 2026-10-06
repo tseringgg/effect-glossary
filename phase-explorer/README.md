@@ -24,6 +24,9 @@ python src/build_placements.py    # -> build/placements.json
 python src/build_keyword_layer.py # -> build/keyword_layer.json: keyword-only cards, placed by rule (kw:<signature>)
 python src/build_ledger.py        # again: adds each card's placement
 python src/build_also_fits.py     # -> build/also_fits.json: per-ability "also fits" suggestions (display only; reads the probe's scorer)
+python src/build_keyword_layer.py   # (also takes recovered keyword-only cards)
+python src/build_partial_ability_layer.py  # -> build/partial_ability_layer.json (gap cards placed by one ability)
+python src/build_signature_layer.py  # -> build/signature_layer.json (replacement-effect groups; newer vanilla cards)
 python src/build_ability_layer.py  # -> build/ability_layer.json (cards placed by one ability), build/ability_ledger.json; then rerun build_ledger.py
 python src/build_unorganized.py   # -> build/unorganized*.json, build/lookup.json: "Not yet organized" groups + Find a card (display only)
 python src/serve.py               # opens http://localhost:8765/reports/browse.html
