@@ -153,7 +153,39 @@
      not by the clustering. Dashed everywhere, so it never reads as a leaf member. */
   .chip-near   { border-color:#2f7d6d; color:#1f5e51; background:#e6f4f0; border-style:dashed; }
   .chip-rec    { border-color:#2f7d6d; color:#1f5e51; background:#fff; }
+  /* dev-only wording (the curation queue): hidden unless the page is opened with ?dev=1 */
+  .devonly { display:none !important; }
+  html.dev .devonly { display:revert !important; }
   .nearn { color:#1f5e51; font-weight:normal; }
+  /* Not yet organized: plain text styling on purpose -- no chip that could be read as the
+     dashed "nearby" chip or the solid keyword badge */
+  #tree details.unorg > summary .bname { color:#6a4a1e; }
+  .ugrp { margin:7px 0 9px; padding:5px 0 6px; border-top:1px solid var(--line); }
+  .ugrp .uexp { font-size:11px; color:var(--text-secondary); margin:2px 0 4px; line-height:1.35; }
+  .utag { font-size:10px; color:#6b6b6b; font-style:italic; }
+  .ugap { font-size:11px; color:#7a3b1a; display:inline-block; max-width:260px; line-height:1.3; }
+  .usug { font-size:11px; color:#444; display:inline-block; max-width:260px; line-height:1.3; }
+  .usug a { color:#244f8f; text-decoration:underline; cursor:pointer; }
+  .usim { color:#444; }
+  .abm { font-size:11px; color:#444; display:block; max-width:280px; line-height:1.3; margin-top:2px; }
+  .abrest { display:block; font-size:11px; color:#555; line-height:1.3; margin-top:3px; }
+  .ualso { font-size:11px; color:#444; display:block; max-width:280px; line-height:1.3; margin-top:2px; }
+  .ualso .ahead { color:#6b6b6b; font-style:italic; }
+  .ualso a { color:#244f8f; text-decoration:underline; cursor:pointer; }
+  .ualso .atext { color:#555; }
+  .usim-weak { color:#9a9a9a; font-style:italic; }
+  #findbox { padding:6px 8px 8px; border-bottom:1px solid var(--line); }
+  #findbox label { font-weight:bold; font-size:12px; display:block; margin-bottom:3px; }
+  #findq { width:100%; box-sizing:border-box; }
+  .fres { border:1px solid var(--line); border-radius:3px; padding:5px 6px; margin:5px 0; font-size:11px; line-height:1.35; background:var(--panel); }
+  .fres.notcard { background:#f4f4f4; color:#555; }
+  .fres .fn { font-weight:bold; font-size:12px; }
+  .fres .fbtn { font-size:10px; margin:3px 4px 0 0; }
+  .fgap { color:#7a3b1a; }
+  .chip-kw     { border-color:#1d4f91; color:#fff; background:#2a64b5; border-style:solid; }
+  .chip-catch  { border-color:#a0651a; color:#6b3f08; background:#fbefd8; }
+  .kws { color:#1d4f91; font-size:11px; }
+  #tree details.kwbr > summary .bname { color:#1d4f91; }
   #tree details.vanbr > summary .bname { color:var(--vanilla); }
   .covbox label { display:block; margin-top:4px; cursor:pointer; }
   .statenote { font-size:10px; color:var(--mut); border-top:1px solid var(--line);
@@ -294,7 +326,7 @@
       highlight what the parser matched</label>
     <button id="collapse">collapse all</button>
     · <a href="card-explorer.html">parse-audit explorer</a>
-    · <a href="review-queue.html">review queue</a>
+    <span class="devonly">· <a href="review-queue.html">review queue</a></span>
     · <a href="branches.md">branches.md</a>
   </div>
   <div class="caveat">
@@ -316,6 +348,11 @@
 
 <main id="main" hidden>
   <aside id="nav">
+    <div id="findbox">
+      <label for="findq">Find a card</label>
+      <input type="search" id="findq" placeholder="a card's name (any face)…" autocomplete="off">
+      <div id="findres" aria-live="polite"></div>
+    </div>
     <div class="covbox" id="covbox"></div>
     <div id="tree"></div>
     <div id="navnotes"></div>
@@ -347,6 +384,7 @@
 </main>
 
 <script src="cardview.js"></script>
+<script src="findcard.js"></script>
 <script src="branchmap.js"></script>
 <script>
 /* Browsing front end: sector -> branch -> (effect group ->) leaf -> cards.
@@ -357,6 +395,8 @@
  * build/clusters.json, build/branches.json and build/sectors.json, and
  * every card is rendered by the shared renderer in cardview.js.
  */
+const DEV = new URLSearchParams(location.search).has("dev");
+if (DEV) document.documentElement.classList.add("dev");
 const esc = CV.esc;
 const PER = 50;
 
@@ -375,6 +415,17 @@ let EFF_SIBLINGS = new Map();  // branch name -> [effect-sibling branch objects]
 let PL = null;                 // build/placements.json, or null
 let PROX = new Map();          // leaf -> [face id] placed by proximity
 let VANILLA = [];              // face ids placed by the vanilla rule
+let UNORG = null;              // build/unorganized.json (boot: groups, counts, wording)
+let UNC = null;                // build/unorganized_cards.json (lazy: opened on first use)
+let UNFACE = new Map();        // face id -> {gid, c: card entry}  (Not yet organized)
+let UNBYOID = new Map();       // oracle id -> {gid, c}
+let ALSO = new Map();          // oracle id -> {f, m:[{b,i,t,l,s}]}  per-ability "also fits" suggestions
+let LOOKUP = null, FIDX = null; // build/lookup.json + FindCard index (lazy: first use of Find)
+let KW = null;                 // build/keyword_layer.json, or null
+let KWFACE = new Map();        // face id -> {leaf, keywords}  (keyword_rule placement)
+let AB = null;                 // build/ability_layer.json, or null
+let ABFACE = new Map();        // face id -> {leaf, placed:[{b,i,t,l,s}], rest:[...], also:[...]}
+let ABLEAF = new Map();        // leaf -> [face id] placed through one of its abilities
 let NEARBY = true;             // include proximity cards in card lists
 
 const f = CV.newFilter();
@@ -444,6 +495,22 @@ async function boot() {
   try { PL = await fetch("../build/placements.json").then(r => r.json()); }
   catch (e) { PL = null; }
   try { NEARBY = localStorage.getItem("browse.nearby") !== "0"; } catch (e) { /* default on */ }
+  // Not yet organized: only the small boot file here; the card lists and the lookup are lazy.
+  try { UNORG = await fetch("../build/unorganized.json").then(r => r.json()); } catch (e) { UNORG = null; }
+  // Keyword layer: exact rule placement of keyword-only cards (never clustered, never a guess).
+  try {
+    KW = await fetch("../build/keyword_layer.json").then(r => r.json());
+    for (const [id, p] of Object.entries(KW.faces)) KWFACE.set(id, p);
+  } catch (e) { KW = null; }
+  // Ability layer: cards placed in a leaf because one of their abilities matches it (src/build_ability_layer.py).
+  try {
+    AB = await fetch("../build/ability_layer.json").then(r => r.json());
+    for (const [id, p] of Object.entries(AB.faces)) {
+      ABFACE.set(id, { leaf: p.leaf, ...AB.cards[p.card] });
+      if (!ABLEAF.has(p.leaf)) ABLEAF.set(p.leaf, []);
+      ABLEAF.get(p.leaf).push(id);
+    }
+  } catch (e) { AB = null; }
 
   for (const r of ROWS) ROW.set(r.id, r);
   if (PL) {
@@ -477,6 +544,7 @@ async function boot() {
   SUBSET_OF_SOMETHING = computeSubsetFlags();
 
   renderProv();
+  wireFind();
   renderCoverage();
   renderTree();
   renderNavNotes();
@@ -489,6 +557,82 @@ async function boot() {
   if (first) pick({ kind: "branch", branch: first.name });
 }
 
+// ---- Find a card -----------------------------------------------------------
+// build/lookup.json (every oracle id) loads on first use; the search and the plain-language
+// answers are reports/findcard.js, the same file src/test_findcard.py runs.
+async function ensureLookup() {
+  if (FIDX) return;
+  const out = document.getElementById("findres");
+  out.textContent = "loading the card list…";
+  LOOKUP = await fetch("../build/lookup.json").then(r => r.json());
+  FIDX = FindCard.build(LOOKUP);
+  out.textContent = "";
+}
+function findCtx() {
+  return {
+    leafLabel: l => leafPhrase(l) || (CLU.labels[String(l)] || "").slice(0, 70),
+    leafBranches: l => BR.leaf_branches[String(l)] || [],
+    kwLeaf: id => (KW && KW.leaves[id]) || { name: id, branches: [] },
+    group: gid => (UNORG && UNORG.groups.find(g => g.id === gid)) || { name: "(unknown group)", explain: "" },
+    words: UNORG ? UNORG.strength_words : { close: 0.7, loose: 0.5 },
+  };
+}
+function findButtons(a, i) {
+  let b = "";
+  if (a.faces.length) b += `<button class="fbtn" data-fshow="${i}">show the card</button>`;
+  if (a.kind === "grouped" || a.kind === "nearby") b += `<button class="fbtn" data-fleaf="${a.leaf}">open that group</button>`;
+  if (a.kind === "keyword") b += `<button class="fbtn" data-fkw="${esc(a.leaf)}">open that keyword group</button>`;
+  if (a.kind === "norules") b += `<button class="fbtn" data-fvan="1">open “No abilities”</button>`;
+  if (a.kind === "unorganized") b += `<button class="fbtn" data-fgrp="${a.group}">open that group</button>`;
+  return b;
+}
+async function runFind() {
+  await ensureLookup();
+  const q = document.getElementById("findq").value;
+  const out = document.getElementById("findres");
+  if (!q.trim()) { out.innerHTML = ""; return; }
+  const res = FindCard.search(FIDX, q, 25);
+  if (!res.total) { out.innerHTML = `<div class="note">No card or catalogue entry has “${esc(q)}” in a name.</div>`; return; }
+  const ctx = findCtx();
+  const answers = res.matches.map(m => FindCard.describe(FIDX, m, ctx));
+  if (answers.some(a => a.kind === "unorganized")) await ensureUNC();
+  out.innerHTML = `<div class="note">${res.total.toLocaleString()} match${res.total === 1 ? "" : "es"}` +
+    `${res.total > answers.length ? ` (showing the first ${answers.length}; type more of the name)` : ""}. ` +
+    `Real cards first.</div>` + answers.map((a, i) => {
+      const row = a.faces.length ? ROW.get(a.faces[0]) : null;
+      const m = res.matches[i];
+      const type = row ? row.type : (a.kind === "notcard" ? `catalogue entry · ${m[4][1] || ""} ${m[4][2] ? "(" + m[4][2] + ")" : ""}` : "");
+      let gap = "";
+      const u = UNBYOID.get(a.oid);
+      if (u && u.c.g) gap = u.c.g.slice(0, 2).map(([k, t]) => `<div class="fgap"><b>${GAPLAB[k] || GAPLAB.unread}</b> “${esc(t)}”</div>`).join("");
+      if (u && u.gid === 2 && u.c.s) gap = `<div>Closest group, as a suggestion only: “${esc(leafPhrase(u.c.s[0]) || "leaf " + u.c.s[0])}” (leaf ${u.c.s[0]}) · ${strengthSpan(u.c.s[1])}</div>` + alsoFitsHTML(a.oid, null);
+      return `<div class="fres${a.kind === "notcard" ? " notcard" : ""}"><span class="fn">${esc(a.name)}</span> ` +
+        `<span class="note">${esc(type)}</span>` +
+        (a.others.length ? `<div class="note">other face${a.others.length > 1 ? "s" : ""}: ${a.others.map(esc).join(" / ")}</div>` : "") +
+        `<div>${esc(a.text)}</div>${gap}<div>${findButtons(a, i)}</div></div>`;
+    }).join("");
+  out.onclick = ev => {
+    const t = ev.target;
+    if (!t.dataset) return;
+    if (t.dataset.fshow !== undefined) {
+      const a = answers[+t.dataset.fshow];
+      pick({ kind: "found", ids: a.faces, label: a.name });
+    } else if (t.dataset.fleaf !== undefined) {
+      const l = +t.dataset.fleaf;
+      pick({ kind: "leaf", branch: (BR.leaf_branches[String(l)] || [])[0] || null, leaf: l });
+    } else if (t.dataset.fkw !== undefined) pick({ kind: "kwleaf", kwl: t.dataset.fkw });
+    else if (t.dataset.fvan !== undefined) pick({ kind: "vanilla" });
+    else if (t.dataset.fgrp !== undefined) pick({ kind: "ungroup", gid: +t.dataset.fgrp });
+  };
+}
+function wireFind() {
+  const q = document.getElementById("findq");
+  let timer = null;
+  q.addEventListener("focus", () => { ensureLookup(); });
+  q.addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(runFind, 200); });
+  q.addEventListener("keydown", ev => { if (ev.key === "Enter") { clearTimeout(timer); runFind(); } });
+}
+
 function renderProv() {
   const days = Math.round((Date.now() - Date.parse(META.snapshot_last_modified)) / 864e5);
   const stale = days > 30 ? `<span class="stale">(${days} days old)</span>` : `(${days} days old)`;
@@ -496,7 +640,11 @@ function renderProv() {
     `snapshot <b>${META.snapshot_last_modified.slice(0,10)}</b> ${stale} · ` +
     (SECT ? `<b>${SECT.sectors.length}</b> sectors · ` : "") +
     `<b>${BR.branches.filter(b=>b.n_leaves).length}</b> branches · ` +
-    `<b>${BR.n_leaves}</b> leaves`;
+    `<b>${BR.n_leaves}</b> leaves` +
+    ((PL && PL.meta.layers && PL.meta.layers.new_release)
+      ? ` · + <b>${PL.meta.layers.new_release.cards.toLocaleString()}</b> cards released since ` +
+        `(${esc(PL.meta.layers.new_release.input || "")}, parsed by oracle-gen v0.1.15, placed by proximity only)`
+      : "");
 }
 
 // What browsing this tree can and cannot reach. Stated before the tree, not
@@ -517,9 +665,15 @@ function renderCoverage() {
     `branch counts sum past the corpus.` +
     (PL ? `<br><b>Placement layer.</b> <span class="nearn">+${(PL.meta.counts["proximity:noise"] || 0).toLocaleString()}` +
       `</span> unclustered and <span class="nearn">+${(PL.meta.counts["proximity:recovered"] || 0).toLocaleString()}</span> ` +
-      `recovered faces placed by proximity (cosine ≥ ${PL.meta.floor} to a leaf centroid), ` +
+      `recovered faces and <span class="nearn">+${(PL.meta.counts["proximity:new_release"] || 0).toLocaleString()}</span> ` +
+      `faces of cards released since the snapshot placed by proximity (cosine ≥ ${PL.meta.floor} to a leaf centroid), ` +
       `marked <span class="chip chip-near">nearby</span> and counted separately as "+N nearby" — ` +
-      `every clustered count above is unchanged. ${VANILLA.length.toLocaleString()} cards with no ` +
+      `every clustered count above is unchanged. ` +
+      (KW ? `${KW.meta.cards.toLocaleString()} keyword-only cards sit under “Keyword abilities”, placed by an exact ` +
+            `<span class="chip chip-kw">keyword rule</span> rather than a similarity guess. ` : "") +
+      (AB ? `${AB.meta.cards.toLocaleString()} more cards sit in a group because one of their abilities matches it closely ` +
+            `(counted with that group's cards). ` : "") +
+      `${VANILLA.length.toLocaleString()} cards with no ` +
       `text sit under "${esc(PL.meta.vanilla_branch)}". Full accounting: ` +
       `<a href="ledger.html">coverage ledger</a>.` +
       `<label><input type="checkbox" id="nearby"${NEARBY ? " checked" : ""}> include ` +
@@ -540,8 +694,17 @@ function renderCoverage() {
 
 // A leaf's cards for a card LIST: clustered members, plus the proximity layer
 // when it is switched on. Tree COUNTS never use this -- they read LEAF alone.
-function leafIds(l) {
+function memberIds(l) {
   const c = LEAF.get(l) || [];
+  return ABLEAF.has(l) ? c.concat(ABLEAF.get(l)) : c;
+}
+function abilCount(leaves) {
+  let n = 0;
+  for (const l of new Set(leaves)) n += (ABLEAF.get(l) || []).length;
+  return n;
+}
+function leafIds(l) {
+  const c = memberIds(l);
   return NEARBY && PROX.has(l) ? c.concat(PROX.get(l)) : c;
 }
 function nearCount(leaves) {
@@ -556,7 +719,7 @@ function nearChip(n) {
 function leafChips(l) {
   let h = "";
   const q = QUEUED.get(l);
-  if (q) h += `<span class="chip chip-review" title="${esc(q.map(x => x.kind + ": " + x.why).join(" | "))}">in review</span>`;
+  if (q) h += `<span class="chip chip-review devonly" title="${esc(q.map(x => x.kind + ": " + x.why).join(" | "))}">in review</span>`;
   if (MIXED.has(l)) {
     const fi = MIXED.get(l);
     const shares = Object.entries(fi.shares).slice(0, 4)
@@ -587,7 +750,7 @@ function leafRow(l, branch) {
   // clicked from. A leaf's card set is the same wherever it is reached --
   // leaves are many-to-many with branches, and the readout says so.
   const key = `L␟${branch || ""}␟${l}`;
-  const n = (LEAF.get(l) || []).length;
+  const n = memberIds(l).length;
   const raw = CLU.labels[l] || "";
   const phrase = leafPhrase(l);
   return `<div class="leafrow pick" role="button" tabindex="0" ` +
@@ -667,7 +830,7 @@ function branchCardSet(branchName, withNearby = false) {
     const b = BR.branches.find(x => x.name === branchName);
     const set = new Set();
     for (const l of (b ? b.leaves : [])) {
-      for (const id of (withNearby ? leafIds(l) : (LEAF.get(l) || []))) set.add(id);
+      for (const id of (withNearby ? leafIds(l) : memberIds(l))) set.add(id);
     }
     BRANCH_CARDS.set(k, set);
   }
@@ -732,18 +895,18 @@ function branchBlockHTML(b) {
   const nQ = b.leaves.filter(l => QUEUED.has(l)).length;
   const nMix = b.leaves.filter(l => MIXED.has(l)).length;
   const marks =
-    (nQ ? `<span class="chip chip-review" title="${nQ} of this branch's leaves have an open review-queue item">${nQ} in review</span>` : "") +
+    (nQ ? `<span class="chip chip-review devonly" title="${nQ} of this branch's leaves have an open review-queue item">${nQ} in review</span>` : "") +
     (nMix ? `<span class="chip chip-mixed" title="${nMix} of this branch's leaves hold more than one card type — the clustering did not use card type as a feature. Filter by card type below to cut across it.">${nMix} mixed</span>` : "");
 
   const ids = b.leaves.reduce((a, l) => a.concat(LEAF.get(l) || []), []);
   return `<details data-branch="${esc(b.name)}" class="${auto ? "auto" : ""}">` +
     `<summary><span class="bname">${esc(b.name)}</span> ${badge}${marks} ` +
-    `<span class="bmeta">— ${b.n_cards.toLocaleString()} cards${nearChip(nearCount(b.leaves))} · ${b.n_leaves} leaves · ` +
+    `<span class="bmeta">— ${(b.n_cards + abilCount(b.leaves)).toLocaleString()} cards${nearChip(nearCount(b.leaves))} · ${b.n_leaves} leaves · ` +
     `${esc(b.source)}</span></summary>` +
     `<div class="brule">rule: ${esc(b.rule)}` +
     (auto ? ` <b>This name was generated from structure, not sourced.</b>` : "") + `</div>` +
     `<button class="allbtn pickbtn" data-pick="B␟${esc(b.name)}">` +
-    `all ${b.n_cards.toLocaleString()} cards in this branch →</button>` +
+    `all ${(b.n_cards + abilCount(b.leaves)).toLocaleString()} cards in this branch →</button>` +
     `<div class="leaves">` +
     b.leaves.slice().sort((x, y) => (LEAF.get(y)||[]).length - (LEAF.get(x)||[]).length)
             .map(l => leafRow(l, b.name)).join("") +
@@ -755,7 +918,7 @@ function branchBlockHTML(b) {
 function sectorCardIds(sec, withNearby = false) {
   const seen = new Set(), out = [];
   for (const l of sec.leaves) {
-    for (const id of (withNearby ? leafIds(l) : (LEAF.get(l) || []))) if (!seen.has(id)) { seen.add(id); out.push(id); }
+    for (const id of (withNearby ? leafIds(l) : memberIds(l))) if (!seen.has(id)) { seen.add(id); out.push(id); }
   }
   return out;
 }
@@ -766,13 +929,14 @@ function sectorCardIds(sec, withNearby = false) {
 // no match anywhere) is deliberately not one.
 function uniqueBlockHTML() {
   const uniq = (BR.unique_effect || []).slice().sort((a, b) => b.n_cards - a.n_cards);
-  const uniqCards = uniq.reduce((a, u) => a + u.n_cards, 0);
+  const uniqCards = uniq.reduce((a, u) => a + u.n_cards, 0) + abilCount(uniq.map(u => u.leaf));
   return `<details class="unbr" data-branch="Unique effect"><summary>` +
     `<span class="bname">Unique effect</span> ` +
     `<span class="bmeta">— ${uniqCards.toLocaleString()} cards${nearChip(nearCount(uniq.map(u => u.leaf)))} · ${uniq.length} leaves · ` +
     `structure shared with no other leaf</span></summary>` +
     `<div class="brule">These leaves went through the curated rules, the auto-named ` +
-    `fallback and the review queue and came out the other side: their structure is not ` +
+    (DEV ? `fallback and the review queue and came out the other side: their structure is not ` :
+           `fallback and came out the other side: their structure is not `) +
     `shared with anything else in the corpus. That is a result, not a backlog — nothing ` +
     `is pending on them.</div>` +
     `<button class="allbtn pickbtn" data-pick="U">all ${uniqCards.toLocaleString()} cards →</button>` +
@@ -791,6 +955,82 @@ function vanillaBlockHTML() {
     `so they are placed here by rule rather than left out.</div>` +
     `<button class="allbtn pickbtn" data-pick="V">all ${VANILLA.length.toLocaleString()} cards →</button>` +
     `</details>`;
+}
+
+// "Keyword abilities": cards whose whole text is parsed into `keywords`. The clustering reads
+// only the ability buckets, so they have no features; they are placed by an exact rule on their
+// keyword set (src/build_keyword_layer.py). One leaf per card; a multi-keyword leaf is listed
+// under each of its keywords' branches. Outside the sectors, like Unique effect and No abilities.
+function kwLeafRow(id) {
+  const L = KW.leaves[id];
+  return `<div class="leafrow pick" role="button" tabindex="0" data-pick="KL␟${esc(id)}" title="${esc(id)}">` +
+    `<div class="leafhead">${esc(L.name)} · <b>${L.n_cards.toLocaleString()}</b> cards ` +
+    (L.kind === "rare" ? `<span class="chip chip-catch" title="not a coherent group: signatures too rare for a leaf">catch-all</span>` : "") +
+    `</div><div class="leafsays">${esc(id)}</div></div>`;
+}
+function kwBranchHTML(b) {
+  return `<details data-branch="kw:${esc(b.name)}"><summary><span class="bname">${esc(b.name)}</span> ` +
+    (b.catch_all ? `<span class="chip chip-catch">catch-all</span> ` : "") +
+    `<span class="bmeta">— ${b.n_cards.toLocaleString()} cards · ${b.leaves.length} leaf${b.leaves.length === 1 ? "" : "s"}</span></summary>` +
+    `<button class="allbtn pickbtn" data-pick="KB␟${esc(b.name)}">all ${b.n_cards.toLocaleString()} cards in this branch →</button>` +
+    `<div class="leaves">${b.leaves.map(kwLeafRow).join("")}</div></details>`;
+}
+function keywordBlockHTML() {
+  const m = KW.meta;
+  return `<details class="kwbr"><summary><span class="bname">Keyword abilities</span> ` +
+    `<span class="chip chip-kw" title="placed by an exact rule on the card's keyword set — not clustered, not a guess">keyword rule</span> ` +
+    `<span class="bmeta">— ${m.cards.toLocaleString()} cards · ${m.branches} branches · ${m.leaves} leaves</span></summary>` +
+    `<div class="brule">Cards whose whole rules text is keywords (“Flying”, “Flying, vigilance”, “Protection from red”). ` +
+    `The clustering reads only ability effects, so these cards had nothing to cluster on; they are placed here by rule. ` +
+    `A leaf is a card's exact keyword set (signatures held by ≥ ${m.min_leaf} cards), else “&lt;Keyword&gt;: other combinations” ` +
+    `under its rarest keyword, else one labelled catch-all. Each card is in exactly one leaf. ` +
+    `Payloads (Protection from what, Ward cost, Crew number…) are shown on the card; only Landwalk splits by land type. ` +
+    `Cards that have keywords <i>and</i> abilities are not here — they sit where their abilities put them.</div>` +
+    KW.branches.map(kwBranchHTML).join("") + `</details>`;
+}
+
+// "Not yet organized": every in-scope card that is in no leaf, no keyword leaf and not under
+// "No abilities", in plain-language groups (src/build_unorganized.py). Wording lives in
+// build/unorganized.json; nothing here is a placement.
+function unorganizedBlockHTML() {
+  const t = UNORG.totals;
+  const sum = UNORG.groups.map(g => g.cards.toLocaleString()).join(" + ");
+  const rows = UNORG.groups.map(g => {
+    let extra = "";
+    if (g.strength) {
+      extra += `<div class="note">nearest-group suggestions: ${(g.strength.close || 0).toLocaleString()} close · ` +
+        `${(g.strength.loose || 0).toLocaleString()} loose · <span class="usim-weak">${(g.strength.weak || 0).toLocaleString()} weak</span></div>`;
+    }
+    if (g.recovered || g.new) {
+      extra += `<div class="note">includes ${g.recovered ? g.recovered.toLocaleString() + " recovered" : ""}` +
+        `${g.recovered && g.new ? " and " : ""}${g.new ? g.new.toLocaleString() + " newer" : ""} card${(g.recovered + g.new) === 1 ? "" : "s"}</div>`;
+    }
+    return `<div class="ugrp"><div><b>${esc(g.name)}</b> <span class="bmeta">— ${g.cards.toLocaleString()} cards</span></div>` +
+      `<div class="uexp">${esc(g.explain)}</div>${extra}` +
+      `<button class="allbtn pickbtn" data-pick="NG␟${g.id}">all ${g.cards.toLocaleString()} cards →</button></div>`;
+  }).join("");
+  return `<details class="unorg" data-branch="Not yet organized"><summary>` +
+    `<span class="bname">${esc(UNORG.title)}</span> ` +
+    `<span class="bmeta">— ${t.not_yet_organized.toLocaleString()} cards · ${UNORG.groups.length} groups</span></summary>` +
+    `<div class="brule">${esc(UNORG.intro)}<div class="note">${t.in_scope.toLocaleString()} cards in this tool = ` +
+    `${t.organized.toLocaleString()} in the groups above + ${t.not_yet_organized.toLocaleString()} here (${sum}). ` +
+    `${t.not_cards.toLocaleString()} more entries in the catalogue are not cards (tokens, art cards, planes…); ` +
+    `“Find a card” explains each one.</div></div>${rows}</details>`;
+}
+
+async function ensureUNC() {
+  if (UNC) return;
+  UNC = await fetch("../build/unorganized_cards.json").then(r => r.json());
+  try {   // optional: per-ability suggestions (src/build_also_fits.py); display only
+    const af = await fetch("../build/also_fits.json").then(r => r.json());
+    for (const [oid, v] of Object.entries(af.cards)) ALSO.set(oid, v);
+  } catch (e) { /* the layer is optional */ }
+  for (const [gid, lst] of Object.entries(UNC.groups)) {
+    for (const c of lst) {
+      UNBYOID.set(c.c, { gid: +gid, c });
+      for (const f of c.f) UNFACE.set(f, { gid: +gid, c });
+    }
+  }
 }
 
 // Sectors (src/build_sectors.py) are the top level: bigger structural
@@ -845,6 +1085,8 @@ function renderTree() {
 
   h += uniqueBlockHTML();
   if (VANILLA.length) h += vanillaBlockHTML();
+  if (KW) h += keywordBlockHTML();
+  if (UNORG) h += unorganizedBlockHTML();
 
   host.innerHTML = h;
   host.querySelectorAll("[data-pick]").forEach(btn => {
@@ -868,6 +1110,9 @@ function parsePick(s) {
   if (p[0] === "B") return { kind: "branch", branch: p[1] };
   if (p[0] === "U") return { kind: "unique" };
   if (p[0] === "V") return { kind: "vanilla" };
+  if (p[0] === "NG") return { kind: "ungroup", gid: +p[1] };
+  if (p[0] === "KB") return { kind: "kwbranch", kwb: p[1] };
+  if (p[0] === "KL") return { kind: "kwleaf", kwl: p[1] };
   // E␟branch␟effect; X is the same for the "no effect matched" remainder.
   if (p[0] === "E") return { kind: "effect", branch: p[1], effect: p[2] };
   if (p[0] === "X") return { kind: "other-effect", branch: p[1] };
@@ -882,7 +1127,7 @@ function renderNavNotes() {
   const empty = BR.branches.filter(b => !b.n_leaves).map(b => b.name);
   let h = "";
   if (nQ) {
-    h += `<div class="qbox"><b>${nQ} open review item${nQ === 1 ? "" : "s"}</b> covering ` +
+    h += `<div class="qbox devonly"><b>${nQ} open review item${nQ === 1 ? "" : "s"}</b> covering ` +
       `${(cov.review_queue ? cov.review_queue.cards : 0).toLocaleString()} unplaced cards — ` +
       `borderline calls left for a human rather than guessed. Leaves carrying one are marked ` +
       `<span class="chip chip-review">in review</span> above and are still browsable. ` +
@@ -913,7 +1158,8 @@ function renderNavNotes() {
 
 // ---- scope: what card set is on screen ---------------------------------
 
-function pick(sc) {
+async function pick(sc) {
+  if (sc.kind === "ungroup") await ensureUNC();     // the card lists load on first use
   scope = sc;
   pool = poolFor(sc);
   // A new scope starts from an unfiltered list -- carrying a colour filter into
@@ -951,6 +1197,20 @@ function poolFor(sc) {
     }
   } else if (sc.kind === "vanilla") {
     ids = VANILLA;
+  } else if (sc.kind === "ungroup") {
+    // name order, as generated; recovered and newer cards carry a plain-text tag
+    const out = [];
+    for (const c of ((UNC && UNC.groups[String(sc.gid)]) || [])) for (const id of c.f) out.push(id);
+    return out.map(id => ROW.get(id)).filter(Boolean);
+  } else if (sc.kind === "found") {
+    return sc.ids.map(id => ROW.get(id)).filter(Boolean);
+  } else if (sc.kind === "kwleaf") {
+    // the layer's own order: by name, or by rarest keyword for the catch-all leaf
+    return ((KW && KW.leaves[sc.kwl]) ? KW.leaves[sc.kwl].faces : []).map(id => ROW.get(id)).filter(Boolean);
+  } else if (sc.kind === "kwbranch") {
+    const b = KW ? KW.branches.find(x => x.name === sc.kwb) : null;
+    const seen = new Set();
+    for (const l of (b ? b.leaves : [])) for (const id of KW.leaves[l].faces) if (!seen.has(id)) { seen.add(id); ids.push(id); }
   } else if (sc.kind === "effect") {
     const cs = branchCardSet(sc.effect, NEARBY);
     ids = baseIds(sc.branch).filter(id => cs.has(id));
@@ -971,6 +1231,9 @@ function markActive() {
             : scope.kind === "branch" ? `B␟${scope.branch}`
             : scope.kind === "unique" ? "U"
             : scope.kind === "vanilla" ? "V"
+            : scope.kind === "ungroup" ? `NG␟${scope.gid}`
+            : scope.kind === "kwbranch" ? `KB␟${scope.kwb}`
+            : scope.kind === "kwleaf" ? `KL␟${scope.kwl}`
             : scope.kind === "effect" ? `E␟${scope.branch}␟${scope.effect}`
             : scope.kind === "other-effect" ? `X␟${scope.branch}`
             : `L␟${scope.branch || ""}␟${scope.leaf}`;
@@ -991,6 +1254,42 @@ function renderScope() {
     crumb = `<b>${esc(PL.meta.vanilla_branch)}</b>`;
     state = `<div class="note">Cards with no oracle text, placed by the vanilla rule — ` +
       `not by the clustering.</div>`;
+  } else if (scope.kind === "ungroup") {
+    const g = UNORG.groups.find(x => x.id === scope.gid);
+    crumb = `${esc(UNORG.title)}<span class="sep">›</span><b>${esc(g.name)}</b>`;
+    state = `<div class="note">${esc(g.explain)}</div>` +
+      `<div class="note">${g.cards.toLocaleString()} cards. Each card shows its oracle text` +
+      `${scope.gid === 1 ? ", and next to it the part the parser could not read" : ""}` +
+      `${scope.gid === 2 ? ", and the nearest group as a suggestion" : ""}.` +
+      `${g.recovered ? " " + g.recovered + " are recovered cards" : ""}` +
+      `${g.new ? (g.recovered ? "; " : " ") + g.new + " are newer cards" : ""}${(g.recovered || g.new) ? "." : ""}</div>` +
+      (scope.gid === 2 && ALSO.size ? `<div class="note">${ALSO.size.toLocaleString()} of these cards also show “also fits” links: ` +
+        `single abilities that match an existing group closely (0.90 or more, specific matches only). They are suggestions; ` +
+        `the card stays here and is in none of those groups.</div>` : "") +
+      (g.strength ? `<div class="note">How close the nearest group is (a display label only): ` +
+        `“close” is similarity ${UNORG.strength_words.close.toFixed(2)} or more, “loose” ${UNORG.strength_words.loose.toFixed(2)}–${UNORG.strength_words.close.toFixed(2)}, ` +
+        `<span class="usim-weak">“weak” below ${UNORG.strength_words.loose.toFixed(2)}</span>: ` +
+        `${(g.strength.close || 0).toLocaleString()} close, ${(g.strength.loose || 0).toLocaleString()} loose, ` +
+        `${(g.strength.weak || 0).toLocaleString()} weak.</div>` : "");
+  } else if (scope.kind === "found") {
+    crumb = `Find a card<span class="sep">›</span><b>${esc(scope.label)}</b>`;
+    state = `<div class="note">The card you asked for, shown with the same row as everywhere else.</div>`;
+  } else if (scope.kind === "kwbranch") {
+    crumb = `Keyword abilities<span class="sep">›</span><b>${esc(scope.kwb)}</b> <span class="chip chip-kw">keyword rule</span>`;
+    state = `<div class="note">Cards whose keyword set includes ${esc(scope.kwb)}, placed by rule. A card ` +
+      `with several keywords is listed under each of their branches but is in exactly one leaf.</div>`;
+  } else if (scope.kind === "kwleaf") {
+    const L = KW.leaves[scope.kwl];
+    crumb = `Keyword abilities<span class="sep">›</span>${L.branches.map(esc).join(" / ")}` +
+      `<span class="sep">›</span><b>${esc(L.name)}</b> <span class="chip chip-kw">keyword rule</span>` +
+      (L.kind === "rare" ? ` <span class="chip chip-catch">catch-all</span>` : "");
+    state = `<div class="note">Exact membership: every card here has ` +
+      (L.kind === "sig" ? `exactly the keyword set <b>${esc(L.name)}</b>` :
+       L.kind === "other" ? `a keyword set held by fewer than ${KW.meta.min_leaf} cards, with <b>${esc(L.name.split(":")[0])}</b> as its rarest keyword` :
+       `a keyword set too rare for a leaf of its own`) +
+      `. Each card's keywords are shown under its quality badge; its oracle text is in the text column.</div>` +
+      (L.note ? `<div class="statenote"><b>Catch-all leaf.</b> ${esc(L.note)}</div>` : "") +
+      (L.branches.length > 1 ? `<div class="note">this leaf is listed under the branches ${L.branches.map(esc).join(", ")} — branch membership is many-to-many; each card is in this one leaf only.</div>` : "");
   } else if (scope.kind === "unique") {
     crumb = `<b>Unique effect</b>`;
     state = `<div class="note">${(BR.unique_effect||[]).length} leaves whose structure is ` +
@@ -1058,7 +1357,7 @@ function renderScope() {
     }
     const q = QUEUED.get(l);
     if (q) {
-      state += q.map(x => `<div class="qbox"><b>Open review item — ${esc(x.kind)}</b> ` +
+      state += q.map(x => `<div class="qbox devonly"><b>Open review item — ${esc(x.kind)}</b> ` +
         `${esc(x.why)} ` +
         (x.candidates && x.candidates.length
           ? `Candidate${x.candidates.length > 1 ? "s" : ""}: ` +
@@ -1404,19 +1703,119 @@ function isNear(id) {
 }
 // Marks a card that is on screen through the placement layer, never through
 // the clustering: proximity cards and recovered cards each carry their chip.
+const GAPLAB = { unread: "Couldn't read:", cond: "Condition it didn't recognize:",
+                 trigger: "Trigger it didn't recognize:", effect: "Effect it could only partly read:" };
+function strengthSpan(s) {
+  const w = FindCard.strength(s, UNORG.strength_words);
+  return `<span class="${w === "weak" ? "usim-weak" : "usim"}">${w}, ${s.toFixed(2)}</span>`;
+}
+// "Also fits": individual abilities of a card in "Parsed, no close group found" that match an
+// existing group closely (score 0.90 or more, specific matches only). Suggestions: the card
+// stays where it is and is in none of these groups.
+function alsoFitsHTML(oid, rid) {
+  const a = ALSO.get(oid);
+  if (!a || (rid && a.f !== rid)) return "";
+  return alsoMarkup(a.m);
+}
+const ABREASON = {
+  "below_0.90": "no group fits it closely", generic_leaf: "only a very broad group fits it",
+  in_between: "only a broad group fits it", no_text: "it has no text to show",
+  token_blind_spot: "a match could not be confirmed", flagged: "flagged by a check",
+  modal: "part of a choice card", no_tokens: "nothing to compare", second_leaf: "it fits a different group",
+  not_scored: "not checked",
+};
+function abilityRestHTML(ab) {
+  if (!ab || !(ab.rest.length || ab.also.length)) return "";
+  return `<div class="note">Other abilities on this card, not in a group:</div>` +
+    ab.rest.map(x => `<span class="abrest">\u201c${esc(x.t)}\u201d \u2014 ${esc(ABREASON[x.r] || x.r)}</span>`).join("") +
+    alsoMarkup(ab.also);
+}
+function alsoMarkup(ms) {
+  return ms.map(m =>
+    `<span class="ualso"><span class="ahead">Also fits (suggestion, not a placement):</span> ` +
+    `<a class="usuglink" data-leaf="${m.l}">${esc(leafPhrase(m.l) || (CLU.labels[String(m.l)] || "leaf " + m.l).slice(0, 60))}</a> ` +
+    `(leaf ${m.l}) <span class="atext">\u2190 \u201c${esc(m.t)}\u201d</span></span>`).join("");
+}
+function unorgChips(u, rid) {
+  let h = "";
+  const c = u.c;
+  if (c.t) h += `<br><span class="utag">${c.t === "recovered" ? "recovered card" : "newer card"}</span>`;
+  if (u.gid === 1) {
+    const gaps = c.g || [];
+    if (!gaps.length) h += `<br><span class="ugap">(the tool did not record which part)</span>`;
+    for (const [k, t] of gaps.slice(0, 3)) h += `<br><span class="ugap"><b>${GAPLAB[k] || GAPLAB.unread}</b> “${esc(t)}”</span>`;
+    const more = gaps.length - 3 + (c.gm || 0);
+    if (more > 0) h += `<br><span class="ugap">+${more} more</span>`;
+  } else if (u.gid === 2 && c.s) {
+    const l = c.s[0];
+    h += `<br><span class="usug">Suggestion, not a placement: <a class="usuglink" data-leaf="${l}">` +
+         `${esc(leafPhrase(l) || (CLU.labels[String(l)] || "leaf " + l).slice(0, 60))}</a> (leaf ${l}) · ${strengthSpan(c.s[1])}</span>` +
+         alsoFitsHTML(c.c, rid);
+  } else if (u.gid === 5 && c.note) {
+    h += `<br><span class="ugap"><b>What is wrong:</b> ${esc(c.note)}</span>`;
+  }
+  return h;
+}
+document.addEventListener("click", ev => {
+  const a = ev.target.closest ? ev.target.closest(".usuglink") : null;
+  if (!a) return;
+  ev.preventDefault();
+  const l = +a.dataset.leaf;
+  pick({ kind: "leaf", branch: (BR.leaf_branches[String(l)] || [])[0] || null, leaf: l });
+});
+
 function layerChips(r) {
   const p = PL && PL.faces[r.id];
   let h = "";
+  const un = UNFACE.get(r.id);
+  if (un) h += unorgChips(un, r.id);
+  const abf = ABFACE.get(r.id);
+  if (abf) h += `<br><span class="abm">Matched on: \u201c${esc(abf.placed[0].t)}\u201d</span>`;
+  const kf = KWFACE.get(r.id);
+  if (kf) {
+    h += `<br><span class="chip chip-kw" title="Placed by an exact rule on its keyword set (leaf ${esc(kf.leaf)}) — not clustered, not a guess.">keyword rule</span>` +
+         `<br><span class="kws">Keywords: ${kf.keywords.map(esc).join(" · ")}</span>`;
+  }
   if (p && p.method === "proximity") {
     h += `<br><span class="chip chip-near" title="Not clustered: placed at the nearest leaf centroid, cosine ${p.similarity.toFixed(3)} (floor ${PL.meta.floor}). Source: ${p.source}.">nearby · ${p.similarity.toFixed(2)}</span>`;
   }
   if (r.recovered) {
     h += `<br><span class="chip chip-rec" title="Dropped from the snapshot by a face-name collision; regenerated by phase-rs oracle-gen v0.1.15 into data/overlay/recovered-cards.json">recovered</span>`;
   }
+  if (r.new_release) {
+    h += `<br><span class="chip chip-rec" title="Released after the 2026-04-20 snapshot; generated by phase-rs oracle-gen v0.1.15 (April-era parser, so its gaps are the April ones) into data/overlay/new-release-cards.json. Never clustered.">new</span>`;
+  }
   return h;
 }
 
 function provBox(r) {
+  const un = UNFACE.get(r.id);
+  if (un) {
+    const g = UNORG.groups.find(x => x.id === un.gid);
+    return `<div class="clubox"><b class="hdr">Where this card sits</b>` +
+      `<b>Not yet organized</b> › ${esc(g.name)}<div class="note">${esc(g.explain)}</div>` +
+      `<div class="note">It is in no leaf, so it changes no leaf count or score.</div></div>`;
+  }
+  const kf = KWFACE.get(r.id);
+  if (kf) {
+    const L = KW.leaves[kf.leaf];
+    return `<div class="clubox"><b class="hdr">Where this card sits</b>` +
+      `<b>placed by keyword rule</b>, not clustered — leaf <b>${esc(L.name)}</b> (<code>${esc(kf.leaf)}</code>)` +
+      `<div style="margin:3px 0">branches: ${L.branches.map(b => `<span class="brbadge">${esc(b)}</span>`).join("")}</div>` +
+      `<div class="note">Keywords on this card: ${kf.keywords.map(esc).join(" · ")}. Membership is exact, not a similarity guess. ` +
+      `This card changes no leaf centroid, cohesion score or count.</div></div>`;
+  }
+  const abf = ABFACE.get(r.id);
+  if (abf) {
+    const brs = BR.leaf_branches[String(abf.leaf)] || [];
+    return `<div class="clubox"><b class="hdr">Where this card sits</b>` +
+      `leaf <b>${abf.leaf}</b> · <span class="clulabel">${esc(CLU.labels[abf.leaf] || "")}</span>` +
+      (brs.length ? `<div style="margin:3px 0">branches: ` +
+        brs.map(b => `<span class="brbadge">${esc(b)}</span>`).join("") + `</div>` : "") +
+      `<div class="note">It is in this group because of ${abf.placed.length > 1 ? "these abilities" : "this ability"}: ` +
+      abf.placed.map(m => `\u201c${esc(m.t)}\u201d (${m.s.toFixed(2)})`).join("; ") + `.</div>` +
+      abilityRestHTML(abf) + `</div>`;
+  }
   const p = PL && PL.faces[r.id];
   if (p && p.method !== "clustered") {
     const brs = p.leaf != null ? (BR.leaf_branches[String(p.leaf)] || []) : [p.branch];
@@ -1430,6 +1829,9 @@ function provBox(r) {
         brs.map(b => `<span class="brbadge">${esc(b)}</span>`).join("") + `</div>` : "") +
       (r.recovered ? `<div class="note">Recovered card: dropped from the snapshot by a ` +
         `face-name collision, regenerated by the same parser version.</div>` : "") +
+      (r.new_release ? `<div class="note">New card: released after the snapshot, generated by the ` +
+        `same parser version (April-era, so any parser gap here is an April gap). It was not part of ` +
+        `the clustering that made these leaves.</div>` : "") +
       `<div class="note">This card changes no leaf centroid, cohesion score or count.</div></div>`;
   }
   const l = CLU.cards[r.id];

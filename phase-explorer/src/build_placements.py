@@ -45,7 +45,16 @@ import cluster_structural as cs     # noqa: E402  card_features, as the clusteri
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BUILD = os.path.join(HERE, "build")
-OVERLAY = os.path.join(HERE, "data", "overlay", "recovered-cards.json")
+# Two layers of cards that are NOT in build/index.json and never enter the clustering:
+#   recovered    cards the April export dropped to face-name collisions (recover_dropped.py)
+#   new_release  cards released after the April snapshot (add_new_release_cards.py)
+# Both are placed the same way -- clean parses by proximity, everything else recorded with its
+# stage -- and ride in the same `recovered` section of the output (name kept so browse's
+# loader is unchanged); each face is told apart by its `layer`.
+LAYERS = [
+    ("recovered", os.path.join(HERE, "data", "overlay", "recovered-cards.json")),
+    ("new_release", os.path.join(HERE, "data", "overlay", "new-release-cards.json")),
+]
 OUT = os.path.join(BUILD, "placements.json")
 
 # Approved 2026-09-28. Clustered members score >= 0.80 against their own leaf
@@ -56,8 +65,16 @@ VANILLA_BRANCH = "No abilities"
 RECOVERED_CHUNK = "recovered"      # pseudo-chunk name browse seeds its cache with
 
 
-def face_row(entry, eid, key, n_faces, oid):
-    """An index row for a recovered face, built the way build_index.py builds one."""
+def pipeline_status(row):
+    """The stage a card stopped at. `placed_by_ability` (build_ability_layer.py) is a status given
+    AFTER this script ran; the stage it replaced is kept in evidence, so a rebuild is unchanged."""
+    if row.get("status") == "placed_by_ability":
+        return row["evidence"]["pipeline_status"]
+    return row.get("status")
+
+
+def face_row(entry, eid, key, n_faces, oid, layer="recovered"):
+    """An index row for a layer face, built the way build_index.py builds one."""
     found = {axis: set() for axis in bi.SLOTS}
     gaps, soft = [], []
     for bucket in bi.BUCKETS:
@@ -79,8 +96,19 @@ def face_row(entry, eid, key, n_faces, oid):
         "type": typeline, "col": col, "mv": mv, "cty": ct.get("core_types") or [],
         "layout": entry.get("layout"), "warn": len(entry.get("parse_warnings") or []),
         "gaps": len(gaps), "sg": len(soft), "corr": 0,
-        "group": oid if n_faces > 1 else None, "ch": RECOVERED_CHUNK, "recovered": True,
+        "group": oid if n_faces > 1 else None, "ch": RECOVERED_CHUNK,
+        "recovered": layer == "recovered", "new_release": layer == "new_release", "layer": layer,
     }
+
+
+def layer_face_stage(row, entry):
+    """The stage a layer face stops at -- the same filter chain the clustering pass applies,
+    minus the clustering itself. Returns (stage, feature list)."""
+    f = cs.card_features(entry) if row["q"] == "clean" and not row["sg"] else []
+    stage = (row["q"] if row["q"] != "clean" else
+             "unmodelled_node" if row["sg"] else
+             "clean" if f else "no_extractable_effect")
+    return stage, f
 
 
 def main():
@@ -137,28 +165,35 @@ def main():
     cand = []    # (face id, oracle id, source, feature list)
     for r in rows:
         oid = r["id"].split("/")[0]
-        if lab.get(r["id"]) == -1 and ledger.get(oid, {}).get("status") == "noise":
+        if lab.get(r["id"]) == -1 and pipeline_status(ledger.get(oid, {})) == "noise":
             cand.append((r["id"], oid, "noise", feats[r["id"]]))
 
-    overlay = json.load(io.open(OVERLAY, encoding="utf-8")) if os.path.exists(OVERLAY) else {"cards": {}}
     rec_rows, rec_chunk, rec_stage = [], {}, {}
-    for oid, faces in sorted(overlay["cards"].items()):
-        stages = []
-        for pos, e in enumerate(faces):
-            eid = oid if len(faces) == 1 else f"{oid}/{pos}"
-            row = face_row(e, eid, e.get("name", "").lower(), len(faces), oid)
-            rec_rows.append(row)
-            rec_chunk[eid] = {**e, "_export_key": None, "_recovered": True}
-            f = cs.card_features(e) if row["q"] == "clean" and not row["sg"] else []
-            stage = (row["q"] if row["q"] != "clean" else
-                     "unmodelled_node" if row["sg"] else
-                     "clean" if f else "no_extractable_effect")
-            stages.append({"id": eid, "name": row["name"], "quality": row["q"], "stage": stage,
-                           "gap_nodes": row["gaps"], "unmodelled": row["sg"],
-                           "unseen_features": sorted(k for k in f if k not in vocab)})
-            if stage == "clean":
-                cand.append((eid, oid, "recovered", f))
-        rec_stage[oid] = stages
+    layer_meta = {}
+    for layer, path in LAYERS:
+        if not os.path.exists(path):
+            continue
+        overlay = json.load(io.open(path, encoding="utf-8"))
+        layer_meta[layer] = {"overlay": os.path.relpath(path, HERE).replace(os.sep, "/"),
+                             "cards": len(overlay["cards"]),
+                             "faces": sum(len(v) for v in overlay["cards"].values()),
+                             "input": overlay.get("meta", {}).get("input"),
+                             "generator": overlay.get("meta", {}).get("generator")}
+        for oid, faces in sorted(overlay["cards"].items()):
+            stages = []
+            for pos, e in enumerate(faces):
+                eid = oid if len(faces) == 1 else f"{oid}/{pos}"
+                row = face_row(e, eid, e.get("name", "").lower(), len(faces), oid, layer)
+                rec_rows.append(row)
+                rec_chunk[eid] = {**e, "_export_key": None, "_recovered": layer == "recovered",
+                                  "_layer": layer}
+                stage, f = layer_face_stage(row, e)
+                stages.append({"id": eid, "name": row["name"], "quality": row["q"], "stage": stage,
+                               "layer": layer, "gap_nodes": row["gaps"], "unmodelled": row["sg"],
+                               "unseen_features": sorted(k for k in f if k not in vocab)})
+                if stage == "clean":
+                    cand.append((eid, oid, layer, f))
+            rec_stage[oid] = stages
 
     Y = weigh(encode([c[3] for c in cand]))
     S = np.asarray(Y @ C.T)
@@ -189,6 +224,7 @@ def main():
     doc = {
         "meta": {
             "floor": FLOOR,
+            "layers": layer_meta,
             "vanilla_branch": VANILLA_BRANCH,
             "feature_space": {"n_features": len(vocab), "n_cards": n,
                               "clustered_nearest_is_own_leaf": round(self_nearest, 4)},

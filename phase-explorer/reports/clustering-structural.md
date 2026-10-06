@@ -27,17 +27,17 @@ Clean parses only. A card with incomplete structure would cluster on what surviv
 |---|---|
 | all entries | 34,645 |
 | quality == clean | 29,610 |
-|   minus unmodelled-node entries | 28,635 |
-|   minus corrections-flagged entries | 28,627 |
-|   minus entries with no extractable feature | 27,079 |
+|   minus unmodelled-node entries | 28,526 |
+|   minus corrections-flagged entries | 28,518 |
+|   minus entries with no extractable feature | 26,972 |
 
 The corrections filter is what keeps **Toxic Deluge** out of this pass: it is labelled `clean` by every phase.rs signal, but `corrections.json` records its "pay X life" cost parsing to `Fixed 0` (KNOWN_LIMITATIONS.md §4), so its structure is known-unreliable.
 
 ## Result
 
-- **663 clusters** over **27,079 cards**
-- **4,560 noise (16.8%)** -- HDBSCAN is density-based and leaves a card unclustered rather than forcing it somewhere
-- largest cluster **997 cards (3.7% of the corpus)**
+- **657 clusters** over **26,972 cards**
+- **4,624 noise (17.1%)** -- HDBSCAN is density-based and leaves a card unclustered rather than forcing it somewhere
+- largest cluster **992 cards (3.7% of the corpus)**
 - median cluster 13, mean 34.0
 
 ### Catch-all check
@@ -49,9 +49,9 @@ Size distribution:
 | bucket | clusters |
 |---|---|
 | 5-9 | 248 |
-| 10-24 | 236 |
-| 25-49 | 91 |
-| 50-99 | 55 |
+| 10-24 | 230 |
+| 25-49 | 92 |
+| 50-99 | 54 |
 | 100-249 | 20 |
 | 250-499 | 7 |
 | 500+ | 6 |
@@ -61,7 +61,7 @@ Size distribution:
 | pass | unit | noise |
 |---|---|---|
 | raw word overlap (earlier) | deduped effect strings (42,445) | **77.5%** |
-| structural (this pass) | cards (27,079) | **16.8%** |
+| structural (this pass) | cards (26,972) | **17.1%** |
 
 The units differ -- the earlier pass clustered deduplicated effect *strings*, this one clusters *cards* -- so this is not a like-for-like ratio and should not be read as one. What is comparable is the qualitative outcome: under word overlap **every card in the validation set came back noise**, so the earlier pass produced no usable grouping for any card we track. This pass places 10 of 13 of them in a cluster.
 
@@ -69,34 +69,34 @@ Selection method comparison (both were run; the lower-noise one wins, provided i
 
 | method | clusters | noise | largest |
 |---|---|---|---|
-| eom **(selected)** | 663 | 16.8% | 997 |
-| leaf | 819 | 35.1% | 785 |
+| eom **(selected)** | 657 | 17.1% | 992 |
+| leaf | 797 | 38.1% | 971 |
 
 ## Validation against the standing test set
 
 | group | card | cluster | cluster size |
 |---|---|---|---|
-| mill | Memory Sluice | 341 | 68 |
+| mill | Memory Sluice | 338 | 68 |
 | mill | Seedship Broodtender | **noise** | — |
-| surveil | Deadly Visit | 473 | 118 |
-| surveil | Raucous Theater | 572 | 21 |
-| board wipe | Wrath of God | 318 | 41 |
-| board wipe | Damnation | 318 | 41 |
-| board wipe | Day of Judgment | 318 | 41 |
+| surveil | Deadly Visit | 470 | 118 |
+| surveil | Raucous Theater | 566 | 21 |
+| board wipe | Wrath of God | 316 | 41 |
+| board wipe | Damnation | 316 | 41 |
+| board wipe | Day of Judgment | 316 | 41 |
 | board wipe | Toxic Deluge | *excluded by input filter* | — |
 | board wipe | Blasphemous Act | **noise** | — |
-| single-target removal | Murder | 473 | 118 |
-| single-target removal | Doom Blade | 401 | 46 |
-| single-target removal | Swords to Plowshares | 594 | 87 |
+| single-target removal | Murder | 470 | 118 |
+| single-target removal | Doom Blade | 400 | 46 |
+| single-target removal | Swords to Plowshares | 591 | 87 |
 | single-target removal | Terror | 5 | 9 |
 
-- **mill**: all clustered members in cluster 341; 1 noise
-- **surveil**: split across clusters [473, 572]
-- **board wipe**: all clustered members in cluster 318; 1 noise
-- **single-target removal**: split across clusters [5, 401, 473, 594]
+- **mill**: all clustered members in cluster 338; 1 noise
+- **surveil**: split across clusters [470, 566]
+- **board wipe**: all clustered members in cluster 316; 1 noise
+- **single-target removal**: split across clusters [5, 400, 470, 591]
 
-- **board wipes vs single-target removal**: [318] vs [5, 401, 473, 594] — **separated**, no shared cluster
-- **mill vs surveil**: [341] vs [473, 572] — **separated**, no shared cluster
+- **board wipes vs single-target removal**: [316] vs [5, 400, 470, 591] — **separated**, no shared cluster
+- **mill vs surveil**: [338] vs [470, 566] — **separated**, no shared cluster
 
 ### What the validation clusters actually contain
 
@@ -104,27 +104,27 @@ Selection method comparison (both were run; the lower-noise one wins, provided i
 `tgt:Typed[Creature,Non:Artifact]@Any{NotColor:Black} (100%) · eff:Destroy (66%) · eff:Destroy|tgt:Typed[Creature,Non:Artifact]@Any{NotColor:Black} (66%)`  
 > Bone Shredder, Expunge, Feast or Famine, Jabari's Influence, Nekrataal, Reiver Demon, Ritual of the Machine, Shriekmaw, Terror
 
-**cluster 318** (41 cards) — contains Wrath of God, Damnation, Day of Judgment  
+**cluster 316** (41 cards) — contains Wrath of God, Damnation, Day of Judgment  
 `eff:DestroyAll (100%) · eff:DestroyAll|tgt:Typed[Creature]@Any (100%) · tgt:Typed[Creature]@Any (100%)`  
 > Abu Ja'far, Begin Anew, Blood Money, Bontu's Last Reckoning, Ceaseless Conflict, Damnation, Day of Judgment, Deadly Cover-Up, Deadly Tempest, Doomskar, Endemic Plague, Extinction, Fell the Mighty, Fumigate, Glyph of Reincarnation, Heat Stroke, Iridian Maelstrom, Kaya's Wrath … +23 more
 
-**cluster 341** (68 cards) — contains Memory Sluice  
+**cluster 338** (68 cards) — contains Memory Sluice  
 `eff:Mill (100%) · eff:Mill|tgt:Player (100%) · tgt:Player (100%)`  
 > Altar of Dementia, Ambassador Laquatus, Brain Freeze, Breaking, Can't Wake Up, Cathartic Adept, Cloudhoof Kirin, Coerced Confession, Coral Colony, Dampen Thought, Desperate Bloodseeker, Diligent Excavator, Doorkeeper, Dreadwaters, Dream Twist, Drowned Secrets, Drowner of Secrets, Drownyard Amalgam … +50 more
 
-**cluster 401** (46 cards) — contains Doom Blade  
+**cluster 400** (46 cards) — contains Doom Blade  
 `eff:Destroy (100%) · eff:Destroy|tgt:Typed[Creature]@Any{NotColor:Black} (100%) · tgt:Typed[Creature]@Any{NotColor:Black} (100%)`  
 > Agonizing Demise, Annihilate, Attrition, Chime of Night, Corpsehatch, Cradle to Grave, Dakmor Lancer, Dark Banishing, Dark Hatchling, Dark Offering, Dark Withering, Dead Ringers, Death Bomb, Death Mutation, Doom Blade, Dregs of Sorrow, Executioner's Capsule, Garza's Assassin … +28 more
 
-**cluster 473** (118 cards) — contains Deadly Visit, Murder  
+**cluster 470** (118 cards) — contains Deadly Visit, Murder  
 `eff:Destroy (100%) · eff:Destroy|tgt:Typed[Creature]@Any (100%) · tgt:Typed[Creature]@Any (100%)`  
 > Afterlife, Akoum, Altar of Shadows, Anchovy & Banana Pizza, Angrath's Fury, Armaggon, Future Shark, Assassin's Strike, Avenging Arrow, Bake into a Pie, Banewhip Punisher, Blood Curdle, Bone Splinters, Brainspoil, Certain Death, Cinder Cloud, Claim the Precious, Come Back Wrong, Consign to the Pit … +100 more
 
-**cluster 572** (21 cards) — contains Raucous Theater  
+**cluster 566** (21 cards) — contains Raucous Theater  
 `eff:Mana (100%) · eff:Surveil (100%) · eff:Tap (100%)`  
 > Commercial District, Elegant Parlor, Fields of Strife, Forum of Amity, Hedge Maze, Kishla Village, Lush Portico, Meticulous Archive, Ominous Asylum, Paradox Gardens, Raucous Theater, Savage Mansion, Shadowy Backstreet, Sinister Hideout, Spectacle Summit, Suburban Sanctuary, Thundering Falls, Titan's Grave … +3 more
 
-**cluster 594** (87 cards) — contains Swords to Plowshares  
+**cluster 591** (87 cards) — contains Swords to Plowshares  
 `eff:ChangeZone (100%) · eff:ChangeZone|tgt:Typed[Creature]@Any (100%) · tgt:Typed[Creature]@Any (100%)`  
 > Ajani, Inspiring Leader, Astarion's Thirst, Astral Drift, Astral Slide, Behold the Sinister Six!, Blazing Hope, Bogslither's Embrace, Brittle Effigy, Call of the Death-Dweller, Catapult Master, Chaos Mutation, Colossal Whale, Conciliator's Duelist, Consuming Ashes, Contraband Livestock, Curse of the Swine, Deadly Rollick, Dermoplasm … +69 more
 
@@ -132,22 +132,22 @@ Selection method comparison (both were run; the lower-noise one wins, provided i
 
 Picked across the size range, skipping any cluster a validation card is in, so these are cards we are not specifically tracking.
 
-**cluster 35** (997 cards)  
+**cluster 35** (992 cards)  
 `eff:Token (100%)`  
-> A-Bathe in Gold, A-Brine Comber, A-Elderleaf Mentor, A-Falcon Abomination, A-Glittermonger, A-Hobbling Zombie, A-Iridescent Hornbeetle, A-Skull Skaab, A-Stimulus Package, Aang and Katara, Acorn Harvest, Advent of the Wurm, Ajani's Chosen, Akroan Crusader, Alive, Allied Reinforcements, Alrund's Epiphany, Ambassador Oak, Angelic Accord, Ant Queen … +977 more
+> A-Bathe in Gold, A-Brine Comber, A-Elderleaf Mentor, A-Falcon Abomination, A-Glittermonger, A-Hobbling Zombie, A-Iridescent Hornbeetle, A-Skull Skaab, A-Stimulus Package, Aang and Katara, Acorn Harvest, Advent of the Wurm, Ajani's Chosen, Akroan Crusader, Alive, Allied Reinforcements, Alrund's Epiphany, Ambassador Oak, Angelic Accord, Ant Queen … +972 more
 
-**cluster 403** (173 cards)  
+**cluster 405** (173 cards)  
 `eff:Destroy (100%) · eff:Destroy|tgt:Or (100%) · tgt:Or (100%)`  
 > Aberrant, Acidic Slime, Aftershock, Ainok Survivalist, Annihilating Glare, Appetite for the Unnatural, Artisan's Sorrow, Atraxa's Fall, Aura Shards, Banishing Slash, Bear Down, Bedevil, Befoul, Bitter Triumph, Bloodchief's Thirst, Boggart Arsonists, Boggart Loggers, Bone Shards, Bovine Intervention, Break Down … +153 more
 
-**cluster 475** (39 cards)  
+**cluster 473** (39 cards)  
 `eff:ChangeZone (100%) · eff:ChangeZone|tgt:Typed[Card]@Any (100%) · tgt:Typed[Card]@Any (100%)`  
 > Arashin Sunshield, Auspicious Starrix, Bloodbond March, Carrion Beetles, Cease, Currency Converter, Dead Man's Chest, Decompose, Digsite Conservator, Dream Harvest, Etali, Primal Conqueror, Famished Ghoul, Feral Deathgorger, Fevered Suspicion, Griffnaut Tracker, Grime Gorger, Improvisation Capstone, Invasion of Alara, Kefka, Dancing Mad, Kotose, the Silent Spider … +19 more
 
-**cluster 479** (115 cards)  
+**cluster 476** (115 cards)  
 `eff:ChangeZone (94%) · eff:ChangeZone|tgt:ParentTarget (94%) · tgt:ParentTarget (94%)`  
 > A-Elderfang Ritualist, Abduction, Academy Rector, Aerith, Last Ancient, Anoint with Affliction, Archfiend's Vessel, Arena Rector, Ashcloud Phoenix, Aura of Dominion, Barishi, Body Snatcher, Boneyard Aberration, Brittle Blast, Celestial Gatekeeper, Changing Loyalty, Chaos Shrine's Black Crystal, Conspiracy Theorist, Containment Construct, Containment Priest, Cosmic Intervention … +95 more
 
-**cluster 563** (105 cards)  
+**cluster 558** (105 cards)  
 `eff:Scry (100%)`  
 > A-Sand Augury, A-Stitched Assistant, Archive Dragon, Artificer's Assistant, Attentive Sunscribe, Augury Owl, Automatic Librarian, Behold the Multiverse, Benevolent River Spirit, Cait Sith, Fortune Teller, Cascade Seer, Cavern Stomper, Chorus of the Tides, Chrome Cat, Cloudreader Sphinx, Contraband Kingpin, Cryptic Annelid, Crystal Ball, Darksteel Pendant, Deliberate … +85 more

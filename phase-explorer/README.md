@@ -18,8 +18,14 @@ python src/match_spans.py         # -> build/match_spans.json, build/effect_anch
 python src/build_images.py        # -> build/card_images.json  (downloads ~25 MB from Scryfall)
 python src/build_ledger.py        # -> build/ledger.json, reports/coverage-ledger.md
 python src/recover_dropped.py     # -> data/overlay/recovered-cards.json (needs oracle-gen, see below)
+python src/add_new_release_cards.py  # -> data/overlay/new-release-cards.json: cards released after the snapshot
+                                    #    (needs oracle-gen and data/AtomicCards-20261003.json.gz; gate-checked, oracle-id keyed)
 python src/build_placements.py    # -> build/placements.json
+python src/build_keyword_layer.py # -> build/keyword_layer.json: keyword-only cards, placed by rule (kw:<signature>)
 python src/build_ledger.py        # again: adds each card's placement
+python src/build_also_fits.py     # -> build/also_fits.json: per-ability "also fits" suggestions (display only; reads the probe's scorer)
+python src/build_ability_layer.py  # -> build/ability_layer.json (cards placed by one ability), build/ability_ledger.json; then rerun build_ledger.py
+python src/build_unorganized.py   # -> build/unorganized*.json, build/lookup.json: "Not yet organized" groups + Find a card (display only)
 python src/serve.py               # opens http://localhost:8765/reports/browse.html
 ```
 
@@ -247,7 +253,7 @@ item are marked `in review` and still browsable, auto-named branches carry the
 `auto-named` badge, the 74 type-heterogeneous leaves are marked
 `mixed types` with their shares, `Unique effect` is presented as a terminal finding
 rather than a backlog, and the unruled vocabulary and zero-leaf branches are listed
-under the tree. The shared phrases carry the same discipline: 432 of 591 leaves
+under the tree. The shared phrases carry the same discipline: 486 of 657 leaves
 have a phrase carried by at least half the leaf and the rest are weaker, with the
 share printed rather than implied away. 18 leaves report `until end of turn`, which
 is the duration rather than the effect — on a Pump card that genuinely is the most

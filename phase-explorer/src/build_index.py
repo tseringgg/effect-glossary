@@ -263,6 +263,10 @@ def classify(entry, gaps):
 PARSER_FIX_OVERLAYS = [
     os.path.join(HERE, "data", "overlay", "commander-eligibility-fix.json"),
     os.path.join(HERE, "data", "overlay", "commander-creatures-fix.json"),
+    # visibility fix: unparsed restriction text kept as ParsedCondition::Unrecognized
+    os.path.join(HERE, "data", "overlay", "unrecognized-restriction-fix.json"),
+    # round B1: timing clause split out of compound "Activate only ..." (enforced by the engine)
+    os.path.join(HERE, "data", "overlay", "activation-timing-split-fix.json"),
 ]
 
 
@@ -337,6 +341,12 @@ def main():
             soft = []
             for bucket in BUCKETS:
                 scan(entry.get(bucket), bucket, found, gaps, soft)
+            # Card-level casting fields carry the same `Unrecognized` condition node
+            # (ParsedCondition::Unrecognized, unrecognized-restriction-fix overlay).
+            # Only the soft-gap signal is read from them: no facet axis values and no
+            # GAP_TAGS, so nothing else about the index row can move.
+            for extra in ("casting_restrictions", "casting_options"):
+                scan(entry.get(extra), extra, {a: set() for a in SLOTS}, [], soft)
 
             # A trigger `mode` arriving as {"Unknown": "<raw text>"} means the
             # parser did not model that trigger at all. Static `mode` and

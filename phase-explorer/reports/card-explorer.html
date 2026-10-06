@@ -182,6 +182,9 @@
            background:var(--panel); }
   .note { font-size:11px; color:var(--mut); }
   #status { padding:20px 12px; }
+  /* dev-only wording (the curation queue): hidden unless the page is opened with ?dev=1 */
+  .devonly { display:none !important; }
+  html.dev .devonly { display:revert !important; }
 </style>
 </head>
 <body>
@@ -292,6 +295,8 @@
 // cardview.js / branchmap.js -- shared with browse.html so there is one
 // renderer, not two. This page passes its dev-only extras (cluster cell,
 // cluster box) in through their opts hooks.
+const DEV = new URLSearchParams(location.search).has("dev");
+if (DEV) document.documentElement.classList.add("dev");
 const esc = CV.esc, hl = CV.hl;
 
 const QUALITIES = ["clean","partial","unparsed","vanilla"];
@@ -453,7 +458,7 @@ function renderTree() {
   document.getElementById("treerow").hidden = false;
   document.getElementById("treemeta").textContent =
     `${nb} branches with leaves (${nAuto} auto-named) · ${BR.n_leaves} leaves · ` +
-    `${nQ} in review · ${uniq.length} unique effect (${uniqCards.toLocaleString()} cards)`;
+    `${DEV ? nQ + " in review · " : ""}${uniq.length} unique effect (${uniqCards.toLocaleString()} cards)`;
 
   const phraseLine = (l) => {
     const e = PHR && PHR.leaves[String(l)];
@@ -494,7 +499,8 @@ function renderTree() {
        `<span class="bmeta">— ${uniq.length} leaves, ${uniqCards.toLocaleString()} cards ` +
        `· structure shared with no other leaf</span></summary>` +
        `<div class="brule">These leaves went through the curated rules, the ` +
-       `auto-named fallback and the review queue, and came out the other side: ` +
+       (DEV ? `auto-named fallback and the review queue, and came out the other side: ` :
+              `auto-named fallback, and came out the other side: `) +
        `their structure is not shared with anything else in the corpus. That is ` +
        `a result, not a backlog — nothing is pending on them.</div>` +
        `<div class="leaves">${uniq.slice()
@@ -502,7 +508,7 @@ function renderTree() {
            .map(u => leafRow(u.leaf)).join("")}</div></details>`;
 
   if (nQ) {
-    h += `<div class="gapnote"><b>${nQ} open review ${nQ === 1 ? "item" : "items"}</b> ` +
+    h += `<div class="gapnote devonly"><b>${nQ} open review ${nQ === 1 ? "item" : "items"}</b> ` +
          `covering ${(COV.review_queue ? COV.review_queue.cards : 0).toLocaleString()} ` +
          `unplaced cards — borderline calls left for a human rather than guessed. ` +
          `<a href="review-queue.html">Open the review queue</a>.</div>`;

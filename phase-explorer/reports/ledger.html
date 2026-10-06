@@ -145,18 +145,23 @@ const PER = 100;
 const GROUP = {
   clustered: "t-placed", noise: "t-pipe", no_extractable_effect: "t-pipe",
   corrections_flagged: "t-gap", unmodelled_node: "t-gap", partial: "t-gap",
-  unparsed: "t-gap", vanilla: "t-pipe", missing_from_export: "t-gap", out_of_scope: "t-out",
+  unparsed: "t-gap", vanilla: "t-pipe", unclustered: "t-pipe", keyword_only: "t-placed", placed_by_ability: "t-placed", missing_from_export: "t-gap",
+  out_of_scope: "t-out",
 };
 const EXPLAIN = {
   clustered: "in a leaf", noise: "clean parse, left unclustered",
   no_extractable_effect: "clean, but no top-level effect or static",
   corrections_flagged: "hand-confirmed defect", unmodelled_node: "clean but an enum slot unmodelled",
   partial: "real structure plus a gap node", unparsed: "text, nothing in the ability buckets",
-  vanilla: "no oracle text", missing_from_export: "not in the snapshot",
+  vanilla: "no oracle text",
+  unclustered: "released after the snapshot; clean, outside the frozen clustering",
+  keyword_only: "whole text is keywords; placed by the keyword rule (pipeline stage: no_extractable_effect)",
+  placed_by_ability: "one of its abilities matches a leaf closely; placed there (pipeline stage kept in the evidence)",
+  missing_from_export: "not in the snapshot",
   out_of_scope: "not a card (token, art series, …)",
 };
 
-let L, IDX = [], ROWIDX = null, shown = [], page = 0, sel = null;
+let L, PL = null, IDX = [], ROWIDX = null, shown = [], page = 0, sel = null;
 const f = { q: "", status: "", reason: "", gap: null, placement: "" };
 
 async function boot() {
@@ -164,6 +169,13 @@ async function boot() {
   // Face ids -> chunk, for rendering the parsed structure of snapshot cards.
   try { ROWIDX = await fetch("../build/index.json").then(r => r.json()); } catch (e) { ROWIDX = null; }
   const faceRow = new Map((ROWIDX ? ROWIDX.rows : []).map(r => [r.id, r]));
+  // Cards that are not in the snapshot (collision-recovered and post-snapshot) keep their rows
+  // and parsed structure in the placement layer file, seeded as the "recovered" pseudo-chunk.
+  try {
+    PL = await fetch("../build/placements.json").then(r => r.json());
+    for (const r of PL.recovered.rows) faceRow.set(r.id, r);
+    CV.seedChunk("recovered", PL.recovered.chunk);
+  } catch (e) { PL = null; }
   for (const [oid, r] of Object.entries(L.rows)) {
     IDX.push({ oid, ...r, _s: (r.name + " " + oid).toLowerCase(),
                _faces: ((r.evidence || {}).faces || []).map(x => faceRow.get(x.id)).filter(Boolean) });
@@ -180,7 +192,10 @@ function renderHeader() {
   const days = Math.round((Date.now() - Date.parse(m.snapshot_date)) / 864e5);
   document.getElementById("prov").innerHTML =
     `snapshot <b>${esc(m.snapshot_date)}</b> <span class="${days > 30 ? "stale" : ""}">(${days} days old)</span>` +
-    ` · universe <b>${L.checks.universe.toLocaleString()}</b> from ${esc(m.universe_source)}`;
+    ` · universe <b>${L.checks.universe.toLocaleString()}</b> from ${esc(m.universe_source)}` +
+    (m.post_snapshot_layer && m.post_snapshot_layer.cards
+      ? ` + <b>${m.post_snapshot_layer.cards.toLocaleString()}</b> post-snapshot cards (${esc(m.post_snapshot_layer.source || "")}, ` +
+        `pinned oracle-gen v0.1.15, never clustered)` : "");
 }
 
 function renderTiles() {

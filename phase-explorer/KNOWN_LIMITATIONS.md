@@ -9,11 +9,12 @@ as an ongoing log in [`corrections/corrections.json`](corrections/corrections.js
 This file documents limitations of the **upstream data**, not of this tool.
 Improving phase.rs's coverage is deliberately out of scope here.
 
-**Sized, not fixed — see §4**: mid-chain conditional clauses can silently
-drop their `condition` field. A verified 50-card spot-check found a 56%
-real rate (40% fully invisible) — this is corpus-wide, not contained to the
-79-card `Unimplemented:otherwise` count that first surfaced it, and needs its
-own dedicated investigation before any fix is attempted.
+**Sized, one sub-shape made visible — see §4**: conditional clauses can
+silently drop their condition. A per-item detector sizes this at **2,785 cards**
+(1,889 still `clean`) across 11 remaining sub-shapes; round 1 (the
+`RequiresCondition` null-wrapper) is a *visibility* fix, not a resolution — its
+conditions are now kept as `Unrecognized` text but not yet parsed. Full numbers:
+`reports/condition-drops.md`.
 
 ---
 
@@ -227,7 +228,7 @@ point is that those signals missed all 8.
 
 ---
 
-## 4. Mid-chain conditional clauses can silently drop their `condition` (size unknown)
+## 4. Conditional clauses can silently drop their `condition`
 
 Found 2026-10-02 while investigating `Unimplemented:otherwise` (phase.rs's
 engine; this is a parser-side limitation, not a classification error of ours —
@@ -340,25 +341,403 @@ does not move the `clean`/`partial` split (these cards already show `clean`)
 — it is a correctness-fidelity investigation in the spirit of §3, not a
 coverage one, and deserves its own dedicated pass.
 
+### Sizing, superseding the estimate above
+
+The 4,889-hit heuristic and its 40-56% extrapolation are superseded by a validated per-item
+detector (`src/detect_condition_drops.py`; it reproduces the 50-card spot-check exactly: 28
+real / 22 false positive, 20 silent / 8 visible). Corpus-wide it found **2,936 items on 2,857
+cards, 1,952 of them still `clean`**, in 12 sub-shapes. Ranked list, per-shape card and
+sole-cause counts, and the detector's reach limits are in `reports/condition-drops.md`.
+The fixes are being done one sub-shape at a time, in that report's recommended order.
+
+### Round 1 -- nested-wrapper: made VISIBLE, not resolved (2026-10-03)
+
+**What it was.** `ActivationRestriction::RequiresCondition { condition }` was built for every
+"Activate only if ..." sentence, but its condition came from `parse_restriction_condition`,
+which returns `None` for any phrasing outside a closed, hand-written vocabulary (the
+`ParsedCondition` enum). The engine evaluates `None` as permissive-true. So the wrapper
+correctly said "this is conditional" and the condition text was thrown away. This was **not**
+a wiring bug: 79 cards were about 75 unrelated unrecognized phrasings. The same discard
+happened at the casting-restriction (`Cast this spell only if`) and casting-option
+(`You may pay ... if`) call sites, which the sizing could not see: the real population is
+**133 cards / 134 condition nodes** (100 activation, 6 casting restriction, 28 casting option).
+
+**What changed.** New `ParsedCondition::Unrecognized { text }` (same precedent as
+`StaticCondition::Unrecognized` / `ReplacementCondition::Unrecognized`), evaluated `true`
+exactly like the `None` it replaces, plus a storing-form helper
+`parse_restriction_condition_or_unrecognized` used at the 10 storing call sites (the
+`Option`-returning function is untouched because three casting-option callers use its `None`
+as control flow). Gameplay evaluation is unchanged. **No card is newly parsed.** Delivered as
+`data/overlay/unrecognized-restriction-fix.json`; `card-data.json` is untouched.
+
+**Gate.** Full byte-for-byte run over all 34,645 entries against the snapshot with the two
+earlier parser-fix overlays applied: 34,311 identical, 192 rerun-flagged, 59 of those being the
+earlier overlays' own faces (saved with sorted keys, so their bytes differ from the generator's
+only in key order; identical after regeneration), 133 cards carry the change.
+Every shipped difference is `null/absent -> {type: Unrecognized, text}` at exactly those nodes;
+anything else aborts. 4,472 engine unit tests pass, including new ones for the helper, the
+permissive evaluation and the oracle-level parse.
+
+**Result.** The detector's nested-wrapper count goes 77 -> 0 (65 -> 0 silent). 74 of the 77
+cards stop flagging; 3 keep a separate real drop the wrapper had hidden (Izzet Generatorium,
+Ojer Taq, Sarevok's Tome). The 133 cards now carry a soft-gap `Unrecognized` node in the
+explorer (the build now also reads it from `casting_restrictions` / `casting_options`);
+quality labels did not move; in the coverage ledger 102 cards moved to `unmodelled_node` (82 from
+clustered leaves, 18 from noise, 2 from no-extractable-effect), and re-clustering then shuffled
+202 unrelated cards between clustered and noise (156 out, 46 in) -- cluster ripple, not parse changes.
+
+**Residual -- round B worklist.** The text is kept, not understood: all 134 conditions are
+still evaluated `true`. `reports/restriction-condition-worklist.md` lists every phrasing
+(116-120 distinct once numbers are normalised), grouped and ranked by card count (as of B1:
+singletons 39, "this turn" events 36, graveyard/hand/exile counts 20, source-state/self-name 15,
+counters 10, land counts 6, city's blessing 3, life totals 3). Found on the way: in 40
+activation texts a leading timing clause was swallowed into the unrecognized text, so
+`AsSorcery` / `DuringYourUpkeep` / `OnlyOnceEachTurn` were not emitted either -- round B1 below.
+
+### Round B1 -- timing clause split out of compound activation restrictions (2026-10-03)
+
+**What it was.** "Activate only as a sorcery and only if <X>" (and "during your upkeep / during
+your turn / during combat / once / once each turn ... and only if <X>") reached the generic
+`activate only ` branch of `strip_activated_constraints`, which handed the whole sentence to
+the condition parser. The timing half is a phrase the parser already emits elsewhere, so round
+1's `Unrecognized` blob was hiding recognizable information as well as the unrecognized part.
+
+**What changed.** That branch now splits on ` and only ` / `, and only ` / `, only ` and emits
+`AsSorcery`, `DuringYourTurn`, `DuringYourUpkeep`, `DuringCombat`, `OnlyOnceEachTurn`,
+`OnlyOnce` for exact phrase matches; every other piece stays verbatim as `Unrecognized`, and a
+sentence with no recognised timing piece is left exactly as it was. Overlay:
+`data/overlay/activation-timing-split-fix.json`. **This changes gameplay**: the engine enforces
+those variants (the `Unrecognized` remainder is still permissive), and the parser also sets
+`sorcery_speed` on `AsSorcery` abilities. Engine tests parse the real Oracle text and run it
+through the activation gate: Cabal Inquisitor is refused in the upkeep, beginning-of-combat,
+declare-blockers and end steps and on the opponent's turn, and allowed in its owner's main phase;
+an upkeep-only ability is refused outside the upkeep; `OnlyOnceEachTurn` blocks a second
+activation; "once and only during your turn" enforces both halves. 4,479 engine tests pass.
+
+**Result, honestly.** Of the 40 swallowed-timing texts, **22 cards** were split: 2 fully
+resolved (The Food Court, Ashling, the Extinguisher Avatar -- nothing left over) and 20 now
+carry the real timing plus a residual `Unrecognized` remainder (Grizzled Wolverine also keeps a
+"declare blockers step" piece). The other **18 are unchanged by design**: their timing phrase has
+no equivalent `ActivationRestriction` (declare blockers / declare attackers / end-of-combat step,
+an opponent's turn or upkeep, any upkeep step, before blockers are declared, ...), so they need
+new variants -- reuse `CastingRestriction`'s names (`DeclareBlockersStep`, `DuringOpponentsUpkeep`,
+`DuringAnyUpkeep`, ...) in a future round. `BeforeAttackersDeclared` must NOT be reused for
+Norritt / Arcum's Whistle / Nettling Imp (it requires the active player to hold priority; those
+are opponent-turn abilities), and `BeforeCombatDamage` does not mean "before the combat damage
+step". The mirror form "<condition> and only as a sorcery" (8 cards: Balustrade Wurm, Resurrected
+Cultist, Speaker of the Heavens, four Temples, Uchbenbak) reaches a different branch and still
+swallows `AsSorcery`; same fix, not done here.
+
+**Why remainders are not parsed.** The first version also ran remainders through the existing
+condition parser. Live-checking showed that gives two cards a wrong, now-enforced meaning
+(Urza's Fun House's three-land clause and Goblin Ski Patrol's "snow Mountain" each become one
+made-up subtype nothing can satisfy, making the abilities unusable), so remainders stay
+`Unrecognized`. Seven would have parsed correctly (e.g. Cabal Inquisitor's seven graveyard cards);
+they are a cheap win once that misparse is fixed.
+
+**Gate.** 34,497 entries compared against the snapshot with the three earlier overlays applied:
+34,279 byte-identical, 16 after April-metadata restoration, 180 earlier-overlay faces identical
+under a canonical comparison, exactly 22 different -- equal to the target set declared beforehand
+by an independent re-implementation of the rule. Every difference is a lossless split of a
+single `Unrecognized` blob (plus `sorcery_speed` false -> true on the 6 `AsSorcery` abilities).
+The comparison was audited too: ordered and canonical comparators agree, the compared bytes are
+hashed on both sides, and a planted mutation is confirmed detected. The detector's totals did not
+move (2,861 items / 2,785 cards): an extracted timing restriction is not a condition drop.
+
 ### How this tool responds
 
-Nothing yet — no fix, no corrections.json entries, no overlay. Logged as a
-sized-but-unresolved finding, for a future, separate effort.
+Round 1's overlay is applied at our own build time (`PARSER_FIX_OVERLAYS` in `build_index.py`).
+Nothing else in this section has a fix, corrections.json entry or overlay yet; the remaining
+sub-shapes are logged as sized-but-unresolved.
 
 ---
 
-## 5. The snapshot is stale and pinned
+## 5. The snapshot is stale and pinned -- and a post-snapshot layer sits on top
 
-Last-Modified **2026-04-20**, fetched **2026-09-21** — 154 days old, and the page
-displays that age at all times. Cards printed after April 2026 are absent, which
-is expected and is *not* a collision (the collision detection in §1 is
-deliberately date-independent: it only considers names MTGJSON itself covers with
-multiple oracle ids).
+Last-Modified **2026-04-20**, fetched **2026-09-21**; the pages display that age at all
+times. `card-data.json` itself is never refreshed. Cards released since are a separate
+layer (below), so a "snapshot" count on a page means the April file and a "universe" count
+includes the layer.
 
-Refresh with `curl -o data/card-data.json https://data.phase-rs.dev/card-data.json`,
-or regenerate via `phase-gen -i AtomicCards.json.gz -o card-data.json`. Re-run
-both build scripts afterwards; every number in this file is derived, not
-hand-maintained.
+### Post-snapshot layer (2026-10-03)
+
+**1,383 cards** (1,430 faces) released after the snapshot are in
+`data/overlay/new-release-cards.json`: the 1,367 that were `released_after_snapshot`, 15
+more MTGJSON added after 2026-09-21, and Mr. Monopoly, On the Go (formerly
+`absent_unexplained`). Universe 38,906 -> **38,921**; `missing_from_export` 1,431 -> **63**
+(the collision-recovered cards, which keep that status by precedent).
+
+- **Generator.** The pinned phase-rs `oracle-gen` v0.1.15 plus the four local parser-fix
+  overlays, one oracle id per run (no face-name collision can drop a card). Nothing newer
+  was used: upstream is now v0.101.0, 7,018 commits ahead; its hosted
+  `card-data.json` is still the April file (the current build is at a content-hashed URL),
+  and it re-parses **93.5%** of the existing cards (32,186 of 34,421 comparable faces)
+  differently, so no newer generator can pass a control-set gate and mixing parser versions
+  would put two node vocabularies in one corpus. Its collision handling is better but not
+  fixed: it still keys by lowercased face name and keeps some losers under hidden
+  `name [oracle_id]` keys.
+- **Gate (nothing written unless it passes).** The pinned binary over the full 2026-09-21
+  AtomicCards: 34,502 existing entries compared against the snapshot with the four overlays
+  applied, 34,284 byte-identical + 202 earlier-overlay faces identical under a canonical
+  comparison + 16 after April-metadata restoration, **0 different**; comparators agree and a
+  planted mutation is detected (same audit as round B1).
+- **Two MTGJSON files on purpose.** `data/AtomicCards.json.gz` (2026-09-21) stays the
+  universe and the gate's control set. `data/AtomicCards-20261003.json.gz` is read only
+  to generate the new cards. Swapping the newer one in as the universe would have removed 216
+  snapshot cards (Alchemy "A-" rebalances MTGJSON dropped) and changed the Oracle text of 56
+  existing ones.
+- **Collisions in the new data, found and avoided.** 3 new cards share a lowercased face name
+  with an existing snapshot card (`joven and chandler`, `artist alley`, `boltwave`) and 15 share
+  one with each other (`omit variables`, `peer review`, `seed suture`, `soul tether`,
+  `vicious verse`: three Strixhaven-style `prepare` spells each); 18 cards would have been
+  silently dropped or overwritten under face-name keying. Isolated, oracle-id-keyed generation
+  returned every face of every card (1,383 / 1,383, 0 failed).
+- **What happened to them.** Faces: 1,159 clean, 263 partial, 1 unparsed, 7 vanilla. Cards:
+  **1,030 clean-with-features -> new status `unclustered`** (815 placed by proximity at cosine
+  >= 0.80, **215 below the floor -> review queue**), 258 partial, 57 unmodelled node, 30 no
+  extractable effect, 7 vanilla, 1 unparsed. The 568 not placed carry their stage as the reason
+  (`post_snapshot_partial`, ...). 82% of faces parse clean against about 85% for the April
+  corpus: the gap is mostly April-era limits on new mechanics (`empower` 35 cards, `teamwork`
+  16, `recruit` 9, `create` 22, ...), which the hosted newer file does parse (96 partial faces
+  vs 263). Not fixed here; revisiting this means re-baselining the whole corpus (re-cluster,
+  new leaf ids).
+- **What did not move.** `clusters.json`, `branches.json`, `sub_branches.json`,
+  `sectors.json`, `index.json`, all 64 chunks, the leaf maps and every file under
+  `corrections/` are byte-identical before and after (76 files hashed). Existing proximity
+  placements (472 noise + 20 recovered) and the existing review-queue items are identical; the
+  leaf centroids and the self-similarity of clustered members are identical. New cards are
+  never inputs to a centroid. They land in 260 leaves, at most 51 in one.
+- **Not covered.** The new cards are not in `build/index.json`, so the parse-audit explorer
+  (`card-explorer.html`) does not list them; the ledger (`ledger.html`, with parsed structure)
+  and the browse tree (a green `new` chip; counted separately as "+N nearby") do.
+  Pre-existing parse gaps and condition drops are inherited unchanged.
+
+Do not refresh `card-data.json` in place: upstream's current parse differs for nearly every
+card, which would invalidate the leaf ids. To re-baseline deliberately, regenerate everything
+and re-run the clustering as a new round.
+
+---
+
+## 6. Keyword-only cards are placed by rule, not by clustering (2026-10-04)
+
+`cluster_structural.card_features()` reads only the four ability buckets. A card whose whole
+text is parsed into `keywords` ("Flying"; "Flying, vigilance"; "Protection from red") therefore
+emits no feature: it cannot be clustered or placed by proximity. **1,257 cards** (1,264 faces,
+25 of them from the post-snapshot layer, 7 multi-face) were `no_extractable_effect` /
+`no_feature_to_compare` for that reason although their text is fully modelled. `card_features()`
+was not changed and nothing was re-clustered; they are a separate, additive layer
+(`src/build_keyword_layer.py` -> `build/keyword_layer.json`), placement method **`keyword_rule`**
+(exact membership, a rule rather than a guess), shown with its own solid badge in browse, never
+the dashed "nearby" one.
+
+- **Status.** New ledger status `keyword_only` (1,257 cards). The pipeline stage is still
+  `no_extractable_effect` and stays in each row's `evidence.pipeline_status`; the other **240**
+  keep that status: 71 have keywords *and* ability items that yield no feature (prevention
+  shields, replacements), 161 have ability items and no keywords, 8 are `additional_cost` only.
+  Twelve statuses, 66 pairwise intersections, all zero.
+- **Grouping.** Leaf id `kw:<signature>` (the card's sorted keyword names joined by `+`), in a
+  namespace that cannot collide with the integer leaf ids. A signature held by >= 5 cards is a
+  leaf (49 leaves, 711 cards; Landwalk additionally splits by land type, `kw:Landwalk|Swamp`
+  -> "Swampwalk"). Otherwise the card goes to "`<Keyword>`: other combinations" under its
+  *rarest* keyword by corpus card count (56 leaves, 454 cards). Otherwise to one leaf labelled
+  **"Rare keyword combinations (catch-all)"** (92 cards, sorted by rarest keyword). 106 leaves
+  in 67 branches (one per keyword + the catch-all); the largest leaf is Flying with 103, the
+  smallest 5, the median 8; the largest branch is Flying with 225 cards. 449 distinct
+  signatures exist; 307 of them have a single card. Each card is in exactly one leaf; a
+  multi-keyword leaf is listed under each of its keywords' branches (many-to-many at the branch
+  level, like every existing branch).
+- **Payloads.** Shown on every card (Protection from what, Ward/Morph/Echo costs, Crew/Bushido
+  numbers) but not used to split leaves, except Landwalk. After the 5-card minimum only
+  "Protection from red" would have reached a leaf of its own, so Protection stays one leaf
+  family with the colour or quality visible on the card.
+- **Names.** Keyword names come from the engine's own `Keyword` variants split on case; checked
+  against the Comprehensive Rules 702 headings, the only observed irregular is Battle cry (CR
+  702.91); landwalk leaves use the real names (Swampwalk, ...).
+- **Card types: no split.** 98% are creatures. The audit rule (>= 2 permanent types at >= 20%)
+  literally flags **14 of the 106 leaves**, but every flagged Artifact is also a Creature (an
+  artifact creature is counted under both types), so no split is applied. 21 cards are not
+  creatures: 14 are Vehicles in one clean Crew leaf, and **7 strays** sit in other leaves
+  (Ardent Plea, Braid of Fire, Catalyst Stone, Darksteel Relic, Into the Time Vortex, Memory
+  Crystal, Throes of Chaos).
+- **Left alone.** The **12,046** cards that have keywords *and* ability items (8,244 clustered,
+  1,469 noise, 1,321 partial, 472 unmodelled, 469 unclustered, 71 `no_extractable_effect`) keep
+  their ability-based placement; their keywords are still ignored by clustering.
+- **Coverage.** Placed 23,435 -> **24,692** of 34,864 in scope (**67.2% -> 70.8%**); unplaced
+  15,486 -> 14,229. Only the 1,257 rows' status and placement changed; the other 37,664 rows are
+  identical in status, reason and placement.
+- **Verified.** 107 files hashed before and after (`clusters.json`, `branches.json`,
+  `sub_branches.json`, `sectors.json`, the three leaf maps, `index.json`, `placements.json`, all 64
+  chunks, `type_audit.json`, everything under `corrections/` and `data/overlay/`,
+  `card-data.json`): byte-identical. Existing proximity (1,303) and vanilla (344) placements and
+  the 4,214-item review queue are unchanged; no keyword card is also clustered or
+  proximity/vanilla-placed; two consecutive ledger runs give identical bytes.
+- **Not covered.** The parse-audit explorer (`card-explorer.html`) lists index rows only, so it
+  does not list keyword-only cards under this layer; browse and the ledger do.
+
+### Leaf counts: 657, not 591
+
+The current clustering has **657 leaves** (`clusters.json`, `branches.json`). "591" was the
+count when the first passes were written. Hard-coded copies in generator prose were corrected to
+read from the data (`audit_leaf_types.py`: "80 of the 657 leaves", not "74 of the 591";
+`branch_leaves.py`; `README.md`: 486 of 657 leaves have a top phrase carried by at least half the
+leaf). Left as they are because they are true: the three leaf maps
+(`build/leafmap*.json`, `reports/leafmap*-validation.md`) really were built over 591 leaves and are
+frozen, so they cover 591 of the 657 leaves; `DECISIONS.md` lines are dated records of what was
+measured then; and "cluster 591" / "leaf 591" in `clustering-structural.md` and
+`leaf-phrases.md` is a leaf *id*.
+
+---
+
+## 7. "Not yet organized" and "Find a card" are a display layer (2026-10-05)
+
+Of 34,864 in-scope cards, 24,692 are organized (a leaf, nearby, a keyword leaf, or "No
+abilities") and **10,172 are not**. The browse page now lists them in plain-language groups and
+answers "where is this card?" for every one of the 38,921 catalogue entries. It is a display
+layer: `src/build_unorganized.py` reads the ledger and the placement and keyword layers and
+writes three new files (`build/unorganized.json`, `build/unorganized_cards.json`,
+`build/lookup.json`); no status, placement, threshold, branch rule or frozen file changes, and
+all 107 hashed files are byte-identical. Tester-facing wording lives only in that generator,
+`reports/findcard.js` and the page.
+
+| group | cards | what puts a card there |
+|---|---:|---|
+| Parsed, but with a gap | 5,708 | status partial or unmodelled node (4,600 + 1,071), plus 37 recovered partials |
+| Parsed, no close group found | 4,175 | below the similarity floor: 3,958 noise, 215 newer, 2 recovered; best group and score shown as a *suggestion* |
+| No effect to group | 245 | `no_extractable_effect` (240) plus 5 recovered |
+| Not parsed yet | 29 | status unparsed |
+| Known parse mistake | 8 | `corrections_flagged` (hand-confirmed defects) |
+| No rules text: newer cards | 7 | newer vanilla cards the "No abilities" rule (snapshot only) does not cover |
+
+- **Recovered cards are not a group.** The 44 unplaced recovered cards are parsed; they sit in
+  the group for their stage with a plain "recovered card" tag. "Awaiting recovery" would have
+  told a tester the card was missing.
+- **Group 3 is not only shields.** About 167 are prevent-damage shields, 66 are
+  keyword-plus-replacement cards, 7 are additional-cost-only. The explanation covers all three.
+- **Group 1 gap text is the parser's normalized fragment** (lowercase, numbers as N, `~` for the
+  card name), with its internal "line failed ... parser:" prefix removed. 32 cards (the
+  Traps) carry no ledger fragment; their gap is an unrecognized casting-option condition,
+  read from the card itself. One card, Evolving Adaptive, has no recorded gap and says so.
+- **Group 2 strength words** are display labels only: close >= 0.70 (953 cards), loose
+  0.50-0.70 (709), weak < 0.50 (2,513, shown muted). No placement threshold is involved.
+- **Find a card.** Matches any face name, ignoring case, accents and punctuation. Real
+  cards are listed before catalogue entries that are not cards (art cards, tokens, emblems,
+  memorabilia, planes, schemes, Vanguard), each with its reason; duplicate names list every
+  match (235 names are shared by more than one entry, 101 of them by a real card and a
+  non-card). Load: `unorganized.json` is 2 KB at boot; the card lists (1.8 MB raw, ~0.5 MB
+  compressed) load when a group is first opened and the lookup (3.2 MB raw, ~1.4 MB compressed)
+  on first use of the Find box, on top of the ~33 MB the page already loads.
+- **"Review queue" wording is dev-only.** The curation queue (leaf-level "in review" chips,
+  the open-items box, the header link, the unique-effect blurb) now shows only with `?dev=1`
+  on `browse.html` and `card-explorer.html`. The generated `review-queue.html` page itself is
+  unchanged.
+- **Verified** with `src/test_findcard.py`, which runs the same `findcard.js` the page loads in
+  a JavaScript engine (dukpy) against the real data: reconciliation, every one of the 38,921
+  entries found by every one of its 39,826 face names, 17 named lookups across all twelve
+  states, ordering, and accent folding. That is not a render check: no browser was available, so
+  the page's layout, styling and click paths have only been syntax-checked.
+
+---
+
+## 8. "Also fits" suggestions, and ability-level clustering as an open decision (2026-10-08)
+
+**What shipped.** Cards in "Parsed, no close group found" with a blended score of 0.50 or more
+(1,662 cards) can show per-ability "also fits" links: an individual ability that matches an
+existing leaf at **0.90 or more**, by the clustering's own tokens, IDF weights and centroids
+(`src/ability_probe.py`; generator `src/build_also_fits.py` -> `build/also_fits.json`, loaded
+with the group's card list). Each link is labelled "Also fits (suggestion, not a placement)" and
+has the ability's text beside it. The card stays in its group; no leaf gains a member; nothing
+is placed, no centroid, score, status or frozen file changes (107 hashed files byte-identical;
+ledger rebuilt to identical bytes). Evidence for the design: `reports/ability-placement-probe.md`.
+
+**What it shows: 991 cards, 1,473 links** (444 cards have two or more). Rules, as approved:
+skip flagged cards (162) and modal spells (152; modes are separate ability items); show
+*specific* matches only (>= 3 tokens and a leaf of <= 300 cards): 798 generic matches (a bare
+eff:Draw / eff:Token / eff:Mana, or a leaf of 500+ cards) and 196 in-between ones are not shown;
+230 abilities have no text to put beside the link (keyword-generated equip / cycling, and Saga
+chapters whose text is only "Chapter N") and are not shown.
+
+**Hand check (two seeded samples).** Final output, 30 cards / 44 links: 41 correct, 3 wrong or
+doubtful (a -1/-1 counter ability matched to the +1/+1-counter leaf; an opponent-discards
+ability matched to the self-discard leaf; a graveyard-to-hand return matched to a
+battlefield-bounce leaf). An earlier sample, before the Saga-chapter filter, had 6-7 bad links in
+49: a Saga chapter that returns a card from a graveyard matched to the exile leaf, Helvault's
+return-exiled-cards trigger matched to an exile leaf, a flicker-leaf match for a plain exile,
+"exile a card from a graveyard" matched to "shuffle graveyard into library". About **7-13% of
+links are wrong or doubtful**, and the cause is consistent: tokens are blind to zones and
+destinations, to counter type, to player scope, and to everything after a chain's first effect. Several
+correct matches carry a leaf whose derived phrase or branch label does not describe its members
+(e.g. "Tapper" on "enters tapped", "Bounce removal" on graveyard returns); that is the leaf
+label, not the match. This is why these are suggestions.
+
+**Open design decision (logged, not built): ability-level clustering.** Placed cards stay one-leaf.
+The probe shows leaves were built from blended card vectors, so a multi-ability card clustered
+into a combined leaf is a worse fit per ability than per card (best single ability >= 0.90 against
+its own leaf on 59% of multi-ability faces, against 72% blended), and 718 of the 737
+two-ability cards in the 0.70-0.80 band match two *different* leaves almost perfectly. So
+the question is whether a card should be allowed several leaves, which would change
+leaf membership, counts, centroids and every cohesion number, and needs the token blind spots above
+fixed first. Not decided; nothing in this layer prejudges it. Placement rules for the "also fits"
+links, if ever promoted to placements, would need at least: zone / destination and counter type in
+the tokens, chain steps beyond the first effect, mode handling, and a rule for generic leaves.
+
+---
+
+## 9. Ability-level placement (2026-10-09)
+
+**What it does.** Placement used to score a card as a whole, so a two-effect card with one perfect
+ability scored about 1/sqrt(2) = 0.71 against it and missed the 0.80 floor: the good ability was
+blocked by its sibling (Shuri, Wakandan Inventor: a cost-reduction static scoring 0.9998 against
+leaf 465, a copy ability at 0.45, blended 0.61). Now each ability is judged alone
+(`src/ability_rules.py`, `src/build_ability_layer.py` -> `build/ability_layer.json`), and a card with
+one ability that clears the rule is placed in that ability's leaf, like any other placed card:
+it is listed with the leaf's members, counted in the placed total, and shows the matching ability's
+text. Method `ability` (placement data only); the ledger keeps `placed_by_ability` as an internal
+status (13 statuses, 78 pairwise checks), as `keyword_only` is for the keyword layer; the stage the
+card stopped at stays in `evidence.pipeline_status`. Its remaining abilities are shown as plain card
+detail, with any "also fits" suggestion for them (section 8) unchanged.
+
+**The rule (per ability).** Scored against the clustering's own tokens, IDF and centroids, and
+all of: >= 0.90; a *specific* leaf (>= 3 tokens, <= 300 cards); has rules text; the card and item
+are not flagged by the condition-drop detector; the card is not modal; and three token-blind-spot
+checks: (type) the effect is not ChangeZone / ChangeZoneAll / Bounce / Discard / Counter / PutCounter(All)
+/ RemoveCounter / MoveCounters / MultiplyCounter / GivePlayerCounter, and the item carries no
+player_scope; (wording) every zone / player-scope / counter-type term in the ability's text appears in
+>= 20% of the leaf's members; (structure) the effect node's own scalar fields and its sub-ability
+chain length match at least 15% of the leaf's members with the same tokens (>= 2 of them). One leaf
+per card: the best-scoring promoted ability's; a promoted ability in a second leaf is recorded as
+`second_leaf`.
+
+**Scope (first version).** Cards in "Parsed, no close group found" with a blended score of 0.50 or
+more (1,662 of 4,175). Not in scope, not changed: partial / unmodelled cards, proximity-placed
+cards, clustered cards.
+
+**Result.** 716 cards placed (720 abilities). Placed coverage 24,692 -> 25,408 of 34,864 in scope
+(70.8% -> 72.9%; 63.4% -> 65.3% of the 38,921 universe). "Parsed, no close group found" 4,175 -> 3,459.
+No leaf centroid, cohesion figure or clustered count changes (107 hashed files byte-identical). A leaf
+or branch now lists its ability-placed cards with its clustered ones.
+
+**Hand check.** 40 promoted placements (seeded sample): 0 wrong, 2 loose (a heterogeneous leaf
+"Instant and sorcery spells you control have ..." holding a creature-type pump; an enters-tapped
+replacement whose +1/+1 counters the leaf does not describe). 12 abilities the blind-spot checks
+held back: about 6 would have been correct (e.g. "Return target creature to its owner's hand",
+"Counter target spell"), about 4 wrong. So the exclusion is conservative: it costs correct matches
+as well as catching bad ones. The three known misses (Spitting Dilophosaurus, Bandit's Talent,
+Dogged Detective) and Helvault are all held back. Leaf *labels* are sometimes poor (a "sacrifice a
+creature" label on a leaf of "can't attack unless" statics); the placement is judged on members.
+
+**Ability ledger** (`build/ability_ledger.json`, display-free): one row per ability item of every
+in-scope card: state (placed with route and leaf, or unplaced with a reason), best leaf and score,
+and for placed-by-card abilities whether the card's own leaf is the ability's best leaf. 50,672
+rows over 33,215 cards. 33,333 abilities (65.8%) sit under a placed card (30,278 clustered, 2,335
+proximity, 720 ability) against 72.9% of cards. Of clustered cards' abilities that have a best leaf, 65.2% best-match
+their own card's leaf and 34.8% another one. Unplaced by reason: not_scored 13,960 (outside the first
+version's scope), generic_leaf 806, token_blind_spot 568, below_0.90 565, modal 411, flagged 396,
+no_text 230, in_between 200, second_leaf 194, no_tokens 9. Keyword-only and no-text cards have no
+ability items, so they have no rows.
+
+**Still not solved.** The tokens remain blind to zone, counter type, player scope and chain steps
+after the first effect (section 8); this rule works around that, it does not fix it. Statics' dict
+modes are compared by mode name only.
 
 ---
 
