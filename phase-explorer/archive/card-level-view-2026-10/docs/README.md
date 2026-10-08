@@ -6,27 +6,6 @@ does not touch their repo.
 
 ## Run
 
-**The main view is per-ability** (since 2026-10). The card-level view and its generators are archived in
-`archive/card-level-view-2026-10/` (the README there has its own run order). To rebuild the main view once the inputs
-below exist (`build/index.json`, `build/chunks/`, `build/ability_ledger.json`, `build/ledger.json`, `build/placements.json`,
-`build/condition_drops.json`, `build/keyword_layer.json`, `build/signature_layer.json`, `build/lookup.json`):
-
-```
-python src/build_ability_taxonomy.py      # -> build/ability_taxonomy*.json (tree, members, cards, ledger, unorganized, lookup); about a minute
-python src/test_abilityfind.py            # Find a card: all 38,921 entries + named lookups, in a JS engine
-python src/test_browse_browser.py         # drives reports/browse.html in headless Edge (needs msedge and websocket-client)
-python src/report_ability_taxonomy.py     # -> build/ability_taxonomy_report.json (numbers for reports/ability-taxonomy-report.md)
-python src/measure_field_presence.py      # how often sign / recipient / life subject are in the parse (run on a build, before changing the signature)
-python src/compare_taxonomy_builds.py DIR # compares two builds (DIR holds the older ability_taxonomy.json and _ledger.json)
-python src/serve.py                       # opens http://localhost:8765/reports/browse.html  (the per-ability view)
-```
-
-Name edits live in `corrections/ability_taxonomy_names.json`, keyed by leaf signature (`?dev=1` shows signatures).
-The hand-check samplers (`src/sample_ability_taxonomy.py`, `src/sample_names_ability_taxonomy.py`, `src/sample_round3_ability_taxonomy.py`) use fixed seeds and are run once (their draws are `build/ability_taxonomy_handcheck*.json`, judgments `..._verdicts*.json`);
-the probe and design scripts (`probe_signature_taxonomy.py`, `probe2_...`, `design_probe_...`) are the investigation record.
-
-The inputs above come from the older generators, listed next. They still run and still produce the archived view's numbers:
-
 ```
 python src/build_index.py         # -> build/index.json, facets.json, meta.json, chunks/
 python src/build_collisions.py    # -> NAME_COLLISIONS.md, build/collisions.json

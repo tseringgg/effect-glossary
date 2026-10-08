@@ -9,8 +9,6 @@ as an ongoing log in [`corrections/corrections.json`](corrections/corrections.js
 This file documents limitations of the **upstream data**, not of this tool.
 Improving phase.rs's coverage is deliberately out of scope here.
 
-**Since 2026-10 the main view is per-ability and the card-level view is archived: see §12.** §§1-11 describe the data and the archived view.
-
 **Sized, one sub-shape made visible — see §4**: conditional clauses can
 silently drop their condition. A per-item detector sizes this at **2,785 cards**
 (1,889 still `clean`) across 11 remaining sub-shapes; round 1 (the
@@ -820,44 +818,6 @@ one limited to groups sharing an effect token might be. Measurement files: `buil
 `src/probe_nomatch_cluster.py`.
 
 ---
-
-## 12. The per-ability view is the main view; the card-level view is archived (2026-10)
-
-**What changed.** `reports/browse.html` now shows the per-ability taxonomy (`src/build_ability_taxonomy.py` -> `build/ability_taxonomy*.json`): a card appears under every group one of its abilities fits. The card-level view
-(657 clustered leaves) is archived, unmodified, in `archive/card-level-view-2026-10/` with its generators, run order and final numbers (26,085 of 34,864 placed = 74.8%, 8,779 not yet organized). **§§1-11 above describe the data
-and that archived view; their numbers do not apply to the main view.** `reports/ledger.html` and `reports/card-explorer.html` are dev-only pages (they carry a banner) and still show the archived view. Full results:
-[`reports/ability-taxonomy-report.md`](reports/ability-taxonomy-report.md); design: [`reports/ability-taxonomy-design.md`](reports/ability-taxonomy-design.md).
-
-**The two coverage figures are on different bases and must not be subtracted.** Main view: **23,653 of 34,864 = 67.8%** (an unflagged group of 5 or more abilities, plus the keyword block, "No abilities" and the replacement
-groups); 26,774 = 76.8% counting 3,121 cards that sit only in groups broader than they look. Not yet organized: 8,090. Archived view: 74.8%.
-
-**Rules of the main view.** Signatures from the parse; rarest-field-first backoff at minimum 5; no level-1 groups; equipped / enchanted in the target; an ability with an object but no verb detail never falls to a bare effect type;
-leaves built from clean abilities on clean cards only; abilities flagged by the dropped-condition detector held back; inline modal spells read as one ability per mode; replacement and cost rules stay in the old signature layer as a
-block; three catch-all effect types mapped into real families and any effect type with no family left unplaced; **the sign class of a power/toughness change and the damage recipient are part of the signature** (round 3).
-
-**Groups that are broader than they look (flagged, kept out of the headline).** A group is flagged when a field that splits its members is not recorded for its abilities: who draws; "return all" vs "return target"; where a
-self-return comes from; what an effect applies to; whether players are hit by an "all" damage effect; who is damaged when no recipient was kept; who loses or gains life; the sign of a power/toughness change when it depends on a
-count. 165 leaves, 6,010 abilities. Measured before the sign and recipient moved into the signature: the sign is recorded for 91% of the abilities in the sign-flagged leaves; a `DamageEachPlayer` recipient for 98.9%; "players hit" on
-a `DamageAll` for 2.1%; who loses or gains life for 89% of such abilities. The boost / shrink / mixed leaves agree with the sign read from their members' text in 100% / 99.0% / 100% of cases.
-
-**A field can be present and wrong.** "That player draws cards" (35 abilities) and "That player gains life" (8) record the triggering player as the subject, but the text says "you" for 32 and 8 of them. No flag applies
-(the field is not absent), so these two groups' names mislead. Parser work, not a rule.
-
-**Gap-card abilities are held out, by decision (2026-10).** A hand check of 40 gap-card abilities that pass the same-line and continuation tests came to 5.0% wrong (2 of 40: Kasmina's tutor-and-cast filed as "search into your hand", and
-Xantcha's "attacks each combat" filed as "can't attack"). The bar was *under* 5%, so they stay out (2,032 abilities, 1,720 of which would place in an unflagged group). **Revisiting needs a fresh sample of about 100 on a new seed**, drawn
-with the rule fixed in advance; 40 cannot separate 2.5% from 7.5%.
-
-**Hand checks, seeds 20261008 (round 1), 20261009 (round 2 names) and 20261010 (round 3), nothing redrawn** (none of these is a measured error rate). Round 3: 30 leaves, 0 incoherent; 40 placed abilities, 0 wrong; 20 auto-names, 3 would
-mislead a tester; 10 sign / recipient leaves, all consistent. Round 1: 30 leaves, 2 incoherent (both then flagged); 40 modal modes, 1 wrong. 13 of 20 "too unusual" cards that the old view grouped were grouped correctly by it.
-
-**Known defects not fixed.** Names are generated and some are unfinished ("All triggeringsources get +N/+N", "A target gets +N/+N", "A permanent cant be blocked except by"); three of the round-3 names mislead (the commander restriction,
-an alternative cost, and "each player" are missing from them); `(variant)` suffixes appear where two groups had one name. Dropped clauses (Death Cloud, Global Ruin, Spark Double) and static misreads are parse defects and remain.
-
-**What was checked in a browser.** `src/test_browse_browser.py` drives headless Edge with real clicks and typed text (21 checks: boot, tree, leaf, "Also in", card detail, roll-up, broad note, Not yet organized with "Show more", Find a
-card, keyword and replacement blocks, deep link, boost versus shrink leaves, dev-only links, dev-only banners). Small-screen layout, theme switching and scroll performance with the largest lists were not exercised.
-`src/test_abilityfind.py` covers the Find-a-card logic for all 38,921 entries in a JavaScript engine.
-
-**A name that cannot be checked against text (2026-10 naming round).** "A permanent can't be blocked except by certain creatures" (24 abilities, the `CantBeBlockedExceptBy` grant) is unverifiable against member text: none of its 24 members has ability text in the parse, so the name rests on the signature alone. It is left as is, and the automated claims check skips leaves where over half the members have no text.
 
 ## Reproducing these numbers
 

@@ -2,2061 +2,373 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Effect glossary — browse</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Card abilities, grouped</title>
 <style>
-  :root {
-    --bg:#fff; --fg:#111; --mut:#666; --line:#d4d4d4; --panel:#f6f6f6;
-    --clean:#1a7f37; --partial:#b35c00; --unparsed:#b3261e; --vanilla:#555;
-    --warnbg:#fff4e5; --warnline:#e09b3d; --gap:#ffe9e6;
-    --corr:#a4003f; --corrbg:#fde8ef;
-    --clu:#0b5d8f; --clubg:#e8f1f8;
-    /* branch-map slots, same validated palette as card-explorer.html */
-    --src-curated:#2a78d6; --src-otag:#eb6834; --src-slang:#1baf7a;
-    --unbr-ink:#6b6a66; --surface-1:#ffffff;
-    --text-primary:#0b0b0b; --text-secondary:#52514e;
-  }
-  * { box-sizing:border-box; }
-  [hidden] { display:none !important; }
-  body { margin:0; font:13px/1.45 ui-monospace,SFMono-Regular,Consolas,monospace;
-         background:var(--bg); color:var(--fg); }
-  a { color:var(--clu); }
-
-  header { background:var(--panel); border-bottom:2px solid var(--line); padding:8px 12px; }
-  h1 { font-size:14px; margin:0 0 4px; display:inline-block; }
-  .prov { font-size:12px; color:var(--mut); }
-  .prov b { color:var(--fg); }
-  .stale { color:var(--unparsed); font-weight:bold; }
-  .caveat { background:var(--warnbg); border:1px solid var(--warnline);
-            border-left:4px solid var(--warnline); padding:6px 9px; margin:6px 0 0;
-            font-size:11px; }
-  .note { font-size:11px; color:var(--mut); }
-  button { font:inherit; padding:3px 9px; cursor:pointer; }
-
-  /* ---- two panes: tree is the primary navigation, cards follow from it ---- */
-  main { display:flex; align-items:flex-start; gap:0; }
-  #nav { width:430px; flex:0 0 430px; border-right:2px solid var(--line);
-         height:calc(100vh - 92px); overflow:auto; padding:8px 10px; }
-  #cards { flex:1 1 auto; min-width:0; height:calc(100vh - 92px); overflow:auto; }
-  @media (max-width:980px) {
-    main { flex-direction:column; }
-    #nav { width:100%; flex:none; height:auto; max-height:52vh;
-           border-right:none; border-bottom:2px solid var(--line); }
-    #cards { width:100%; height:auto; }
-    #grid { grid-template-columns:repeat(2, calc((100% - 10px) / 2 * 0.75)); }
-  }
-
-  /* ---- tree ---- */
-  #tree details { margin:0 0 1px; }
-  #tree summary { cursor:pointer; padding:3px 2px; font-size:12px; }
-  #tree summary:hover { background:#f2f7fb; }
-  #tree summary::marker { color:var(--clu); }
-  #tree .bname { font-weight:bold; }
-  #tree .bmeta { color:var(--mut); font-size:10px; font-weight:normal; }
-  #tree .brule { color:var(--mut); font-size:10px; margin:1px 0 3px 18px;
-                 border-left:2px solid var(--line); padding-left:6px; }
-  #tree .leaves { margin-left:16px; }
-  /* A leaf is one clickable block, not a button with text beside it: the
-     whole row is the hit target, highlights on hover, and shows what its
-     cards say on a line of its own under the count. */
-  #tree .leafrow { padding:3px 5px; margin:1px 0; font-size:11px;
-                   border-left:2px solid transparent; cursor:pointer; }
-  #tree .leafrow:hover { background:#eaf2fa; border-left-color:var(--clu); }
-  #tree .leafrow:focus-visible { outline:2px solid var(--clu); outline-offset:-2px; }
-  #tree .leafrow.on { background:var(--clubg); border-left-color:var(--clu); }
-  #tree .leafhead { display:flex; gap:4px; align-items:baseline; flex-wrap:wrap;
-                    color:var(--mut); }
-  #tree .leafhead b { color:var(--fg); }
-  #tree .leafsays { color:#222; font-size:11.5px; margin-top:1px; }
-  #tree .leafrow.on .leafsays { font-weight:bold; }
-  #tree .leaflabel { color:var(--mut); font-size:10px; }
-  /* ---- card image view ---- */
-  .viewbar { padding:6px 12px; border-bottom:1px solid var(--line);
-             display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
-  .vbtn { font-size:11px; padding:2px 10px; border:1px solid var(--line);
-          background:#fff; cursor:pointer; }
-  .vbtn.on { background:#111; color:#fff; border-color:#111; }
-  /* Cards are 75% of the width four equal columns would give them; the 10px
-     gap between cards stays fixed, and the space saved sits at the right. */
-  #grid { display:grid; gap:10px; padding:12px;
-          grid-template-columns:repeat(4, calc((100% - 30px) / 4 * 0.75)); }
-  .tile { cursor:pointer; }
-  .tile img { width:100%; display:block; border-radius:4.75% / 3.5%;
-              background:#e9e9e9; aspect-ratio:488/680; }
-  .tile:hover img { outline:2px solid var(--clu); outline-offset:2px; }
-  .tname { font-size:10px; color:var(--mut); margin-top:2px;
-           overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  /* A card with no published image keeps its slot, with the reason in it. */
-  .noimg { aspect-ratio:488/680; border:1px dashed var(--line);
-           border-radius:4.75% / 3.5%; padding:10px; font-size:11px;
-           display:flex; flex-direction:column; justify-content:center;
-           background:#fafafa; }
-  .tiledet { grid-column:1/-1; background:#fbfbfb; border:1px solid var(--line);
-             padding:9px 11px; }
-  .tdname { display:block; font-size:13px; margin-bottom:5px; }
-
-  /* The clauses phase.rs matched, inside the card's own text. One colour --
-     which effect it was is on hover; the point of the mark is the boundary
-     between what the parser consumed and what it walked past. */
-  mark.mt { background:#fff3bf; color:inherit; padding:0 1px;
-            box-shadow:inset 0 -2px 0 #e0b400; border-radius:2px; }
-  .mcbox { background:#f7f9fb; border:1px solid #cfe0f2; padding:7px 9px;
-           margin:0 0 10px; font-size:11px; }
-  .mcbox b.hdr { color:var(--clu); font-size:12px; display:block; }
-  .mcrow { display:flex; gap:7px; align-items:baseline; padding:2px 0;
-           border-top:1px solid #e6eef6; }
-  .mcb { color:var(--mut); font-size:10px; min-width:120px; }
-  .mce { font-weight:bold; min-width:110px; }
-  .mct { color:#222; }
-  .chip-edit { border-color:#7a4bbd; color:#5b338f; background:#f2ebfb; }
-  #tree .leafsays.edited { border-left:3px solid #7a4bbd; padding-left:5px; }
-  .phedit { font-size:10px; padding:0 6px; }
-  .phform { margin-top:4px; display:flex; gap:5px; align-items:center;
-            flex-wrap:wrap; }
-  .phform input { font:inherit; font-size:12px; padding:3px 6px; }
-  .leafread { margin:3px 0 0; font-size:13px; }
-  .leafread .note { margin-top:1px; }
-  #tree details.unbr > summary .bname { color:var(--unparsed); }
-  #tree details.auto > summary .bname { font-style:italic; }
-  .pickbtn { font-size:10px; padding:0 5px; border:1px solid var(--clu);
-             color:var(--clu); background:#fff; cursor:pointer; white-space:nowrap; }
-  .pickbtn.on { background:var(--clu); color:#fff; }
-  .allbtn { font-size:10px; padding:1px 6px; margin:2px 0 3px 18px; }
-
-  /* Sectors: the top level. A visibly heavier summary than a branch's, so the
-     nesting reads at a glance -- sector > branch > (type >) (effect >) leaf. */
-  #tree > details.sector > summary { font-size:13px; padding:5px 2px; }
-  #tree > details.sector > summary .bname { font-size:13px; }
-  #tree details.sector.unsec > summary .bname { color:var(--mut); }
-  #tree .secbranches { margin:2px 0 4px 12px; border-left:2px solid var(--line);
-                        padding-left:8px; }
-  .chip-tier { border-color:var(--clu); color:var(--clu); background:var(--clubg);
-               text-transform:none; font-weight:normal; }
-
-  /* Effect groups: a second axis over the SAME cards the node above already
-     lists, not a new set of leaves -- deliberately light weight, and no expand
-     arrow, since a group is a filter, not a container of its own leaves. */
-  .effgroup { margin:4px 0 2px 16px; border-left:2px dashed #cfe0f2; padding-left:7px; }
-  .effrow { font-size:11px; padding:1px 0; display:flex; gap:5px; align-items:baseline; }
-  .effrow .pickbtn { border-style:dashed; }
-
-  /* State chips. Every one of these marks something honest about the data, so
-     each carries its own border + letterforms and never relies on colour. */
-  .chip { font-size:9px; font-weight:bold; letter-spacing:.3px; padding:0 4px;
-          border-radius:2px; border:1px solid; text-transform:uppercase;
-          white-space:nowrap; vertical-align:1px; }
-  .chip-auto   { border-color:#8a6d1f; color:#6b530f; background:#fdf3d6; }
-  .chip-review { border-color:var(--corr); color:var(--corr); background:var(--corrbg); }
-  .chip-mixed  { border-color:#7a4bbd; color:#5b338f; background:#f2ebfb; }
-  .chip-uniq   { border-color:var(--unparsed); color:var(--unparsed); background:var(--gap); }
-  /* Proximity layer (build/placements.json): cards placed by nearest centroid,
-     not by the clustering. Dashed everywhere, so it never reads as a leaf member. */
-  .chip-near   { border-color:#2f7d6d; color:#1f5e51; background:#e6f4f0; border-style:dashed; }
-  .chip-rec    { border-color:#2f7d6d; color:#1f5e51; background:#fff; }
-  /* dev-only wording (the curation queue): hidden unless the page is opened with ?dev=1 */
-  .devonly { display:none !important; }
-  html.dev .devonly { display:revert !important; }
-  .nearn { color:#1f5e51; font-weight:normal; }
-  /* Not yet organized: plain text styling on purpose -- no chip that could be read as the
-     dashed "nearby" chip or the solid keyword badge */
-  #tree details.unorg > summary .bname { color:#6a4a1e; }
-  .ugrp { margin:7px 0 9px; padding:5px 0 6px; border-top:1px solid var(--line); }
-  .ugrp .uexp { font-size:11px; color:var(--text-secondary); margin:2px 0 4px; line-height:1.35; }
-  .utag { font-size:10px; color:#6b6b6b; font-style:italic; }
-  .ugap { font-size:11px; color:#7a3b1a; display:inline-block; max-width:260px; line-height:1.3; }
-  .usug { font-size:11px; color:#444; display:inline-block; max-width:260px; line-height:1.3; }
-  .usug a { color:#244f8f; text-decoration:underline; cursor:pointer; }
-  .usim { color:#444; }
-  .abm { font-size:11px; color:#444; display:block; max-width:280px; line-height:1.3; margin-top:2px; }
-  .abrest { display:block; font-size:11px; color:#555; line-height:1.3; margin-top:3px; }
-  .ualso { font-size:11px; color:#444; display:block; max-width:280px; line-height:1.3; margin-top:2px; }
-  .ualso .ahead { color:#6b6b6b; font-style:italic; }
-  .ualso a { color:#244f8f; text-decoration:underline; cursor:pointer; }
-  .ualso .atext { color:#555; }
-  .usim-weak { color:#9a9a9a; font-style:italic; }
-  #findbox { padding:6px 8px 8px; border-bottom:1px solid var(--line); }
-  #findbox label { font-weight:bold; font-size:12px; display:block; margin-bottom:3px; }
-  #findq { width:100%; box-sizing:border-box; }
-  .fres { border:1px solid var(--line); border-radius:3px; padding:5px 6px; margin:5px 0; font-size:11px; line-height:1.35; background:var(--panel); }
-  .fres.notcard { background:#f4f4f4; color:#555; }
-  .fres .fn { font-weight:bold; font-size:12px; }
-  .fres .fbtn { font-size:10px; margin:3px 4px 0 0; }
-  .fgap { color:#7a3b1a; }
-  .chip-kw     { border-color:#1d4f91; color:#fff; background:#2a64b5; border-style:solid; }
-  .chip-catch  { border-color:#a0651a; color:#6b3f08; background:#fbefd8; }
-  .kws { color:#1d4f91; font-size:11px; }
-  #tree details.kwbr > summary .bname { color:#1d4f91; }
-  #tree details.sgbr > summary .bname { color:#6b3f9a; }
-  .chip-sg     { border-color:#6b3f9a; color:#fff; background:#7d54ad; border-style:solid; }
-  #tree details.vanbr > summary .bname { color:var(--vanilla); }
-  .covbox label { display:block; margin-top:4px; cursor:pointer; }
-  .statenote { font-size:10px; color:var(--mut); border-top:1px solid var(--line);
-               margin-top:8px; padding-top:6px; }
-  .qbox { background:var(--corrbg); border:1px solid var(--corr); padding:5px 7px;
-          margin:8px 0 0; font-size:10px; }
-  .covbox { background:var(--clubg); border:1px solid var(--clu); padding:5px 7px;
-            margin:0 0 8px; font-size:10px; }
-
-  /* ---- scope bar + filters ---- */
-  #scope { position:sticky; top:0; z-index:5; background:var(--panel);
-           border-bottom:1px solid var(--line); padding:7px 12px; }
-  .crumb { font-size:12px; }
-  .crumb .sep { color:var(--mut); margin:0 4px; }
-  .crumb b { font-size:13px; }
-  #filters { padding:7px 12px; border-bottom:1px solid var(--line); }
-  .frow { display:flex; gap:7px; align-items:center; flex-wrap:wrap; margin-bottom:5px; }
-  .flab { font-size:10px; color:var(--mut); text-transform:uppercase;
-          letter-spacing:.4px; width:74px; flex:0 0 74px; }
-  input[type=search] { font:inherit; padding:3px 7px; width:260px; }
-  input[type=number] { font:inherit; padding:2px 4px; width:62px; }
-  /* Colour toggles: the letter carries the identity, the tint is secondary --
-     readable in greyscale and for any colour vision. */
-  .cbtn { font:inherit; font-weight:bold; padding:2px 8px; border:2px solid #bbb;
-          background:#fff; cursor:pointer; }
-  .cbtn small { font-weight:normal; font-size:9px; color:var(--mut); margin-left:3px; }
-  .cbtn.on { border-color:#111; box-shadow:inset 0 0 0 2px #fff; }
-  .cbtn[data-c=W] { background:#f8f3e0; } .cbtn[data-c=U] { background:#cfe4f7; }
-  .cbtn[data-c=B] { background:#d8d4d9; } .cbtn[data-c=R] { background:#f9d3cb; }
-  .cbtn[data-c=G] { background:#cfe6d4; } .cbtn[data-c=C] { background:#ececec; }
-  .cbtn.on small { color:#333; }
-  .tbtn { font-size:11px; padding:1px 7px; border:1px solid var(--line);
-          background:#fff; cursor:pointer; }
-  .tbtn.on { background:#111; color:#fff; border-color:#111; }
-  .tbtn small { font-size:9px; color:var(--mut); margin-left:3px; }
-  .tbtn.on small { color:#ccc; }
-  /* mana-value histogram: clicking a bar sets an exact value, the inputs set a range */
-  .mvh { display:flex; align-items:flex-end; gap:2px; height:26px; }
-  .mvh button { padding:0; width:15px; border:1px solid #9bb8d4; background:#eef4fb;
-                position:relative; cursor:pointer; font-size:8px; color:#1e4e7a;
-                display:flex; align-items:flex-end; justify-content:center;
-                line-height:1; }
-  .mvh button.on { background:var(--clu); border-color:var(--clu); color:#fff; }
-  .mvh button span { position:absolute; bottom:-11px; font-size:8px; color:var(--mut); }
-  .mvh button.on span { color:var(--clu); font-weight:bold; }
-  .mvwrap { padding-bottom:11px; }
-
-  /* ---- card table (same shape as card-explorer.html) ---- */
-  table { width:100%; border-collapse:collapse; }
-  th,td { text-align:left; padding:5px 8px; border-bottom:1px solid var(--line);
-          vertical-align:top; }
-  th { background:var(--panel); font-size:11px; }
-  tbody tr:hover { background:#fafafa; }
-  .nm { font-weight:bold; white-space:nowrap; }
-  .oid { font-size:10px; color:var(--mut); font-weight:normal; }
-  .txt { white-space:pre-wrap; max-width:560px; font-size:12px; }
-  .badge { font-size:10px; padding:1px 5px; border:1px solid; white-space:nowrap; }
-  .b-clean{color:var(--clean);border-color:var(--clean)}
-  .b-partial{color:var(--partial);border-color:var(--partial)}
-  .b-unparsed{color:var(--unparsed);border-color:var(--unparsed)}
-  .b-vanilla{color:var(--vanilla);border-color:var(--vanilla)}
-  .det { background:#fbfbfb; }
-  .bucket { margin:0 0 10px; }
-  .bucket > h4 { margin:0 0 3px; font-size:12px; }
-  .empty { color:var(--mut); font-style:italic; font-size:11px; }
-  pre { margin:0; font-size:11px; white-space:pre-wrap; word-break:break-word;
-        background:#fff; border:1px solid var(--line); padding:6px; max-height:420px;
-        overflow:auto; }
-  .gapnode { background:var(--gap); }
-  .warnbox { background:var(--warnbg); border:1px solid var(--warnline); padding:6px;
-             margin:0 0 10px; font-size:11px; }
-  .nowarn { border:1px dashed var(--line); padding:6px; margin:0 0 10px;
-            font-size:11px; color:var(--mut); }
-  .corrbox { background:var(--corrbg); border:2px solid var(--corr); padding:7px 9px;
-             margin:0 0 10px; font-size:11px; }
-  .corrbox b.hdr { color:var(--corr); font-size:12px; display:block; margin-bottom:3px; }
-  .corritem { border-top:1px solid #f0c3d3; margin-top:6px; padding-top:6px; }
-  .corritem:first-child { border-top:none; margin-top:0; padding-top:0; }
-  .kindtag { font-size:9px; text-transform:uppercase; padding:1px 4px;
-             border:1px solid var(--corr); color:var(--corr); margin-left:4px; }
-  .clubox { background:var(--clubg); border:1px solid var(--clu); padding:7px 9px;
-            margin:0 0 10px; font-size:11px; }
-  .clubox b.hdr { color:var(--clu); font-size:12px; display:block; margin-bottom:3px; }
-  .clulabel { color:var(--clu); word-break:break-all; }
-  .brbadge { font-size:9px; padding:1px 4px; border:1px solid var(--clu);
-             color:var(--clu); margin-right:3px; white-space:nowrap;
-             display:inline-block; margin-bottom:2px; }
-  /* colour/mana-value chip on a card row */
-  .cost { white-space:nowrap; font-weight:normal; }
-  .pip { display:inline-block; font-size:9px; font-weight:bold; width:13px;
-         text-align:center; border:1px solid #999; border-radius:7px;
-         margin-right:1px; color:#111; }
-  .pip.p-W{background:#f8f3e0} .pip.p-U{background:#cfe4f7} .pip.p-B{background:#d8d4d9}
-  .pip.p-R{background:#f9d3cb} .pip.p-G{background:#cfe6d4} .pip.p-C{background:#ececec}
-  .pip.p-none{background:#fff;border-style:dashed;color:var(--mut)}
-  .mv { display:inline-block; font-size:9px; min-width:13px; text-align:center;
-        border:1px solid #999; border-radius:7px; background:#f3f3f3; }
-  .pager { padding:9px 12px; display:flex; gap:9px; align-items:center;
-           border-top:1px solid var(--line); background:var(--panel); }
-  #empty { padding:22px 12px; }
-  /* ---- branch map (secondary overview) ---- */
-  #tmwrap { border-bottom:2px solid var(--line); background:var(--surface-1);
-            padding:8px 12px; }
-  #tm { position:relative; width:100%; height:440px; }
-  .tmcell { position:absolute; overflow:hidden; cursor:pointer; border-radius:3px;
-            padding:3px 4px; line-height:1.15; }
-  .tmcell:hover { outline:2px solid var(--fg); outline-offset:-2px; z-index:3; }
-  .tmcell .tmn { font-size:11px; font-weight:bold; display:block; overflow:hidden;
-                 text-overflow:ellipsis; white-space:nowrap; }
-  .tmcell.wrap .tmn { white-space:normal; overflow-wrap:break-word; }
-  .tmcell .tmc { font-size:10px; opacity:.9; display:block; }
-  .tmcell.unbr { background-image:repeating-linear-gradient(45deg,
-                   rgba(255,255,255,.42) 0 4px, rgba(255,255,255,0) 4px 9px); }
-  .tmcell.unbr .tmn, .tmcell.unbr .tmc { text-shadow:0 0 3px rgba(0,0,0,.9), 0 1px 2px rgba(0,0,0,.8); }
-  .tmcell.auto { background-image:repeating-linear-gradient(90deg,
-                   rgba(255,255,255,.40) 0 3px, rgba(255,255,255,0) 3px 7px); }
-  .tmcell.auto .tmn, .tmcell.auto .tmc { text-shadow:0 1px 2px rgba(0,0,0,.55); }
-  #tmtip { position:fixed; z-index:50; pointer-events:none; display:none;
-           background:#111; color:#fff; font-size:11px; padding:5px 7px;
-           border-radius:3px; max-width:340px; line-height:1.35; }
-  .tmlegend { display:flex; flex-wrap:wrap; gap:12px; align-items:center;
-              font-size:11px; color:var(--text-secondary); margin-top:6px; }
-  .tmlegend span.sw { display:inline-block; width:11px; height:11px; border-radius:2px;
-                      margin-right:4px; vertical-align:-1px; }
-  .sw.autosw { background-image:repeating-linear-gradient(90deg,
-                 rgba(255,255,255,.55) 0 2px, rgba(255,255,255,0) 2px 5px); }
-  .about { margin-top:6px; font-size:12px; line-height:1.45; max-width:860px; }
-  .about summary { cursor:pointer; font-weight:600; }
-  .about ul { margin:4px 0 6px 18px; padding:0; }
+:root { --bg:#fbfbf8; --fg:#1d1d1b; --muted:#6b6a64; --line:#deddd6; --panel:#ffffff; --accent:#2f5d8a;
+        --chip:#eef2f6; --broad:#9a5b00; --broadbg:#fff4e0; --held:#7a1f1f; --sel:#e3ecf5; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg:#17181a; --fg:#e8e6df; --muted:#a29f96; --line:#33343a; --panel:#1f2023;
+        --accent:#8db8e3; --chip:#2a2f36; --broad:#f0b453; --broadbg:#3a2e17; --held:#f0a0a0; --sel:#24323f; }
+}
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg); color:var(--fg); font:14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+header { padding:12px 16px; border-bottom:1px solid var(--line); background:var(--panel); }
+h1 { font-size:18px; margin:0 0 4px; }
+.prov { color:var(--muted); font-size:12px; }
+.cov { margin-top:6px; font-size:13px; }
+.cov b { font-size:15px; }
+.cov .basis { color:var(--muted); font-size:12px; }
+.find { margin-top:8px; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.find input { padding:6px 8px; min-width:260px; border:1px solid var(--line); background:var(--bg); color:var(--fg); border-radius:4px; }
+#findres { margin-top:6px; }
+.fr { padding:6px 8px; border:1px solid var(--line); border-radius:4px; margin:4px 0; background:var(--bg); }
+.fr .nm { font-weight:600; }
+main { display:grid; grid-template-columns: minmax(280px, 420px) 1fr; min-height: calc(100vh - 140px); }
+@media (max-width: 800px) { main { grid-template-columns: 1fr; } }
+nav { border-right:1px solid var(--line); overflow:auto; max-height: calc(100vh - 140px); padding:8px 0; }
+section#panel { padding:12px 16px; overflow:auto; max-height: calc(100vh - 140px); }
+.blk { font-weight:700; text-transform:uppercase; font-size:11px; letter-spacing:.04em; color:var(--muted); padding:10px 12px 4px; }
+.row { padding:3px 12px; cursor:pointer; display:flex; justify-content:space-between; gap:8px; }
+.row:hover { background:var(--sel); }
+.row.sel { background:var(--sel); font-weight:600; }
+.row .n { color:var(--muted); font-variant-numeric: tabular-nums; white-space:nowrap; }
+.l1 { padding-left:12px; } .l2 { padding-left:28px; } .l3 { padding-left:44px; font-size:13px; }
+.tw { display:inline-block; width:12px; color:var(--muted); }
+.badge { font-size:10px; padding:0 5px; border-radius:8px; margin-left:4px; white-space:nowrap; }
+.b-broad { background:var(--broadbg); color:var(--broad); border:1px solid var(--broad); }
+.b-auto { color:var(--muted); border:1px dashed var(--line); }
+.b-dev { color:var(--muted); font-family:ui-monospace, monospace; font-size:11px; }
+.note { background:var(--broadbg); color:var(--fg); border-left:3px solid var(--broad); padding:6px 10px; margin:8px 0; }
+.explain { color:var(--muted); margin:6px 0 10px; }
+.card { border-bottom:1px solid var(--line); padding:7px 2px; }
+.card .top { display:flex; gap:8px; align-items:baseline; cursor:pointer; flex-wrap:wrap; }
+.card .nm { font-weight:600; }
+.card .ty { color:var(--muted); font-size:12px; }
+.cost { font-family:ui-monospace, monospace; font-size:11px; color:var(--muted); }
+.ab { margin:3px 0 0 0; }
+.ab .why { font-weight:500; }
+.also { font-size:12px; color:var(--muted); margin-top:2px; }
+a, .lnk { color:var(--accent); cursor:pointer; text-decoration:none; }
+.lnk:hover, a:hover { text-decoration:underline; }
+.chip { display:inline-block; background:var(--chip); border-radius:3px; padding:0 5px; margin:1px 2px; font-size:12px; }
+.det { margin:6px 0 4px 10px; font-size:13px; }
+.det .rt { white-space:pre-wrap; background:var(--bg); border:1px solid var(--line); padding:6px 8px; border-radius:4px; }
+.det ul { margin:4px 0; padding-left:18px; }
+.st-u, .st-h { color:var(--muted); }
+.more { margin:10px 0; }
+button { background:var(--chip); color:var(--fg); border:1px solid var(--line); border-radius:4px; padding:4px 10px; cursor:pointer; }
+.sub { color:var(--muted); font-size:12px; margin:2px 0 8px; }
+.subhead { font-weight:600; margin-top:12px; }
+.gap { color:var(--muted); font-size:12px; }
+.devonly { display:none; }
+body.dev .devonly { display:inline; }
 </style>
 </head>
 <body>
-
 <header>
-  <h1>Effect glossary — browse</h1>
-  <span class="prov" id="prov">loading…</span>
-  <div class="prov" style="margin-top:3px">
-    <button id="tmtoggle">▸ branch map overview</button>
-    <button id="expand">expand all</button>
-    <label class="prov" id="hllab" hidden><input type="checkbox" id="hl" checked>
-      highlight what the parser matched</label>
-    <button id="collapse">collapse all</button>
-    · <a href="card-explorer.html">parse-audit explorer</a>
-    <span class="devonly">· <a href="review-queue.html">review queue</a></span>
-    · <a href="branches.md">branches.md</a>
+  <h1>Card abilities, grouped</h1>
+  <div class="prov" id="prov">Loading…</div>
+  <div class="cov" id="cov"></div>
+  <div class="find">
+    <label for="q">Find a card:</label>
+    <input id="q" type="search" placeholder="type a card name" autocomplete="off">
+    <span class="prov">· <a href="../archive/card-level-view-2026-10/reports/browse.html">archived card-level view</a> (its numbers do not match this view)</span>
+    <span class="prov devonly">· dev: <a href="ledger.html">coverage ledger</a> · <a href="card-explorer.html">parse-audit explorer</a> (both show the archived view)</span>
   </div>
-  <details class="about" open>
-    <summary>About this tool</summary>
-    <p>A browsing tool for finding MTG cards by what they do. Instead of searching for a card you
-    already know, you explore groups of cards that share an effect (removal, ramp, card draw, and so
-    on) and discover pieces for your deck. It's built on an open-source rules parser that is still in
-    progress. Most cards are read accurately, but some are not, and the tool shows you where.</p>
-    <b>What to expect</b>
-    <ul>
-      <li><b>Oracle text is on every card.</b> If a group or detail looks off, the card's own text is the source of truth.</li>
-      <li><b>Some cards are in &ldquo;Not yet organized.&rdquo;</b> The parser couldn't read part of them, or they don't closely match any group. Each one says why. They are findable, just not grouped.</li>
-      <li><b>&ldquo;Suggestion&rdquo; links can be wrong.</b> Where a card shows a &ldquo;closest group&rdquo; or &ldquo;also fits&rdquo; link, it's a hint, not a placement. A small share of these point to the wrong group.</li>
-      <li><b>Some group names are rough.</b> The cards in a group are right more often than its label is. If a label confuses you, tell me.</li>
-      <li><b>Cards released since April are included</b> but parsed by an older version of the parser, so a few newer mechanics may show a gap.</li>
-      <li><b>Use &ldquo;Find a card&rdquo;</b> to look up any card by name. It tells you where the card is and why, including cards that aren't in a group.</li>
-    </ul>
-    <b>What I'd like to know</b>
-    <ul>
-      <li>Could you find the kind of card you were looking for without knowing its name?</li>
-      <li>Did any group contain cards that clearly didn't belong?</li>
-      <li>Was there a card you expected to find and couldn't?</li>
-      <li>Did a label or explanation confuse you?</li>
-    </ul>
-  </details>
-  <div class="caveat">
-    <b>Every parse here is unverified.</b> phase.rs's <code>parse_warnings</code> is not a
-    trust signal — only 544 of 34,645 entries carry one, and confirmed cases parse wrongly
-    with no warning at all (<i>Deep Analysis</i> drops its target player entirely). Each card
-    shows its own parse quality; expand a card to read the structure against the oracle text.
-  </div>
+  <div id="findres"></div>
 </header>
-
-<div id="status" style="padding:20px 12px">Loading index (~20 MB)…</div>
-
-<div id="tmwrap" hidden>
-  <div class="note" id="tmcap"></div>
-  <div id="tm"></div>
-  <div class="tmlegend" id="tmlegend"></div>
-</div>
-<div id="tmtip"></div>
-
-<main id="main" hidden>
-  <aside id="nav">
-    <div id="findbox">
-      <label for="findq">Find a card</label>
-      <input type="search" id="findq" placeholder="a card's name (any face)…" autocomplete="off">
-      <div id="findres" aria-live="polite"></div>
-    </div>
-    <div class="covbox" id="covbox"></div>
-    <div id="tree"></div>
-    <div id="navnotes"></div>
-  </aside>
-
-  <section id="cards">
-    <div id="scope"></div>
-    <div id="filters"></div>
-    <div class="viewbar" id="viewbar" hidden>
-      <button id="vtext" class="vbtn on">text</button><button id="vimg" class="vbtn">card images</button>
-      <span class="note" id="viewnote"></span>
-    </div>
-    <div id="grid" hidden></div>
-    <table id="tbl">
-      <thead><tr>
-        <th style="width:26px"></th><th style="width:200px">card</th>
-        <th id="qth" style="width:92px;cursor:pointer;user-select:none" title="click to sort by parse quality; click again to reverse">quality<span id="qarrow"></span></th><th>oracle text</th><th style="width:150px">type</th>
-      </tr></thead>
-      <tbody id="body"></tbody>
-    </table>
-    <div id="empty" hidden></div>
-    <div class="pager" id="pager">
-      <button id="first">« first</button><button id="prev">‹ prev</button>
-      <span id="pinfo"></span>
-      <button id="next">next ›</button><button id="last">last »</button>
-      <span class="note">· 50 per page</span>
-    </div>
-  </section>
+<main>
+  <nav id="tree"></nav>
+  <section id="panel"><p class="explain">Pick a group on the left. Each card is listed under every group one of its abilities fits, and shows the text of that ability.</p></section>
 </main>
-
-<script src="cardview.js"></script>
-<script src="findcard.js"></script>
-<script src="branchmap.js"></script>
+<footer class="prov" style="padding:10px 16px;border-top:1px solid var(--line)" id="foot"></footer>
+<script src="abilityfind.js"></script>
 <script>
-/* Browsing front end: sector -> branch -> (effect group ->) leaf -> cards.
- *
- * This page assembles layers that already exist and adds no data logic of its
- * own. Nothing here re-clusters, re-assigns a branch, or touches the review
- * queue -- every set it shows is a lookup or a set intersection over
- * build/clusters.json, build/branches.json and build/sectors.json, and
- * every card is rendered by the shared renderer in cardview.js.
- */
-const DEV = new URLSearchParams(location.search).has("dev");
-if (DEV) document.documentElement.classList.add("dev");
-const esc = CV.esc;
-const PER = 50;
+"use strict";
+const DEV = new URLSearchParams(location.search).get("dev") === "1";
+if (DEV) document.body.classList.add("dev");
+const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const fmt = n => Number(n).toLocaleString("en-US");
+const PAGE = 150;
+let TAX = null, MEM = null, CARDS = null, UNORG = null, LOOK = null, LIDX = null;
+const NODES = {}, NODE_FAM = {};
+const open = new Set();
+let selected = null;
 
-let META, ROWS, CLU, BR, AUDIT, SECT, PHR;
-let ROW = new Map();           // entry id -> index row
-let LEAF = new Map();          // leaf id  -> [entry id]
-let QUEUED = new Map();        // leaf -> [review queue entries]
-let MIXED = new Map();         // leaf -> type-audit finding
-let UNIQ = new Set();          // leaves whose structure is shared with nothing
-let BRANCH_SECTOR = new Map(); // branch name -> its sector object
-let BRANCH_CARDS = new Map();  // branch name -> Set<entry id>   (built on demand)
-let EFF_SIBLINGS = new Map();  // branch name -> [effect-sibling branch objects]
-// Placement layer (src/build_placements.py). Kept apart from LEAF so every
-// count the clustering produced stays exactly what it was; the tree shows
-// these as a separate "+N nearby" figure.
-let PL = null;                 // build/placements.json, or null
-let PROX = new Map();          // leaf -> [face id] placed by proximity
-let VANILLA = [];              // face ids placed by the vanilla rule
-let UNORG = null;              // build/unorganized.json (boot: groups, counts, wording)
-let UNC = null;                // build/unorganized_cards.json (lazy: opened on first use)
-let UNFACE = new Map();        // face id -> {gid, c: card entry}  (Not yet organized)
-let UNBYOID = new Map();       // oracle id -> {gid, c}
-let ALSO = new Map();          // oracle id -> {f, m:[{b,i,t,l,s}]}  per-ability "also fits" suggestions
-let LOOKUP = null, FIDX = null; // build/lookup.json + FindCard index (lazy: first use of Find)
-let KW = null;                 // build/keyword_layer.json, or null
-let KWFACE = new Map();        // face id -> {leaf, keywords}  (keyword_rule placement)
-let AB = null;                 // build/ability_layer.json, or null
-let PAB = null;                // build/partial_ability_layer.json, or null
-let SG = null;                 // build/signature_layer.json, or null
-let SGFACE = new Map();        // face id -> {leaf, keywords}  (signature_rule placement)
-let ABFACE = new Map();        // face id -> {leaf, placed:[{b,i,t,l,s}], rest:[...], also:[...]}
-let ABLEAF = new Map();        // leaf -> [face id] placed through one of its abilities
-let NEARBY = true;             // include proximity cards in card lists
+async function J(name) { const r = await fetch("../build/" + name); if (!r.ok) throw new Error(name + " " + r.status); return r.json(); }
+async function needCards() {
+  if (!MEM) MEM = (await J("ability_taxonomy_members.json")).leaves;
+  if (!CARDS) CARDS = (await J("ability_taxonomy_cards.json")).cards;
+}
 
-const f = CV.newFilter();
-let scope = null, pool = [], shown = [], page = 0;
-let view = "text";           // "text" | "images"
-let IMGMETA = {};            // counts from build/card_images.json, for the note
+// ---------------------------------------------------------------- header
+function header() {
+  const t = TAX.totals, m = TAX.meta;
+  document.getElementById("prov").innerHTML =
+    `Snapshot: ${esc(m.rules.snapshot)}. Built by <code>${esc(m.rules.source)}</code>: ${esc(m.rules.population)}; ` +
+    `rarest-field-first backoff, groups of at least ${m.rules.minimum} abilities; groups under ${m.rules.display_threshold} are shown inside their parent.`;
+  document.getElementById("cov").innerHTML =
+    `<div><b>${fmt(t.headline.cards)} of ${fmt(t.in_scope)} cards grouped (${t.headline.pct}%)</b> ` +
+    `<span class="basis">Basis: ${esc(t.headline.basis)}.</span></div>` +
+    `<div>${fmt(t.with_broad.cards)} of ${fmt(t.in_scope)} (${t.with_broad.pct}%) counting groups broader than they look. ` +
+    `<span class="basis">Basis: ${esc(t.with_broad.basis)}.</span></div>` +
+    `<div class="basis">Not yet organized: ${fmt(t.not_yet_organized)}. Not cards (tokens, art cards, planes, …): ${fmt(t.not_cards)}. ` +
+    `The archived card-level view grouped ${fmt(t.archived_view.cards)} (${t.archived_view.pct}%) on a different basis (${esc(t.archived_view.basis)}).</div>`;
+}
 
-async function boot() {
-  // Sequential, not Promise.all: some local setups (an AV/security agent that
-  // inspects loopback traffic) drop connections when several land on
-  // src/serve.py at once. One request at a time avoids that -- a few hundred
-  // extra ms on first load, and it never fails partway through.
-  const meta = await fetch("../build/meta.json").then(r => r.json());
-  const index = await fetch("../build/index.json").then(r => r.json());
-  const clu = await fetch("../build/clusters.json").then(r => r.json());
-  const br = await fetch("../build/branches.json").then(r => r.json());
-  META = meta; ROWS = index.rows; CLU = clu; BR = br;
-
-  // The type audit is a separate optional pass; it supplies the `mixed types`
-  // marks. build/sub_branches.json is deliberately NOT read: the tree used to
-  // split each branch by card type, which the card-type filter below already
-  // does on demand, so the layer was removed rather than duplicated.
-  try { AUDIT = await fetch("../build/type_audit.json").then(r => r.json()); }
-  catch (e) { AUDIT = null; }
-  // Sectors (src/build_sectors.py) are a third optional layer, read-only here
-  // too: without it the tree falls back to a flat branch list, unchanged.
-  try { SECT = await fetch("../build/sectors.json").then(r => r.json()); }
-  catch (e) { SECT = null; }
-  // What each leaf's cards literally say (src/leaf_phrases.py). Optional:
-  // without it a leaf row falls back to its raw structural label.
-  try { PHR = await fetch("../build/leaf_phrases.json").then(r => r.json()); }
-  catch (e) { PHR = null; }
-  // Hand-written overrides are read from corrections/ directly, not only via
-  // the build: build/leaf_phrases.json picks them up only when
-  // src/leaf_phrases.py re-runs, so without this an edit vanished on the next
-  // reload even though it was saved. The file is the record either way.
-  if (PHR) {
-    try {
-      const ov = await fetch("../corrections/leaf_phrases.json", { cache: "no-store" })
-        .then(r => r.json());
-      const live = ov.overrides || {};
-      // The file is authoritative both ways: an override cleared since the
-      // last rebuild must not come back from the stale build output.
-      for (const [leaf, e] of Object.entries(PHR.leaves)) {
-        if (e.edited && !(live[leaf] && live[leaf].phrase)) delete e.edited;
+// ---------------------------------------------------------------- tree
+function row(cls, key, label, n, extra) {
+  const isOpen = open.has(key), hasKids = extra && extra.kids;
+  return `<div class="row ${cls}${selected === key ? " sel" : ""}" data-k="${esc(key)}">` +
+    `<span>${hasKids ? `<span class="tw">${isOpen ? "▾" : "▸"}</span>` : `<span class="tw"></span>`}${label}</span>` +
+    `<span class="n">${n == null ? "" : fmt(n)}</span></div>`;
+}
+function leafLabel(l, id) {
+  return esc(l.name) + (l.flags.length ? ` <span class="badge b-broad" title="${esc(l.notes.join(" "))}">broad</span>` : "") +
+    (l.auto_named ? ` <span class="badge b-auto devonly">auto name</span>` : "") +
+    (DEV ? ` <span class="b-dev">${esc(id)} L${l.level}</span>` : "");
+}
+function renderTree() {
+  const h = [];
+  h.push(`<div class="blk">What abilities do</div>`);
+  for (const f of TAX.families) {
+    const fk = "f:" + f.key;
+    h.push(row("l1", fk, esc(f.name), f.cards, { kids: true }));
+    if (!open.has(fk)) continue;
+    for (const nd of f.nodes) {
+      const nk = "n:" + nd.id;
+      h.push(row("l2", nk, esc(nd.name) + (DEV ? ` <span class="b-dev">${esc(nd.id)}</span>` : ""), nd.cards, { kids: true }));
+      if (!open.has(nk)) continue;
+      for (const lid of nd.leaves) { const l = TAX.leaves[lid]; h.push(row("l3", "l:" + lid, leafLabel(l, lid), l.cards)); }
+      if (nd.rolled.length) {
+        const n = nd.rolled.reduce((a, lid) => a + TAX.leaves[lid].cards, 0);
+        h.push(row("l3", "r:" + nd.id, `Other: ${esc(nd.name).toLowerCase()} <span class="badge b-auto">${nd.rolled.length} small groups</span>`, n));
       }
-      for (const [leaf, o] of Object.entries(live)) {
-        const e = PHR.leaves[leaf];
-        if (!e || !o.phrase) continue;
-        if (!e.edited) e.derived = e.derived || ((e.phrases[0] || {}).phrase || "");
-        e.edited = o.phrase;
-      }
-    } catch (e) { /* no overrides file yet */ }
-  }
-  // Where each parsed node was matched from, for highlighting the oracle text
-  // (src/match_spans.py). Optional: without it the text renders plain.
-  try { CV.setSpans(await fetch("../build/match_spans.json").then(r => r.json())); }
-  catch (e) { CV.setSpans(null); }
-  // Card image join (src/build_images.py). Optional, and the only feature
-  // that makes the page reach outside this machine -- see the image view's
-  // own note. Without it the view toggle stays hidden.
-  try {
-    IMGMETA = await fetch("../build/card_images.json").then(r => r.json());
-    CV.setImages(IMGMETA);
-  } catch (e) { CV.setImages(null); IMGMETA = {}; }
-
-  try { PL = await fetch("../build/placements.json").then(r => r.json()); }
-  catch (e) { PL = null; }
-  try { NEARBY = localStorage.getItem("browse.nearby") !== "0"; } catch (e) { /* default on */ }
-  // Not yet organized: only the small boot file here; the card lists and the lookup are lazy.
-  try { UNORG = await fetch("../build/unorganized.json").then(r => r.json()); } catch (e) { UNORG = null; }
-  // Keyword layer: exact rule placement of keyword-only cards (never clustered, never a guess).
-  try {
-    KW = await fetch("../build/keyword_layer.json").then(r => r.json());
-    for (const [id, p] of Object.entries(KW.faces)) KWFACE.set(id, p);
-  } catch (e) { KW = null; }
-  // Ability layer: cards placed in a leaf because one of their abilities matches it (src/build_ability_layer.py).
-  try {
-    AB = await fetch("../build/ability_layer.json").then(r => r.json());
-    for (const [id, p] of Object.entries(AB.faces)) {
-      ABFACE.set(id, { leaf: p.leaf, ...AB.cards[p.card] });
-      if (!ABLEAF.has(p.leaf)) ABLEAF.set(p.leaf, []);
-      ABLEAF.get(p.leaf).push(id);
-    }
-  } catch (e) { AB = null; }
-  // The same treatment for partial / unmodelled cards placed through one ability (gap kept as card detail).
-  try {
-    PAB = await fetch("../build/partial_ability_layer.json").then(r => r.json());
-    for (const [id, p] of Object.entries(PAB.faces)) {
-      ABFACE.set(id, { leaf: p.leaf, ...PAB.cards[p.card] });
-      if (!ABLEAF.has(p.leaf)) ABLEAF.set(p.leaf, []);
-      ABLEAF.get(p.leaf).push(id);
-    }
-  } catch (e) { PAB = null; }
-  // Signature layer: "No effect to group" cards grouped by an exact replacement signature; the newer
-  // vanilla cards join the existing "No abilities" branch.
-  try {
-    SG = await fetch("../build/signature_layer.json").then(r => r.json());
-    for (const [id, p] of Object.entries(SG.faces)) SGFACE.set(id, p);
-    for (const id of Object.keys(SG.vanilla)) VANILLA.push(id);
-  } catch (e) { SG = null; }
-
-  for (const r of ROWS) ROW.set(r.id, r);
-  if (PL) {
-    // Recovered cards are not in build/index.json (they were never in the
-    // snapshot); their rows and structure ride in the layer file.
-    for (const r of PL.recovered.rows) ROW.set(r.id, r);
-    CV.seedChunk("recovered", PL.recovered.chunk);
-    for (const [id, p] of Object.entries(PL.faces)) {
-      if (p.method === "proximity") {
-        if (!PROX.has(p.leaf)) PROX.set(p.leaf, []);
-        PROX.get(p.leaf).push(id);
-      } else if (p.method === "vanilla_rule") VANILLA.push(id);
     }
   }
-  for (const [id, leaf] of Object.entries(CLU.cards)) {
-    if (leaf < 0) continue;                       // HDBSCAN noise: no leaf
-    if (!LEAF.has(leaf)) LEAF.set(leaf, []);
-    LEAF.get(leaf).push(id);
+  const kb = TAX.blocks.keyword, rb = TAX.blocks.replacement, nb = TAX.blocks.no_abilities;
+  h.push(`<div class="blk">Grouped by rule</div>`);
+  h.push(row("l1", "K", esc(kb.name), TAX.totals.views.keyword_block, { kids: true }));
+  if (open.has("K")) for (const br of kb.branches) {
+    const bk = "kb:" + br.name;
+    h.push(row("l2", bk, esc(br.name), br.n_cards, { kids: true }));
+    if (open.has(bk)) for (const lid of br.leaves) h.push(row("l3", "kl:" + lid, esc(kb.leaves[lid].name), kb.leaves[lid].n));
   }
-  for (const q of (BR.review_queue || [])) {
-    if (!QUEUED.has(q.leaf)) QUEUED.set(q.leaf, []);
-    QUEUED.get(q.leaf).push(q);
+  h.push(row("l1", "G", esc(rb.name), TAX.totals.views.replacement_group, { kids: true }));
+  if (open.has("G")) for (const br of rb.branches) {
+    const bk = "gb:" + br.name;
+    h.push(row("l2", bk, esc(br.name), br.n_cards, { kids: true }));
+    if (open.has(bk)) for (const lid of br.leaves) h.push(row("l3", "gl:" + lid, esc(rb.leaves[lid].name), rb.leaves[lid].n));
   }
-  for (const fi of (AUDIT ? AUDIT.findings : [])) MIXED.set(fi.leaf, fi);
-  for (const u of (BR.unique_effect || [])) UNIQ.add(u.leaf);
-  // Branch -> sector is 1:1 (build_sectors.py partitions branches cleanly,
-  // verified: no branch appears in two sectors' lists).
-  for (const sec of (SECT ? SECT.sectors : [])) {
-    for (const bn of sec.branches) BRANCH_SECTOR.set(bn, sec);
+  h.push(row("l1", "V", esc(nb.name), nb.cards.length));
+  h.push(`<div class="blk">Groups broader than they look</div>`);
+  const byNote = {};
+  for (const [lid, l] of Object.entries(TAX.leaves)) if (l.flags.length) (byNote[l.notes[0]] = byNote[l.notes[0]] || []).push(lid);
+  const notes = Object.keys(byNote).sort();
+  notes.forEach((nt, i) => {
+    const k = "B:" + i, n = byNote[nt].reduce((a, lid) => a + TAX.leaves[lid].cards, 0);
+    h.push(row("l1", k, esc(nt.split(",")[0].replace(/ isn't recorded| aren't recorded/, " not recorded")), n, { kids: true }));
+    if (open.has(k)) for (const lid of byNote[nt].sort((a, b) => TAX.leaves[b].cards - TAX.leaves[a].cards))
+      h.push(row("l2", "l:" + lid, leafLabel(TAX.leaves[lid], lid), TAX.leaves[lid].cards));
+  });
+  window.BROAD_NOTES = notes; window.BROAD_BY = byNote;
+  h.push(`<div class="blk">Not yet organized</div>`);
+  for (const g of TAX.unorganized) h.push(row("l1", "u:" + g.id, esc(g.name), g.cards));
+  document.getElementById("tree").innerHTML = h.join("");
+}
+document.getElementById("tree").addEventListener("click", e => {
+  const r = e.target.closest(".row"); if (!r) return;
+  const k = r.dataset.k;
+  if (/^(f|n|K|G|kb|gb|B):?/.test(k) && !/^(kl|gl|l|r|u):/.test(k)) {
+    if (open.has(k)) open.delete(k); else open.add(k);
+    renderTree();
+    if (k.startsWith("f:") || k.startsWith("n:") || k.startsWith("B:")) show(k);
+    return;
   }
-  SUBSET_OF_SOMETHING = computeSubsetFlags();
+  show(k);
+});
 
-  renderProv();
-  wireFind();
-  renderCoverage();
-  renderTree();
-  renderNavNotes();
-  wireChrome();
-  document.getElementById("status").hidden = true;
-  document.getElementById("main").hidden = false;
-  // Open on the largest branch so the page never starts on an empty card list.
-  const first = BR.branches.filter(b => b.n_leaves)
-                           .sort((a, b) => b.n_cards - a.n_cards)[0];
-  if (first) pick({ kind: "branch", branch: first.name });
+// ---------------------------------------------------------------- panel
+function costHTML(c) {
+  const cols = c.col ? c.col.split("").join("") : "C";
+  return `<span class="cost" title="colours, mana value">${esc(cols)}${c.mv == null ? "" : " " + c.mv}</span>`;
+}
+function leafPath(lid) { const l = TAX.leaves[lid]; const nd = NODES[l.node]; return (NODE_FAM[l.node] || "") + " › " + (nd ? nd.name : ""); }
+function cardHTML(oid, abIdx, ctxLeaf) {
+  const c = CARDS[oid];
+  if (!c) return `<div class="card"><span class="nm">${esc(oid)}</span></div>`;
+  let why = "", more = 0;
+  if (abIdx != null) {
+    why = c.ab[abIdx][0] || "(no separate rules line for this ability)";
+    more = c.ab.filter((a, k) => k !== abIdx && a[1] === ctxLeaf).length;
+  }
+  const others = [...new Set(c.ab.filter(a => a[1] && a[1] !== ctxLeaf && TAX.leaves[a[1]]).map(a => a[1]))];
+  const also = others.length ? `<div class="also">Also in: ${others.slice(0, 6).map(lid =>
+      `<span class="lnk" data-go="l:${esc(lid)}">${esc(TAX.leaves[lid].name)}</span>` +
+      (TAX.leaves[lid].flags.length ? ` <span class="badge b-broad">broad</span>` : "")).join(" · ")}${others.length > 6 ? " …" : ""}</div>` : "";
+  return `<div class="card" data-oid="${esc(oid)}"><div class="top"><span class="nm">${esc(c.n)}</span>${costHTML(c)}<span class="ty">${esc(c.ty)}</span>` +
+    (DEV ? `<span class="b-dev">${esc(oid)}</span>` : "") + `</div>` +
+    (abIdx != null ? `<div class="ab"><span class="why">${esc(why)}</span>${more ? ` <span class="sub">(+${more} more ability in this group)</span>` : ""}</div>` : "") +
+    also + `<div class="det" hidden></div></div>`;
+}
+function detailHTML(oid) {
+  const c = CARDS[oid];
+  const st = { p: "grouped", b: "in a broad group", h: "held back (gap card)", u: "not grouped" };
+  const lis = c.ab.map(a => `<li class="st-${a[2]}">${esc(a[0] || "(no separate rules line)")} — ` +
+    (a[1] && TAX.leaves[a[1]] ? `<span class="lnk" data-go="l:${esc(a[1])}">${esc(TAX.leaves[a[1]].name)}</span> (${st[a[2]]})` : st[a[2]]) + `</li>`).join("");
+  return `<div class="rt">${esc(c.t)}</div>` + (lis ? `<div class="subhead">Abilities</div><ul>${lis}</ul>` : "");
+}
+document.getElementById("panel").addEventListener("click", e => {
+  const go = e.target.closest("[data-go]");
+  if (go) { show(go.dataset.go); return; }
+  if (e.target.closest("button.morebtn")) { renderList(); return; }
+  const top = e.target.closest(".card .top");
+  if (top) {
+    const card = top.parentElement, d = card.querySelector(".det");
+    if (d.hidden) d.innerHTML = detailHTML(card.dataset.oid);
+    d.hidden = !d.hidden;
+  }
+});
+
+let LIST = [], LISTN = 0;
+function renderList() {
+  const el = document.getElementById("list");
+  const chunk = LIST.slice(LISTN, LISTN + PAGE);
+  LISTN += chunk.length;
+  el.insertAdjacentHTML("beforeend", chunk.map(x => typeof x === "string" ? x : cardHTML(x[0], x[1], x[2])).join(""));
+  document.getElementById("morewrap").innerHTML = LISTN < LIST.length ?
+    `<button class="morebtn">Show ${Math.min(PAGE, LIST.length - LISTN)} more (${fmt(LIST.length - LISTN)} left)</button>` : "";
+}
+function setList(head, items) {
+  LIST = items; LISTN = 0;
+  document.getElementById("panel").innerHTML = head + `<div id="list"></div><div class="more" id="morewrap"></div>`;
+  renderList();
+  document.getElementById("panel").scrollTop = 0;
+}
+function leafItems(lid) { return (MEM[lid] || []).map(m => [m[0], m[1], lid]); }
+
+async function show(k) {
+  selected = k; renderTree();
+  location.hash = encodeURIComponent(k);
+  const P = document.getElementById("panel");
+  const [kind, id] = [k.split(":")[0], k.slice(k.indexOf(":") + 1)];
+  if (kind === "f") {
+    const f = TAX.families.find(x => "f:" + x.key === k);
+    P.innerHTML = `<h2>${esc(f.name)}</h2><p class="sub">${fmt(f.cards)} cards, ${fmt(f.abilities)} abilities, ${f.nodes.length} kinds of effect.</p>` +
+      f.nodes.map(nd => `<div><span class="lnk" data-go="n:${esc(nd.id)}">${esc(nd.name)}</span> <span class="sub">${fmt(nd.cards)} cards · ${nd.leaves.length} groups${nd.rolled.length ? ` + ${nd.rolled.length} small` : ""}</span></div>`).join("");
+    return;
+  }
+  if (kind === "n") {
+    const nd = NODES[id];
+    open.add("f:" + nd.fam); open.add("n:" + id); renderTree();
+    P.innerHTML = `<h2>${esc(nd.name)}</h2><p class="sub">${esc(NODE_FAM[id])} · ${fmt(nd.cards)} cards</p>` +
+      nd.leaves.map(lid => `<div><span class="lnk" data-go="l:${esc(lid)}">${leafLabel(TAX.leaves[lid], lid)}</span> <span class="sub">${fmt(TAX.leaves[lid].cards)} cards</span></div>`).join("") +
+      (nd.rolled.length ? `<div><span class="lnk" data-go="r:${esc(id)}">Other: ${esc(nd.name).toLowerCase()}</span> <span class="sub">${nd.rolled.length} groups of fewer than ${TAX.meta.rules.display_threshold}</span></div>` : "");
+    return;
+  }
+  P.innerHTML = `<p class="explain">Loading…</p>`;
+  if (kind === "l") {
+    await needCards();
+    const l = TAX.leaves[id], nd = NODES[l.node];
+    if (nd) { open.add("f:" + nd.fam); open.add("n:" + l.node); renderTree(); }
+    const head = `<h2>${esc(l.name)}${l.auto_named ? ` <span class="badge b-auto" title="Generated from the group's signature; may be edited in corrections/ability_taxonomy_names.json">auto name</span>` : ""}</h2>` +
+      `<p class="sub">${esc(leafPath(id))} · ${fmt(l.cards)} cards · ${fmt(l.abilities)} abilities</p>` +
+      l.notes.map(n => `<div class="note">${esc(n)} Cards here are not counted in the main coverage figure unless another ability groups them.</div>`).join("") +
+      (DEV ? `<p class="b-dev">${esc(l.sig)} · level ${l.level} · ${esc(id)}</p>` : "");
+    setList(head, leafItems(id));
+  } else if (kind === "r") {
+    await needCards();
+    const nd = NODES[id];
+    const items = [];
+    for (const lid of nd.rolled) {
+      const l = TAX.leaves[lid];
+      items.push(`<div class="subhead">${leafLabel(l, lid)} <span class="sub">${fmt(l.cards)} cards</span></div>` +
+        l.notes.map(n => `<div class="note">${esc(n)}</div>`).join(""));
+      items.push(...leafItems(lid));
+    }
+    setList(`<h2>Other: ${esc(nd.name).toLowerCase()}</h2><p class="sub">${esc(NODE_FAM[id])} · groups of fewer than ${TAX.meta.rules.display_threshold} cards, shown together under their parent.</p>`, items);
+  } else if (kind === "kl" || kind === "gl") {
+    await needCards();
+    const blk = kind === "kl" ? TAX.blocks.keyword : TAX.blocks.replacement, l = blk.leaves[id];
+    const why = kind === "kl" ? "Rules text is only keywords; grouped by an exact match on them." :
+      "Grouped by an exact match on the replacement effect or cost." + (l.basis ? " Name: " + l.basis + "." : l.coined ? " The name is ours (coined)." : "");
+    setList(`<h2>${esc(blk.name)} › ${esc(l.name)}</h2><p class="sub">${fmt(l.n)} cards. ${esc(why)}</p>`, l.cards.map(o => [o, null, null]));
+  } else if (kind === "V") {
+    await needCards();
+    setList(`<h2>No abilities</h2><p class="sub">Cards with no rules text.</p>`, TAX.blocks.no_abilities.cards.map(o => [o, null, null]));
+  } else if (kind === "B") {
+    await needCards();
+    const nt = window.BROAD_NOTES[+id], items = [];
+    for (const lid of window.BROAD_BY[nt]) {
+      items.push(`<div class="subhead">${leafLabel(TAX.leaves[lid], lid)} <span class="sub">${fmt(TAX.leaves[lid].cards)} cards</span></div>`);
+      items.push(...leafItems(lid));
+    }
+    setList(`<h2>Groups broader than they look</h2><div class="note">${esc(nt)}</div>`, items);
+  } else if (kind === "u") {
+    await needCards();
+    if (!UNORG) UNORG = (await J("ability_taxonomy_unorganized.json")).groups;
+    const g = UNORG.find(x => String(x.id) === id);
+    const items = g.list.map(c => {
+      let extra = "";
+      if (c.g) extra += `<div class="gap">Not understood: ${c.g.map(x => "“" + esc(x[1]) + "”").join("; ")}</div>`;
+      if (c.held) extra += `<div class="gap">${c.held} of its abilities would fit a group; they are held back while gap cards are checked.</div>`;
+      if (c.why) extra += `<div class="gap">${c.why.map(esc).join("; ")}</div>`;
+      if (c.clause) extra += `<div class="gap">Possibly missing condition: “${esc(c.clause)}”</div>`;
+      if (c.note) extra += `<div class="gap">${esc(c.note)}</div>`;
+      return cardHTML(c.c, null, null).replace(`<div class="det" hidden>`, extra + `<div class="det" hidden>`);
+    });
+    setList(`<h2>Not yet organized › ${esc(g.name)}</h2><p class="explain">${esc(g.explain)}</p><p class="sub">${fmt(g.cards)} cards. This is about the tool, not the card.</p>`, items);
+  }
 }
 
-// ---- Find a card -----------------------------------------------------------
-// build/lookup.json (every oracle id) loads on first use; the search and the plain-language
-// answers are reports/findcard.js, the same file src/test_findcard.py runs.
-async function ensureLookup() {
-  if (FIDX) return;
-  const out = document.getElementById("findres");
-  out.textContent = "loading the card list…";
-  LOOKUP = await fetch("../build/lookup.json").then(r => r.json());
-  FIDX = FindCard.build(LOOKUP);
-  out.textContent = "";
-}
-function findCtx() {
-  return {
-    leafLabel: l => leafPhrase(l) || (CLU.labels[String(l)] || "").slice(0, 70),
-    leafBranches: l => BR.leaf_branches[String(l)] || [],
-    kwLeaf: id => (KW && KW.leaves[id]) || { name: id, branches: [] },
-    sgLeaf: id => (SG && SG.leaves[id]) || { name: id, branches: [] },
-    sgBlock: SG ? SG.meta.block : "",
-    group: gid => (UNORG && UNORG.groups.find(g => g.id === gid)) || { name: "(unknown group)", explain: "" },
-    words: UNORG ? UNORG.strength_words : { close: 0.7, loose: 0.5 },
-  };
-}
-function findButtons(a, i) {
-  let b = "";
-  if (a.faces.length) b += `<button class="fbtn" data-fshow="${i}">show the card</button>`;
-  if (a.kind === "grouped" || a.kind === "nearby") b += `<button class="fbtn" data-fleaf="${a.leaf}">open that group</button>`;
-  if (a.kind === "keyword") b += `<button class="fbtn" data-fkw="${esc(a.leaf)}">open that keyword group</button>`;
-  if (a.kind === "signature") b += `<button class="fbtn" data-fsg="${esc(a.leaf)}">open that group</button>`;
-  if (a.kind === "norules") b += `<button class="fbtn" data-fvan="1">open “No abilities”</button>`;
-  if (a.kind === "unorganized") b += `<button class="fbtn" data-fgrp="${a.group}">open that group</button>`;
-  return b;
-}
-async function runFind() {
-  await ensureLookup();
-  const q = document.getElementById("findq").value;
+// ---------------------------------------------------------------- find a card
+let findTimer = null;
+document.getElementById("q").addEventListener("input", e => {
+  clearTimeout(findTimer);
+  findTimer = setTimeout(() => find(e.target.value), 200);
+});
+async function find(q) {
   const out = document.getElementById("findres");
   if (!q.trim()) { out.innerHTML = ""; return; }
-  const res = FindCard.search(FIDX, q, 25);
-  if (!res.total) { out.innerHTML = `<div class="note">No card or catalogue entry has “${esc(q)}” in a name.</div>`; return; }
-  const ctx = findCtx();
-  const answers = res.matches.map(m => FindCard.describe(FIDX, m, ctx));
-  if (answers.some(a => a.kind === "unorganized")) await ensureUNC();
-  out.innerHTML = `<div class="note">${res.total.toLocaleString()} match${res.total === 1 ? "" : "es"}` +
-    `${res.total > answers.length ? ` (showing the first ${answers.length}; type more of the name)` : ""}. ` +
-    `Real cards first.</div>` + answers.map((a, i) => {
-      const row = a.faces.length ? ROW.get(a.faces[0]) : null;
-      const m = res.matches[i];
-      const type = row ? row.type : (a.kind === "notcard" ? `catalogue entry · ${m[4][1] || ""} ${m[4][2] ? "(" + m[4][2] + ")" : ""}` : "");
-      let gap = "";
-      const u = UNBYOID.get(a.oid);
-      if (u && u.c.g) gap = u.c.g.slice(0, 2).map(([k, t]) => `<div class="fgap"><b>${GAPLAB[k] || GAPLAB.unread}</b> “${esc(t)}”</div>`).join("");
-      if (u && u.gid === 2 && u.c.s) gap = `<div>Closest group, as a suggestion only: “${esc(leafPhrase(u.c.s[0]) || "leaf " + u.c.s[0])}” (leaf ${u.c.s[0]}) · ${strengthSpan(u.c.s[1])}</div>` + alsoFitsHTML(a.oid, null);
-      return `<div class="fres${a.kind === "notcard" ? " notcard" : ""}"><span class="fn">${esc(a.name)}</span> ` +
-        `<span class="note">${esc(type)}</span>` +
-        (a.others.length ? `<div class="note">other face${a.others.length > 1 ? "s" : ""}: ${a.others.map(esc).join(" / ")}</div>` : "") +
-        `<div>${esc(a.text)}</div>${gap}<div>${findButtons(a, i)}</div></div>`;
-    }).join("");
-  out.onclick = ev => {
-    const t = ev.target;
-    if (!t.dataset) return;
-    if (t.dataset.fshow !== undefined) {
-      const a = answers[+t.dataset.fshow];
-      pick({ kind: "found", ids: a.faces, label: a.name });
-    } else if (t.dataset.fleaf !== undefined) {
-      const l = +t.dataset.fleaf;
-      pick({ kind: "leaf", branch: (BR.leaf_branches[String(l)] || [])[0] || null, leaf: l });
-    } else if (t.dataset.fkw !== undefined) pick({ kind: "kwleaf", kwl: t.dataset.fkw });
-    else if (t.dataset.fsg !== undefined) pick({ kind: "sgleaf", sgl: t.dataset.fsg });
-    else if (t.dataset.fvan !== undefined) pick({ kind: "vanilla" });
-    else if (t.dataset.fgrp !== undefined) pick({ kind: "ungroup", gid: +t.dataset.fgrp });
+  if (!LOOK) { out.innerHTML = `<div class="sub">Loading the card list…</div>`; LOOK = await J("ability_taxonomy_lookup.json"); LIDX = AbilityFind.build(LOOK); }
+  const ctx = {
+    leafName: id => TAX.leaves[id].name, leafPath: leafPath, leafNote: id => TAX.leaves[id].notes.join(" "),
+    kwLeaf: id => TAX.blocks.keyword.leaves[id], sgLeaf: id => TAX.blocks.replacement.leaves[id], sgBlock: TAX.blocks.replacement.name,
+    group: id => TAX.unorganized.find(g => g.id === id),
   };
+  const r = AbilityFind.search(LIDX, q, 12);
+  out.innerHTML = (r.total ? "" : `<div class="sub">No card or catalogue entry matches.</div>`) + r.matches.map(en => {
+    const a = AbilityFind.describe(LIDX, en, ctx);
+    let links = "";
+    if (a.leaves && a.leaves.length) links = " " + a.leaves.slice(0, 6).map(id => `<span class="lnk chip" data-go="l:${esc(id)}">${esc(TAX.leaves[id].name)}</span>`).join("");
+    if (a.kind === "keyword") links = ` <span class="lnk chip" data-go="kl:${esc(a.leaf)}">open</span>`;
+    if (a.kind === "replacement") links = ` <span class="lnk chip" data-go="gl:${esc(a.leaf)}">open</span>`;
+    if (a.kind === "unorganized") links = ` <span class="lnk chip" data-go="u:${a.group}">open</span>`;
+    if (a.kind === "norules") links = ` <span class="lnk chip" data-go="V:">open</span>`;
+    return `<div class="fr"><span class="nm">${esc(a.name)}</span>${a.others.length ? ` <span class="sub">(${a.others.map(esc).join(" / ")})</span>` : ""}: ${esc(a.text)}${links}</div>`;
+  }).join("") + (r.total > 12 ? `<div class="sub">${fmt(r.total)} matches; showing 12.</div>` : "");
 }
-function wireFind() {
-  const q = document.getElementById("findq");
-  let timer = null;
-  q.addEventListener("focus", () => { ensureLookup(); });
-  q.addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(runFind, 200); });
-  q.addEventListener("keydown", ev => { if (ev.key === "Enter") { clearTimeout(timer); runFind(); } });
-}
+document.getElementById("findres").addEventListener("click", e => { const go = e.target.closest("[data-go]"); if (go) show(go.dataset.go); });
 
-function renderProv() {
-  const days = Math.round((Date.now() - Date.parse(META.snapshot_last_modified)) / 864e5);
-  const stale = days > 30 ? `<span class="stale">(${days} days old)</span>` : `(${days} days old)`;
-  document.getElementById("prov").innerHTML =
-    `snapshot <b>${META.snapshot_last_modified.slice(0,10)}</b> ${stale} · ` +
-    (SECT ? `<b>${SECT.sectors.length}</b> sectors · ` : "") +
-    `<b>${BR.branches.filter(b=>b.n_leaves).length}</b> branches · ` +
-    `<b>${BR.n_leaves}</b> leaves` +
-    ((PL && PL.meta.layers && PL.meta.layers.new_release)
-      ? ` · + <b>${PL.meta.layers.new_release.cards.toLocaleString()}</b> cards released since ` +
-        `(${esc(PL.meta.layers.new_release.input || "")}, parsed by oracle-gen v0.1.15, placed by proximity only)`
-      : "");
-}
-
-// What browsing this tree can and cannot reach. Stated before the tree, not
-// under it: the branch layer sits on a clean-parse-only clustering pass, so a
-// third of the snapshot has no leaf to be browsed under at all.
-function renderCoverage() {
-  const cov = BR.coverage || {};
-  const inTree = (cov.total_cards || 0);
-  document.getElementById("covbox").innerHTML =
-    `<b>What this tree covers.</b> ${inTree.toLocaleString()} branch-card slots over ` +
-    `<b>${CLU.n_cards.toLocaleString()}</b> clustered cards — out of ` +
-    `<b>${META.entries.toLocaleString()}</b> entries in the snapshot. The ` +
-    `${(META.entries - CLU.n_cards).toLocaleString()} entries outside the clustering pass ` +
-    `(partial/unparsed/unmodelled/corrected, or no extractable effect) have no leaf and so ` +
-    `appear nowhere below — use the ` +
-    `<a href="card-explorer.html">parse-audit explorer</a> to reach those. ` +
-    `Assignment is many-to-many: a card in 3 branches is listed under all 3, which is why ` +
-    `branch counts sum past the corpus.` +
-    (PL ? `<br><b>Placement layer.</b> <span class="nearn">+${(PL.meta.counts["proximity:noise"] || 0).toLocaleString()}` +
-      `</span> unclustered and <span class="nearn">+${(PL.meta.counts["proximity:recovered"] || 0).toLocaleString()}</span> ` +
-      `recovered faces and <span class="nearn">+${(PL.meta.counts["proximity:new_release"] || 0).toLocaleString()}</span> ` +
-      `faces of cards released since the snapshot placed by proximity (cosine ≥ ${PL.meta.floor} to a leaf centroid), ` +
-      `marked <span class="chip chip-near">nearby</span> and counted separately as "+N nearby" — ` +
-      `every clustered count above is unchanged. ` +
-      (KW ? `${KW.meta.cards.toLocaleString()} keyword-only cards sit under “Keyword abilities”, placed by an exact ` +
-            `<span class="chip chip-kw">keyword rule</span> rather than a similarity guess. ` : "") +
-      ((AB || PAB) ? `${((AB ? AB.meta.cards : 0) + (PAB ? PAB.meta.cards : 0)).toLocaleString()} more cards sit in a group because one of their abilities matches it closely ` +
-            `(counted with that group's cards). ` : "") +
-      (SG ? `${SG.meta.cards.toLocaleString()} cards whose rules are replacement or prevention effects, or an additional cost, sit under ` +
-            `“${esc(SG.meta.block)}”, placed by an exact <span class="chip chip-sg">signature rule</span>. ` : "") +
-      `${VANILLA.length.toLocaleString()} cards with no ` +
-      `text sit under "${esc(PL.meta.vanilla_branch)}". Full accounting: ` +
-      `<a href="ledger.html">coverage ledger</a>.` +
-      `<label><input type="checkbox" id="nearby"${NEARBY ? " checked" : ""}> include ` +
-      `proximity-placed cards in card lists</label>` : "");
-  const cb = document.getElementById("nearby");
-  if (cb) cb.onchange = () => {
-    NEARBY = cb.checked;
-    try { localStorage.setItem("browse.nearby", NEARBY ? "1" : "0"); } catch (e) { /* session only */ }
-    BRANCH_CARDS.clear();
-    if (scope) pick(scope);
-  };
-}
-
-// ---- tree: the primary navigation ---------------------------------------
-// sector -> branch -> leaf. Native <details>, collapsed by default. Every set
-// is a lookup: sector branches from sectors.json, branch.leaves from
-// branches.json, leaf members from clusters.json.
-
-// A leaf's cards for a card LIST: clustered members, plus the proximity layer
-// when it is switched on. Tree COUNTS never use this -- they read LEAF alone.
-function memberIds(l) {
-  const c = LEAF.get(l) || [];
-  return ABLEAF.has(l) ? c.concat(ABLEAF.get(l)) : c;
-}
-function abilCount(leaves) {
-  let n = 0;
-  for (const l of new Set(leaves)) n += (ABLEAF.get(l) || []).length;
-  return n;
-}
-function leafIds(l) {
-  const c = memberIds(l);
-  return NEARBY && PROX.has(l) ? c.concat(PROX.get(l)) : c;
-}
-function nearCount(leaves) {
-  let n = 0;
-  for (const l of leaves) n += (PROX.get(l) || []).length;
-  return n;
-}
-function nearChip(n) {
-  return n ? ` <span class="nearn" title="placed by proximity to these leaves' centroids (cosine ≥ ${PL.meta.floor}) — a separate layer, not counted in the clustered figure">+${n.toLocaleString()} nearby</span>` : "";
-}
-
-function leafChips(l) {
-  let h = "";
-  const q = QUEUED.get(l);
-  if (q) h += `<span class="chip chip-review devonly" title="${esc(q.map(x => x.kind + ": " + x.why).join(" | "))}">in review</span>`;
-  if (MIXED.has(l)) {
-    const fi = MIXED.get(l);
-    const shares = Object.entries(fi.shares).slice(0, 4)
-      .map(([t, s]) => `${t} ${(s*100).toFixed(0)}%`).join(" / ");
-    h += `<span class="chip chip-mixed" title="Card types inside this leaf: ${esc(shares)}. The clustering did not use card type as a feature, so this leaf holds several. Use the card-type filter to cut across it.">mixed types</span>`;
+// ---------------------------------------------------------------- boot
+(async () => {
+  try {
+    TAX = await J("ability_taxonomy.json");
+  } catch (err) {
+    document.getElementById("prov").textContent = "Could not load build/ability_taxonomy.json. Run python src/build_ability_taxonomy.py, then serve with python src/serve.py.";
+    return;
   }
-  if (UNIQ.has(l)) h += `<span class="chip chip-uniq" title="structure shared with no other leaf">unique</span>`;
-  return h;
-}
-
-// A leaf row is one clickable block: the leaf number and card count on the
-// first line, and underneath it, on its own line, the phrase those cards
-// literally share -- lifted verbatim from the clause phase.rs matched this
-// leaf's effect from (src/leaf_phrases.py). The whole row is the hit target,
-// not just the number. The raw structural label stays as the row's tooltip.
-function leafPhrase(l) {
-  const e = PHR && PHR.leaves[String(l)];
-  if (!e) return "";
-  return e.edited || (e.phrases.length ? e.phrases[0].phrase : "");
-}
-function leafEdited(l) {
-  const e = PHR && PHR.leaves[String(l)];
-  return !!(e && e.edited);
-}
-
-function leafRow(l, branch) {
-  // The branch rides in the key only so the breadcrumb can say where you
-  // clicked from. A leaf's card set is the same wherever it is reached --
-  // leaves are many-to-many with branches, and the readout says so.
-  const key = `L␟${branch || ""}␟${l}`;
-  const n = memberIds(l).length;
-  const raw = CLU.labels[l] || "";
-  const phrase = leafPhrase(l);
-  return `<div class="leafrow pick" role="button" tabindex="0" ` +
-         `data-pick="${esc(key)}" title="${esc(raw)}">` +
-         `<div class="leafhead">leaf ${l} · <b>${n.toLocaleString()}</b> cards${nearChip((PROX.get(l) || []).length)} ` +
-         `${leafChips(l)}</div>` +
-         `<div class="leafsays${leafEdited(l) ? " edited" : ""}">${esc(phrase) ||
-            `<span class="leaflabel">${esc(raw.slice(0, 70))}</span>`}</div>` +
-         `</div>`;
-}
-
-// ---- effect groups: a branch's OWN siblings, read as a second axis -------
-// "Spot removal" is the sector's catch-all -- any single-target removal, of
-// any mechanism ("dominant effect in {Destroy, Bounce, Sacrifice, Fight}, or
-// a ChangeZone ending in Exile"). "Destroy removal", "Bounce removal",
-// "Sacrifice removal" and "Exile removal" are the same sector's narrower,
-// one-mechanism siblings, and their own leaf sets never overlap each other
-// (verified: 0 shared leaves across all six pairs in this sector) -- so
-// intersecting the catch-all's cards against each sibling's cards is a clean
-// split, not a new clustering pass. No new rule is written; this only
-// surfaces membership branch_leaves.py already computed.
-//
-// Two things get excluded, for two different reasons:
-//   1. A sibling must itself be a near-full SUBSET of some other branch in
-//      the sector (>=85%). This is what disqualifies "Spot removal" itself
-//      from ever appearing as one of its own children's "effect siblings" --
-//      it is the umbrella, not one of the narrower things sitting inside it,
-//      and nothing else in the sector contains IT.
-//   2. A sibling's rule must name an EFFECT, not some other axis bolted onto
-//      the same sector: "Typed[...]" is a target-type filter ("Creature
-//      removal" -- which of Spot removal's targets are creatures) and
-//      "controller scope" is a who-it-affects filter ("One-sided sweeper" --
-//      mass removal that spares your own side). Both are real, sourced
-//      distinctions, just not the effect-mechanism axis this grouping is for.
-function isEffectRule(rule) {
-  return !/Typed\[|controller scope/.test(rule);
-}
-
-// Global, sector-independent-of-scope: is this branch itself a near-full
-// subset of some OTHER branch in its own sector? Computed once at boot over
-// branches.json's own leaf lists -- no chunk reads, no new clustering.
-let SUBSET_OF_SOMETHING = null;
-function computeSubsetFlags() {
-  const flags = new Set();
-  if (!SECT) return flags;
-  for (const sec of SECT.sectors) {
-    const bs = sec.branches.map(n => BR.branches.find(x => x.name === n)).filter(Boolean);
-    for (const b of bs) {
-      const bset = new Set(b.leaves);
-      if (!bset.size) continue;
-      for (const a of bs) {
-        if (a === b || a.n_leaves <= b.n_leaves) continue;
-        let hit = 0;
-        for (const l of bset) if (a.leaves.includes(l)) hit++;
-        if (hit / bset.size >= 0.85) { flags.add(b.name); break; }
-      }
-    }
-  }
-  return flags;
-}
-
-function effectSiblings(branchName) {
-  if (EFF_SIBLINGS.has(branchName)) return EFF_SIBLINGS.get(branchName);
-  const sec = BRANCH_SECTOR.get(branchName);
-  const out = sec
-    ? sec.branches.filter(n => n !== branchName)
-        .map(n => BR.branches.find(x => x.name === n))
-        .filter(x => x && x.n_leaves && isEffectRule(x.rule) && SUBSET_OF_SOMETHING.has(x.name))
-    : [];
-  EFF_SIBLINGS.set(branchName, out);
-  return out;
-}
-
-function branchCardSet(branchName, withNearby = false) {
-  const k = (withNearby ? "+" : "") + branchName;
-  if (!BRANCH_CARDS.has(k)) {
-    const b = BR.branches.find(x => x.name === branchName);
-    const set = new Set();
-    for (const l of (b ? b.leaves : [])) {
-      for (const id of (withNearby ? leafIds(l) : memberIds(l))) set.add(id);
-    }
-    BRANCH_CARDS.set(k, set);
-  }
-  return BRANCH_CARDS.get(k);
-}
-
-// Splits `ids` (a card-id list already scoped to one branch)
-// by which sibling effect-branch each card also belongs to. Groups are cards
-// counted once each against every sibling they land in -- verified disjoint
-// for every case this data currently produces, so they will not double-count
-// in practice, but the code does not assume it, matching the many-to-many
-// discipline everywhere else in this tree. `other` is whatever matched no
-// sibling at all -- kept, never dropped.
-function effectGroupsFor(ids, branchName, withNearby = false) {
-  const siblings = effectSiblings(branchName);
-  if (!siblings.length) return null;
-  const matched = new Set();
-  const groups = siblings.map(sib => {
-    const cs = branchCardSet(sib.name, withNearby);
-    const hit = ids.filter(id => cs.has(id));
-    hit.forEach(id => matched.add(id));
-    return { name: sib.name, auto: !!sib.auto_named, ids: hit };
-  }).filter(g => g.ids.length);
-  if (!groups.length) return null;
-  groups.sort((a, b) => b.ids.length - a.ids.length);
-  const other = ids.filter(id => !matched.has(id));
-  return { groups, other };
-}
-
-// Rendered wherever a branch has at least one effect-group to show.
-// `pickBase` is the branch name its pick keys build on.
-function effectBlockHTML(ids, branchName, pickBase) {
-  const eg = effectGroupsFor(ids, branchName);
-  if (!eg) return "";
-  const row = (label, n, key, auto, title) =>
-    `<div class="effrow"><button class="pickbtn" data-pick="${esc(key)}">${esc(label)}</button>` +
-    (auto ? `<span class="chip chip-auto">auto-named</span>` : "") +
-    `<b>${n.toLocaleString()}</b> cards${title ? ` <span class="note" title="${esc(title)}">ⓘ</span>` : ""}</div>`;
-  let h = `<div class="effgroup"><div class="note" style="margin-bottom:2px">` +
-    `<b>Group by effect</b> — this sector's narrower, single-mechanism siblings, ` +
-    `intersected with the cards above; nothing was re-clustered.</div>`;
-  for (const g of eg.groups) {
-    h += row(g.name, g.ids.length, `E␟${pickBase}␟${g.name}`, g.auto);
-  }
-  if (eg.other.length) {
-    h += row("other / no effect branch matched", eg.other.length, `X␟${pickBase}`, false,
-      "Matched none of this sector's effect-specific siblings — left visible rather than folded into one of them.");
-  }
-  h += `</div>`;
-  return h;
-}
-
-// One branch's <details> block: unchanged from before sectors/effect groups
-// existed, plus an effect-group drill-down wherever this branch's sector
-// supplies one, directly under the branch.
-function branchBlockHTML(b) {
-  const auto = !!b.auto_named;
-  // An auto-named branch must never be mistakable for sourced vocabulary,
-  // so the badge rides the name itself -- not a column, not a tooltip.
-  const badge = auto
-    ? `<span class="chip chip-auto" title="Machine-generated name from the leaves' shared structure — not sourced MTG vocabulary. Rename in corrections/branch_names.json.">auto-named</span>` : "";
-  const nQ = b.leaves.filter(l => QUEUED.has(l)).length;
-  const nMix = b.leaves.filter(l => MIXED.has(l)).length;
-  const marks =
-    (nQ ? `<span class="chip chip-review devonly" title="${nQ} of this branch's leaves have an open review-queue item">${nQ} in review</span>` : "") +
-    (nMix ? `<span class="chip chip-mixed" title="${nMix} of this branch's leaves hold more than one card type — the clustering did not use card type as a feature. Filter by card type below to cut across it.">${nMix} mixed</span>` : "");
-
-  const ids = b.leaves.reduce((a, l) => a.concat(LEAF.get(l) || []), []);
-  return `<details data-branch="${esc(b.name)}" class="${auto ? "auto" : ""}">` +
-    `<summary><span class="bname">${esc(b.name)}</span> ${badge}${marks} ` +
-    `<span class="bmeta">— ${(b.n_cards + abilCount(b.leaves)).toLocaleString()} cards${nearChip(nearCount(b.leaves))} · ${b.n_leaves} leaves · ` +
-    `${esc(b.source)}</span></summary>` +
-    `<div class="brule">rule: ${esc(b.rule)}` +
-    (auto ? ` <b>This name was generated from structure, not sourced.</b>` : "") + `</div>` +
-    `<button class="allbtn pickbtn" data-pick="B␟${esc(b.name)}">` +
-    `all ${(b.n_cards + abilCount(b.leaves)).toLocaleString()} cards in this branch →</button>` +
-    `<div class="leaves">` +
-    b.leaves.slice().sort((x, y) => (LEAF.get(y)||[]).length - (LEAF.get(x)||[]).length)
-            .map(l => leafRow(l, b.name)).join("") +
-    `</div>` +
-    effectBlockHTML(ids, b.name, b.name) +
-    `</details>`;
-}
-
-function sectorCardIds(sec, withNearby = false) {
-  const seen = new Set(), out = [];
-  for (const l of sec.leaves) {
-    for (const id of (withNearby ? leafIds(l) : memberIds(l))) if (!seen.has(id)) { seen.add(id); out.push(id); }
-  }
-  return out;
-}
-
-// Unique effect is a terminal FINDING, not a pending state, so it stays
-// outside the sector layer -- sectors group BRANCHES, and Unique effect
-// (leaves that survived curated rules, auto-naming AND the review queue with
-// no match anywhere) is deliberately not one.
-function uniqueBlockHTML() {
-  const uniq = (BR.unique_effect || []).slice().sort((a, b) => b.n_cards - a.n_cards);
-  const uniqCards = uniq.reduce((a, u) => a + u.n_cards, 0) + abilCount(uniq.map(u => u.leaf));
-  return `<details class="unbr" data-branch="Unique effect"><summary>` +
-    `<span class="bname">Unique effect</span> ` +
-    `<span class="bmeta">— ${uniqCards.toLocaleString()} cards${nearChip(nearCount(uniq.map(u => u.leaf)))} · ${uniq.length} leaves · ` +
-    `structure shared with no other leaf</span></summary>` +
-    `<div class="brule">These leaves went through the curated rules, the auto-named ` +
-    (DEV ? `fallback and the review queue and came out the other side: their structure is not ` :
-           `fallback and came out the other side: their structure is not `) +
-    `shared with anything else in the corpus. That is a result, not a backlog — nothing ` +
-    `is pending on them.</div>` +
-    `<button class="allbtn pickbtn" data-pick="U">all ${uniqCards.toLocaleString()} cards →</button>` +
-    `<div class="leaves">${uniq.map(u => leafRow(u.leaf)).join("")}</div></details>`;
-}
-
-// "No abilities": cards with no oracle text, placed by rule rather than by
-// the clustering (they have no structure to cluster). A branch of its own,
-// outside the sectors, like Unique effect.
-function vanillaBlockHTML() {
-  return `<details class="vanbr" data-branch="${esc(PL.meta.vanilla_branch)}"><summary>` +
-    `<span class="bname">${esc(PL.meta.vanilla_branch)}</span> ` +
-    `<span class="chip chip-near" title="placed by rule, not by the clustering">vanilla rule</span> ` +
-    `<span class="bmeta">— ${VANILLA.length.toLocaleString()} cards · no oracle text</span></summary>` +
-    `<div class="brule">Cards with no rules text at all. They have no structure to cluster, ` +
-    `so they are placed here by rule rather than left out.</div>` +
-    `<button class="allbtn pickbtn" data-pick="V">all ${VANILLA.length.toLocaleString()} cards →</button>` +
-    `</details>`;
-}
-
-// "Keyword abilities": cards whose whole text is parsed into `keywords`. The clustering reads
-// only the ability buckets, so they have no features; they are placed by an exact rule on their
-// keyword set (src/build_keyword_layer.py). One leaf per card; a multi-keyword leaf is listed
-// under each of its keywords' branches. Outside the sectors, like Unique effect and No abilities.
-function kwLeafRow(id) {
-  const L = KW.leaves[id];
-  return `<div class="leafrow pick" role="button" tabindex="0" data-pick="KL␟${esc(id)}" title="${esc(id)}">` +
-    `<div class="leafhead">${esc(L.name)} · <b>${L.n_cards.toLocaleString()}</b> cards ` +
-    (L.kind === "rare" ? `<span class="chip chip-catch" title="not a coherent group: signatures too rare for a leaf">catch-all</span>` : "") +
-    `</div><div class="leafsays">${esc(id)}</div></div>`;
-}
-function kwBranchHTML(b) {
-  return `<details data-branch="kw:${esc(b.name)}"><summary><span class="bname">${esc(b.name)}</span> ` +
-    (b.catch_all ? `<span class="chip chip-catch">catch-all</span> ` : "") +
-    `<span class="bmeta">— ${b.n_cards.toLocaleString()} cards · ${b.leaves.length} leaf${b.leaves.length === 1 ? "" : "s"}</span></summary>` +
-    `<button class="allbtn pickbtn" data-pick="KB␟${esc(b.name)}">all ${b.n_cards.toLocaleString()} cards in this branch →</button>` +
-    `<div class="leaves">${b.leaves.map(kwLeafRow).join("")}</div></details>`;
-}
-function keywordBlockHTML() {
-  const m = KW.meta;
-  return `<details class="kwbr"><summary><span class="bname">Keyword abilities</span> ` +
-    `<span class="chip chip-kw" title="placed by an exact rule on the card's keyword set — not clustered, not a guess">keyword rule</span> ` +
-    `<span class="bmeta">— ${m.cards.toLocaleString()} cards · ${m.branches} branches · ${m.leaves} leaves</span></summary>` +
-    `<div class="brule">Cards whose whole rules text is keywords (“Flying”, “Flying, vigilance”, “Protection from red”). ` +
-    `The clustering reads only ability effects, so these cards had nothing to cluster on; they are placed here by rule. ` +
-    `A leaf is a card's exact keyword set (signatures held by ≥ ${m.min_leaf} cards), else “&lt;Keyword&gt;: other combinations” ` +
-    `under its rarest keyword, else one labelled catch-all. Each card is in exactly one leaf. ` +
-    `Payloads (Protection from what, Ward cost, Crew number…) are shown on the card; only Landwalk splits by land type. ` +
-    `Cards that have keywords <i>and</i> abilities are not here — they sit where their abilities put them.</div>` +
-    KW.branches.map(kwBranchHTML).join("") + `</details>`;
-}
-
-// "Replacement effects and costs": cards whose rules are replacement / prevention effects with no effect of
-// their own, or only an additional cost. Grouped by an exact structural signature (src/build_signature_layer.py).
-function sgLeafRow(id) {
-  const L = SG.leaves[id];
-  return `<div class="leafrow pick" role="button" tabindex="0" data-pick="SL␟${esc(id)}" title="${esc(id)}">` +
-    `<div class="leafhead">${esc(L.name)} · <b>${L.n_cards.toLocaleString()}</b> cards</div>` +
-    `<div class="leafsays">${esc(id)}</div></div>`;
-}
-function sgBranchHTML(b) {
-  return `<details data-branch="sg:${esc(b.name)}"><summary><span class="bname">${esc(b.name)}</span> ` +
-    `<span class="bmeta">— ${b.n_cards.toLocaleString()} cards · ${b.leaves.length} group${b.leaves.length === 1 ? "" : "s"}</span></summary>` +
-    `<button class="allbtn pickbtn" data-pick="SB␟${esc(b.name)}">all ${b.n_cards.toLocaleString()} cards in this branch →</button>` +
-    `<div class="leaves">${b.leaves.map(sgLeafRow).join("")}</div></details>`;
-}
-function signatureBlockHTML() {
-  const m = SG.meta;
-  return `<details class="sgbr"><summary><span class="bname">${esc(m.block)}</span> ` +
-    `<span class="chip chip-sg" title="placed by an exact rule on the card's replacement-effect signature — not clustered, not a guess">signature rule</span> ` +
-    `<span class="bmeta">— ${m.cards.toLocaleString()} cards · ${m.branches} branches · ${m.leaves} groups</span></summary>` +
-    `<div class="brule">Cards whose rules change how something happens (“prevent all combat damage”, “if one or more +1/+1 counters ` +
-    `would be put on a creature you control …”) or only add a cost, rather than doing something themselves. The clustering compares ` +
-    `what cards do, so they had nothing to cluster on; they are grouped here by an exact signature (the kind of replacement and its ` +
-    `scope). A group needs ≥ ${m.min_group} cards; the rest stay in “No effect to group”, with the reason. Keywords on a card are shown ` +
-    `on it and never split a group. Names that are ours, not established Magic terms, are marked coined in the data.</div>` +
-    SG.branches.map(sgBranchHTML).join("") + `</details>`;
-}
-
-// "Not yet organized": every in-scope card that is in no leaf, no keyword leaf and not under
-// "No abilities", in plain-language groups (src/build_unorganized.py). Wording lives in
-// build/unorganized.json; nothing here is a placement.
-function unorganizedBlockHTML() {
-  const t = UNORG.totals;
-  const sum = UNORG.groups.map(g => g.cards.toLocaleString()).join(" + ");
-  const rows = UNORG.groups.map(g => {
-    let extra = "";
-    if (g.strength) {
-      extra += `<div class="note">nearest-group suggestions: ${(g.strength.close || 0).toLocaleString()} close · ` +
-        `${(g.strength.loose || 0).toLocaleString()} loose · <span class="usim-weak">${(g.strength.weak || 0).toLocaleString()} weak</span></div>`;
-    }
-    if (g.recovered || g.new) {
-      extra += `<div class="note">includes ${g.recovered ? g.recovered.toLocaleString() + " recovered" : ""}` +
-        `${g.recovered && g.new ? " and " : ""}${g.new ? g.new.toLocaleString() + " newer" : ""} card${(g.recovered + g.new) === 1 ? "" : "s"}</div>`;
-    }
-    return `<div class="ugrp"><div><b>${esc(g.name)}</b> <span class="bmeta">— ${g.cards.toLocaleString()} cards</span></div>` +
-      `<div class="uexp">${esc(g.explain)}</div>${extra}` +
-      `<button class="allbtn pickbtn" data-pick="NG␟${g.id}">all ${g.cards.toLocaleString()} cards →</button></div>`;
-  }).join("");
-  return `<details class="unorg" data-branch="Not yet organized"><summary>` +
-    `<span class="bname">${esc(UNORG.title)}</span> ` +
-    `<span class="bmeta">— ${t.not_yet_organized.toLocaleString()} cards · ${UNORG.groups.length} groups</span></summary>` +
-    `<div class="brule">${esc(UNORG.intro)}<div class="note">${t.in_scope.toLocaleString()} cards in this tool = ` +
-    `${t.organized.toLocaleString()} in the groups above + ${t.not_yet_organized.toLocaleString()} here (${sum}). ` +
-    `${t.not_cards.toLocaleString()} more entries in the catalogue are not cards (tokens, art cards, planes…); ` +
-    `“Find a card” explains each one.</div></div>${rows}</details>`;
-}
-
-async function ensureUNC() {
-  if (UNC) return;
-  UNC = await fetch("../build/unorganized_cards.json").then(r => r.json());
-  try {   // optional: per-ability suggestions (src/build_also_fits.py); display only
-    const af = await fetch("../build/also_fits.json").then(r => r.json());
-    for (const [oid, v] of Object.entries(af.cards)) ALSO.set(oid, v);
-  } catch (e) { /* the layer is optional */ }
-  for (const [gid, lst] of Object.entries(UNC.groups)) {
-    for (const c of lst) {
-      UNBYOID.set(c.c, { gid: +gid, c });
-      for (const f of c.f) UNFACE.set(f, { gid: +gid, c });
-    }
-  }
-}
-
-// Sectors (src/build_sectors.py) are the top level: bigger structural
-// neighbourhoods the map found among branches, tier 1 the tighter ones. A
-// sector groups BRANCHES only -- it adds no leaf of its own, so a branch's
-// content is identical whether read here or in a flat list. Branches the map
-// left out stay visible under "Unsectored branches", with the map's own
-// documented reasons, not silently dropped.
-function renderTree() {
-  const host = document.getElementById("tree");
-  const all = BR.branches.filter(b => b.n_leaves);
-  const byName = new Map(all.map(b => [b.name, b]));
-  let h = "";
-
-  if (SECT) {
-    const secSorted = SECT.sectors.slice().sort((a, b) =>
-      a.tier !== b.tier ? a.tier - b.tier : b.n_leaves - a.n_leaves);
-    for (const sec of secSorted) {
-      const branches = sec.branches.map(n => byName.get(n)).filter(Boolean)
-                          .sort((a, b) => b.n_cards - a.n_cards);
-      const cardCount = sectorCardIds(sec).length;
-      h += `<details class="sector" data-sector="${esc(sec.name)}">` +
-        `<summary><span class="bname">${esc(sec.name)}</span> ` +
-        `<span class="chip chip-tier">tier ${sec.tier}</span> ` +
-        `<span class="bmeta">— ${cardCount.toLocaleString()} cards${nearChip(nearCount(sec.leaves))} · ${sec.n_leaves} leaves · ` +
-        `${branches.length} branch${branches.length === 1 ? "" : "es"}</span></summary>` +
-        `<div class="brule">${esc(sec.why)}</div>` +
-        `<button class="allbtn pickbtn" data-pick="SEC␟${esc(sec.name)}">` +
-        `all ${cardCount.toLocaleString()} cards in this sector →</button>` +
-        `<div class="secbranches">${branches.map(branchBlockHTML).join("")}</div>` +
-        `</details>`;
-    }
-    const unsectored = all.filter(b => !BRANCH_SECTOR.has(b.name))
-                          .sort((a, b) => b.n_cards - a.n_cards);
-    if (unsectored.length) {
-      const notes = (SECT.unsectored_notes || [])
-        .map(n => `<li><b>${esc(n.what)}</b> — ${esc(n.why)}</li>`).join("");
-      h += `<details class="sector unsec"><summary>` +
-        `<span class="bname">Unsectored branches</span> ` +
-        `<span class="bmeta">— ${unsectored.length} branches the map found no tight ` +
-        `neighbourhood for</span></summary>` +
-        `<div class="brule">Not a gap — some of these were checked and deliberately left ` +
-        `out because the numbers did not support a grouping:` +
-        (notes ? `<ul style="margin:4px 0 0 16px">${notes}</ul>` : "") +
-        ` See <a href="sectors.md">sectors.md</a>.</div>` +
-        `<div class="secbranches">${unsectored.map(branchBlockHTML).join("")}</div></details>`;
-    }
-  } else {
-    // sectors.json missing: fall back to the flat, unsectored branch list.
-    h += all.slice().sort((a, b) => b.n_cards - a.n_cards).map(branchBlockHTML).join("");
-  }
-
-  h += uniqueBlockHTML();
-  if (VANILLA.length) h += vanillaBlockHTML();
-  if (KW) h += keywordBlockHTML();
-  if (SG) h += signatureBlockHTML();
-  if (UNORG) h += unorganizedBlockHTML();
-
-  host.innerHTML = h;
-  host.querySelectorAll("[data-pick]").forEach(btn => {
-    btn.onclick = ev => { ev.stopPropagation(); pick(parsePick(btn.dataset.pick)); };
-    // Leaf rows are whole clickable blocks rather than buttons, so they need
-    // the keyboard behaviour a button would have given them for free.
-    if (btn.getAttribute("role") === "button") {
-      btn.onkeydown = ev => {
-        if (ev.key === "Enter" || ev.key === " ") {
-          ev.preventDefault(); ev.stopPropagation();
-          pick(parsePick(btn.dataset.pick));
-        }
-      };
-    }
-  });
-}
-
-function parsePick(s) {
-  const p = s.split("␟");
-  if (p[0] === "SEC") return { kind: "sector", sector: p[1] };
-  if (p[0] === "B") return { kind: "branch", branch: p[1] };
-  if (p[0] === "U") return { kind: "unique" };
-  if (p[0] === "V") return { kind: "vanilla" };
-  if (p[0] === "NG") return { kind: "ungroup", gid: +p[1] };
-  if (p[0] === "KB") return { kind: "kwbranch", kwb: p[1] };
-  if (p[0] === "KL") return { kind: "kwleaf", kwl: p[1] };
-  if (p[0] === "SB") return { kind: "sgbranch", sgb: p[1] };
-  if (p[0] === "SL") return { kind: "sgleaf", sgl: p[1] };
-  // E␟branch␟effect; X is the same for the "no effect matched" remainder.
-  if (p[0] === "E") return { kind: "effect", branch: p[1], effect: p[2] };
-  if (p[0] === "X") return { kind: "other-effect", branch: p[1] };
-  return { kind: "leaf", branch: p[1] || null, leaf: +p[2] };
-}
-
-// The states that are not branches: kept under the tree, never hidden.
-function renderNavNotes() {
-  const cov = BR.coverage || {};
-  const nQ = (BR.review_queue || []).length;
-  const coh = BR.cohesion_failures || [];
-  const empty = BR.branches.filter(b => !b.n_leaves).map(b => b.name);
-  let h = "";
-  if (nQ) {
-    h += `<div class="qbox devonly"><b>${nQ} open review item${nQ === 1 ? "" : "s"}</b> covering ` +
-      `${(cov.review_queue ? cov.review_queue.cards : 0).toLocaleString()} unplaced cards — ` +
-      `borderline calls left for a human rather than guessed. Leaves carrying one are marked ` +
-      `<span class="chip chip-review">in review</span> above and are still browsable. ` +
-      `<a href="review-queue.html">Open the review queue</a>.</div>`;
-  }
-  if (AUDIT) {
-    h += `<div class="statenote"><b><span class="chip chip-mixed">mixed types</span> ` +
-      `${AUDIT.n_heterogeneous} leaves / ${AUDIT.n_cards_affected.toLocaleString()} cards.</b> ` +
-      `The clustering never used card type as a feature: leaf 44 is still 513 cards at ` +
-      `Creature 44% / Land 30% / Artifact 28%. The card-type filter cuts across it on ` +
-      `demand, which is why the tree no longer splits branches by type. ` +
-      `<a href="leaf-type-audit.md">leaf-type-audit.md</a> · ` +
-      `<a href="../DECISIONS.md">DECISIONS.md</a></div>`;
-  }
-  if (coh.length) {
-    h += `<div class="statenote"><b>${coh.length} auto-named rule${coh.length === 1 ? "" : "s"} ` +
-      `below the 60% cohesion floor</b> (${coh.map(c => esc(c.name) + " " + (c.cohesion*100).toFixed(0) + "%").join(", ")}) ` +
-      `— routed for a decision rather than kept as rules. Their leaves are browsable ` +
-      `wherever else they landed.</div>`;
-  }
-  h += `<div class="statenote"><b>Defined but matched zero leaves:</b> ` +
-    `${empty.length ? empty.map(esc).join(", ") : "none"}.<br>` +
-    `<b>Vocabulary left unruled (${BR.gaps.length}):</b> ` +
-    `${BR.gaps.map(g => esc(g.name)).join(", ")} — terms with no clean structural signal, ` +
-    `recorded as gaps instead of guessed. See <a href="branches.md">branches.md</a>.</div>`;
-  document.getElementById("navnotes").innerHTML = h;
-}
-
-// ---- scope: what card set is on screen ---------------------------------
-
-async function pick(sc) {
-  if (sc.kind === "ungroup") await ensureUNC();     // the card lists load on first use
-  scope = sc;
-  pool = poolFor(sc);
-  // A new scope starts from an unfiltered list -- carrying a colour filter into
-  // an unrelated branch silently hides most of it and the count looks wrong.
-  Object.assign(f, CV.newFilter());
-  page = 0;
-  markActive();
-  renderScope();
-  renderFilters();
-  run();
-  document.getElementById("cards").scrollTop = 0;
-}
-
-// The card ids for a branch -- the base an "effect" scope narrows further.
-// Shared so effect groups intersect exactly the set the tree shows.
-function baseIds(branch) {
-  const b = BR.branches.find(x => x.name === branch);
-  const seen = new Set(), out = [];
-  for (const l of (b ? b.leaves : [])) {
-    for (const id of leafIds(l)) if (!seen.has(id)) { seen.add(id); out.push(id); }
-  }
-  return out;
-}
-
-function poolFor(sc) {
-  let ids = [];
-  if (sc.kind === "branch") {
-    ids = baseIds(sc.branch);
-  } else if (sc.kind === "leaf") {
-    ids = leafIds(sc.leaf);
-  } else if (sc.kind === "unique") {
-    const seen = new Set();
-    for (const u of (BR.unique_effect || [])) {
-      for (const id of leafIds(u.leaf)) if (!seen.has(id)) { seen.add(id); ids.push(id); }
-    }
-  } else if (sc.kind === "vanilla") {
-    ids = VANILLA;
-  } else if (sc.kind === "ungroup") {
-    // name order, as generated; recovered and newer cards carry a plain-text tag
-    const out = [];
-    for (const c of ((UNC && UNC.groups[String(sc.gid)]) || [])) for (const id of c.f) out.push(id);
-    return out.map(id => ROW.get(id)).filter(Boolean);
-  } else if (sc.kind === "found") {
-    return sc.ids.map(id => ROW.get(id)).filter(Boolean);
-  } else if (sc.kind === "kwleaf") {
-    // the layer's own order: by name, or by rarest keyword for the catch-all leaf
-    return ((KW && KW.leaves[sc.kwl]) ? KW.leaves[sc.kwl].faces : []).map(id => ROW.get(id)).filter(Boolean);
-  } else if (sc.kind === "sgleaf") {
-    return ((SG && SG.leaves[sc.sgl]) ? SG.leaves[sc.sgl].faces : []).map(id => ROW.get(id)).filter(Boolean);
-  } else if (sc.kind === "sgbranch") {
-    const b = SG ? SG.branches.find(x => x.name === sc.sgb) : null;
-    const seen = new Set();
-    for (const l of (b ? b.leaves : [])) for (const id of SG.leaves[l].faces) if (!seen.has(id)) { seen.add(id); ids.push(id); }
-  } else if (sc.kind === "kwbranch") {
-    const b = KW ? KW.branches.find(x => x.name === sc.kwb) : null;
-    const seen = new Set();
-    for (const l of (b ? b.leaves : [])) for (const id of KW.leaves[l].faces) if (!seen.has(id)) { seen.add(id); ids.push(id); }
-  } else if (sc.kind === "effect") {
-    const cs = branchCardSet(sc.effect, NEARBY);
-    ids = baseIds(sc.branch).filter(id => cs.has(id));
-  } else if (sc.kind === "other-effect") {
-    const eg = effectGroupsFor(baseIds(sc.branch), sc.branch, NEARBY);
-    ids = eg ? eg.other : [];
-  } else if (sc.kind === "sector") {
-    const sec = SECT ? SECT.sectors.find(s => s.name === sc.sector) : null;
-    ids = sec ? sectorCardIds(sec, NEARBY) : [];
-  }
-  return ids.map(id => ROW.get(id)).filter(Boolean)
-            .sort((a, b) => a.name.localeCompare(b.name));
-}
-
-function markActive() {
-  document.querySelectorAll("[data-pick].on").forEach(b => b.classList.remove("on"));
-  const key = scope.kind === "sector" ? `SEC␟${scope.sector}`
-            : scope.kind === "branch" ? `B␟${scope.branch}`
-            : scope.kind === "unique" ? "U"
-            : scope.kind === "vanilla" ? "V"
-            : scope.kind === "ungroup" ? `NG␟${scope.gid}`
-            : scope.kind === "kwbranch" ? `KB␟${scope.kwb}`
-            : scope.kind === "kwleaf" ? `KL␟${scope.kwl}`
-            : scope.kind === "sgbranch" ? `SB␟${scope.sgb}`
-            : scope.kind === "sgleaf" ? `SL␟${scope.sgl}`
-            : scope.kind === "effect" ? `E␟${scope.branch}␟${scope.effect}`
-            : scope.kind === "other-effect" ? `X␟${scope.branch}`
-            : `L␟${scope.branch || ""}␟${scope.leaf}`;
-  const btn = document.querySelector(`[data-pick="${CSS.escape(key)}"]`);
-  if (btn) {
-    btn.classList.add("on");
-    let d = btn.closest("details");
-    while (d) { d.open = true; d = d.parentElement.closest("details"); }
-    btn.scrollIntoView({ block: "nearest" });
-  }
-}
-
-function renderScope() {
-  const b = scope.branch ? BR.branches.find(x => x.name === scope.branch) : null;
-  let crumb = "", state = "";
-
-  if (scope.kind === "vanilla") {
-    crumb = `<b>${esc(PL.meta.vanilla_branch)}</b>`;
-    state = `<div class="note">Cards with no oracle text, placed by the vanilla rule — ` +
-      `not by the clustering.</div>`;
-  } else if (scope.kind === "ungroup") {
-    const g = UNORG.groups.find(x => x.id === scope.gid);
-    crumb = `${esc(UNORG.title)}<span class="sep">›</span><b>${esc(g.name)}</b>`;
-    state = `<div class="note">${esc(g.explain)}</div>` +
-      `<div class="note">${g.cards.toLocaleString()} cards. Each card shows its oracle text` +
-      `${scope.gid === 1 ? ", and next to it the part the parser could not read" : ""}` +
-      `${scope.gid === 2 ? ", and the nearest group as a suggestion" : ""}.` +
-      `${g.recovered ? " " + g.recovered + " are recovered cards" : ""}` +
-      `${g.new ? (g.recovered ? "; " : " ") + g.new + " are newer cards" : ""}${(g.recovered || g.new) ? "." : ""}</div>` +
-      (scope.gid === 2 && ALSO.size ? `<div class="note">${ALSO.size.toLocaleString()} of these cards also show “also fits” links: ` +
-        `single abilities that match an existing group closely (0.90 or more, specific matches only). They are suggestions; ` +
-        `the card stays here and is in none of those groups.</div>` : "") +
-      (g.strength ? `<div class="note">How close the nearest group is (a display label only): ` +
-        `“close” is similarity ${UNORG.strength_words.close.toFixed(2)} or more, “loose” ${UNORG.strength_words.loose.toFixed(2)}–${UNORG.strength_words.close.toFixed(2)}, ` +
-        `<span class="usim-weak">“weak” below ${UNORG.strength_words.loose.toFixed(2)}</span>: ` +
-        `${(g.strength.close || 0).toLocaleString()} close, ${(g.strength.loose || 0).toLocaleString()} loose, ` +
-        `${(g.strength.weak || 0).toLocaleString()} weak.</div>` : "");
-  } else if (scope.kind === "found") {
-    crumb = `Find a card<span class="sep">›</span><b>${esc(scope.label)}</b>`;
-    state = `<div class="note">The card you asked for, shown with the same row as everywhere else.</div>`;
-  } else if (scope.kind === "sgbranch") {
-    crumb = `${esc(SG.meta.block)}<span class="sep">›</span><b>${esc(scope.sgb)}</b> <span class="chip chip-sg">signature rule</span>`;
-    state = `<div class="note">Cards in this branch's groups, placed by an exact replacement-effect signature; each card is in exactly one group.</div>`;
-  } else if (scope.kind === "sgleaf") {
-    const L = SG.leaves[scope.sgl];
-    crumb = `${esc(SG.meta.block)}<span class="sep">›</span>${L.branches.map(esc).join(" / ")}` +
-      `<span class="sep">›</span><b>${esc(L.name)}</b> <span class="chip chip-sg">signature rule</span>`;
-    state = `<div class="note">Exact membership: ` +
-      (L.signatures ? `every card here has the replacement signature <code>${L.signatures.map(esc).join("</code> or <code>")}</code>.` :
-       L.kind === "cost" ? `every card here has an additional cost to cast and nothing else the parser could compare.` :
-       `every card here has a replacement of this kind whose exact signature is held by fewer than ${SG.meta.min_group} cards.`) +
-      ` Keywords on a card are shown under its quality badge; its oracle text is in the text column.</div>` +
-      (L.basis ? `<div class="note">Name: ${esc(L.basis)}.</div>` : "");
-  } else if (scope.kind === "kwbranch") {
-    crumb = `Keyword abilities<span class="sep">›</span><b>${esc(scope.kwb)}</b> <span class="chip chip-kw">keyword rule</span>`;
-    state = `<div class="note">Cards whose keyword set includes ${esc(scope.kwb)}, placed by rule. A card ` +
-      `with several keywords is listed under each of their branches but is in exactly one leaf.</div>`;
-  } else if (scope.kind === "kwleaf") {
-    const L = KW.leaves[scope.kwl];
-    crumb = `Keyword abilities<span class="sep">›</span>${L.branches.map(esc).join(" / ")}` +
-      `<span class="sep">›</span><b>${esc(L.name)}</b> <span class="chip chip-kw">keyword rule</span>` +
-      (L.kind === "rare" ? ` <span class="chip chip-catch">catch-all</span>` : "");
-    state = `<div class="note">Exact membership: every card here has ` +
-      (L.kind === "sig" ? `exactly the keyword set <b>${esc(L.name)}</b>` :
-       L.kind === "other" ? `a keyword set held by fewer than ${KW.meta.min_leaf} cards, with <b>${esc(L.name.split(":")[0])}</b> as its rarest keyword` :
-       `a keyword set too rare for a leaf of its own`) +
-      `. Each card's keywords are shown under its quality badge; its oracle text is in the text column.</div>` +
-      (L.note ? `<div class="statenote"><b>Catch-all leaf.</b> ${esc(L.note)}</div>` : "") +
-      (L.branches.length > 1 ? `<div class="note">this leaf is listed under the branches ${L.branches.map(esc).join(", ")} — branch membership is many-to-many; each card is in this one leaf only.</div>` : "");
-  } else if (scope.kind === "unique") {
-    crumb = `<b>Unique effect</b>`;
-    state = `<div class="note">${(BR.unique_effect||[]).length} leaves whose structure is ` +
-      `shared with no other leaf — a terminal finding, not a backlog.</div>`;
-  } else if (scope.kind === "sector") {
-    const sec = SECT ? SECT.sectors.find(s => s.name === scope.sector) : null;
-    crumb = `<b>${esc(scope.sector)}</b>` +
-      (sec ? ` <span class="chip chip-tier">tier ${sec.tier}</span>` : "");
-    if (sec) state = `<div class="note">${esc(sec.why)} — ${sec.branches.length} branches, ` +
-      `${sec.n_leaves} leaves. Cards do not sum across branches within a sector any more ` +
-      `than they do across branches generally: assignment is many-to-many.</div>`;
-  } else {
-    const parts = [];
-    const sec = scope.branch ? BRANCH_SECTOR.get(scope.branch) : null;
-    if (sec) parts.push(esc(sec.name));
-    if (b) parts.push(`<b>${esc(b.name)}</b>` +
-      (b.auto_named ? ` <span class="chip chip-auto">auto-named</span>` : ""));
-    if (scope.kind === "effect") parts.push(esc(scope.effect));
-    if (scope.kind === "other-effect") parts.push("other / no effect branch matched");
-    if (scope.kind === "leaf") parts.push(`leaf ${scope.leaf}`);
-    if (!parts.length) parts.push(`leaf ${scope.leaf}`);
-    crumb = parts.join(`<span class="sep">›</span>`);
-  }
-
-  if (scope.kind === "leaf") {
-    const l = scope.leaf;
-    // The wording these cards share, then the structural label the parser
-    // matched it from. The phrase is editable: a derived phrase is sometimes
-    // the wrong one to lead with, and an override is written to
-    // corrections/leaf_phrases.json so it survives a rebuild. An override is
-    // free text -- the editor's wording, not the cards' -- so it is badged as
-    // edited and the derived phrase stays visible underneath it.
-    const raw = CLU.labels[l] || "";
-    const e = PHR && PHR.leaves[String(l)];
-    if (e) {
-      const derived = e.phrases.length ? e.phrases[0].phrase : "";
-      const shown = e.edited || derived;
-      state += `<div class="leafread">` +
-        `<b id="phtext">${esc(shown) || "<i>no shared phrase</i>"}</b>` +
-        (e.edited ? ` <span class="chip chip-edit" title="Hand-written in corrections/leaf_phrases.json — this is your wording, not the cards'.">edited</span>` : "") +
-        ` <button class="phedit" id="phedit">edit</button>` +
-        `<div class="note" id="phnote">` +
-        (e.edited
-          ? `derived phrase was: <i>${esc(e.derived || derived) || "none"}</i>`
-          : (derived
-              ? `verbatim from the clause phase.rs matched ` +
-                `<code>${esc(e.effect || "")}</code> from — carried by ` +
-                `${e.phrases[0].n_cards} of this leaf's ${e.n_cards} cards`
-              : `no phrase is shared by two or more of this leaf's cards`)) +
-        `</div>` +
-        `<div class="phform" id="phform" hidden>` +
-        `<input type="text" id="phin" value="${esc(shown)}" ` +
-        `placeholder="phrase to label this leaf by…" size="60">` +
-        `<button id="phsave">save</button>` +
-        `<button id="phreset" title="drop the override and go back to the derived phrase">reset</button>` +
-        `<span class="note" id="phmsg"></span></div></div>`;
-    }
-    state += `<div class="note">shared structure (what the parser matched): ` +
-      `<span class="clulabel">${esc(raw)}</span></div>`;
-    const inBr = (BR.leaf_branches[String(l)] || []);
-    if (inBr.length > 1) {
-      state += `<div class="note">this leaf is also under: ` +
-        inBr.filter(x => x !== scope.branch).map(x => esc(x)).join(", ") +
-        ` — assignment is many-to-many.</div>`;
-    }
-    const q = QUEUED.get(l);
-    if (q) {
-      state += q.map(x => `<div class="qbox devonly"><b>Open review item — ${esc(x.kind)}</b> ` +
-        `${esc(x.why)} ` +
-        (x.candidates && x.candidates.length
-          ? `Candidate${x.candidates.length > 1 ? "s" : ""}: ` +
-            x.candidates.map(c => esc(c.branch)).join(", ") + `. ` : "") +
-        `Left for a human rather than guessed — the cards below are shown anyway. ` +
-        `<a href="review-queue.html">review queue</a></div>`).join("");
-    }
-    const fi = MIXED.get(l);
-    if (fi) {
-      const shares = Object.entries(fi.shares)
-        .map(([t, s]) => `${esc(t)} ${(s*100).toFixed(0)}%`).join(" · ");
-      state += `<div class="qbox" style="border-color:#7a4bbd;background:#f2ebfb;color:#3f2360">` +
-        `<b>Mixed card types in this leaf</b> — ${shares}. The clustering did not use card ` +
-        `type as a feature, so this leaf holds several. Filter by card type below to cut ` +
-        `across it. <a href="leaf-type-audit.md">leaf-type-audit.md</a></div>`;
-    }
-    if (UNIQ.has(l)) {
-      state += `<div class="note"><span class="chip chip-uniq">unique</span> structure shared ` +
-        `with no other leaf.</div>`;
-    }
-  }
-
-  if (scope.kind === "effect") {
-    state += `<div class="note">cards from ${esc(scope.branch)} ` +
-      `that are ALSO in <b>${esc(scope.effect)}</b> — this sector's own narrower, ` +
-      `single-mechanism branch. Set intersection of two already-computed branches; ` +
-      `nothing here was re-clustered. The parent keeps all its cards.</div>`;
-  }
-  if (scope.kind === "other-effect") {
-    state += `<div class="note">cards from ${esc(scope.branch)} ` +
-      `that matched <b>none</b> of this sector's effect-specific siblings — left visible ` +
-      `rather than folded into one of them.</div>`;
-  }
-
-  document.getElementById("scope").innerHTML =
-    `<div class="crumb">${crumb} <span class="note" id="scount"></span></div>${state}`;
-  wirePhraseEditor();
-}
-
-// Save goes to src/serve.py's /api/phrase, which writes
-// corrections/leaf_phrases.json. Same shape as the review queue's endpoint:
-// dev-only, bound to 127.0.0.1, and a file rather than localStorage so the
-// build can read the decision back.
-// In-place update of every tree row showing this leaf, so an edit lands
-// without rebuilding (and collapsing) the tree.
-function refreshLeafRows(leaf) {
-  const phrase = leafPhrase(leaf), edited = leafEdited(leaf);
-  if (!phrase) return;
-  document.querySelectorAll("#tree .leafrow").forEach(row => {
-    const parts = (row.dataset.pick || "").split("␟");
-    if (parts[0] !== "L" || +parts[2] !== leaf) return;
-    const says = row.querySelector(".leafsays");
-    if (!says) return;
-    says.textContent = phrase;
-    says.classList.toggle("edited", edited);
-  });
-}
-
-function wirePhraseEditor() {
-  const btn = document.getElementById("phedit");
-  if (!btn || scope.kind !== "leaf") return;
-  const form = document.getElementById("phform");
-  const input = document.getElementById("phin");
-  const msg = document.getElementById("phmsg");
-  btn.onclick = () => {
-    form.hidden = !form.hidden;
-    if (!form.hidden) { input.focus(); input.select(); }
-  };
-  const send = async (phrase) => {
-    const e = PHR.leaves[String(scope.leaf)];
-    msg.textContent = "saving…";
-    try {
-      const r = await fetch("/api/phrase", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          leaf: scope.leaf, phrase,
-          was: e.derived || (e.phrases[0] || {}).phrase || "",
-        }),
-      });
-      if (!r.ok) throw new Error(await r.text() || r.status);
-      // Keep the in-memory copy in step so the tree and this panel agree
-      // without a reload; the file is the record either way.
-      if (phrase) {
-        if (!e.edited) e.derived = (e.phrases[0] || {}).phrase || "";
-        e.edited = phrase;
-      } else {
-        delete e.edited;
-      }
-      renderScope();
-      // Update just this leaf's rows. Re-rendering the whole tree would
-      // collapse every open sector and branch and throw away the scroll
-      // position, which is a lot to lose for a one-line edit.
-      refreshLeafRows(scope.leaf);
-      const m = document.getElementById("phmsg");
-      if (m) m.textContent = phrase ? "saved" : "override cleared";
-    } catch (err) {
-      msg.textContent = "save failed: " + err.message +
-        " (is this served by src/serve.py?)";
-    }
-  };
-  document.getElementById("phsave").onclick = () => send(input.value.trim());
-  document.getElementById("phreset").onclick = () => send("");
-  input.onkeydown = ev => { if (ev.key === "Enter") send(input.value.trim()); };
-}
-
-// ---- filters -------------------------------------------------------------
-// Colour, card type and mana value, all read off the index rows already in
-// memory. Counts are computed over the CURRENT scope, so each control shows
-// what it would actually yield here rather than a corpus-wide total.
-
-function renderFilters() {
-  const t = CV.tally(pool);
-  let h = "";
-
-  h += `<div class="frow"><span class="flab">search</span>` +
-    `<input type="search" id="fq" placeholder="name + oracle text, within this list…" autocomplete="off">` +
-    `<button id="fclear">clear filters</button></div>`;
-
-  h += `<div class="frow"><span class="flab">colour</span>` +
-    CV.COLOURS.concat([{ k: "C", name: "Colourless" }]).map(c => {
-      const n = t.col.get(c.k) || 0;
-      return `<button class="cbtn" data-c="${c.k}" ${n ? "" : "disabled"} ` +
-        `title="${c.name}${n ? "" : " — none in this list"}">${c.k}<small>${n}</small></button>`;
-    }).join("") +
-    `<label class="note" style="margin-left:4px"><input type="checkbox" id="fonly">` +
-    `exactly these colours</label>` +
-    `<span class="note">· colour comes from the card's mana cost, or its colour ` +
-    `indicator where the snapshot carries one</span></div>`;
-
-  const types = [...t.typ.entries()].sort((a, b) => b[1] - a[1]);
-  h += `<div class="frow"><span class="flab">card type</span>` +
-    (types.length
-      ? types.map(([ty, n]) =>
-          `<button class="tbtn" data-t="${esc(ty)}">${esc(ty)}<small>${n}</small></button>`).join("")
-      : `<span class="note">no core types on these cards</span>`) +
-    `</div>`;
-
-  // Mana value: a range (the two inputs), with one click on a bar for an exact
-  // value. Range is the more natural control here -- the distribution is a long
-  // right tail, and "3 or less" is a question a player actually asks.
-  const mvs = [...t.mv.keys()].sort((a, b) => a - b);
-  const top = Math.max(1, ...t.mv.values());
-  h += `<div class="frow mvwrap"><span class="flab">mana value</span>` +
-    `<input type="number" id="fmin" min="0" placeholder="min" aria-label="minimum mana value">` +
-    `<span class="note">to</span>` +
-    `<input type="number" id="fmax" min="0" placeholder="max" aria-label="maximum mana value">` +
-    (mvs.length ? `<span class="mvh">` + mvs.map(v => {
-        const n = t.mv.get(v);
-        const hpx = Math.max(3, Math.round(24 * n / top));
-        return `<button data-mv="${v}" style="height:${hpx}px" ` +
-          `title="mana value ${v} — ${n} card${n === 1 ? "" : "s"} (click for exactly ${v})">` +
-          `<span>${v}</span></button>`;
-      }).join("") + `</span>` : "") +
-    (t.noCost
-      ? `<label class="note" style="margin-left:8px" id="fnclab">` +
-        `<input type="checkbox" id="fnc" checked>` +
-        `include ${t.noCost} with no mana cost (${CV.NO_COST})</label>`
-      : "") +
-    `</div>`;
-
-  h += `<div class="note" id="mvnote">${t.noCost
-    ? `<b>${t.noCost} of these ${t.n.toLocaleString()} faces have no mana cost at all</b> — ` +
-      `back faces, tokens and lands. They are their own state (${CV.NO_COST}), never mana ` +
-      `value 0, so the 0 bucket is not padded with cards that cannot be cast, and a ` +
-      `mana-value range leaves them out. `
-    : ""}Counts are for this list, not the whole corpus.</div>`;
-
-  document.getElementById("filters").innerHTML = h;
-  wireFilters();
-}
-
-function wireFilters() {
-  const host = document.getElementById("filters");
-  let t0;
-  host.querySelector("#fq").oninput = e => {
-    clearTimeout(t0);
-    t0 = setTimeout(() => { f.q = e.target.value.trim().toLowerCase(); page = 0; run(); }, 150);
-  };
-  host.querySelector("#fclear").onclick = () => {
-    Object.assign(f, CV.newFilter());
-    page = 0; renderFilters(); run();
-  };
-  host.querySelectorAll(".cbtn").forEach(b => {
-    b.classList.toggle("on", f.colours.has(b.dataset.c));
-    b.onclick = () => {
-      const k = b.dataset.c;
-      f.colours.has(k) ? f.colours.delete(k) : f.colours.add(k);
-      b.classList.toggle("on", f.colours.has(k));
-      page = 0; run();
-    };
-  });
-  const only = host.querySelector("#fonly");
-  only.checked = f.colourMode === "only";
-  only.onchange = () => { f.colourMode = only.checked ? "only" : "any"; page = 0; run(); };
-  host.querySelectorAll(".tbtn").forEach(b => {
-    b.classList.toggle("on", f.types.has(b.dataset.t));
-    b.onclick = () => {
-      const ty = b.dataset.t;
-      f.types.has(ty) ? f.types.delete(ty) : f.types.add(ty);
-      b.classList.toggle("on", f.types.has(ty));
-      page = 0; run();
-    };
-  });
-  const mn = host.querySelector("#fmin"), mx = host.querySelector("#fmax");
-  if (f.mvMin != null) mn.value = f.mvMin;
-  if (f.mvMax != null) mx.value = f.mvMax;
-  const readRange = () => {
-    f.mvMin = mn.value === "" ? null : +mn.value;
-    f.mvMax = mx.value === "" ? null : +mx.value;
-    page = 0; syncMv(); run();
-  };
-  mn.oninput = readRange; mx.oninput = readRange;
-  host.querySelectorAll("[data-mv]").forEach(b => {
-    b.onclick = () => {
-      const v = +b.dataset.mv;
-      // clicking the bar that is already the exact filter clears it
-      if (f.mvMin === v && f.mvMax === v) { f.mvMin = f.mvMax = null; }
-      else { f.mvMin = f.mvMax = v; }
-      mn.value = f.mvMin == null ? "" : f.mvMin;
-      mx.value = f.mvMax == null ? "" : f.mvMax;
-      page = 0; syncMv(); run();
-    };
-  });
-  const nc = host.querySelector("#fnc");
-  if (nc) { nc.checked = f.mvNoCost; nc.onchange = () => { f.mvNoCost = nc.checked; page = 0; run(); }; }
-  syncMv();
-}
-
-function syncMv() {
-  const ranged = f.mvMin != null || f.mvMax != null;
-  const nc = document.getElementById("fnc"), lab = document.getElementById("fnclab");
-  if (nc) {
-    // With a range set, "include no mana cost" has nothing to act on -- those
-    // faces have no mana value to compare. Disabled and labelled, not silently
-    // ignored.
-    nc.disabled = ranged;
-    if (lab) {
-      lab.style.opacity = ranged ? ".5" : "";
-      lab.title = ranged
-        ? "a mana-value range excludes faces with no mana value — clear the range to bring them back"
-        : "";
-    }
-  }
-  document.querySelectorAll("[data-mv]").forEach(b => {
-    const v = +b.dataset.mv;
-    const inRange = (f.mvMin != null || f.mvMax != null) &&
-      (f.mvMin == null || v >= f.mvMin) && (f.mvMax == null || v <= f.mvMax);
-    b.classList.toggle("on", inRange);
-  });
-}
-
-// ---- card list -----------------------------------------------------------
-
-// Sort by parse quality: best first (clean) to worst (unparsed); no-text cards last. Ties are
-// ordered by how many gap / unmodelled / correction marks the card carries. 0 = list order.
-let qsort = 0;
-const QRANK = { clean: 0, partial: 2, unparsed: 3, vanilla: 4 };
-const qkey = r => (r.q in QRANK ? QRANK[r.q] : 5) + (r.q === "clean" && r.sg ? 1 : 0);
-function sortByQuality(list) {
-  if (!qsort) return list;
-  return list.map((r, i) => [r, i]).sort((a, b) =>
-    qsort * (qkey(a[0]) - qkey(b[0]) || ((a[0].gaps || 0) + (a[0].sg || 0) + (a[0].corr || 0)) -
-             ((b[0].gaps || 0) + (b[0].sg || 0) + (b[0].corr || 0))) || a[1] - b[1]).map(x => x[0]);
-}
-document.getElementById("qth").onclick = () => {
-  qsort = qsort === 1 ? -1 : 1;
-  page = 0; run();
-};
-function run() {
-  shown = sortByQuality(CV.filterActive(f) ? pool.filter(r => CV.match(r, f)) : pool);
-  document.getElementById("qarrow").textContent = qsort === 1 ? " ▲" : qsort === -1 ? " ▼" : "";
-  const active = CV.filterActive(f);
-  const nNear = pool.filter(r => isNear(r.id)).length;
-  document.getElementById("scount").innerHTML =
-    (active
-      ? `— <b>${shown.length.toLocaleString()}</b> of ${pool.length.toLocaleString()} cards match`
-      : `— <b>${pool.length.toLocaleString()}</b> cards`) +
-    (nNear ? ` <span class="nearn">(${nNear.toLocaleString()} of them placed by proximity)</span>` : "");
-  const empty = document.getElementById("empty");
-  document.getElementById("pager").hidden = !shown.length;
-  empty.hidden = !!shown.length;
-  if (!shown.length) {
-    empty.innerHTML = pool.length
-      ? `<b>No card in this list matches the filters.</b> ${pool.length.toLocaleString()} ` +
-        `cards are here without them — widen the filters, or clear them.`
-      : `<b>This list is empty.</b> Every card of this leaf fell outside the clustering ` +
-        `pass, so none can be shown here.`;
-  }
-  draw();
-}
-
-const maxPage = () => Math.max(0, Math.ceil(shown.length / PER) - 1);
-
-function draw() {
-  if (page > maxPage()) page = maxPage();
-  const slice = shown.slice(page * PER, page * PER + PER);
-  document.getElementById("tbl").hidden = view !== "text" || !shown.length;
-  document.getElementById("grid").hidden = view !== "images" || !shown.length;
-  if (view === "images") drawImages(slice); else drawRows(slice);
-  document.getElementById("pinfo").textContent =
-    shown.length ? `page ${page + 1} / ${maxPage() + 1}` : "no results";
-}
-
-function drawRows(slice) {
-  const body = document.getElementById("body");
-  body.innerHTML = "";
-  for (const r of slice) {
-    const tr = document.createElement("tr");
-    tr.innerHTML = CV.rowHTML(r, { cost: true, extra: layerChips });   // shared renderer
-    body.appendChild(tr);
-    tr.querySelector("button").onclick = ev =>
-      CV.toggleDetail(ev.target, r, tr, { prefix: provBox, wire: wireDetail });
-  }
-}
-
-// Card images, lazily. A card with no image gets a tile saying so rather than
-// a gap -- every one of those is an Alchemy card Scryfall does not publish in
-// the oracle export, and that is worth seeing rather than silently skipping.
-function drawImages(slice) {
-  const grid = document.getElementById("grid");
-  grid.innerHTML = "";
-  for (const r of slice) {
-    const url = CV.imageURL(r, "normal");
-    const tile = document.createElement("div");
-    tile.className = "tile";
-    tile.innerHTML = url
-      ? `<img loading="lazy" src="${esc(url)}" alt="${esc(r.name)}" title="${esc(r.name)}">` +
-        `<div class="tname">${esc(r.name)}${layerChips(r)}</div>`
-      : `<div class="noimg"><b>${esc(r.name)}</b>` +
-        `<div class="note">no image published for this oracle id` +
-        (r.name.startsWith("A-") ? ` — Alchemy rebalanced cards are digital-only ` +
-          `and absent from Scryfall's oracle export` : "") + `</div></div>`;
-    grid.appendChild(tile);
-    tile.onclick = () => toggleTileDetail(tile, r);
-  }
-}
-
-// Clicking a card opens the same parsed-structure view the text rows use,
-// full width under the tile, so the two views stay one renderer.
-async function toggleTileDetail(tile, r) {
-  const open = tile.nextElementSibling;
-  if (open && open.classList.contains("tiledet")) { open.remove(); return; }
-  document.querySelectorAll("#grid .tiledet").forEach(n => n.remove());
-  const det = document.createElement("div");
-  det.className = "tiledet";
-  det.innerHTML = `<div class="note">loading…</div>`;
-  tile.after(det);
-  const data = (await CV.chunk(r.ch))[r.id];
-  det.innerHTML = `<b class="tdname">${esc(r.name)}</b>` +
-    CV.detailHTML(data, r, { prefix: provBox });
-}
-
-// Where this card sits in the tree, shown above its parsed structure. Same
-// `prefix` hook the audit explorer uses for its cluster box.
-function isNear(id) {
-  const p = PL && PL.faces[id];
-  return !!(p && p.method === "proximity");
-}
-// Marks a card that is on screen through the placement layer, never through
-// the clustering: proximity cards and recovered cards each carry their chip.
-const GAPLAB = { unread: "Couldn't read:", cond: "Condition it didn't recognize:",
-                 trigger: "Trigger it didn't recognize:", effect: "Effect it could only partly read:" };
-function strengthSpan(s) {
-  const w = FindCard.strength(s, UNORG.strength_words);
-  return `<span class="${w === "weak" ? "usim-weak" : "usim"}">${w}, ${s.toFixed(2)}</span>`;
-}
-// "Also fits": individual abilities of a card in "Parsed, no close group found" that match an
-// existing group closely (score 0.90 or more, specific matches only). Suggestions: the card
-// stays where it is and is in none of these groups.
-function alsoFitsHTML(oid, rid) {
-  const a = ALSO.get(oid);
-  if (!a || (rid && a.f !== rid)) return "";
-  return alsoMarkup(a.m);
-}
-const ABREASON = {
-  "below_0.90": "no group fits it closely", generic_leaf: "only a very broad group fits it",
-  in_between: "only a broad group fits it", no_text: "it has no text to show",
-  item_gap: "part of it could not be read", same_line_gap: "part of its line could not be read",
-  continuation_gap: "part of the text around it could not be read",
-  token_blind_spot: "a match could not be confirmed", flagged: "flagged by a check",
-  modal: "part of a choice card", no_tokens: "nothing to compare", second_leaf: "it fits a different group",
-  not_scored: "not checked",
-};
-function abilityGapHTML(ab) {
-  if (!ab || !ab.gaps || !ab.gaps.length) return "";
-  return `<div class="note">Part of this card the tool could not read:</div>` +
-    ab.gaps.map(g => `<span class="abrest"><b>${GAPLAB[g[0]] || GAPLAB.unread}</b> \u201c${esc(g[1])}\u201d</span>`).join("") +
-    (ab.gaps_more ? `<span class="abrest">+${ab.gaps_more} more</span>` : "");
-}
-function abilityRestHTML(ab) {
-  if (!ab) return "";
-  const also = ab.also || [];
-  return abilityGapHTML(ab) + (!(ab.rest.length || also.length) ? "" :
-    `<div class="note">Other abilities on this card, not in a group:</div>` +
-    ab.rest.map(x => `<span class="abrest">\u201c${esc(x.t)}\u201d \u2014 ${esc(ABREASON[x.r] || x.r)}</span>`).join("") +
-    alsoMarkup(also));
-}
-function alsoMarkup(ms) {
-  return ms.map(m =>
-    `<span class="ualso"><span class="ahead">Also fits (suggestion, not a placement):</span> ` +
-    `<a class="usuglink" data-leaf="${m.l}">${esc(leafPhrase(m.l) || (CLU.labels[String(m.l)] || "leaf " + m.l).slice(0, 60))}</a> ` +
-    `(leaf ${m.l}) <span class="atext">\u2190 \u201c${esc(m.t)}\u201d</span></span>`).join("");
-}
-function unorgChips(u, rid) {
-  let h = "";
-  const c = u.c;
-  if (c.t) h += `<br><span class="utag">${c.t === "recovered" ? "recovered card" : "newer card"}</span>`;
-  if (u.gid === 1) {
-    const gaps = c.g || [];
-    if (!gaps.length) h += `<br><span class="ugap">(the tool did not record which part)</span>`;
-    for (const [k, t] of gaps.slice(0, 3)) h += `<br><span class="ugap"><b>${GAPLAB[k] || GAPLAB.unread}</b> “${esc(t)}”</span>`;
-    const more = gaps.length - 3 + (c.gm || 0);
-    if (more > 0) h += `<br><span class="ugap">+${more} more</span>`;
-  } else if (u.gid === 2 && c.s) {
-    const l = c.s[0];
-    h += `<br><span class="usug">Suggestion, not a placement: <a class="usuglink" data-leaf="${l}">` +
-         `${esc(leafPhrase(l) || (CLU.labels[String(l)] || "leaf " + l).slice(0, 60))}</a> (leaf ${l}) · ${strengthSpan(c.s[1])}</span>` +
-         alsoFitsHTML(c.c, rid);
-  } else if (u.gid === 5 && c.note) {
-    h += `<br><span class="ugap"><b>What is wrong:</b> ${esc(c.note)}</span>`;
-  }
-  return h;
-}
-document.addEventListener("click", ev => {
-  const a = ev.target.closest ? ev.target.closest(".usuglink") : null;
-  if (!a) return;
-  ev.preventDefault();
-  const l = +a.dataset.leaf;
-  pick({ kind: "leaf", branch: (BR.leaf_branches[String(l)] || [])[0] || null, leaf: l });
-});
-
-function layerChips(r) {
-  const p = PL && PL.faces[r.id];
-  let h = "";
-  const un = UNFACE.get(r.id);
-  if (un) h += unorgChips(un, r.id);
-  const abf = ABFACE.get(r.id);
-  if (abf) h += `<br><span class="abm">Matched on: \u201c${esc(abf.placed[0].t)}\u201d</span>`;
-  const sgf = SGFACE.get(r.id);
-  if (sgf) {
-    h += `<br><span class="chip chip-sg" title="Placed by an exact rule on its replacement-effect signature (${esc(sgf.leaf)}) — not clustered, not a guess.">signature rule</span>` +
-         (sgf.keywords.length ? `<br><span class="kws">Keywords: ${sgf.keywords.map(esc).join(" · ")}</span>` : "");
-  }
-  const kf = KWFACE.get(r.id);
-  if (kf) {
-    h += `<br><span class="chip chip-kw" title="Placed by an exact rule on its keyword set (leaf ${esc(kf.leaf)}) — not clustered, not a guess.">keyword rule</span>` +
-         `<br><span class="kws">Keywords: ${kf.keywords.map(esc).join(" · ")}</span>`;
-  }
-  if (p && p.method === "proximity") {
-    h += `<br><span class="chip chip-near" title="Not clustered: placed at the nearest leaf centroid, cosine ${p.similarity.toFixed(3)} (floor ${PL.meta.floor}). Source: ${p.source}.">nearby · ${p.similarity.toFixed(2)}</span>`;
-  }
-  if (r.recovered) {
-    h += `<br><span class="chip chip-rec" title="Dropped from the snapshot by a face-name collision; regenerated by phase-rs oracle-gen v0.1.15 into data/overlay/recovered-cards.json">recovered</span>`;
-  }
-  if (r.new_release) {
-    h += `<br><span class="chip chip-rec" title="Released after the 2026-04-20 snapshot; generated by phase-rs oracle-gen v0.1.15 (April-era parser, so its gaps are the April ones) into data/overlay/new-release-cards.json. Never clustered.">new</span>`;
-  }
-  return h;
-}
-
-function provBox(r) {
-  const un = UNFACE.get(r.id);
-  if (un) {
-    const g = UNORG.groups.find(x => x.id === un.gid);
-    return `<div class="clubox"><b class="hdr">Where this card sits</b>` +
-      `<b>Not yet organized</b> › ${esc(g.name)}<div class="note">${esc(g.explain)}</div>` +
-      `<div class="note">It is in no leaf, so it changes no leaf count or score.</div></div>`;
-  }
-  const sgf = SGFACE.get(r.id);
-  if (sgf) {
-    const L = SG.leaves[sgf.leaf];
-    return `<div class="clubox"><b class="hdr">Where this card sits</b>` +
-      `<b>placed by signature rule</b>, not clustered — <b>${esc(SG.meta.block)}</b> › <b>${esc(L.name)}</b> (<code>${esc(sgf.leaf)}</code>)` +
-      `<div style="margin:3px 0">branch: ${L.branches.map(b => `<span class="brbadge">${esc(b)}</span>`).join("")}</div>` +
-      `<div class="note">Membership is exact, not a similarity guess. This card changes no leaf centroid, cohesion score or count.</div></div>`;
-  }
-  const kf = KWFACE.get(r.id);
-  if (kf) {
-    const L = KW.leaves[kf.leaf];
-    return `<div class="clubox"><b class="hdr">Where this card sits</b>` +
-      `<b>placed by keyword rule</b>, not clustered — leaf <b>${esc(L.name)}</b> (<code>${esc(kf.leaf)}</code>)` +
-      `<div style="margin:3px 0">branches: ${L.branches.map(b => `<span class="brbadge">${esc(b)}</span>`).join("")}</div>` +
-      `<div class="note">Keywords on this card: ${kf.keywords.map(esc).join(" · ")}. Membership is exact, not a similarity guess. ` +
-      `This card changes no leaf centroid, cohesion score or count.</div></div>`;
-  }
-  const abf = ABFACE.get(r.id);
-  if (abf) {
-    const brs = BR.leaf_branches[String(abf.leaf)] || [];
-    return `<div class="clubox"><b class="hdr">Where this card sits</b>` +
-      `leaf <b>${abf.leaf}</b> · <span class="clulabel">${esc(CLU.labels[abf.leaf] || "")}</span>` +
-      (brs.length ? `<div style="margin:3px 0">branches: ` +
-        brs.map(b => `<span class="brbadge">${esc(b)}</span>`).join("") + `</div>` : "") +
-      `<div class="note">It is in this group because of ${abf.placed.length > 1 ? "these abilities" : "this ability"}: ` +
-      abf.placed.map(m => `\u201c${esc(m.t)}\u201d (${m.s.toFixed(2)})`).join("; ") + `.</div>` +
-      abilityRestHTML(abf) + `</div>`;
-  }
-  const p = PL && PL.faces[r.id];
-  if (p && p.method !== "clustered") {
-    const brs = p.leaf != null ? (BR.leaf_branches[String(p.leaf)] || []) : [p.branch];
-    return `<div class="clubox"><b class="hdr">Where this card sits</b>` +
-      (p.method === "proximity"
-        ? `<b>placed by proximity</b>, not clustered — nearest centroid is leaf <b>${p.leaf}</b> ` +
-          `at cosine <b>${p.similarity.toFixed(3)}</b> (floor ${PL.meta.floor}) · ` +
-          `<span class="clulabel">${esc(CLU.labels[p.leaf] || "")}</span>`
-        : `<b>placed by rule</b> (${esc(p.method)}) — no oracle text, nothing to cluster`) +
-      (brs.length ? `<div style="margin:3px 0">branches: ` +
-        brs.map(b => `<span class="brbadge">${esc(b)}</span>`).join("") + `</div>` : "") +
-      (r.recovered ? `<div class="note">Recovered card: dropped from the snapshot by a ` +
-        `face-name collision, regenerated by the same parser version.</div>` : "") +
-      (r.new_release ? `<div class="note">New card: released after the snapshot, generated by the ` +
-        `same parser version (April-era, so any parser gap here is an April gap). It was not part of ` +
-        `the clustering that made these leaves.</div>` : "") +
-      `<div class="note">This card changes no leaf centroid, cohesion score or count.</div></div>`;
-  }
-  const l = CLU.cards[r.id];
-  const brs = (l != null && l >= 0) ? (BR.leaf_branches[String(l)] || []) : [];
-  return `<div class="clubox"><b class="hdr">Where this card sits</b>` +
-    (l == null || l < 0
-      ? `no leaf — this card is outside the clustering pass`
-      : `leaf <b>${l}</b> · <span class="clulabel">${esc(CLU.labels[l] || "")}</span>`) +
-    (brs.length ? `<div style="margin:3px 0">branches: ` +
-      brs.map(b => `<span class="brbadge">${esc(b)}</span>`).join("") + `</div>` : "") +
-    `<div class="note">Read the structure below against the oracle text — the parse is ` +
-    `not verified.</div></div>`;
-}
-
-function wireDetail(td) { /* the provenance box carries no links of its own yet */ }
-
-function wireChrome() {
-  const go = n => { page = n; draw(); document.getElementById("cards").scrollTop = 0; };
-  document.getElementById("first").onclick = () => go(0);
-  document.getElementById("prev").onclick = () => go(Math.max(0, page - 1));
-  document.getElementById("next").onclick = () => go(Math.min(maxPage(), page + 1));
-  document.getElementById("last").onclick = () => go(maxPage());
-  const setView = v => {
-    view = v;
-    document.getElementById("vtext").classList.toggle("on", v === "text");
-    document.getElementById("vimg").classList.toggle("on", v === "images");
-    document.getElementById("viewnote").innerHTML = v === "images"
-      ? `images load from Scryfall's CDN as you scroll — the only part of this ` +
-        `page that reaches outside this machine. ` +
-        `<b>${(CV.hasImages() ? IMGMETA.n_matched : 0).toLocaleString()}</b> of ` +
-        `<b>${(CV.hasImages() ? IMGMETA.n_ours : 0).toLocaleString()}</b> oracle ids ` +
-        `have one; the ${(CV.hasImages() ? IMGMETA.n_missing : 0)} that do not are ` +
-        `all Alchemy cards.`
-      : "";
-    draw();
-  };
-  if (CV.hasImages()) {
-    document.getElementById("viewbar").hidden = false;
-    document.getElementById("vtext").onclick = () => setView("text");
-    document.getElementById("vimg").onclick = () => setView("images");
-  }
-
-  const hl = document.getElementById("hl");
-  if (CV.hasSpans()) {
-    document.getElementById("hllab").hidden = false;
-    hl.onchange = () => { CV.setHighlight(hl.checked); draw(); };
-  }
-  document.getElementById("expand").onclick = () =>
-    document.querySelectorAll("#tree details").forEach(d => d.open = true);
-  document.getElementById("collapse").onclick = () =>
-    document.querySelectorAll("#tree details").forEach(d => d.open = false);
-
-  // The branch map is a secondary overview, collapsed by default: it renders no
-  // cards of its own and only opens a branch in the tree.
-  const tog = document.getElementById("tmtoggle"), wrap = document.getElementById("tmwrap");
-  tog.onclick = () => {
-    wrap.hidden = !wrap.hidden;
-    tog.textContent = (wrap.hidden ? "▸" : "▾") + " branch map overview";
-    if (!wrap.hidden) drawMap();
-  };
-}
-
-function drawMap() {
-  BM.render(document.getElementById("tm"), {
-    BR, CLU,
-    capEl: document.getElementById("tmcap"),
-    legendEl: document.getElementById("tmlegend"),
-    tipEl: document.getElementById("tmtip"),
-    pickHint: "click to open this branch",
-    onPick: name => {
-      if (name === "Unique effect") pick({ kind: "unique" });
-      else pick({ kind: "branch", branch: name });
-    },
-  });
-}
-
-boot().catch(e => {
-  document.getElementById("status").innerHTML =
-    `<b>Load failed:</b> ${esc(e.message)}<br><br>
-     This page must be served over HTTP (fetch cannot read <code>file://</code>).<br>
-     Run <code>python src/serve.py</code> from the project root.`;
-});
+  for (const f of TAX.families) for (const nd of f.nodes) { NODES[nd.id] = Object.assign({ fam: f.key }, nd); NODE_FAM[nd.id] = f.name; }
+  header(); renderTree();
+  document.getElementById("foot").innerHTML =
+    `Data: ${esc(TAX.meta.rules.snapshot)}. Method: ${esc(TAX.meta.rules.backoff)}, minimum ${TAX.meta.rules.minimum}; ` +
+    `names are generated (edits: corrections/ability_taxonomy_names.json); no tag data is used to place anything. ` +
+    `Gap-card abilities are measured and held out. The coverage figure here and the archived view's 74.8% are measured on different bases. ` +
+    `<a href="ability-taxonomy-report.md">Results and limits</a> · <a href="ability-taxonomy-design.md">Design</a> · <a href="../KNOWN_LIMITATIONS.md">Known limitations §12</a>.`;
+  const h = decodeURIComponent(location.hash.slice(1));
+  if (h) show(h);
+})();
 </script>
 </body>
 </html>

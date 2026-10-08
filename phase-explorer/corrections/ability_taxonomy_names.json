@@ -1,0 +1,20 @@
+{
+ "_about": "Hand edits to auto-generated names in the per-ability taxonomy. Keys: leaves by their full signature string (as shown with ?dev=1), nodes by 'family|effect type|zone from|zone to|counter type|player scope|granted modifications', families by their internal key. Value: {\"name\": \"...\", \"coined\": false, \"basis\": \"where the term comes from\", \"note\": \"...\"}. src/build_ability_taxonomy.py applies every key that still exists and reports the rest as orphaned instead of dropping them.",
+ "v": 1,
+ "leaves": {
+  "fam=Zone change · ftype=ChangeZone · frm=Hand · to=Exile · obj=Card · ctrl=You · quant=one": {
+   "name": "Alternative cost: exile a card from your hand rather than pay the mana cost",
+   "coined": true,
+   "basis": "'Alternative cost' is the Comprehensive Rules term (118.9); the group is the pitch-spell cost (Force of Will and its relatives), not an exile effect.",
+   "note": "All 21 members with text read 'You may exile ... card(s) from your hand rather than pay this spell's mana cost'; the parse stores it as an ordinary optional exile item, so the signature cannot say it. Hand-written because no field in the signature carries 'alternative cost'."
+  },
+  "fam=Life · ftype=GainLife · who=controller · dur=UntilEndOfTurn": {
+   "name": "Gain life, or give a creature lifelink, until end of turn",
+   "coined": true,
+   "basis": "Plain wording; 'lifelink' is a keyword (CR 702.15). The group is a mix, so the name states both.",
+   "note": "10 members: 7 'you gain N life' and 3 'target creature gains your choice of lifelink or ... until end of turn'. The parse files both under GainLife with a duration, so no signature field separates them."
+  }
+ },
+ "nodes": {},
+ "families": {}
+}
