@@ -113,6 +113,9 @@ def main():
     for r in index["rows"]:
         oid = r["id"].split("/")[0]
         ours.setdefault(oid, r["name"])
+    # The coverage ledger also holds the cards added after index.json was built (the new-release overlay); join those too.
+    for oid, r in json.load(io.open(os.path.join(BUILD, "ledger.json"), encoding="utf-8"))["rows"].items():
+        ours.setdefault(oid, r["name"])
 
     sys.stderr.write("reading bulk export" + chr(10))
     cards, stat = {}, collections.Counter()

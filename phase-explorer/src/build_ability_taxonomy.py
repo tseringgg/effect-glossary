@@ -309,6 +309,13 @@ def main():
     include_gap = args.include_gap_cards
 
     L = jl("ledger.json")["rows"]
+    # Alchemy rebalanced copies ("A-Public Enemy"): digital-only, not on Scryfall's paper list and without pictures; left out of the card set
+    # like tokens and art cards. 216 of the 217 are rebalanced versions of a card that is in the set anyway.
+    ALCH = {oid for oid, r in L.items() if r["name"].startswith("A-") and r["status"] != "out_of_scope"}
+    # (Cards with no picture on Scryfall's list stay in the set; the page hides them by default, behind a switch.)
+    ASIDE = ALCH
+    for oid in ASIDE:
+        L[oid] = dict(L[oid], status="out_of_scope")
     P = jl("placements.json")
     stages = P["recovered"]["stages"]
     KL = jl("keyword_layer.json")
@@ -334,6 +341,8 @@ def main():
         return st
 
     items, excl, AL = pst.population()
+    items = [x for x in items if x["oid"] not in ASIDE]
+    AL = dict(AL, rows=[r for r in AL["rows"] if r[0] not in ASIDE])
     for x in items:                                       # rule 4: card-level gap
         if x["kind"] == "clean" and card_kind(x["oid"]) == "gap":
             x["kind"] = "gap"
@@ -743,12 +752,12 @@ def main():
     # sig and keyword blocks for the page
     blocks = {
         "keyword": {"name": "Keyword abilities", "branches": KL["branches"],
-                    "leaves": {k: {"name": v["name"], "n": v["n_cards"], "cards": sorted({KL["faces"][f]["card"] for f in v["faces"]})}
+                    "leaves": {k: {"name": v["name"], "n": len({KL["faces"][f]["card"] for f in v["faces"]} - ASIDE), "cards": sorted({KL["faces"][f]["card"] for f in v["faces"]} - ASIDE)}
                                for k, v in KL["leaves"].items()}},
         "replacement": {"name": SL["meta"].get("block", "Replacement effects and costs"), "branches": SL["branches"],
-                        "leaves": {k: {"name": v["name"], "n": v["n_cards"], "coined": v.get("coined"), "basis": v.get("basis"),
-                                       "cards": sorted({SL["faces"][f]["card"] for f in v["faces"]})} for k, v in SL["leaves"].items()}},
-        "no_abilities": {"name": "No abilities", "cards": sorted(van_card)},
+                        "leaves": {k: {"name": v["name"], "n": len({SL["faces"][f]["card"] for f in v["faces"]} - ASIDE), "coined": v.get("coined"), "basis": v.get("basis"),
+                                       "cards": sorted({SL["faces"][f]["card"] for f in v["faces"]} - ASIDE)} for k, v in SL["leaves"].items()}},
+        "no_abilities": {"name": "No abilities", "cards": sorted(van_card - ASIDE)},
     }
     tax = {"v": 1, "meta": meta, "totals": totals, "checks": checks, "families": families, "leaves": leaves_out,
            "blocks": blocks, "flag_notes": FLAG_NOTE,
@@ -771,7 +780,7 @@ def main():
         oid = e[0]
         v, rs = view[oid]
         if v == "not_a_card":
-            entries.append([oid, e[1], e[2], "o", e[4], 0, e[6]])
+            entries.append([oid, e[1], e[2], "o", ["alchemy_rebalanced", "alchemy", ""] if oid in ASIDE else e[4], 0, e[6]])
             continue
         c = cards[oid]
         if v == "placed":
@@ -787,7 +796,7 @@ def main():
         else:
             code, extra = "u", REASON_GROUP[rs]
         entries.append([oid, e[1], e[2], code, extra, e[5], e[6]])
-    dump("ability_taxonomy_lookup.json", {"v": 1, "fold": old_lookup["fold"], "oos": old_lookup["oos"], "entries": entries})
+    dump("ability_taxonomy_lookup.json", {"v": 1, "fold": old_lookup["fold"], "oos": dict(old_lookup["oos"], alchemy_rebalanced="an Alchemy rebalanced copy (its name starts with \u201cA-\u201d): digital-only, with no picture; left out of this tool"), "entries": entries})
     print(json.dumps({"totals": totals, "checks": checks,
                       "meta": {k: meta[k] for k in ("leaves_all", "leaves_ge_min", "leaves_visible", "leaves_flagged",
                                                     "leaves_flagged_visible", "nodes", "families", "size_hist",

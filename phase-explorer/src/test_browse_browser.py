@@ -205,6 +205,139 @@ def main():
             c.call("Page.navigate", url="http://127.0.0.1:%d/reports/%s.html" % (PORT_HTTP, pg))
             ok = c.wait("document.getElementById('dev-only-banner') && document.getElementById('dev-only-banner').innerText.includes('archived card-level view')")
             check("13 %s.html shows the dev-only banner" % pg, ok)
+        # 14 a node closes on a second click (it used to re-open itself)
+        c.call("Page.navigate", url="http://127.0.0.1:%d/reports/browse.html" % PORT_HTTP)
+        c.wait("document.querySelectorAll('#tree .row').length > 10")
+        c.js("document.querySelector('#tree .row[data-k^=\"f:\"]').click()")
+        c.wait("document.querySelectorAll('#tree .row.l2').length > 0")
+        c.js("document.querySelector('#tree .row.l2').click()")
+        opened = c.wait("document.querySelectorAll('#tree .row.l3').length > 0")
+        c.js("document.querySelector('#tree .row.l2').click()")
+        closed = c.wait("document.querySelectorAll('#tree .row.l3').length === 0")
+        arrow = c.js("document.querySelector('#tree .row.l2 .tw').innerText")
+        check("14 a node opens and then closes on the next click", opened and closed and arrow == "\u25b8", "opened=%s closed=%s arrow=%s" % (opened, closed, arrow))
+        # 15 Cards mode: tab, typed filter, card page, group link
+        c.js("document.querySelector('#tabs button[data-mode=\"cards\"]').click()")
+        check("15 Cards tab shows the filters and a card list", c.wait("!document.getElementById('cardf').hidden && document.getElementById('tree').hidden && document.querySelectorAll('#list .crow').length > 100", 90),
+              c.js("document.getElementById('cfcount').innerText"))
+        c.js("document.getElementById('cf-name').focus()")
+        for ch in "Mulldrifter":
+            c.call("Input.dispatchKeyEvent", type="keyDown", text=ch, key=ch)
+            c.call("Input.dispatchKeyEvent", type="keyUp", key=ch)
+        check("15 typing a name narrows the list", c.wait("document.querySelectorAll('#list .crow').length >= 1 && document.querySelectorAll('#list .crow').length < 5 && document.querySelector('#list .crow').innerText.includes('Mulldrifter')", 60),
+              c.js("document.getElementById('cfcount').innerText"))
+        c.js("document.querySelector('#list .crow').click()")
+        check("15 clicking a card opens its page with rules text, status and a way back",
+              c.wait("!!(document.querySelector('.cardpage h2') && document.querySelector('.cardpage h2').innerText.includes('Mulldrifter') && document.querySelector('.cardpage .rt') && document.querySelector('.cardpage [data-go=\"C:\"]'))"),
+              (c.js("document.querySelector('.cardpage') && document.querySelector('.cardpage').innerText") or "")[:140].replace("\n", " "))
+        c.js("document.querySelector('.cardpage li .lnk').click()")
+        check("15 a group link on the card page opens that group", c.wait("document.querySelectorAll('#list .card').length > 0"), c.js("document.querySelector('#panel h2').innerText"))
+        # status filter
+        c.js("(() => { const s = document.getElementById('cf-st'); document.getElementById('cf-name').value = ''; s.value = 'k'; s.dispatchEvent(new Event('input', { bubbles: true })); show('C:') })()")
+        check("15 the status filter keeps only that kind of card", c.wait("document.querySelectorAll('#list .crow').length > 20 && [...document.querySelectorAll('#list .crow .badge')].every(b => b.innerText === 'keyword block')", 60),
+              c.js("document.getElementById('cfcount').innerText"))
+        # a leaf's card row links to the card page
+        c.js("setMode('abilities'); show('l:' + Object.keys(TAX.leaves)[0])")
+        c.wait("document.querySelectorAll('#list .card').length > 0")
+        c.js("document.querySelector('#list .card .top [data-go^=\"c:\"]').click()")
+        check("15 a card row in a group opens the card page", c.wait("!!document.querySelector('.cardpage h2')"), c.js("document.querySelector('.cardpage h2') && document.querySelector('.cardpage h2').innerText"))
+        # 16 deep link to the cards list; dev-only parsed structure
+        c.call("Page.navigate", url="http://127.0.0.1:%d/reports/browse.html" % PORT_HTTP + "#C%3A")
+        check("16 a link to the card list (#C:) opens Cards mode", c.wait("!document.getElementById('cardf').hidden && document.querySelectorAll('#list .crow').length > 100", 90))
+        c.call("Page.navigate", url="http://127.0.0.1:%d/reports/browse.html?dev=1" % PORT_HTTP)
+        c.wait("document.querySelectorAll('#tree .row').length > 10")
+        oid = c.js("(async () => { await needLookup(); return LOOK.entries.find(e => e[1] === 'Mulldrifter')[0] })()")
+        c.js("show('c:%s')" % oid)
+        c.wait("!!document.querySelector('.psbtn')")
+        c.js("document.querySelector('.psbtn').click()")
+        check("16 dev: parsed structure loads on demand", c.wait("document.querySelector('.psout') && document.querySelector('.psout').innerText.includes('abilities')", 60))
+        c.call("Page.navigate", url="http://127.0.0.1:%d/reports/browse.html" % PORT_HTTP)
+        c.wait("document.querySelectorAll('#tree .row').length > 10")
+        c.js("show('c:%s')" % oid)
+        c.wait("!!document.querySelector('.cardpage h2')")
+        check("16 the parsed-structure button is dev-only", c.js("document.querySelector('.psbtn')") is None)
+        # 17 card images view of a group (the picture index is read from build/card_images.json; pictures themselves come from Scryfall,
+        # so this checks the tile, its source address and the click behaviour, not that the network delivered the files)
+        c.call("Page.navigate", url="http://127.0.0.1:%d/reports/browse.html" % PORT_HTTP)
+        c.wait("document.querySelectorAll('#tree .row').length > 10")
+        c.js("show('l:' + Object.keys(TAX.leaves).find(k => TAX.leaves[k].cards > 200 && !TAX.leaves[k].flags.length))")
+        c.wait("document.querySelectorAll('#list .card').length > 3")
+        check("17 a group offers a text / card images switch", c.js("document.querySelectorAll('.viewbar .vbtn').length") == 2)
+        c.js("document.querySelector('.viewbar [data-view=\"images\"]').click()")
+        check("17 card images view shows a grid of tiles", c.wait("document.querySelectorAll('#list.grid .tile').length > 20", 60),
+              c.js("document.querySelectorAll('#list.grid .tile').length"))
+        src = c.js("(document.querySelector('#list.grid .tile img') || {}).src") or ""
+        check("17 a tile's picture comes from the picture index", src.startswith("https://cards.scryfall.io/normal/front/"), src[:80])
+        check("17 the page says pictures come from Scryfall", "Scryfall" in (c.js("document.getElementById('viewnote').innerText") or ""))
+        c.js("document.querySelector('#list.grid .tile').click()")
+        check("17 clicking a tile shows the ability text and rules text under it", c.wait("!!(document.querySelector('#list .tiledet .why') && document.querySelector('#list .tiledet .rt'))"))
+        c.js("document.querySelector('#list.grid .tile').click()")
+        check("17 clicking the tile again closes it", c.wait("document.querySelectorAll('#list .tiledet').length === 0"))
+        c.js("document.querySelector('.viewbar [data-view=\"text\"]').click()")
+        check("17 switching back shows the text list", c.wait("document.querySelectorAll('#list .card').length > 3 && !document.querySelector('#list.grid')"))
+        c.js("show('C:')")
+        c.wait("document.querySelectorAll('#list .crow').length > 100", 90)
+        c.js("document.querySelector('.viewbar [data-view=\"images\"]').click()")
+        check("17 the card list can also be shown as pictures", c.wait("document.querySelectorAll('#list.grid .tile').length > 20", 60))
+        # 18 "hide cards with no picture": on by default, and it works in lists, in the card list and in the picture view
+        c.call("Page.navigate", url="http://127.0.0.1:%d/reports/browse.html" % PORT_HTTP)
+        c.wait("document.querySelectorAll('#tree .row').length > 10")
+        check("18 the hide-no-picture switch is on by default", c.js("document.getElementById('hidenopic').checked") is True)
+        c.js("setMode('cards', true); show('C:')")
+        c.wait("document.querySelectorAll('#list .crow').length > 100", 90)
+        c.js("(() => { const i = document.getElementById('cf-name'); i.value = 'Wheel of Not Ideal'; i.dispatchEvent(new Event('input', { bubbles: true })) })()")
+        check("18 a card with no picture is hidden from the card list", c.wait("document.getElementById('cfcount').innerText.startsWith('0 of') && document.querySelectorAll('#list .crow').length === 0", 30),
+              c.js("document.getElementById('cfcount').innerText"))
+        c.js("document.getElementById('hidenopic').click()")
+        check("18 unticking the switch lists it again", c.wait("document.querySelectorAll('#list .crow').length === 1 && document.querySelector('#list .crow').innerText.includes('Wheel of Not Ideal')", 30))
+        c.js("document.getElementById('hidenopic').click()")
+        c.wait("document.querySelectorAll('#list .crow').length === 0")
+        c.js("(() => { document.getElementById('cf-name').value = ''; show('C:') })()")
+        c.wait("document.querySelectorAll('#list .crow').length > 100", 90)
+        c.js("document.querySelector('.viewbar [data-view=\"images\"]').click()")
+        c.wait("document.querySelectorAll('#list.grid .tile').length > 20", 60)
+        check("18 the picture view never shows a tile without a picture while the switch is on", c.js("document.querySelectorAll('#list.grid .noimg').length") == 0
+              and c.js("document.querySelectorAll('#list.grid .tile img').length") == c.js("document.querySelectorAll('#list.grid .tile').length"))
+        # 19 "hide cards not meant for constructed play": on by default; hides in lists and takes the cards out of group counts
+        c.call("Page.navigate", url="http://127.0.0.1:%d/reports/browse.html" % PORT_HTTP)
+        c.wait("document.querySelectorAll('#tree .row').length > 10")
+        check("19 the not-for-constructed switch is on by default", c.js("document.getElementById('hidenc').checked") is True)
+        check("19 the background load finishes and the page says how many are hidden", c.wait("document.getElementById('hidenote').innerText.includes('silver-border')", 120),
+              c.js("document.getElementById('hidenote').innerText"))
+        name = c.js("(() => { const o = Object.keys(FLAGS.cards).find(o => CARDS[o] && FLAGS.cards[o] === 'silver_border'); return CARDS[o].n })()")
+        c.js("setMode('cards', true); show('C:')")
+        c.wait("document.querySelectorAll('#list .crow').length > 100", 90)
+        c.js("(n => { const i = document.getElementById('cf-name'); i.value = n; i.dispatchEvent(new Event('input', { bubbles: true })) })(%s)" % json.dumps(name))
+        check("19 a silver-border card is hidden from the card list", c.wait("document.getElementById('cfcount').innerText.startsWith('0 of')", 30), name)
+        c.js("document.getElementById('hidenc').click()")
+        check("19 unticking the switch lists it again", c.wait("document.querySelectorAll('#list .crow').length >= 1", 30))
+        c.js("document.getElementById('hidenc').click()")
+        # group counts drop the hidden cards
+        res = c.js("""(() => {
+          const lid = Object.keys(TAX.leaves).find(k => memOids(k).some(o => flagged(o)) && TAX.leaves[k].cards >= 10);
+          const f = TAX.families.find(f => f.nodes.some(nd => nodeLeaves(nd).includes(lid)));
+          HIDE_NC = true; const on = [leafN(lid), famN(f)];
+          HIDE_NC = false; HIDE = false; const off = [leafN(lid), famN(f)];
+          HIDE_NC = true; HIDE = true;
+          return { on: on, off: off, stat: [TAX.leaves[lid].cards, f.cards] } })()""")
+        check("19 hiding takes the cards out of a group's count and its family's count",
+              res["on"][0] < res["off"][0] and res["on"][1] < res["off"][1] and res["off"] == res["stat"], json.dumps(res))
+        got = c.js("""(() => { const by = n => Object.keys(CARDS).find(o => CARDS[o].n === n);
+          return ['Abbot of the Sacred Meeple', 'Bolshack Dragon', 'Boltfire', 'Rikala, Homarid King', 'Jandor, Fortuned Traveler', 'Counterspell'].map(n => !!FLAGS.cards[by(n)]) })()""")
+        check("19 the three TEST CARD cards are flagged; Rikala, Jandor and Counterspell are not", got == [True, True, True, False, False, False], str(got))
+        c.js("setMode('abilities', true); renderTree()")
+        # 20 the "Not meant for constructed play" section under "Not yet organized"
+        c.call("Page.navigate", url="http://127.0.0.1:%d/reports/browse.html" % PORT_HTTP)
+        c.wait("document.querySelectorAll('#tree .row').length > 10")
+        check("20 the section appears in the tree once the data is loaded", c.wait("!!document.querySelector('#tree .row[data-k=\"N:all\"]')", 120))
+        n_tree = c.js("+document.querySelector('#tree .row[data-k=\"N:all\"] .n').innerText.replace(/,/g, '')")
+        check("20 it has a row per reason", c.js("[...document.querySelectorAll('#tree .row')].filter(r => r.dataset.k.startsWith('N:')).length") >= 5)
+        c.js("document.querySelector('#tree .row[data-k=\"N:all\"]').click()")
+        c.wait("document.querySelectorAll('#list .card').length > 50", 60)
+        listed = c.js("document.querySelector('#panel .sub').innerText")
+        check("20 the section lists the hidden cards even though the switch is on", c.js("document.getElementById('hidenc').checked") is True and ("%s cards" % format(n_tree, ",")) in listed, listed[:80])
+        check("20 a reason row opens only its own cards", c.js("(() => { show('N:playtest_card'); return true })()") and c.wait("document.querySelector('#panel h2').innerText.includes('Playtest card') && document.querySelectorAll('#list .card').length > 50", 60))
+        check("20 each listed card says where it is in this view", c.js("[...document.querySelectorAll('#list .card')].slice(0, 20).every(x => x.innerText.includes('In this view:'))") is True)
         if SHOTS:
             open(os.path.join(SHOTS, "browser_deeplink.png"), "wb").write(base64.b64decode(c.call("Page.captureScreenshot", format="png")["data"]))
     finally:

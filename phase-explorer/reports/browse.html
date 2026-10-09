@@ -61,6 +61,30 @@ button { background:var(--chip); color:var(--fg); border:1px solid var(--line); 
 .sub { color:var(--muted); font-size:12px; margin:2px 0 8px; }
 .subhead { font-weight:600; margin-top:12px; }
 .gap { color:var(--muted); font-size:12px; }
+[hidden] { display:none !important; }
+.tabs { display:flex; gap:4px; padding:8px 12px; border-bottom:1px solid var(--line); position:sticky; top:0; background:var(--bg); }
+.tabs button.on { background:var(--sel); font-weight:600; border-color:var(--accent); }
+.cf { padding:4px 12px 12px; }
+.cf label.h { display:block; font-size:12px; color:var(--muted); margin-top:10px; }
+.cf input[type=search], .cf input[type=number], .cf select { width:100%; padding:5px 6px; border:1px solid var(--line); background:var(--bg); color:var(--fg); border-radius:4px; }
+.cf .two { display:flex; gap:6px; }
+.cf .cols label { margin-right:8px; white-space:nowrap; }
+.crow { display:flex; gap:8px; align-items:baseline; flex-wrap:wrap; cursor:pointer; }
+.crow:hover { background:var(--sel); }
+.cardpage pre { white-space:pre-wrap; background:var(--bg); border:1px solid var(--line); padding:6px 8px; border-radius:4px; max-height:420px; overflow:auto; font-size:12px; }
+.viewbar { display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin:6px 0 8px; }
+.viewbar .vbtn { font-size:12px; padding:2px 10px; }
+.viewbar .vbtn.on { background:var(--sel); font-weight:600; border-color:var(--accent); }
+/* same as the archived view: four cards across, each 75% of an equal quarter of the width; the 10px gap stays fixed */
+#list.grid { display:grid; gap:10px; grid-template-columns:repeat(4, calc((100% - 30px) / 4 * 0.75)); align-items:start; }
+#list.grid > .gridfull, #list.grid > .tiledet { grid-column:1 / -1; }
+.tile { cursor:pointer; }
+.tile img { width:100%; display:block; border-radius:4.75% / 3.5%; background:var(--chip); aspect-ratio:488/680; }
+.tile:hover img { outline:2px solid var(--accent); outline-offset:2px; }
+.tile.sel img, .tile.sel .noimg { outline:2px solid var(--accent); outline-offset:2px; }
+.tname { font-size:11px; color:var(--muted); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.noimg { aspect-ratio:488/680; border:1px dashed var(--line); border-radius:4.75% / 3.5%; padding:8px; font-size:11px; display:flex; flex-direction:column; justify-content:center; background:var(--panel); color:var(--muted); }
+.tiledet { background:var(--panel); border:1px solid var(--line); padding:8px 10px; border-radius:4px; }
 .devonly { display:none; }
 body.dev .devonly { display:inline; }
 </style>
@@ -73,13 +97,32 @@ body.dev .devonly { display:inline; }
   <div class="find">
     <label for="q">Find a card:</label>
     <input id="q" type="search" placeholder="type a card name" autocomplete="off">
+    <label class="prov" title="Cards that Scryfall has no picture for"><input type="checkbox" id="hidenopic" checked> hide cards with no picture</label>
+    <label class="prov" title="Every printing is silver-border, acorn-stamped, from a joke or test set, or memorabilia"><input type="checkbox" id="hidenc" checked> hide cards not meant for constructed play (silver-border, joke and test cards, memorabilia)</label>
+    <span class="prov" id="hidenote"></span>
     <span class="prov">· <a href="../archive/card-level-view-2026-10/reports/browse.html">archived card-level view</a> (its numbers do not match this view)</span>
     <span class="prov devonly">· dev: <a href="ledger.html">coverage ledger</a> · <a href="card-explorer.html">parse-audit explorer</a> (both show the archived view)</span>
   </div>
   <div id="findres"></div>
 </header>
 <main>
-  <nav id="tree"></nav>
+  <nav>
+    <div class="tabs" id="tabs"><button data-mode="abilities" class="on">What abilities do</button><button data-mode="cards">Cards</button></div>
+    <div id="tree"></div>
+    <div id="cardf" class="cf" hidden>
+      <label class="h" for="cf-name">Name contains</label>
+      <input id="cf-name" type="search" autocomplete="off" placeholder="part of a card name">
+      <label class="h">Colour (any of these)</label>
+      <div class="cols" id="cf-cols"><label><input type="checkbox" value="W"> W</label><label><input type="checkbox" value="U"> U</label><label><input type="checkbox" value="B"> B</label><label><input type="checkbox" value="R"> R</label><label><input type="checkbox" value="G"> G</label><label><input type="checkbox" value="C"> colourless</label></div>
+      <label class="h" for="cf-type">Type</label>
+      <select id="cf-type"><option value="">any</option><option>Creature</option><option>Instant</option><option>Sorcery</option><option>Artifact</option><option>Enchantment</option><option>Land</option><option>Planeswalker</option><option>Battle</option></select>
+      <label class="h">Mana value</label>
+      <div class="two"><input id="cf-mvmin" type="number" min="0" placeholder="min"><input id="cf-mvmax" type="number" min="0" placeholder="max"></div>
+      <label class="h" for="cf-st">Where it is in this view</label>
+      <select id="cf-st"><option value="">any</option><option value="l">grouped by its abilities</option><option value="b">only in groups broader than they look</option><option value="u">not yet organized</option><option value="k">keyword block</option><option value="g">replacement group</option><option value="v">no abilities</option></select>
+      <p class="sub" id="cfcount"></p>
+    </div>
+  </nav>
   <section id="panel"><p class="explain">Pick a group on the left. Each card is listed under every group one of its abilities fits, and shows the text of that ability.</p></section>
 </main>
 <footer class="prov" style="padding:10px 16px;border-top:1px solid var(--line)" id="foot"></footer>
@@ -94,13 +137,76 @@ const PAGE = 150;
 let TAX = null, MEM = null, CARDS = null, UNORG = null, LOOK = null, LIDX = null;
 const NODES = {}, NODE_FAM = {};
 const open = new Set();
-let selected = null;
+let selected = null, MODE = "abilities";
 
 async function J(name) { const r = await fetch("../build/" + name); if (!r.ok) throw new Error(name + " " + r.status); return r.json(); }
 async function needCards() {
   if (!MEM) MEM = (await J("ability_taxonomy_members.json")).leaves;
   if (!CARDS) CARDS = (await J("ability_taxonomy_cards.json")).cards;
+  await needImages(); await needFlags();
 }
+let FLAGS = null, FLAGTRIED = false, HIDE_NC = true;
+try { if (localStorage.getItem("hideNotConstructed") === "0") HIDE_NC = false; } catch (e) { /* storage unavailable: keep the default */ }
+async function needFlags() {
+  if (FLAGTRIED) return;
+  FLAGTRIED = true;
+  try { FLAGS = await J("card_flags.json"); } catch (e) { FLAGS = null; }
+}
+const flagged = oid => !!(FLAGS && FLAGS.cards[oid]);
+const hidden = oid => (HIDE && !!IMGDOC && !IMGDOC.cards[oid]) || (HIDE_NC && flagged(oid));
+const visible = oid => !hidden(oid);
+// why a card is hidden right now: the first reason that applies
+function hideReason(oid) {
+  if (HIDE && IMGDOC && !IMGDOC.cards[oid]) return "no picture";
+  if (HIDE_NC && flagged(oid)) return FLAGS.reasons[FLAGS.cards[oid]] || "not for constructed play";
+  return "";
+}
+const counting = () => ((HIDE && !!IMGDOC) || (HIDE_NC && !!FLAGS)) && !!MEM && !!CARDS;
+function nvis(oids) { const seen = new Set(); let n = 0; for (const o of oids) if (!seen.has(o)) { seen.add(o); if (visible(o)) n++; } return n; }
+const memOids = lid => (MEM[lid] || []).map(m => m[0]);
+// group sizes with the hidden cards taken out (the totals in the header count the whole pool)
+const leafN = lid => counting() ? nvis(memOids(lid)) : TAX.leaves[lid].cards;
+const leafAb = lid => counting() ? (MEM[lid] || []).filter(m => visible(m[0])).length : TAX.leaves[lid].abilities;
+const nodeLeaves = nd => nd.leaves.concat(nd.rolled);
+const nodeN = nd => counting() ? nvis([].concat(...nodeLeaves(nd).map(memOids))) : nd.cards;
+const nodeAb = nd => counting() ? nodeLeaves(nd).reduce((a, lid) => a + leafAb(lid), 0) : nd.abilities;
+const famN = f => counting() ? nvis([].concat(...f.nodes.map(nd => [].concat(...nodeLeaves(nd).map(memOids))))) : f.cards;
+const famAb = f => counting() ? f.nodes.reduce((a, nd) => a + nodeAb(nd), 0) : f.abilities;
+const blkLeafN = (blk, lid) => counting() ? nvis(blk.leaves[lid].cards) : blk.leaves[lid].n;
+const branchN = (blk, br) => counting() ? nvis([].concat(...br.leaves.map(lid => blk.leaves[lid].cards))) : br.n_cards;
+const blockN = (blk, total) => counting() ? nvis([].concat(...Object.values(blk.leaves).map(l => l.cards))) : total;
+const unorgN = g => counting() && UNORG ? nvis(g.list.map(c => c.c)) : g.cards;
+async function needUnorg() { if (!UNORG) UNORG = (await J("ability_taxonomy_unorganized.json")).groups; }
+// the flagged cards that are in the card set, by reason (cards with no picture are left out while that switch is on)
+function ncByReason() {
+  const by = {};
+  for (const oid of Object.keys(FLAGS.cards)) {
+    if (!CARDS[oid] || (HIDE && IMGDOC && !IMGDOC.cards[oid])) continue;
+    (by[FLAGS.cards[oid]] = by[FLAGS.cards[oid]] || []).push(oid);
+  }
+  return by;
+}
+const NCWHY = {
+  silver_border: "Every printing has a silver border (Unglued, Unhinged, Unstable and similar).",
+  acorn_stamp: "Every printing carries the acorn stamp (Unfinity): not legal in tournament play.",
+  playtest_card: "Scryfall tags every printing as a playtest card (the Mystery Booster test cards, whose pictures read “TEST CARD - not for constructed play”).",
+  joke_or_test_set: "Every printing is in a joke or test set (the Un-sets, Unknown Event, Mystery Booster playtest cards, ...).",
+  memorabilia: "Every printing is a collector or memorabilia item.",
+};
+function hideNote() {
+  const el = document.getElementById("hidenote");
+  if (!el) return;
+  if (!CARDS || !(HIDE || HIDE_NC)) { el.textContent = ""; return; }
+  const by = {};
+  for (const oid of Object.keys(CARDS)) { const r = hideReason(oid); if (r) by[r] = (by[r] || 0) + 1; }
+  const parts = Object.entries(by).sort((a, b) => b[1] - a[1]).map(([r, n]) => `${fmt(n)} ${r}`);
+  el.textContent = parts.length ? "Hidden from lists and group counts: " + parts.join(", ") + "." : "";
+}
+// "Hide cards with no picture": on by default; remembered per viewer when the browser allows it.
+let HIDE = true;
+try { if (localStorage.getItem("hideNoPicture") === "0") HIDE = false; } catch (e) { /* storage unavailable: keep the default */ }
+const hasPicture = oid => !IMGDOC || !!IMGDOC.cards[oid];     // if the index could not be read nothing is hidden
+let HIDDEN = 0, HIDDENBY = {};
 
 // ---------------------------------------------------------------- header
 function header() {
@@ -134,56 +240,64 @@ function renderTree() {
   h.push(`<div class="blk">What abilities do</div>`);
   for (const f of TAX.families) {
     const fk = "f:" + f.key;
-    h.push(row("l1", fk, esc(f.name), f.cards, { kids: true }));
+    h.push(row("l1", fk, esc(f.name), famN(f), { kids: true }));
     if (!open.has(fk)) continue;
     for (const nd of f.nodes) {
       const nk = "n:" + nd.id;
-      h.push(row("l2", nk, esc(nd.name) + (DEV ? ` <span class="b-dev">${esc(nd.id)}</span>` : ""), nd.cards, { kids: true }));
+      h.push(row("l2", nk, esc(nd.name) + (DEV ? ` <span class="b-dev">${esc(nd.id)}</span>` : ""), nodeN(nd), { kids: true }));
       if (!open.has(nk)) continue;
-      for (const lid of nd.leaves) { const l = TAX.leaves[lid]; h.push(row("l3", "l:" + lid, leafLabel(l, lid), l.cards)); }
+      for (const lid of nd.leaves) { const l = TAX.leaves[lid]; h.push(row("l3", "l:" + lid, leafLabel(l, lid), leafN(lid))); }
       if (nd.rolled.length) {
-        const n = nd.rolled.reduce((a, lid) => a + TAX.leaves[lid].cards, 0);
+        const n = nd.rolled.reduce((a, lid) => a + leafN(lid), 0);
         h.push(row("l3", "r:" + nd.id, `Other: ${esc(nd.name).toLowerCase()} <span class="badge b-auto">${nd.rolled.length} small groups</span>`, n));
       }
     }
   }
   const kb = TAX.blocks.keyword, rb = TAX.blocks.replacement, nb = TAX.blocks.no_abilities;
   h.push(`<div class="blk">Grouped by rule</div>`);
-  h.push(row("l1", "K", esc(kb.name), TAX.totals.views.keyword_block, { kids: true }));
+  h.push(row("l1", "K", esc(kb.name), blockN(kb, TAX.totals.views.keyword_block), { kids: true }));
   if (open.has("K")) for (const br of kb.branches) {
     const bk = "kb:" + br.name;
-    h.push(row("l2", bk, esc(br.name), br.n_cards, { kids: true }));
-    if (open.has(bk)) for (const lid of br.leaves) h.push(row("l3", "kl:" + lid, esc(kb.leaves[lid].name), kb.leaves[lid].n));
+    h.push(row("l2", bk, esc(br.name), branchN(kb, br), { kids: true }));
+    if (open.has(bk)) for (const lid of br.leaves) h.push(row("l3", "kl:" + lid, esc(kb.leaves[lid].name), blkLeafN(kb, lid)));
   }
-  h.push(row("l1", "G", esc(rb.name), TAX.totals.views.replacement_group, { kids: true }));
+  h.push(row("l1", "G", esc(rb.name), blockN(rb, TAX.totals.views.replacement_group), { kids: true }));
   if (open.has("G")) for (const br of rb.branches) {
     const bk = "gb:" + br.name;
-    h.push(row("l2", bk, esc(br.name), br.n_cards, { kids: true }));
-    if (open.has(bk)) for (const lid of br.leaves) h.push(row("l3", "gl:" + lid, esc(rb.leaves[lid].name), rb.leaves[lid].n));
+    h.push(row("l2", bk, esc(br.name), branchN(rb, br), { kids: true }));
+    if (open.has(bk)) for (const lid of br.leaves) h.push(row("l3", "gl:" + lid, esc(rb.leaves[lid].name), blkLeafN(rb, lid)));
   }
-  h.push(row("l1", "V", esc(nb.name), nb.cards.length));
+  h.push(row("l1", "V", esc(nb.name), counting() ? nvis(nb.cards) : nb.cards.length));
   h.push(`<div class="blk">Groups broader than they look</div>`);
   const byNote = {};
   for (const [lid, l] of Object.entries(TAX.leaves)) if (l.flags.length) (byNote[l.notes[0]] = byNote[l.notes[0]] || []).push(lid);
   const notes = Object.keys(byNote).sort();
   notes.forEach((nt, i) => {
-    const k = "B:" + i, n = byNote[nt].reduce((a, lid) => a + TAX.leaves[lid].cards, 0);
+    const k = "B:" + i, n = byNote[nt].reduce((a, lid) => a + leafN(lid), 0);
     h.push(row("l1", k, esc(nt.split(",")[0].replace(/ isn't recorded| aren't recorded/, " not recorded")), n, { kids: true }));
-    if (open.has(k)) for (const lid of byNote[nt].sort((a, b) => TAX.leaves[b].cards - TAX.leaves[a].cards))
-      h.push(row("l2", "l:" + lid, leafLabel(TAX.leaves[lid], lid), TAX.leaves[lid].cards));
+    if (open.has(k)) for (const lid of byNote[nt].sort((a, b) => leafN(b) - leafN(a)))
+      h.push(row("l2", "l:" + lid, leafLabel(TAX.leaves[lid], lid), leafN(lid)));
   });
   window.BROAD_NOTES = notes; window.BROAD_BY = byNote;
   h.push(`<div class="blk">Not yet organized</div>`);
-  for (const g of TAX.unorganized) h.push(row("l1", "u:" + g.id, esc(g.name), g.cards));
+  for (const g of TAX.unorganized) h.push(row("l1", "u:" + g.id, esc(g.name), UNORG ? unorgN(UNORG.find(x => x.id === g.id) || g) : g.cards));
+  if (FLAGS && CARDS) {
+    const by = ncByReason();
+    h.push(`<div class="blk">Not meant for constructed play</div>`);
+    h.push(row("l1", "N:all", "All of them", Object.values(by).reduce((a, l) => a + l.length, 0)));
+    for (const r of Object.keys(FLAGS.reasons)) if (by[r]) h.push(row("l2", "N:" + r, esc(FLAGS.reasons[r].charAt(0).toUpperCase() + FLAGS.reasons[r].slice(1)), by[r].length));
+  }
   document.getElementById("tree").innerHTML = h.join("");
 }
 document.getElementById("tree").addEventListener("click", e => {
   const r = e.target.closest(".row"); if (!r) return;
   const k = r.dataset.k;
   if (/^(f|n|K|G|kb|gb|B):?/.test(k) && !/^(kl|gl|l|r|u):/.test(k)) {
-    if (open.has(k)) open.delete(k); else open.add(k);
+    const wasOpen = open.has(k);
+    if (wasOpen) open.delete(k); else open.add(k);
     renderTree();
-    if (k.startsWith("f:") || k.startsWith("n:") || k.startsWith("B:")) show(k);
+    // show() re-opens a node it displays, so only call it when the click opened the node; a click that closes it just closes it
+    if (!wasOpen && (k.startsWith("f:") || k.startsWith("n:") || k.startsWith("B:"))) show(k);
     return;
   }
   show(k);
@@ -207,7 +321,7 @@ function cardHTML(oid, abIdx, ctxLeaf) {
   const also = others.length ? `<div class="also">Also in: ${others.slice(0, 6).map(lid =>
       `<span class="lnk" data-go="l:${esc(lid)}">${esc(TAX.leaves[lid].name)}</span>` +
       (TAX.leaves[lid].flags.length ? ` <span class="badge b-broad">broad</span>` : "")).join(" · ")}${others.length > 6 ? " …" : ""}</div>` : "";
-  return `<div class="card" data-oid="${esc(oid)}"><div class="top"><span class="nm">${esc(c.n)}</span>${costHTML(c)}<span class="ty">${esc(c.ty)}</span>` +
+  return `<div class="card" data-oid="${esc(oid)}"><div class="top"><span class="nm">${esc(c.n)}</span>${costHTML(c)}<span class="ty">${esc(c.ty)}</span><span class="lnk chip" data-go="c:${esc(oid)}">card page</span>` +
     (DEV ? `<span class="b-dev">${esc(oid)}</span>` : "") + `</div>` +
     (abIdx != null ? `<div class="ab"><span class="why">${esc(why)}</span>${more ? ` <span class="sub">(+${more} more ability in this group)</span>` : ""}</div>` : "") +
     also + `<div class="det" hidden></div></div>`;
@@ -223,6 +337,12 @@ document.getElementById("panel").addEventListener("click", e => {
   const go = e.target.closest("[data-go]");
   if (go) { show(go.dataset.go); return; }
   if (e.target.closest("button.morebtn")) { renderList(); return; }
+  const vb = e.target.closest("button[data-view]");
+  if (vb) { setView(vb.dataset.view); return; }
+  const tl = e.target.closest(".tile");
+  if (tl) { toggleTile(tl); return; }
+  const ps = e.target.closest("button.psbtn");
+  if (ps) { const out = ps.closest(".cardpage").querySelector(".psout"); out.innerHTML = "Loading…"; parsedStructure(ps.dataset.oid).then(h => { out.innerHTML = h; }); return; }
   const top = e.target.closest(".card .top");
   if (top) {
     const card = top.parentElement, d = card.querySelector(".det");
@@ -232,19 +352,107 @@ document.getElementById("panel").addEventListener("click", e => {
 });
 
 let LIST = [], LISTN = 0;
+let VIEW = "text", IMGDOC = null, IMGTRIED = false;
+const PAGE_IMG = 60;
+// A list item is: a string (a heading or note, shown full width), [oid, abilityIndex, leafId] (a card in a group),
+// or {html, oid, extra} (a card with its own row markup, e.g. in the card list or Not yet organized).
+const itemOid = x => Array.isArray(x) ? x[0] : (x && typeof x === "object" ? x.oid : null);
+async function needImages() {
+  if (IMGTRIED) return;
+  IMGTRIED = true;
+  try { IMGDOC = await J("card_images.json"); } catch (e) { IMGDOC = null; }
+}
+function imageURL(oid, size) {
+  if (!IMGDOC) return null;
+  const rec = IMGDOC.cards[oid];
+  if (!rec) return null;
+  const cid = rec[0];
+  return IMGDOC.template.replace("{size}", size || "normal").replace("{face}", "front").replace("{a}", cid[0]).replace("{b}", cid[1])
+    .replace("{id}", cid).replace("{ts}", rec[1]);
+}
+function tileHTML(x) {
+  const oid = itemOid(x), c = CARDS[oid] || { n: oid };
+  const url = imageURL(oid, "normal");
+  const ab = Array.isArray(x) && x[1] != null ? x[1] : "";
+  return `<div class="tile" data-oid="${esc(oid)}" data-ab="${ab}">` + (url ?
+    `<img loading="lazy" src="${esc(url)}" alt="${esc(c.n)}" title="${esc(c.n)}"><div class="tname">${esc(c.n)}</div>` :
+    `<div class="noimg"><b>${esc(c.n)}</b><div>no picture in the image index for this card</div></div>`) + `</div>`;
+}
+function itemHTML(x) {
+  if (VIEW === "images") {
+    if (typeof x === "string") return `<div class="gridfull">${x}</div>`;
+    return tileHTML(x);
+  }
+  if (typeof x === "string") return x;
+  if (Array.isArray(x)) return cardHTML(x[0], x[1], x[2]);
+  return x.html;
+}
 function renderList() {
   const el = document.getElementById("list");
-  const chunk = LIST.slice(LISTN, LISTN + PAGE);
+  const per = VIEW === "images" ? PAGE_IMG : PAGE;
+  const chunk = LIST.slice(LISTN, LISTN + per);
   LISTN += chunk.length;
-  el.insertAdjacentHTML("beforeend", chunk.map(x => typeof x === "string" ? x : cardHTML(x[0], x[1], x[2])).join(""));
+  el.insertAdjacentHTML("beforeend", chunk.map(itemHTML).join(""));
   document.getElementById("morewrap").innerHTML = LISTN < LIST.length ?
-    `<button class="morebtn">Show ${Math.min(PAGE, LIST.length - LISTN)} more (${fmt(LIST.length - LISTN)} left)</button>` : "";
+    `<button class="morebtn">Show ${Math.min(per, LIST.length - LISTN)} more (${fmt(LIST.length - LISTN)} left)</button>` : "";
 }
-function setList(head, items) {
+function viewBarHTML() {
+  if (!LIST.some(x => itemOid(x)) && !HIDDEN) return "";
+  return `<div class="viewbar">View: <button class="vbtn${VIEW === "text" ? " on" : ""}" data-view="text">text</button>` +
+    `<button class="vbtn${VIEW === "images" ? " on" : ""}" data-view="images">card images</button>` +
+    (HIDDEN ? ` <span class="sub" id="hiddennote">${fmt(HIDDEN)} hidden (${Object.entries(HIDDENBY).sort((a, b) => b[1] - a[1]).map(([r, n]) => fmt(n) + " " + esc(r)).join(", ")}); untick the switches at the top to list them.</span>` : "") +
+    `<span class="sub" id="viewnote"></span></div>`;
+}
+function viewNote() {
+  const el = document.getElementById("viewnote");
+  if (!el) return;
+  el.innerHTML = VIEW !== "images" ? "" : IMGDOC ?
+    `Pictures load from Scryfall's servers as you scroll; this is the only part of the page that reaches outside this computer. ` +
+    `${fmt(IMGDOC.n_matched)} of ${fmt(IMGDOC.n_ours)} cards known when the picture index was built have one; cards added since, and Alchemy cards, show a plain tile.` :
+    `Could not load build/card_images.json, so there are no pictures. Run python src/build_images.py (needs the network).`;
+}
+function setList(head, items, opts) {
+  HIDDEN = 0; HIDDENBY = {};
+  const showFlagged = !!(opts && opts.showFlagged);
+  if (HIDE || HIDE_NC) {
+    const keep = [];
+    for (const x of items) {
+      const o = itemOid(x);
+      if (o == null || visible(o) || (showFlagged && !(HIDE && IMGDOC && !IMGDOC.cards[o]))) keep.push(x);
+      else { HIDDEN++; const r = hideReason(o); HIDDENBY[r] = (HIDDENBY[r] || 0) + 1; }
+    }
+    items = keep;
+  }
   LIST = items; LISTN = 0;
-  document.getElementById("panel").innerHTML = head + `<div id="list"></div><div class="more" id="morewrap"></div>`;
+  document.getElementById("panel").innerHTML = head + viewBarHTML() + `<div id="list"${VIEW === "images" ? ' class="grid"' : ""}></div><div class="more" id="morewrap"></div>`;
+  viewNote();
   renderList();
   document.getElementById("panel").scrollTop = 0;
+}
+async function setView(v) {
+  if (v === "images") await needImages();
+  VIEW = v;
+  const el = document.getElementById("list");
+  if (!el) return;
+  el.className = v === "images" ? "grid" : "";
+  el.innerHTML = ""; LISTN = 0;
+  for (const b of document.querySelectorAll(".viewbar .vbtn")) b.classList.toggle("on", b.dataset.view === v);
+  viewNote();
+  renderList();
+}
+function toggleTile(tile) {
+  const nxt = tile.nextElementSibling;
+  if (nxt && nxt.classList.contains("tiledet")) { nxt.remove(); tile.classList.remove("sel"); return; }
+  const oid = tile.dataset.oid, c = CARDS[oid];
+  const why = tile.dataset.ab !== "" && c.ab[+tile.dataset.ab] ? `<div class="ab"><span class="why">${esc(c.ab[+tile.dataset.ab][0] || "(no separate rules line for this ability)")}</span></div>` : "";
+  const it = LIST.find(x => itemOid(x) === oid && !Array.isArray(x));
+  const det = document.createElement("div");
+  det.className = "tiledet";
+  det.innerHTML = `<div class="top"><span class="nm">${esc(c.n)}</span> ${costHTML(c)} <span class="ty">${esc(c.ty)}</span> <span class="lnk chip" data-go="c:${esc(oid)}">card page</span></div>` +
+    why + (it && it.extra ? it.extra : "") + detailHTML(oid);
+  // after the last tile of this row, so the detail does not push a tile in the middle of a row
+  tile.after(det);
+  tile.classList.add("sel");
 }
 function leafItems(lid) { return (MEM[lid] || []).map(m => [m[0], m[1], lid]); }
 
@@ -255,15 +463,15 @@ async function show(k) {
   const [kind, id] = [k.split(":")[0], k.slice(k.indexOf(":") + 1)];
   if (kind === "f") {
     const f = TAX.families.find(x => "f:" + x.key === k);
-    P.innerHTML = `<h2>${esc(f.name)}</h2><p class="sub">${fmt(f.cards)} cards, ${fmt(f.abilities)} abilities, ${f.nodes.length} kinds of effect.</p>` +
-      f.nodes.map(nd => `<div><span class="lnk" data-go="n:${esc(nd.id)}">${esc(nd.name)}</span> <span class="sub">${fmt(nd.cards)} cards · ${nd.leaves.length} groups${nd.rolled.length ? ` + ${nd.rolled.length} small` : ""}</span></div>`).join("");
+    P.innerHTML = `<h2>${esc(f.name)}</h2><p class="sub">${fmt(famN(f))} cards, ${fmt(famAb(f))} abilities, ${f.nodes.length} kinds of effect.</p>` +
+      f.nodes.map(nd => `<div><span class="lnk" data-go="n:${esc(nd.id)}">${esc(nd.name)}</span> <span class="sub">${fmt(nodeN(nd))} cards · ${nd.leaves.length} groups${nd.rolled.length ? ` + ${nd.rolled.length} small` : ""}</span></div>`).join("");
     return;
   }
   if (kind === "n") {
     const nd = NODES[id];
     open.add("f:" + nd.fam); open.add("n:" + id); renderTree();
-    P.innerHTML = `<h2>${esc(nd.name)}</h2><p class="sub">${esc(NODE_FAM[id])} · ${fmt(nd.cards)} cards</p>` +
-      nd.leaves.map(lid => `<div><span class="lnk" data-go="l:${esc(lid)}">${leafLabel(TAX.leaves[lid], lid)}</span> <span class="sub">${fmt(TAX.leaves[lid].cards)} cards</span></div>`).join("") +
+    P.innerHTML = `<h2>${esc(nd.name)}</h2><p class="sub">${esc(NODE_FAM[id])} · ${fmt(nodeN(nd))} cards</p>` +
+      nd.leaves.map(lid => `<div><span class="lnk" data-go="l:${esc(lid)}">${leafLabel(TAX.leaves[lid], lid)}</span> <span class="sub">${fmt(leafN(lid))} cards</span></div>`).join("") +
       (nd.rolled.length ? `<div><span class="lnk" data-go="r:${esc(id)}">Other: ${esc(nd.name).toLowerCase()}</span> <span class="sub">${nd.rolled.length} groups of fewer than ${TAX.meta.rules.display_threshold}</span></div>` : "");
     return;
   }
@@ -273,7 +481,7 @@ async function show(k) {
     const l = TAX.leaves[id], nd = NODES[l.node];
     if (nd) { open.add("f:" + nd.fam); open.add("n:" + l.node); renderTree(); }
     const head = `<h2>${esc(l.name)}${l.auto_named ? ` <span class="badge b-auto" title="Generated from the group's signature; may be edited in corrections/ability_taxonomy_names.json">auto name</span>` : ""}</h2>` +
-      `<p class="sub">${esc(leafPath(id))} · ${fmt(l.cards)} cards · ${fmt(l.abilities)} abilities</p>` +
+      `<p class="sub">${esc(leafPath(id))} · ${fmt(leafN(id))} cards · ${fmt(leafAb(id))} abilities</p>` +
       l.notes.map(n => `<div class="note">${esc(n)} Cards here are not counted in the main coverage figure unless another ability groups them.</div>`).join("") +
       (DEV ? `<p class="b-dev">${esc(l.sig)} · level ${l.level} · ${esc(id)}</p>` : "");
     setList(head, leafItems(id));
@@ -283,7 +491,7 @@ async function show(k) {
     const items = [];
     for (const lid of nd.rolled) {
       const l = TAX.leaves[lid];
-      items.push(`<div class="subhead">${leafLabel(l, lid)} <span class="sub">${fmt(l.cards)} cards</span></div>` +
+      items.push(`<div class="subhead">${leafLabel(l, lid)} <span class="sub">${fmt(leafN(lid))} cards</span></div>` +
         l.notes.map(n => `<div class="note">${esc(n)}</div>`).join(""));
       items.push(...leafItems(lid));
     }
@@ -293,7 +501,7 @@ async function show(k) {
     const blk = kind === "kl" ? TAX.blocks.keyword : TAX.blocks.replacement, l = blk.leaves[id];
     const why = kind === "kl" ? "Rules text is only keywords; grouped by an exact match on them." :
       "Grouped by an exact match on the replacement effect or cost." + (l.basis ? " Name: " + l.basis + "." : l.coined ? " The name is ours (coined)." : "");
-    setList(`<h2>${esc(blk.name)} › ${esc(l.name)}</h2><p class="sub">${fmt(l.n)} cards. ${esc(why)}</p>`, l.cards.map(o => [o, null, null]));
+    setList(`<h2>${esc(blk.name)} › ${esc(l.name)}</h2><p class="sub">${fmt(blkLeafN(blk, id))} cards. ${esc(why)}</p>`, l.cards.map(o => [o, null, null]));
   } else if (kind === "V") {
     await needCards();
     setList(`<h2>No abilities</h2><p class="sub">Cards with no rules text.</p>`, TAX.blocks.no_abilities.cards.map(o => [o, null, null]));
@@ -301,13 +509,31 @@ async function show(k) {
     await needCards();
     const nt = window.BROAD_NOTES[+id], items = [];
     for (const lid of window.BROAD_BY[nt]) {
-      items.push(`<div class="subhead">${leafLabel(TAX.leaves[lid], lid)} <span class="sub">${fmt(TAX.leaves[lid].cards)} cards</span></div>`);
+      items.push(`<div class="subhead">${leafLabel(TAX.leaves[lid], lid)} <span class="sub">${fmt(leafN(lid))} cards</span></div>`);
       items.push(...leafItems(lid));
     }
     setList(`<h2>Groups broader than they look</h2><div class="note">${esc(nt)}</div>`, items);
+  } else if (kind === "N") {
+    await needCardList(); await needUnorg();
+    const by = ncByReason();
+    const oids = id === "all" ? Object.values(by).flat() : (by[id] || []);
+    const lab = id === "all" ? "All of them" : FLAGS.reasons[id].charAt(0).toUpperCase() + FLAGS.reasons[id].slice(1);
+    const items = oids.slice().sort((a, b) => CARDS[a].n < CARDS[b].n ? -1 : CARDS[a].n > CARDS[b].n ? 1 : 0).map(oid => {
+      const e = ENT.get(oid), why = id === "all" ? ` · ${esc(FLAGS.reasons[FLAGS.cards[oid]])}` : "";
+      const st = `<div class="gap">In this view: ${esc(KINDW[e[3]] || "")}${why}</div>`;
+      return { oid: oid, extra: st, html: cardHTML(oid, null, null).replace(`<div class="det" hidden>`, st + `<div class="det" hidden>`) };
+    });
+    setList(`<h2>Not meant for constructed play › ${esc(lab)}</h2><p class="sub">${fmt(items.length)} cards. ${id === "all" ? esc(FLAGS.rule) + "." : esc(NCWHY[id] || "")} ` +
+      `A card is listed here only if every one of its printings is like this; a card that also has an ordinary printing is a normal card. These cards are still counted and grouped in the rest of this view; ` +
+      `the switch at the top only hides them from the other lists.</p>`, items, { showFlagged: true });
+  } else if (kind === "C") {
+    setMode("cards", true);
+    await showCardList();
+  } else if (kind === "c") {
+    await showCardPage(id);
   } else if (kind === "u") {
     await needCards();
-    if (!UNORG) UNORG = (await J("ability_taxonomy_unorganized.json")).groups;
+    await needUnorg();
     const g = UNORG.find(x => String(x.id) === id);
     const items = g.list.map(c => {
       let extra = "";
@@ -316,10 +542,122 @@ async function show(k) {
       if (c.why) extra += `<div class="gap">${c.why.map(esc).join("; ")}</div>`;
       if (c.clause) extra += `<div class="gap">Possibly missing condition: “${esc(c.clause)}”</div>`;
       if (c.note) extra += `<div class="gap">${esc(c.note)}</div>`;
-      return cardHTML(c.c, null, null).replace(`<div class="det" hidden>`, extra + `<div class="det" hidden>`);
+      return { oid: c.c, extra: extra, html: cardHTML(c.c, null, null).replace(`<div class="det" hidden>`, extra + `<div class="det" hidden>`) };
     });
-    setList(`<h2>Not yet organized › ${esc(g.name)}</h2><p class="explain">${esc(g.explain)}</p><p class="sub">${fmt(g.cards)} cards. This is about the tool, not the card.</p>`, items);
+    setList(`<h2>Not yet organized › ${esc(g.name)}</h2><p class="explain">${esc(g.explain)}</p><p class="sub">${fmt(unorgN(g))} cards. This is about the tool, not the card.</p>`, items);
   }
+}
+
+// ---------------------------------------------------------------- cards mode
+const KINDW = { l: "grouped by its abilities", b: "only in groups broader than they look", u: "not yet organized", k: "keyword block", g: "replacement group", v: "no abilities" };
+let CLIST = null, ENT = null, PIDX = null;
+const PCH = new Map();
+async function needLookup() {
+  if (!LOOK) { LOOK = await J("ability_taxonomy_lookup.json"); LIDX = AbilityFind.build(LOOK); }
+}
+async function needCardList() {
+  await needCards(); await needLookup();
+  if (CLIST) return;
+  CLIST = []; ENT = new Map();
+  for (const e of LOOK.entries) {
+    ENT.set(e[0], e);
+    if (e[3] === "o") continue;
+    const c = CARDS[e[0]];
+    if (c) CLIST.push({ oid: e[0], n: c.n, k: LIDX.norm(c.n), ty: c.ty, col: c.col || "", mv: c.mv == null ? 0 : c.mv, kind: e[3] });
+  }
+  CLIST.sort((a, b) => a.k < b.k ? -1 : a.k > b.k ? 1 : 0);
+}
+function setMode(m, quiet) {
+  MODE = m;
+  for (const b of document.querySelectorAll("#tabs button")) b.classList.toggle("on", b.dataset.mode === m);
+  document.getElementById("tree").hidden = m !== "abilities";
+  document.getElementById("cardf").hidden = m !== "cards";
+  if (quiet) return;
+  if (m === "cards") show("C:");
+  else { document.getElementById("panel").innerHTML = `<p class="explain">Pick a group on the left. Each card is listed under every group one of its abilities fits, and shows the text of that ability.</p>`; location.hash = ""; selected = null; renderTree(); }
+}
+document.getElementById("hidenopic").checked = HIDE;
+document.getElementById("hidenc").checked = HIDE_NC;
+function hideChanged() {
+  try { localStorage.setItem("hideNoPicture", HIDE ? "1" : "0"); localStorage.setItem("hideNotConstructed", HIDE_NC ? "1" : "0"); } catch (err) { /* ignore */ }
+  hideNote(); renderTree();
+  if (selected) show(selected);
+}
+document.getElementById("hidenopic").addEventListener("change", e => { HIDE = e.target.checked; hideChanged(); });
+document.getElementById("hidenc").addEventListener("change", e => { HIDE_NC = e.target.checked; hideChanged(); });
+document.getElementById("tabs").addEventListener("click", e => { const b = e.target.closest("button[data-mode]"); if (b && b.dataset.mode !== MODE) setMode(b.dataset.mode); });
+function cardMatches() {
+  const q = LIDX.norm(document.getElementById("cf-name").value);
+  const cols = [...document.querySelectorAll("#cf-cols input:checked")].map(x => x.value);
+  const ty = document.getElementById("cf-type").value.toLowerCase();
+  const lo = document.getElementById("cf-mvmin").value, hi = document.getElementById("cf-mvmax").value;
+  const st = document.getElementById("cf-st").value;
+  return CLIST.filter(c => {
+    if (hidden(c.oid)) return false;
+    if (q && c.k.indexOf(q) < 0) return false;
+    if (cols.length && !cols.some(x => x === "C" ? c.col === "" : c.col.indexOf(x) >= 0)) return false;
+    if (ty && c.ty.toLowerCase().indexOf(ty) < 0) return false;
+    if (lo !== "" && c.mv < +lo) return false;
+    if (hi !== "" && c.mv > +hi) return false;
+    if (st && c.kind !== st) return false;
+    return true;
+  });
+}
+async function showCardList() {
+  const P = document.getElementById("panel");
+  P.innerHTML = `<p class="explain">Loading the card list…</p>`;
+  await needCardList();
+  const hits = cardMatches();
+  const nopic = CLIST.filter(c => hidden(c.oid)).length;
+  document.getElementById("cfcount").textContent = `${fmt(hits.length)} of ${fmt(CLIST.length - nopic)} cards match` + (nopic ? ` (${fmt(nopic)} hidden).` : ".");
+  setList(`<h2>Cards</h2><p class="sub">${fmt(hits.length)} of ${fmt(CLIST.length - nopic)} cards. Pick one to see which group each of its abilities is in. Tokens, art cards and other non-cards are not listed.</p>`,
+    hits.map(c => ({ oid: c.oid, html: `<div class="card crow" data-go="c:${esc(c.oid)}"><span class="nm lnk">${esc(c.n)}</span>${costHTML(CARDS[c.oid])}<span class="ty">${esc(c.ty)}</span><span class="badge b-auto">${esc(KINDW[c.kind])}</span></div>`, extra: `<div class="sub">${esc(KINDW[c.kind])}</div>` })));
+}
+let cfTimer = null;
+document.getElementById("cardf").addEventListener("input", () => { clearTimeout(cfTimer); cfTimer = setTimeout(() => { if (MODE === "cards") showCardList(); }, 200); });
+function answerCtx() {
+  return {
+    leafName: id => TAX.leaves[id].name, leafPath: leafPath, leafNote: id => TAX.leaves[id].notes.join(" "),
+    kwLeaf: id => TAX.blocks.keyword.leaves[id], sgLeaf: id => TAX.blocks.replacement.leaves[id], sgBlock: TAX.blocks.replacement.name,
+    group: id => TAX.unorganized.find(g => g.id === id),
+  };
+}
+function answerLinks(a) {
+  let links = "";
+  if (a.leaves && a.leaves.length) links = " " + a.leaves.slice(0, 6).map(id => `<span class="lnk chip" data-go="l:${esc(id)}">${esc(TAX.leaves[id].name)}</span>`).join("");
+  if (a.kind === "keyword") links = ` <span class="lnk chip" data-go="kl:${esc(a.leaf)}">open</span>`;
+  if (a.kind === "replacement") links = ` <span class="lnk chip" data-go="gl:${esc(a.leaf)}">open</span>`;
+  if (a.kind === "unorganized") links = ` <span class="lnk chip" data-go="u:${a.group}">open</span>`;
+  if (a.kind === "norules") links = ` <span class="lnk chip" data-go="V:">open</span>`;
+  return links;
+}
+async function showCardPage(oid) {
+  const P = document.getElementById("panel");
+  P.innerHTML = `<p class="explain">Loading…</p>`;
+  await needCardList();
+  const c = CARDS[oid], e = ENT.get(oid);
+  if (!c || !e) { P.innerHTML = `<p class="explain">No such card.</p>`; return; }
+  const a = AbilityFind.describe(LIDX, e, answerCtx());
+  P.innerHTML = `<div class="cardpage">` + (MODE === "cards" ? `<p class="sub"><span class="lnk" data-go="C:">← back to the card list</span></p>` : "") +
+    `<h2>${esc(c.n)} ${costHTML(c)} <span class="ty">${esc(c.ty)}</span></h2>` +
+    (flagged(oid) ? `<p class="note">Not meant for constructed play (${esc(FLAGS.reasons[FLAGS.cards[oid]])}): every printing is silver-border, acorn-stamped, from a joke or test set, or memorabilia. It is hidden from lists unless you untick the switch at the top.</p>` : "") +
+    `<p>${esc(a.text)}${answerLinks(a)}</p>` + detailHTML(oid) +
+    (DEV ? `<p class="subhead">Parsed structure (dev)</p><p><button class="psbtn" data-oid="${esc(oid)}">Show what the parser read</button></p><div class="psout"></div>` : "") + `</div>`;
+}
+async function parsedStructure(oid) {
+  if (!PIDX) { PIDX = new Map((await J("index.json")).rows.map(r => [r.id, r.ch])); }
+  const ch = PIDX.get(oid);
+  if (ch == null) return "No parsed structure on file for this card.";
+  if (!PCH.has(ch)) PCH.set(ch, J("chunks/" + ch + ".json"));
+  const d = (await PCH.get(ch))[oid];
+  if (!d) return "No parsed structure on file for this card.";
+  let h = "";
+  for (const k of ["abilities", "triggers", "static_abilities", "replacements"]) {
+    const v = d[k] || [];
+    h += `<p class="subhead">${k} (${v.length})</p>` + (v.length ? `<pre>${esc(JSON.stringify(v, null, 1))}</pre>` : `<span class="sub">none</span>`);
+  }
+  if (d.parse_warnings && d.parse_warnings.length) h += `<p class="subhead">parse_warnings</p><pre>${esc(JSON.stringify(d.parse_warnings, null, 1))}</pre>`;
+  return h;
 }
 
 // ---------------------------------------------------------------- find a card
@@ -331,25 +669,25 @@ document.getElementById("q").addEventListener("input", e => {
 async function find(q) {
   const out = document.getElementById("findres");
   if (!q.trim()) { out.innerHTML = ""; return; }
-  if (!LOOK) { out.innerHTML = `<div class="sub">Loading the card list…</div>`; LOOK = await J("ability_taxonomy_lookup.json"); LIDX = AbilityFind.build(LOOK); }
-  const ctx = {
-    leafName: id => TAX.leaves[id].name, leafPath: leafPath, leafNote: id => TAX.leaves[id].notes.join(" "),
-    kwLeaf: id => TAX.blocks.keyword.leaves[id], sgLeaf: id => TAX.blocks.replacement.leaves[id], sgBlock: TAX.blocks.replacement.name,
-    group: id => TAX.unorganized.find(g => g.id === id),
-  };
+  if (!LOOK) { out.innerHTML = `<div class="sub">Loading the card list…</div>`; await needLookup(); }
+  const ctx = answerCtx();
   const r = AbilityFind.search(LIDX, q, 12);
   out.innerHTML = (r.total ? "" : `<div class="sub">No card or catalogue entry matches.</div>`) + r.matches.map(en => {
     const a = AbilityFind.describe(LIDX, en, ctx);
-    let links = "";
-    if (a.leaves && a.leaves.length) links = " " + a.leaves.slice(0, 6).map(id => `<span class="lnk chip" data-go="l:${esc(id)}">${esc(TAX.leaves[id].name)}</span>`).join("");
-    if (a.kind === "keyword") links = ` <span class="lnk chip" data-go="kl:${esc(a.leaf)}">open</span>`;
-    if (a.kind === "replacement") links = ` <span class="lnk chip" data-go="gl:${esc(a.leaf)}">open</span>`;
-    if (a.kind === "unorganized") links = ` <span class="lnk chip" data-go="u:${a.group}">open</span>`;
-    if (a.kind === "norules") links = ` <span class="lnk chip" data-go="V:">open</span>`;
+    let links = answerLinks(a);
+    if (en[3] !== "o") links += ` <span class="lnk chip" data-go="c:${esc(en[0])}">card page</span>`;
     return `<div class="fr"><span class="nm">${esc(a.name)}</span>${a.others.length ? ` <span class="sub">(${a.others.map(esc).join(" / ")})</span>` : ""}: ${esc(a.text)}${links}</div>`;
   }).join("") + (r.total > 12 ? `<div class="sub">${fmt(r.total)} matches; showing 12.</div>` : "");
 }
 document.getElementById("findres").addEventListener("click", e => { const go = e.target.closest("[data-go]"); if (go) show(go.dataset.go); });
+
+// back / forward and pasted links: follow the hash when something other than show() changed it
+window.addEventListener("hashchange", () => {
+  const h = decodeURIComponent(location.hash.slice(1));
+  if (!TAX || !h || h === selected) return;
+  if (h.startsWith("C:")) setMode("cards", true);
+  show(h);
+});
 
 // ---------------------------------------------------------------- boot
 (async () => {
@@ -361,13 +699,14 @@ document.getElementById("findres").addEventListener("click", e => { const go = e
   }
   for (const f of TAX.families) for (const nd of f.nodes) { NODES[nd.id] = Object.assign({ fam: f.key }, nd); NODE_FAM[nd.id] = f.name; }
   header(); renderTree();
+  needCards().then(needUnorg).then(() => { hideNote(); renderTree(); });
   document.getElementById("foot").innerHTML =
     `Data: ${esc(TAX.meta.rules.snapshot)}. Method: ${esc(TAX.meta.rules.backoff)}, minimum ${TAX.meta.rules.minimum}; ` +
     `names are generated (edits: corrections/ability_taxonomy_names.json); no tag data is used to place anything. ` +
     `Gap-card abilities are measured and held out. The coverage figure here and the archived view's 74.8% are measured on different bases. ` +
     `<a href="ability-taxonomy-report.md">Results and limits</a> · <a href="ability-taxonomy-design.md">Design</a> · <a href="../KNOWN_LIMITATIONS.md">Known limitations §12</a>.`;
   const h = decodeURIComponent(location.hash.slice(1));
-  if (h) show(h);
+  if (h) { if (h.startsWith("C:")) setMode("cards", true); show(h); }
 })();
 </script>
 </body>
