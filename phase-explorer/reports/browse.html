@@ -98,7 +98,6 @@ body.dev .devonly { display:inline; }
     <label for="q">Find a card:</label>
     <input id="q" type="search" placeholder="type a card name" autocomplete="off">
     <label class="prov" title="Cards that Scryfall has no picture for"><input type="checkbox" id="hidenopic" checked> hide cards with no picture</label>
-    <label class="prov" title="Every printing is silver-border, acorn-stamped, from a joke or test set, or memorabilia"><input type="checkbox" id="hidenc" checked> hide cards not meant for constructed play (silver-border, joke and test cards, memorabilia)</label>
     <span class="prov" id="hidenote"></span>
     <span class="prov">· <a href="../archive/card-level-view-2026-10/reports/browse.html">archived card-level view</a> (its numbers do not match this view)</span>
     <span class="prov devonly">· dev: <a href="ledger.html">coverage ledger</a> · <a href="card-explorer.html">parse-audit explorer</a> (both show the archived view)</span>
@@ -145,23 +144,21 @@ async function needCards() {
   if (!CARDS) CARDS = (await J("ability_taxonomy_cards.json")).cards;
   await needImages(); await needFlags();
 }
-let FLAGS = null, FLAGTRIED = false, HIDE_NC = true;
-try { if (localStorage.getItem("hideNotConstructed") === "0") HIDE_NC = false; } catch (e) { /* storage unavailable: keep the default */ }
+let FLAGS = null, FLAGTRIED = false;
 async function needFlags() {
   if (FLAGTRIED) return;
   FLAGTRIED = true;
   try { FLAGS = await J("card_flags.json"); } catch (e) { FLAGS = null; }
 }
 const flagged = oid => !!(FLAGS && FLAGS.cards[oid]);
-const hidden = oid => (HIDE && !!IMGDOC && !IMGDOC.cards[oid]) || (HIDE_NC && flagged(oid));
+const hidden = oid => HIDE && !!IMGDOC && !IMGDOC.cards[oid];
 const visible = oid => !hidden(oid);
 // why a card is hidden right now: the first reason that applies
 function hideReason(oid) {
   if (HIDE && IMGDOC && !IMGDOC.cards[oid]) return "no picture";
-  if (HIDE_NC && flagged(oid)) return FLAGS.reasons[FLAGS.cards[oid]] || "not for constructed play";
   return "";
 }
-const counting = () => ((HIDE && !!IMGDOC) || (HIDE_NC && !!FLAGS)) && !!MEM && !!CARDS;
+const counting = () => (HIDE && !!IMGDOC) && !!MEM && !!CARDS;
 function nvis(oids) { const seen = new Set(); let n = 0; for (const o of oids) if (!seen.has(o)) { seen.add(o); if (visible(o)) n++; } return n; }
 const memOids = lid => (MEM[lid] || []).map(m => m[0]);
 // group sizes with the hidden cards taken out (the totals in the header count the whole pool)
@@ -177,11 +174,13 @@ const branchN = (blk, br) => counting() ? nvis([].concat(...br.leaves.map(lid =>
 const blockN = (blk, total) => counting() ? nvis([].concat(...Object.values(blk.leaves).map(l => l.cards))) : total;
 const unorgN = g => counting() && UNORG ? nvis(g.list.map(c => c.c)) : g.cards;
 async function needUnorg() { if (!UNORG) UNORG = (await J("ability_taxonomy_unorganized.json")).groups; }
-// the flagged cards that are in the card set, by reason (cards with no picture are left out while that switch is on)
+// the cards left out because they are not meant for constructed play, by reason (read from build/card_flags.json)
 function ncByReason() {
   const by = {};
+  if (!FLAGS) return by;
   for (const oid of Object.keys(FLAGS.cards)) {
-    if (!CARDS[oid] || (HIDE && IMGDOC && !IMGDOC.cards[oid])) continue;
+    const ev = FLAGS.evidence[oid];
+    if (!ev || !ev.in_card_set) continue;
     (by[FLAGS.cards[oid]] = by[FLAGS.cards[oid]] || []).push(oid);
   }
   return by;
@@ -196,7 +195,7 @@ const NCWHY = {
 function hideNote() {
   const el = document.getElementById("hidenote");
   if (!el) return;
-  if (!CARDS || !(HIDE || HIDE_NC)) { el.textContent = ""; return; }
+  if (!CARDS || !HIDE) { el.textContent = ""; return; }
   const by = {};
   for (const oid of Object.keys(CARDS)) { const r = hideReason(oid); if (r) by[r] = (by[r] || 0) + 1; }
   const parts = Object.entries(by).sort((a, b) => b[1] - a[1]).map(([r, n]) => `${fmt(n)} ${r}`);
@@ -281,9 +280,9 @@ function renderTree() {
   window.BROAD_NOTES = notes; window.BROAD_BY = byNote;
   h.push(`<div class="blk">Not yet organized</div>`);
   for (const g of TAX.unorganized) h.push(row("l1", "u:" + g.id, esc(g.name), UNORG ? unorgN(UNORG.find(x => x.id === g.id) || g) : g.cards));
-  if (FLAGS && CARDS) {
+  if (FLAGS) {
     const by = ncByReason();
-    h.push(`<div class="blk">Not meant for constructed play</div>`);
+    h.push(`<div class="blk">Left out: not meant for constructed play</div>`);
     h.push(row("l1", "N:all", "All of them", Object.values(by).reduce((a, l) => a + l.length, 0)));
     for (const r of Object.keys(FLAGS.reasons)) if (by[r]) h.push(row("l2", "N:" + r, esc(FLAGS.reasons[r].charAt(0).toUpperCase() + FLAGS.reasons[r].slice(1)), by[r].length));
   }
@@ -331,7 +330,9 @@ function detailHTML(oid) {
   const st = { p: "grouped", b: "in a broad group", h: "held back (gap card)", u: "not grouped" };
   const lis = c.ab.map(a => `<li class="st-${a[2]}">${esc(a[0] || "(no separate rules line)")} — ` +
     (a[1] && TAX.leaves[a[1]] ? `<span class="lnk" data-go="l:${esc(a[1])}">${esc(TAX.leaves[a[1]].name)}</span> (${st[a[2]]})` : st[a[2]]) + `</li>`).join("");
-  return `<div class="rt">${esc(c.t)}</div>` + (lis ? `<div class="subhead">Abilities</div><ul>${lis}</ul>` : "");
+  const gap = c.g && c.g.length ? `<div class="gap">The parser did not read part of this card's text: ${c.g.map(x => "“" + esc(x[1]) + "”").join("; ")}. ` +
+    `Its abilities that it did read are grouped on their own; this unread part is shown here, not in a group.</div>` : "";
+  return `<div class="rt">${esc(c.t)}</div>` + gap + (lis ? `<div class="subhead">Abilities</div><ul>${lis}</ul>` : "");
 }
 document.getElementById("panel").addEventListener("click", e => {
   const go = e.target.closest("[data-go]");
@@ -414,7 +415,7 @@ function viewNote() {
 function setList(head, items, opts) {
   HIDDEN = 0; HIDDENBY = {};
   const showFlagged = !!(opts && opts.showFlagged);
-  if (HIDE || HIDE_NC) {
+  if (HIDE) {
     const keep = [];
     for (const x of items) {
       const o = itemOid(x);
@@ -481,7 +482,7 @@ async function show(k) {
     const l = TAX.leaves[id], nd = NODES[l.node];
     if (nd) { open.add("f:" + nd.fam); open.add("n:" + l.node); renderTree(); }
     const head = `<h2>${esc(l.name)}${l.auto_named ? ` <span class="badge b-auto" title="Generated from the group's signature; may be edited in corrections/ability_taxonomy_names.json">auto name</span>` : ""}</h2>` +
-      `<p class="sub">${esc(leafPath(id))} · ${fmt(leafN(id))} cards · ${fmt(leafAb(id))} abilities</p>` +
+      `<p class="sub">${esc(leafPath(id))} · ${fmt(leafN(id))} cards · ${fmt(leafAb(id))} abilities${l.gap_abilities ? ` (+${fmt(l.gap_abilities)} placed from cards with a part the parser did not read)` : ""}</p>` +
       l.notes.map(n => `<div class="note">${esc(n)} Cards here are not counted in the main coverage figure unless another ability groups them.</div>`).join("") +
       (DEV ? `<p class="b-dev">${esc(l.sig)} · level ${l.level} · ${esc(id)}</p>` : "");
     setList(head, leafItems(id));
@@ -514,18 +515,17 @@ async function show(k) {
     }
     setList(`<h2>Groups broader than they look</h2><div class="note">${esc(nt)}</div>`, items);
   } else if (kind === "N") {
-    await needCardList(); await needUnorg();
+    await needFlags();
     const by = ncByReason();
     const oids = id === "all" ? Object.values(by).flat() : (by[id] || []);
     const lab = id === "all" ? "All of them" : FLAGS.reasons[id].charAt(0).toUpperCase() + FLAGS.reasons[id].slice(1);
-    const items = oids.slice().sort((a, b) => CARDS[a].n < CARDS[b].n ? -1 : CARDS[a].n > CARDS[b].n ? 1 : 0).map(oid => {
-      const e = ENT.get(oid), why = id === "all" ? ` · ${esc(FLAGS.reasons[FLAGS.cards[oid]])}` : "";
-      const st = `<div class="gap">In this view: ${esc(KINDW[e[3]] || "")}${why}</div>`;
-      return { oid: oid, extra: st, html: cardHTML(oid, null, null).replace(`<div class="det" hidden>`, st + `<div class="det" hidden>`) };
+    const items = oids.slice().sort((a, b) => FLAGS.evidence[a].name.toLowerCase() < FLAGS.evidence[b].name.toLowerCase() ? -1 : 1).map(oid => {
+      const ev = FLAGS.evidence[oid];
+      return `<div class="card"><div class="top"><span class="nm">${esc(ev.name)}</span><span class="badge b-auto">${esc(FLAGS.reasons[FLAGS.cards[oid]])}</span></div>` +
+        `<div class="gap">Printed only in: ${esc(ev.sets.join(", "))}${ev.promo_types.length ? " · promo tags: " + esc(ev.promo_types.join(", ")) : ""} · legal in no format</div></div>`;
     });
-    setList(`<h2>Not meant for constructed play › ${esc(lab)}</h2><p class="sub">${fmt(items.length)} cards. ${id === "all" ? esc(FLAGS.rule) + "." : esc(NCWHY[id] || "")} ` +
-      `A card is listed here only if every one of its printings is like this; a card that also has an ordinary printing is a normal card. These cards are still counted and grouped in the rest of this view; ` +
-      `the switch at the top only hides them from the other lists.</p>`, items, { showFlagged: true });
+    setList(`<h2>Left out: not meant for constructed play › ${esc(lab)}</h2><p class="sub">${fmt(items.length)} cards. ${id === "all" ? esc(FLAGS.rule) + "." : esc(NCWHY[id] || "")} ` +
+      `These cards are not part of this tool's card set: they are not counted, not grouped, and not found by name in the lists. Find a card tells you why one is left out.</p>`, items);
   } else if (kind === "C") {
     setMode("cards", true);
     await showCardList();
@@ -577,14 +577,12 @@ function setMode(m, quiet) {
   else { document.getElementById("panel").innerHTML = `<p class="explain">Pick a group on the left. Each card is listed under every group one of its abilities fits, and shows the text of that ability.</p>`; location.hash = ""; selected = null; renderTree(); }
 }
 document.getElementById("hidenopic").checked = HIDE;
-document.getElementById("hidenc").checked = HIDE_NC;
 function hideChanged() {
-  try { localStorage.setItem("hideNoPicture", HIDE ? "1" : "0"); localStorage.setItem("hideNotConstructed", HIDE_NC ? "1" : "0"); } catch (err) { /* ignore */ }
+  try { localStorage.setItem("hideNoPicture", HIDE ? "1" : "0"); } catch (err) { /* ignore */ }
   hideNote(); renderTree();
   if (selected) show(selected);
 }
 document.getElementById("hidenopic").addEventListener("change", e => { HIDE = e.target.checked; hideChanged(); });
-document.getElementById("hidenc").addEventListener("change", e => { HIDE_NC = e.target.checked; hideChanged(); });
 document.getElementById("tabs").addEventListener("click", e => { const b = e.target.closest("button[data-mode]"); if (b && b.dataset.mode !== MODE) setMode(b.dataset.mode); });
 function cardMatches() {
   const q = LIDX.norm(document.getElementById("cf-name").value);
@@ -640,7 +638,6 @@ async function showCardPage(oid) {
   const a = AbilityFind.describe(LIDX, e, answerCtx());
   P.innerHTML = `<div class="cardpage">` + (MODE === "cards" ? `<p class="sub"><span class="lnk" data-go="C:">← back to the card list</span></p>` : "") +
     `<h2>${esc(c.n)} ${costHTML(c)} <span class="ty">${esc(c.ty)}</span></h2>` +
-    (flagged(oid) ? `<p class="note">Not meant for constructed play (${esc(FLAGS.reasons[FLAGS.cards[oid]])}): every printing is silver-border, acorn-stamped, from a joke or test set, or memorabilia. It is hidden from lists unless you untick the switch at the top.</p>` : "") +
     `<p>${esc(a.text)}${answerLinks(a)}</p>` + detailHTML(oid) +
     (DEV ? `<p class="subhead">Parsed structure (dev)</p><p><button class="psbtn" data-oid="${esc(oid)}">Show what the parser read</button></p><div class="psout"></div>` : "") + `</div>`;
 }

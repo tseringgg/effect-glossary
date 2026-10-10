@@ -106,6 +106,36 @@ def main():
         b = dukpy.evaljs([src, JS_CTX, "orderCheck(%s)" % json.dumps(q)], lookup=lookup, tax=tax)
         if b:
             print("FAIL ordering", q, b); ok = False
+    # excluded cards: not meant for constructed play. A flagged twin must never win a name that a real card has.
+    flags = load("card_flags.json")
+    ent = {e[0]: e for e in lookup["entries"]}
+    inv = load("not_for_constructed_investigation.json")["name_collisions_with_an_unflagged_card_in_the_set"]
+    for c in inv:
+        fo = c["flagged"]["oracle_id"]
+        reals = [y for y in c["other_entries"] if y["in_card_set"] and not y["flagged"]]
+        if fo in flags["cards"] and flags["cards"][fo]:
+            if ent[fo][3] != "o" or ent[fo][4][0] != flags["cards"][fo]:
+                print("FAIL flagged twin is not a left-out entry with its reason:", c["flagged"]["name"]); ok = False
+        for q in {c["flagged"]["name"]} | {y["name"] for y in reals}:
+            r = dukpy.evaljs([src, JS_CTX, "AbilityFind.search(IDX, %s, 40)" % json.dumps(q)], lookup=lookup, tax=tax)
+            first = r["matches"][0][0] if r["matches"] else None
+            real_ids = {y["oracle_id"] for y in reals}
+            if first is not None and ent[first][3] == "o" and any(m[3] != "o" for m in r["matches"]):
+                print("FAIL a left-out entry ranks above a real card for %r" % q); ok = False
+            if q in {y["name"] for y in reals} and first not in real_ids:
+                print("FAIL the real card does not come first for %r" % q); ok = False
+    print("name collisions checked:", len(inv), "(a left-out twin never ranks above a real card)")
+    for name in ("Boltfire", "Abbot of the Sacred Meeple", "Bolshack Dragon", "Dogsnail Engine", "Very Cryptic Command", "Red Herring", "Pick Your Poison",
+                 "Fast // Furious", "Bind // Liberate", "Start // Finish"):
+        r = dukpy.evaljs([src, JS_CTX, "lookupCard(%s)" % json.dumps(name)], lookup=lookup, tax=tax)
+        print("\n== %s  (%d matches)" % (name, r["total"]))
+        for a in r["answers"][:3]:
+            print("   - %s [%s]: %s" % (a["name"], a["kind"], a["text"][:150]))
+    for name in ("Mercurial Spelldancer", "Cactus Preserve", "Ignis Scientia", "Shield of Kaldra", "Gunk Slug"):
+        r = dukpy.evaljs([src, JS_CTX, "lookupCard(%s)" % json.dumps(name)], lookup=lookup, tax=tax)
+        print(chr(10) + "== gap card: %s  (%d matches)" % (name, r["total"]))
+        for a_ in r["answers"][:2]:
+            print("   - %s [%s]: %s" % (a_["name"], a_["kind"], a_["text"][:190]))
     for name in (sys.argv[1:] or NAMED):
         r = dukpy.evaljs([src, JS_CTX, "lookupCard(%s)" % json.dumps(name)], lookup=lookup, tax=tax)
         print("\n== %s  (%d matches)" % (name, r["total"]))

@@ -102,6 +102,11 @@ BUILD = os.path.join(HERE, "build")
 CORR = os.path.join(HERE, "corrections", "ability_taxonomy_names.json")
 MIN = 5
 SHOW = 10
+# Step B (2026-10): gap-card abilities that pass the same-line and continuation tests and match a specific leaf are placed like any other
+# ability, method "gap_ability" (data only). They never count toward a group's formation or its 5-member minimum: groups are built from clean
+# abilities on clean cards only, and gap-card abilities are assigned against those counts afterwards. Abilities flagged by the dropped-condition
+# detector stay held. Set to False to go back to holding them out (the measured-but-held-out state of Step A).
+GAP_ABILITY_PLACEMENT = True
 SNAPSHOT = "phase.rs card-data.json, last modified 2026-04-20, plus the post-snapshot overlays in data/overlay/"
 
 FAMILY_FIX = {"Tribute": "Counters", "AddPendingETBCounters": "Counters", "ChooseFromZone": "Choice / wrapper"}
@@ -306,14 +311,18 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--include-gap-cards", action="store_true")
     args = ap.parse_args()
-    include_gap = args.include_gap_cards
+    include_gap = args.include_gap_cards or GAP_ABILITY_PLACEMENT
 
     L = jl("ledger.json")["rows"]
     # Alchemy rebalanced copies ("A-Public Enemy"): digital-only, not on Scryfall's paper list and without pictures; left out of the card set
     # like tokens and art cards. 216 of the 217 are rebalanced versions of a card that is in the set anyway.
     ALCH = {oid for oid, r in L.items() if r["name"].startswith("A-") and r["status"] != "out_of_scope"}
+    # Cards that are not meant for constructed play (build/card_flags.json, written by src/build_card_flags.py: every printing silver-border, acorn,
+    # playtest, joke-set or memorabilia, and legal in no format) are out of scope too, with the reason code stored on the lookup entry.
     # (Cards with no picture on Scryfall's list stay in the set; the page hides them by default, behind a switch.)
-    ASIDE = ALCH
+    FLAGS_NC = jl("card_flags.json")["cards"]
+    NFC = {oid for oid in FLAGS_NC if oid in L and L[oid]["status"] != "out_of_scope" and oid not in ALCH}
+    ASIDE = ALCH | NFC
     for oid in ASIDE:
         L[oid] = dict(L[oid], status="out_of_scope")
     P = jl("placements.json")
@@ -457,6 +466,8 @@ def main():
             a["state"], a["reason"] = "held_out", "gap_card_" + st
         else:
             a["state"], a["reason"] = st, rs
+            if a["kind"] == "gap" and st in ("placed", "placed_broad"):
+                a["method"] = "gap_ability"
         a["leaf"] = leaf_info[tuple(a["asg"])]["id"] if a.get("asg") and a["asg"][0] != "x" and tuple(a["asg"]) in leaf_info else ""
 
     # ---- names
@@ -583,7 +594,7 @@ def main():
         if js:
             for j in js:
                 a = A[j]
-                rows_out.append([oid, face, b, i, a["mode"], a["text"][:200], a["state"], a["reason"], a["leaf"]])
+                rows_out.append([oid, face, b, i, a["mode"], a["text"][:200], a["state"], a["reason"], a["leaf"], a.get("method", "")])
             continue
         if view[oid][0] in ("keyword_block", "no_abilities", "not_a_card"):
             reason = "not_in_scope:" + view[oid][0]
@@ -595,7 +606,7 @@ def main():
             reason = "item_gap"
         else:
             reason = "not_in_scope:" + str(L[oid]["status"])
-        rows_out.append([oid, face, b, i, None, (text or "")[:200], "unplaced", reason, ""])
+        rows_out.append([oid, face, b, i, None, (text or "")[:200], "unplaced", reason, "", ""])
     rows_out.sort(key=lambda r: (r[0], r[1], r[2], r[3], -1 if r[4] is None else r[4]))
 
     # ---- cards file (in-scope cards): name, cost, type, text, abilities
@@ -616,6 +627,20 @@ def main():
                        {"placed": "p", "placed_broad": "b", "held_out": "h"}.get(a["state"], "u")])
         cards[oid] = {"n": r["name"], "ty": rr0.get("type") or "", "col": rr0.get("col") or "",
                       "mv": rr0.get("mv"), "t": "\n//\n".join((x.get("text") or "") for x in rr if x)[:1500], "ab": ab}
+
+    # ---- the gap of a gap card that is now placed stays visible as plain card detail
+    for oid in sorted({a["oid"] for a in A if a.get("method") == "gap_ability"}):
+        if oid not in cards or view[oid][0] not in ("placed", "broad_only"):
+            continue
+        r_ = L[oid]
+        frags = r_["evidence"].get("fragments") or []
+        if not frags:
+            for fid in [f["id"] for f in (r_["evidence"].get("recovered") or {}).get("faces", [])] or [oid]:
+                e_ = entry(fid)
+                frags = frags + BL.gap_fragments(e_, e_.get("name") or "")
+        gaps_ = BU.clean_gaps(frags)
+        if gaps_:
+            cards[oid]["g"] = gaps_[:6]
 
     # ---- members per leaf (cards, ability number within the card's ab list)
     mem_out = collections.defaultdict(list)
@@ -656,6 +681,7 @@ def main():
         leaves_out[li["id"]] = {"name": li["name"], "auto_named": li["auto_named"], "coined": li["coined"],
                                 "sig": li["sig"], "level": li["level"], "abilities": li["n"],
                                 "cards": len(mem_out.get(li["id"], [])), "flags": li["flags"],
+                                "gap_abilities": sum(1 for a in A if a.get("method") == "gap_ability" and a["leaf"] == li["id"]),
                                 "notes": [FLAG_NOTE.get(f, f) for f in li["flags"]],
                                 "node": nodes[li["node"]]["id"], "family": li["fam"], "visible": li["n"] >= SHOW}
 
@@ -736,7 +762,7 @@ def main():
     ab_reasons = collections.Counter(r[7] for r in rows_out if r[6] != "placed")
     sizes = [li["n"] for li in leaf_info.values()]
     meta = {"rules": {"minimum": MIN, "display_threshold": SHOW, "backoff": "rarest field first, literal counts",
-                      "population": "clean abilities on clean cards" + ("; gap-card abilities included" if include_gap else
+                      "population": "clean abilities on clean cards" + ("; gap-card abilities that pass the tests are placed in them (method gap_ability) and are not counted toward group size" if include_gap else
                                                                          "; gap-card abilities measured and held out"),
                       "snapshot": SNAPSHOT, "source": "src/build_ability_taxonomy.py"},
             "leaves_all": len(leaf_info), "leaves_ge_min": len(leaves_out),
@@ -748,7 +774,12 @@ def main():
                           for b in [(1, 4), (5, 9), (10, 19), (20, 49), (50, 99), (100, 499), (500, 10 ** 6)]},
             "abilities_by_state": dict(sorted(ab_states.items())),
             "abilities_by_reason": dict(sorted(ab_reasons.items(), key=lambda kv: (-kv[1], kv[0]))),
-            "name_corrections": {"applied": {k: len(v) for k, v in used.items()}, "orphaned": orphans}}
+            "name_corrections": {"applied": {k: len(v) for k, v in used.items()}, "orphaned": orphans},
+            "gap_ability_placements": {"abilities": sum(1 for a in A if a.get("method") == "gap_ability"),
+                                       "abilities_in_unflagged_leaves": sum(1 for a in A if a.get("method") == "gap_ability" and a["state"] == "placed"),
+                                       "abilities_in_broad_leaves": sum(1 for a in A if a.get("method") == "gap_ability" and a["state"] == "placed_broad"),
+                                       "cards": len({a["oid"] for a in A if a.get("method") == "gap_ability"})},
+            "scope_exclusions": {"alchemy_rebalanced": len(ALCH), "not_for_constructed": len(NFC), "not_for_constructed_by_reason": dict(collections.Counter(FLAGS_NC[o] for o in NFC))}}
     # sig and keyword blocks for the page
     blocks = {
         "keyword": {"name": "Keyword abilities", "branches": KL["branches"],
@@ -780,7 +811,7 @@ def main():
         oid = e[0]
         v, rs = view[oid]
         if v == "not_a_card":
-            entries.append([oid, e[1], e[2], "o", ["alchemy_rebalanced", "alchemy", ""] if oid in ASIDE else e[4], 0, e[6]])
+            entries.append([oid, e[1], e[2], "o", (["alchemy_rebalanced", "alchemy", ""] if oid in ALCH else [FLAGS_NC[oid], "not_for_constructed", ""]) if oid in ASIDE else e[4], 0, e[6]])
             continue
         c = cards[oid]
         if v == "placed":
@@ -796,7 +827,11 @@ def main():
         else:
             code, extra = "u", REASON_GROUP[rs]
         entries.append([oid, e[1], e[2], code, extra, e[5], e[6]])
-    dump("ability_taxonomy_lookup.json", {"v": 1, "fold": old_lookup["fold"], "oos": dict(old_lookup["oos"], alchemy_rebalanced="an Alchemy rebalanced copy (its name starts with \u201cA-\u201d): digital-only, with no picture; left out of this tool"), "entries": entries})
+    dump("ability_taxonomy_lookup.json", {"v": 1, "fold": old_lookup["fold"], "oos": dict(old_lookup["oos"], silver_border="a silver-border card (Unglued, Unhinged, Unstable and similar): not meant for constructed play",
+                                  acorn_stamp="an acorn-stamped card (Unfinity): not meant for constructed play",
+                                  playtest_card="a playtest card (Scryfall tags every printing as a test card): not meant for constructed play",
+                                  joke_or_test_set="a card from a joke or test set (the Un-sets, Unknown Event, ...): not meant for constructed play",
+                                  memorabilia="a collector or memorabilia item: not meant for constructed play", alchemy_rebalanced="an Alchemy rebalanced copy (its name starts with \u201cA-\u201d): digital-only, with no picture; left out of this tool"), "entries": entries})
     print(json.dumps({"totals": totals, "checks": checks,
                       "meta": {k: meta[k] for k in ("leaves_all", "leaves_ge_min", "leaves_visible", "leaves_flagged",
                                                     "leaves_flagged_visible", "nodes", "families", "size_hist",

@@ -16,6 +16,9 @@ The rule: a card is flagged only if EVERY printing of it is one of
     joke / test set            the set type is "funny" (the Un-sets, Unknown Event, Mystery Booster playtest cards, ...)
     memorabilia                the set type is "memorabilia" (collector items)
 A card that is also printed in an ordinary set (Counterspell, Daze, ...) is a normal card and is never flagged.
+Legality exception: a card that is legal (or restricted, or banned) in at least one format is never flagged. Unfinity's non-acorn cards sit in a
+"funny" set but are legal in Commander and the eternal formats, so they ARE meant for constructed play (170 cards found in the Part 1a hand check).
+Each flagged card stores its evidence (sets, borders, stamps, promo tags, legal-format count) next to its reason code.
 The reason shown is the first that applies in the order above. The browse page hides flagged cards by default, behind one switch.
 """
 import collections
@@ -46,26 +49,46 @@ def printing_kind(o):
 
 
 def main():
-    ours = set(json.load(io.open(os.path.join(BUILD, "ledger.json"), encoding="utf-8"))["rows"])
+    ledger = json.load(io.open(os.path.join(BUILD, "ledger.json"), encoding="utf-8"))["rows"]
+    ours = set(ledger)
+    legal_in = {}
+    with gzip.open(os.path.join(DATA, "scryfall-oracle-cards.jsonl.gz"), "rt", encoding="utf-8") as fh:
+        for line in fh:
+            o = json.loads(line)
+            legal_in[o["oracle_id"]] = sum(1 for v in o["legalities"].values() if v != "not_legal")
     kinds = collections.defaultdict(list)
+    evid = collections.defaultdict(lambda: {"sets": set(), "borders": set(), "stamps": set(), "promo_types": set()})
     with gzip.open(os.path.join(DATA, "scryfall-default-cards.jsonl.gz"), "rt", encoding="utf-8") as fh:
         for line in fh:
             o = json.loads(line)
             oid = o.get("oracle_id")
             if oid in ours:
                 kinds[oid].append(printing_kind(o))
-    cards = {}
+                e = evid[oid]
+                e["sets"].add(o["set"] + ":" + o["set_type"])
+                e["borders"].add(o.get("border_color") or "")
+                e["stamps"].add(o.get("security_stamp") or "-")
+                e["promo_types"].update(o.get("promo_types") or [])
+    cards, evidence, exempt = {}, {}, 0
     for oid, ks in kinds.items():
         if ks and all(ks):
+            if legal_in.get(oid, 0) > 0:
+                exempt += 1                                  # legal somewhere: meant for constructed play
+                continue
             for r in REASONS:                     # first reason, in the order of REASONS
                 if r in ks:
                     cards[oid] = r
+                    e = evid[oid]
+                    evidence[oid] = {"name": ledger[oid]["name"], "in_card_set": ledger[oid]["status"] != "out_of_scope" and not ledger[oid]["name"].startswith("A-"),
+                                     "sets": sorted(e["sets"])[:12], "borders": sorted(e["borders"]), "stamps": sorted(e["stamps"]),
+                                     "promo_types": sorted(e["promo_types"])[:6], "legal_formats": 0}
                     break
-    out = {"v": 1, "rule": "flagged only if every printing is a silver-border, acorn-stamped, playtest-tagged, joke or test set (set type funny) or memorabilia printing",
-           "reasons": REASONS, "cards": dict(sorted(cards.items()))}
+    out = {"v": 2, "rule": "flagged only if every printing is a silver-border, acorn-stamped, playtest-tagged, joke or test set (set type funny) or memorabilia printing, "
+                           "and the card is legal in no format",
+           "reasons": REASONS, "legal_in_some_format_so_not_flagged": exempt, "cards": dict(sorted(cards.items())), "evidence": dict(sorted(evidence.items()))}
     with io.open(os.path.join(BUILD, "card_flags.json"), "w", encoding="utf-8", newline="\n") as fh:
         fh.write(json.dumps(out, ensure_ascii=False, indent=0, sort_keys=True))
-    print("flagged", len(cards), "of", len(kinds), "cards with printings;", dict(collections.Counter(cards.values())))
+    print("flagged", len(cards), "of", len(kinds), "cards with printings;", dict(collections.Counter(cards.values())), "| exempt (legal somewhere):", exempt)
 
 
 if __name__ == "__main__":

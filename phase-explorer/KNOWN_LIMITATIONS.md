@@ -859,6 +859,35 @@ card, keyword and replacement blocks, deep link, boost versus shrink leaves, dev
 
 **A name that cannot be checked against text (2026-10 naming round).** "A permanent can't be blocked except by certain creatures" (24 abilities, the `CantBeBlockedExceptBy` grant) is unverifiable against member text: none of its 24 members has ability text in the parse, so the name rests on the signature alone. It is left as is, and the automated claims check skips leaves where over half the members have no text.
 
+## 13. Cards not meant for constructed play are out of scope; gap-card abilities are placed (2026-10)
+
+**Step A: a real `out_of_scope` status.** `src/build_card_flags.py` (local Scryfall files, no network) writes `build/card_flags.json`: a card is flagged only if **every printing** is silver-border, acorn-stamped, tagged
+`playtest`, in a "funny"-type set, or memorabilia, **and the card is legal in no format**. The legality exception exists because 170 Unfinity non-acorn cards sit in a "funny" set but are legal in Commander and the eternal formats
+(found in the hand check: Bounce Chamber). Each flagged card stores a reason code (`silver_border`, `acorn_stamp`, `playtest_card`, `joke_or_test_set`, `memorabilia`) and its evidence (sets, borders, stamps, promo tags). The
+taxonomy build applies the status in memory (like the "A-" Alchemy copies); the frozen `ledger.json` is unchanged. 1,464 cards in the card set are excluded (744 playtest, 458 silver-border, 128 acorn, 76 joke/test set, 58
+memorabilia); their lookup entries are "Not a card in this tool: ...", and the page lists them under "Left out: not meant for constructed play". **The headline moved only because the denominator moved:** 23,458 of 34,647 = 67.7%
+(26,589 = 76.7% with broad groups) became **23,066 of 33,183 = 69.5%** (26,127 = 78.7%); the numerator fell by 392 because excluded cards had been counted as grouped. Leaf formation changed a little as a result (a population change,
+not a re-cluster): 19 leaves fell below 5 members (none with a hand-edited name; no orphaned corrections), 12 dropped under the display threshold of 10, 116 abilities of kept cards changed leaf.
+
+**Known limits of the flag rule (logged, not fixed).** Cards that are not meant for constructed play but are not caught: (a) a joke card that has one ordinary-looking printing, e.g. **Blacker Lotus** (Unglued + a Secret Lair
+reprint); (b) digital-only joke cards such as **Aswan Jaguar** (Astral Cards, legal nowhere, first printed 1997); (c) any joke card Scryfall does not tag. "Legal in no format" is not usable as a rule on its own: it also covers cards of
+sets that have not released yet (167 cards such as the Star Trek and Mystery Booster Commander cards), digital-only Alchemy cards (123) and promo cards released before their main set. A year-old "legal nowhere" rule would add only
+Blacker Lotus, Sticker sheet, Call from the Grave and Aswan Jaguar; it was declined.
+
+**Name collisions (checked against the source data).** 8 flagged cards share a name or a face name with an unflagged card of the set (Red Herring, Joven and Chandler, Pick Your Poison, Unquenchable Fury, Fast // Furious, Bind //
+Liberate, Start // Fire against Start // Finish). In every case the unflagged entry is the real card, and everything is keyed by oracle id. One real defect surfaced: the real "Fast // Furious" is stored under its first face
+name "Fast", so a search for the full name found only the flagged playtest twin. Find a card now also looks up each side of "A // B" by its exact name, and a left-out entry always sorts after real cards.
+
+**Step B: gap-card abilities are placed.** A gap card's ability that passes the same-line and continuation tests, is not flagged by the dropped-condition detector, and matches a specific leaf is placed like any other ability, method
+`gap_ability` (ledger column 10, data only). Gap-card abilities never count toward a group's formation or its 5-member minimum: every leaf has the same members and size as in Step A (checked); a leaf's heading says how many of its
+abilities came from cards with an unread part, and the unread part stays on the card as plain detail. 1,716 abilities (1,453 in unflagged leaves, 263 in broad leaves) on 1,463 cards. **Headline after Step B: 24,336 of 33,183 = 73.3%**
+(basis: placed by an ability in an unflagged leaf of 5 or more, plus the keyword block, "No abilities" and the replacement groups); 27,590 = 83.1% with broad groups; Not yet organized 7,056 -> 5,593. This supersedes the
+"gap-card abilities are held out" decision of section 12 (`GAP_ABILITY_PLACEMENT` in `src/build_ability_taxonomy.py` turns it back off).
+
+*Evidence.* Seed 20261013, 100 abilities (one per card, text read first, reads written before the reveal): **1 wrong** (Cactus Preserve: an "animate" ability filed under "gains a keyword") and 1 loose (The Fantasticar, filed under
+"Sacrifice this permanent"); the unread clause changed no assignment; 0 wrong among the 10 abilities of top-3,000 cards. Seed 20261015, after the build, 40 placed gap-card abilities (20 from top-3,000 cards, 20 from unknown-trigger-mode
+or unrecognized-condition cards): **0 wrong**. Bars were 5 of 100 and 2 of 40. These samples are rough: 100 abilities cannot tell 4% from 6%, and 40 cannot show a rate.
+
 ## Reproducing these numbers
 
 ```

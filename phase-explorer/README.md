@@ -12,9 +12,11 @@ below exist (`build/index.json`, `build/chunks/`, `build/ability_ledger.json`, `
 `build/condition_drops.json`, `build/keyword_layer.json`, `build/signature_layer.json`, `build/lookup.json`):
 
 ```
+python src/build_card_flags.py            # -> build/card_flags.json (cards not meant for constructed play; local Scryfall files only; run BEFORE the build below)
 python src/build_ability_taxonomy.py      # -> build/ability_taxonomy*.json (tree, members, cards, ledger, unorganized, lookup); about a minute
 python src/test_abilityfind.py            # Find a card: all 38,921 entries + named lookups, in a JS engine
 python src/test_browse_browser.py         # drives reports/browse.html in headless Edge (needs msedge and websocket-client)
+python src/check_tester_note.py          # checks the claims in TESTER_NOTE.md (percentages, scope, card page, suggestion links) against the build and the page
 python src/report_ability_taxonomy.py     # -> build/ability_taxonomy_report.json (numbers for reports/ability-taxonomy-report.md)
 python src/measure_field_presence.py      # how often sign / recipient / life subject are in the parse (run on a build, before changing the signature)
 python src/compare_taxonomy_builds.py DIR # compares two builds (DIR holds the older ability_taxonomy.json and _ledger.json)

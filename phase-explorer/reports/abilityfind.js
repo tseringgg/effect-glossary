@@ -75,6 +75,18 @@ var AbilityFind = (function () {
         add(i, rank);
       }
     }
+    // "A // B": a double-faced or split card is stored under one face name, so also look up each side by its exact name (a lower rank than a
+    // match on the whole string; entries that are not cards always sort after real cards)
+    if (String(query).indexOf("//") >= 0) {
+      var parts = String(query).split("//"), p, exs;
+      for (j = 0; j < parts.length; j++) {
+        p = idx.norm(parts[j]);
+        if (p && Object.prototype.hasOwnProperty.call(idx.exact, p)) {
+          exs = idx.exact[p];
+          for (i = 0; i < exs.length; i++) add(exs[i], 4);
+        }
+      }
+    }
     var E = idx.lookup.entries;
     hits.sort(function (a, b) {
       var ea = E[a.i], eb = E[b.i];

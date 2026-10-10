@@ -298,46 +298,40 @@ def main():
         c.wait("document.querySelectorAll('#list.grid .tile').length > 20", 60)
         check("18 the picture view never shows a tile without a picture while the switch is on", c.js("document.querySelectorAll('#list.grid .noimg').length") == 0
               and c.js("document.querySelectorAll('#list.grid .tile img').length") == c.js("document.querySelectorAll('#list.grid .tile').length"))
-        # 19 "hide cards not meant for constructed play": on by default; hides in lists and takes the cards out of group counts
+        # 19 the not-for-constructed cards are out of the card set (out_of_scope); there is no switch for them any more
         c.call("Page.navigate", url="http://127.0.0.1:%d/reports/browse.html" % PORT_HTTP)
         c.wait("document.querySelectorAll('#tree .row').length > 10")
-        check("19 the not-for-constructed switch is on by default", c.js("document.getElementById('hidenc').checked") is True)
-        check("19 the background load finishes and the page says how many are hidden", c.wait("document.getElementById('hidenote').innerText.includes('silver-border')", 120),
-              c.js("document.getElementById('hidenote').innerText"))
-        name = c.js("(() => { const o = Object.keys(FLAGS.cards).find(o => CARDS[o] && FLAGS.cards[o] === 'silver_border'); return CARDS[o].n })()")
-        c.js("setMode('cards', true); show('C:')")
-        c.wait("document.querySelectorAll('#list .crow').length > 100", 90)
-        c.js("(n => { const i = document.getElementById('cf-name'); i.value = n; i.dispatchEvent(new Event('input', { bubbles: true })) })(%s)" % json.dumps(name))
-        check("19 a silver-border card is hidden from the card list", c.wait("document.getElementById('cfcount').innerText.startsWith('0 of')", 30), name)
-        c.js("document.getElementById('hidenc').click()")
-        check("19 unticking the switch lists it again", c.wait("document.querySelectorAll('#list .crow').length >= 1", 30))
-        c.js("document.getElementById('hidenc').click()")
-        # group counts drop the hidden cards
-        res = c.js("""(() => {
-          const lid = Object.keys(TAX.leaves).find(k => memOids(k).some(o => flagged(o)) && TAX.leaves[k].cards >= 10);
-          const f = TAX.families.find(f => f.nodes.some(nd => nodeLeaves(nd).includes(lid)));
-          HIDE_NC = true; const on = [leafN(lid), famN(f)];
-          HIDE_NC = false; HIDE = false; const off = [leafN(lid), famN(f)];
-          HIDE_NC = true; HIDE = true;
-          return { on: on, off: off, stat: [TAX.leaves[lid].cards, f.cards] } })()""")
-        check("19 hiding takes the cards out of a group's count and its family's count",
-              res["on"][0] < res["off"][0] and res["on"][1] < res["off"][1] and res["off"] == res["stat"], json.dumps(res))
-        got = c.js("""(() => { const by = n => Object.keys(CARDS).find(o => CARDS[o].n === n);
-          return ['Abbot of the Sacred Meeple', 'Bolshack Dragon', 'Boltfire', 'Rikala, Homarid King', 'Jandor, Fortuned Traveler', 'Counterspell'].map(n => !!FLAGS.cards[by(n)]) })()""")
-        check("19 the three TEST CARD cards are flagged; Rikala, Jandor and Counterspell are not", got == [True, True, True, False, False, False], str(got))
-        c.js("setMode('abilities', true); renderTree()")
-        # 20 the "Not meant for constructed play" section under "Not yet organized"
-        c.call("Page.navigate", url="http://127.0.0.1:%d/reports/browse.html" % PORT_HTTP)
-        c.wait("document.querySelectorAll('#tree .row').length > 10")
-        check("20 the section appears in the tree once the data is loaded", c.wait("!!document.querySelector('#tree .row[data-k=\"N:all\"]')", 120))
+        check("19 there is no not-for-constructed switch", c.js("document.getElementById('hidenc')") is None)
+        check("19 the picture switch is still there and on", c.js("document.getElementById('hidenopic').checked") is True)
+        c.wait("typeof CARDS !== 'undefined' && !!CARDS && !!FLAGS", 120)
+        got = c.js("""(() => { const by = n => Object.keys(FLAGS.cards).find(o => FLAGS.evidence[o].name === n);
+          return ['Abbot of the Sacred Meeple', 'Bolshack Dragon', 'Boltfire', 'Bounce Chamber', 'Rikala, Homarid King'].map(n => { const o = by(n); return !!o && !!CARDS[o] }) })()""")
+        check("19 the test cards are no longer in the card set; Bounce Chamber (legal in Commander) was never flagged", got == [False, False, False, False, False], str(got))
+        in_cards = c.js("(() => { const n = ['Bounce Chamber', 'Rikala, Homarid King']; return n.map(x => Object.values(CARDS).some(v => v.n === x)) })()")
+        check("19 Bounce Chamber and Rikala are in the card set", in_cards == [True, True], str(in_cards))
+        # 20 the 'Left out' section under 'Not yet organized'
+        check("20 the section appears in the tree", c.wait("!!document.querySelector('#tree .row[data-k=\"N:all\"]')", 60))
         n_tree = c.js("+document.querySelector('#tree .row[data-k=\"N:all\"] .n').innerText.replace(/,/g, '')")
         check("20 it has a row per reason", c.js("[...document.querySelectorAll('#tree .row')].filter(r => r.dataset.k.startsWith('N:')).length") >= 5)
         c.js("document.querySelector('#tree .row[data-k=\"N:all\"]').click()")
         c.wait("document.querySelectorAll('#list .card').length > 50", 60)
         listed = c.js("document.querySelector('#panel .sub').innerText")
-        check("20 the section lists the hidden cards even though the switch is on", c.js("document.getElementById('hidenc').checked") is True and ("%s cards" % format(n_tree, ",")) in listed, listed[:80])
+        check("20 it lists every left-out card, with its reason and where it was printed", ("%s cards" % format(n_tree, ",")) in listed and n_tree == 1464
+              and c.js("[...document.querySelectorAll('#list .card')].slice(0, 20).every(x => x.innerText.includes('Printed only in'))") is True, listed[:80])
         check("20 a reason row opens only its own cards", c.js("(() => { show('N:playtest_card'); return true })()") and c.wait("document.querySelector('#panel h2').innerText.includes('Playtest card') && document.querySelectorAll('#list .card').length > 50", 60))
-        check("20 each listed card says where it is in this view", c.js("[...document.querySelectorAll('#list .card')].slice(0, 20).every(x => x.innerText.includes('In this view:'))") is True)
+        # 21 headline is on the constructed-only card set
+        cov = c.js("document.getElementById('cov').innerText")
+        check("21 the header gives the constructed-only figures and bases", "33,183" in cov and "Basis:" in cov, cov[:120].replace("\n", " "))
+        # 22 gap cards whose abilities are placed: the gap stays visible as plain card detail
+        gc = c.js("(() => { const o = Object.keys(CARDS).find(k => CARDS[k].g && CARDS[k].g.length && CARDS[k].ab.some(a => a[2] === 'p')); return o })()")
+        check("22 some placed cards carry the part the parser did not read", bool(gc))
+        c.js("show('c:%s')" % gc)
+        check("22 the card page says what was not read, and the cards ability is in a group",
+              c.wait("!!(document.querySelector('.cardpage .gap') && document.querySelector('.cardpage .gap').innerText.includes('did not read'))", 60)
+              and c.js("document.querySelector('.cardpage li.st-p') !== null") is True)
+        gl = c.js("Object.keys(TAX.leaves).find(k => TAX.leaves[k].gap_abilities > 0)")
+        c.js("show('l:%s')" % gl)
+        check("22 a group says how many of its abilities came from cards with an unread part", c.wait("document.querySelector('#panel .sub') && document.querySelector('#panel .sub').innerText.includes('placed from cards with a part the parser did not read')", 60))
         if SHOTS:
             open(os.path.join(SHOTS, "browser_deeplink.png"), "wb").write(base64.b64decode(c.call("Page.captureScreenshot", format="png")["data"]))
     finally:
