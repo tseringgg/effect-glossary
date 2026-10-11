@@ -15,6 +15,10 @@ below exist (`build/index.json`, `build/chunks/`, `build/ability_ledger.json`, `
 python src/build_card_flags.py            # -> build/card_flags.json (cards not meant for constructed play; local Scryfall files only; run BEFORE the build below)
 python src/build_ability_taxonomy.py      # -> build/ability_taxonomy*.json (tree, members, cards, ledger, unorganized, lookup); about a minute
 python src/test_abilityfind.py            # Find a card: all 38,921 entries + named lookups, in a JS engine
+python src/build_loose_groups.py          # -> build/loose_groups.json, build/loose_unread.json (the "Loosely grouped" browse layer and the "couldn't read yet" list; browse aid only, reads nothing the taxonomy build reads; about a minute; run after the build above)
+python src/build_tentative.py             # -> build/tentative_placements.json, build/tentative_ledger.json (loose groups promoted to TENTATIVE placements by the hand reads in corrections/tentative_groups.json; method loose_tentative; TENTATIVE_LAYER = False writes an empty layer; run after build_loose_groups.py)
+python src/check_tentative.py draw        # fresh check of 40 tentative placements (seed 20261020): `show`, write build/tentative_check_reads.json, `reveal`, then `result`
+python src/check_loose_groups.py draw     # hand checks for that layer: seeded draws, then `reveal` after the reads file is written (see the report)
 python src/test_browse_browser.py         # drives reports/browse.html in headless Edge (needs msedge and websocket-client)
 python src/check_tester_note.py          # checks the claims in TESTER_NOTE.md (percentages, scope, card page, suggestion links) against the build and the page
 python src/report_ability_taxonomy.py     # -> build/ability_taxonomy_report.json (numbers for reports/ability-taxonomy-report.md)

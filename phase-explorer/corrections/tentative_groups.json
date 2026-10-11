@@ -1,0 +1,1187 @@
+{
+ "_about": "Hand reads of the 195 plain loose groups for the tentative layer (2026-10, seed 20261021): the read of up to 8 eligible member texts (written before the group name was shown), and whether the group's name states the effect. Input to src/build_tentative.py, which applies the structural rules (minimum eligible cards, text-less share, holds) itself. A group not listed here is not promoted.",
+ "groups": {
+  "g01f9a86f": {
+   "key_states_effect": true,
+   "n": 1,
+   "name_at_review": "Static: restriction › Can't be blocked by certain creatures, less common kinds",
+   "verdict": "coherent"
+  },
+  "g02cacb19": {
+   "key_states_effect": true,
+   "n": 2,
+   "name_at_review": "Tokens › Create creature tokens, from a spell or activated ability",
+   "verdict": "coherent"
+  },
+  "g02dc8e71": {
+   "key_states_effect": true,
+   "n": 3,
+   "name_at_review": "Pump / grant › Make things smaller, other kinds of target",
+   "verdict": "coherent"
+  },
+  "g0558ae01": {
+   "key_states_effect": true,
+   "n": 4,
+   "name_at_review": "Counters › Put +1/+1 counters on this permanent, through a replacement effect",
+   "verdict": "coherent"
+  },
+  "g067b51a2": {
+   "key_states_effect": true,
+   "n": 5,
+   "name_at_review": "Tokens › Create tokens, less common kinds",
+   "verdict": "loose"
+  },
+  "g085c44dd": {
+   "key_states_effect": true,
+   "n": 6,
+   "name_at_review": "Destroy › Destroy a land",
+   "verdict": "coherent"
+  },
+  "g0885c49b": {
+   "key_states_effect": true,
+   "n": 7,
+   "name_at_review": "Zone change › Move cards from the graveyard to the battlefield, less common kinds",
+   "verdict": "coherent"
+  },
+  "g09f9ed70": {
+   "key_states_effect": true,
+   "n": 8,
+   "name_at_review": "Static: continuous › Continuous effect on enchanted creature: adds power",
+   "verdict": "coherent"
+  },
+  "g0a2d2c7f": {
+   "key_states_effect": true,
+   "n": 9,
+   "name_at_review": "Library › Reveal the top cards of a library, less common kinds",
+   "verdict": "loose"
+  },
+  "g0ae8d0e1": {
+   "key_states_effect": true,
+   "n": 10,
+   "name_at_review": "Library › Look at the top cards of a library, cards go to the battlefield",
+   "verdict": "coherent"
+  },
+  "g0aed960d": {
+   "key_states_effect": true,
+   "n": 11,
+   "name_at_review": "Counters › Put power/toughness counters on a creature, less common kinds",
+   "verdict": "coherent"
+  },
+  "g0b9b9d84": {
+   "key_states_effect": true,
+   "n": 12,
+   "name_at_review": "Damage › Make creatures fight, less common kinds",
+   "verdict": "coherent"
+  },
+  "g0cd826ee": {
+   "key_states_effect": true,
+   "n": 13,
+   "name_at_review": "Card draw › Draw cards, when a card moves between zones",
+   "verdict": "loose"
+  },
+  "g0d78cf06": {
+   "key_states_effect": true,
+   "n": 14,
+   "name_at_review": "Counters › Put counters, from a spell or activated ability, less common kinds",
+   "verdict": "coherent"
+  },
+  "g0e2095bd": {
+   "key_states_effect": true,
+   "n": 15,
+   "name_at_review": "Damage › Deal damage in another form to a creature, all of them",
+   "verdict": "coherent"
+  },
+  "g0e59b748": {
+   "key_states_effect": true,
+   "n": 16,
+   "name_at_review": "Protection › Prevent damage, less common kinds",
+   "verdict": "coherent"
+  },
+  "g0e97334e": {
+   "key_states_effect": true,
+   "n": 17,
+   "name_at_review": "Library › Mill cards, less common kinds",
+   "verdict": "coherent"
+  },
+  "g0f69357c": {
+   "key_states_effect": true,
+   "n": 18,
+   "name_at_review": "Library › Mill cards, by you",
+   "verdict": "coherent"
+  },
+  "g1052e3b0": {
+   "key_states_effect": true,
+   "n": 19,
+   "name_at_review": "Pump / grant › Make a creature bigger",
+   "verdict": "coherent"
+  },
+  "g115d46c9": {
+   "key_states_effect": true,
+   "n": 20,
+   "name_at_review": "Mana › Add mana, of any one color",
+   "verdict": "coherent"
+  },
+  "g11c1f8a8": {
+   "key_states_effect": true,
+   "n": 21,
+   "name_at_review": "Zone change › Move cards from the graveyard to exile, ones you control",
+   "verdict": "loose"
+  },
+  "g1577e1bb": {
+   "key_states_effect": true,
+   "n": 22,
+   "name_at_review": "Zone change › Move a creature to exile",
+   "verdict": "coherent"
+  },
+  "g15c83afe": {
+   "key_states_effect": true,
+   "n": 23,
+   "name_at_review": "Zone change › Return this permanent to its owner's hand",
+   "verdict": "coherent"
+  },
+  "g1692e964": {
+   "key_states_effect": true,
+   "n": 24,
+   "name_at_review": "Counters › Put +1/+1 counters on this permanent",
+   "verdict": "coherent"
+  },
+  "g1985413f": {
+   "key_states_effect": true,
+   "n": 25,
+   "name_at_review": "Control › Gain control of an artifact",
+   "verdict": "coherent"
+  },
+  "g19cd3399": {
+   "key_states_effect": true,
+   "n": 26,
+   "name_at_review": "Mana › Add mana, of one specific color",
+   "verdict": "coherent"
+  },
+  "g1b8ea3af": {
+   "key_states_effect": false,
+   "n": 27,
+   "name_at_review": "Cast / play › Cast a card (the zone is not recorded)",
+   "note": "the key says 'cast a card'; members include can't-cast restrictions and copies",
+   "verdict": "loose"
+  },
+  "g1bfb41a4": {
+   "key_states_effect": false,
+   "n": 28,
+   "name_at_review": "Pump / grant › Give things a gained ability",
+   "note": "the key says 'gained ability'; members include token creation for opponents and cost changes",
+   "verdict": "loose"
+  },
+  "g1cbf83eb": {
+   "key_states_effect": true,
+   "n": 29,
+   "name_at_review": "Counters › Put time counters, other kinds of target",
+   "verdict": "coherent"
+  },
+  "g1ccd2364": {
+   "key_states_effect": true,
+   "n": 30,
+   "name_at_review": "Static: continuous › Continuous effect on a creature: adds power",
+   "verdict": "coherent"
+  },
+  "g1cda3a91": {
+   "key_states_effect": true,
+   "n": 31,
+   "name_at_review": "Counters › Put +1/+1 counters on the thing chosen before, less common kinds",
+   "verdict": "coherent"
+  },
+  "g1f4a5684": {
+   "key_states_effect": true,
+   "n": 32,
+   "name_at_review": "Counters › Put +1/+1 counters on this permanent, on another kind of trigger",
+   "verdict": "coherent"
+  },
+  "g233472cc": {
+   "key_states_effect": true,
+   "n": 33,
+   "name_at_review": "Sacrifice › Sacrifice this permanent",
+   "verdict": "coherent"
+  },
+  "g2474941c": {
+   "key_states_effect": true,
+   "n": 34,
+   "name_at_review": "Zone change › Move cards to exile, less common kinds",
+   "verdict": "loose"
+  },
+  "g27678898": {
+   "key_states_effect": false,
+   "n": 35,
+   "name_at_review": "Pump / grant › Give things a different rule, other kinds of target",
+   "note": "'a different rule' does not say what the rule is",
+   "verdict": "loose"
+  },
+  "g2c760bf7": {
+   "key_states_effect": true,
+   "n": 36,
+   "name_at_review": "Damage › Deal damage to any target",
+   "verdict": "coherent"
+  },
+  "g2ea53f14": {
+   "key_states_effect": true,
+   "n": 37,
+   "name_at_review": "Pump / grant › Give things haste, other kinds of target",
+   "verdict": "loose"
+  },
+  "g2f88bfbd": {
+   "key_states_effect": true,
+   "n": 38,
+   "name_at_review": "Pump / grant › Give things first strike, other kinds of target",
+   "verdict": "loose"
+  },
+  "g2f96ba8c": {
+   "key_states_effect": true,
+   "n": 39,
+   "name_at_review": "Counters › Put +1/+1 counters on a creature, all of them",
+   "verdict": "coherent"
+  },
+  "g325e3c1a": {
+   "key_states_effect": true,
+   "n": 40,
+   "name_at_review": "Static: continuous › Continuous effect on things: gives trample, other kinds of target",
+   "verdict": "coherent"
+  },
+  "g35e1a236": {
+   "key_states_effect": true,
+   "n": 41,
+   "name_at_review": "Pump / grant › Make things bigger and smaller, other kinds of target",
+   "verdict": "coherent"
+  },
+  "g372fc4a5": {
+   "key_states_effect": true,
+   "n": 42,
+   "name_at_review": "Library › Exile the top cards of a library",
+   "verdict": "coherent"
+  },
+  "g3a8d7824": {
+   "key_states_effect": true,
+   "n": 43,
+   "name_at_review": "Damage › Deal damage to a creature, from a spell or activated ability",
+   "verdict": "coherent"
+  },
+  "g3c192307": {
+   "key_states_effect": true,
+   "n": 44,
+   "name_at_review": "Zone change › Move the thing chosen before to exile",
+   "verdict": "loose"
+  },
+  "g3f240410": {
+   "key_states_effect": true,
+   "n": 45,
+   "name_at_review": "Library › Search a library, less common kinds",
+   "verdict": "coherent"
+  },
+  "g3faedc66": {
+   "key_states_effect": true,
+   "n": 46,
+   "name_at_review": "Game / player › Flip a coin",
+   "verdict": "coherent"
+  },
+  "g43e1aa9e": {
+   "key_states_effect": true,
+   "n": 47,
+   "name_at_review": "Tokens › Create artifact tokens",
+   "verdict": "coherent"
+  },
+  "g4473107a": {
+   "key_states_effect": true,
+   "n": 48,
+   "name_at_review": "Sacrifice › Sacrifice, less common kinds",
+   "verdict": "coherent"
+  },
+  "g44746ec5": {
+   "key_states_effect": true,
+   "n": 49,
+   "name_at_review": "Counters › Remove counters, less common kinds",
+   "verdict": "coherent"
+  },
+  "g45489ea9": {
+   "key_states_effect": true,
+   "n": 50,
+   "name_at_review": "Pump / grant › Give things no abilities, other kinds of target",
+   "verdict": "coherent"
+  },
+  "g48577509": {
+   "key_states_effect": true,
+   "n": 51,
+   "name_at_review": "Damage › Deal damage to a player",
+   "verdict": "coherent"
+  },
+  "g4936c535": {
+   "key_states_effect": true,
+   "n": 52,
+   "name_at_review": "Card draw › Draw cards",
+   "verdict": "coherent"
+  },
+  "g496edd84": {
+   "key_states_effect": true,
+   "n": 53,
+   "name_at_review": "Tap / untap › Tap a creature",
+   "verdict": "coherent"
+  },
+  "g4a20ed47": {
+   "key_states_effect": false,
+   "n": 54,
+   "name_at_review": "Choice / wrapper › A card with several modes",
+   "note": "members show only trigger clauses",
+   "verdict": "incoherent"
+  },
+  "g4a37ecd7": {
+   "key_states_effect": true,
+   "n": 55,
+   "name_at_review": "Zone change › Return a creature to its owner's hand",
+   "verdict": "coherent"
+  },
+  "g4d22e0e2": {
+   "key_states_effect": true,
+   "n": 56,
+   "name_at_review": "Zone change › Return things to their owners' hands, ones you control",
+   "verdict": "coherent"
+  },
+  "g4d51311b": {
+   "key_states_effect": true,
+   "n": 57,
+   "name_at_review": "Zone change › Move cards from the graveyard to exile",
+   "verdict": "coherent"
+  },
+  "g4dd15142": {
+   "key_states_effect": true,
+   "n": 58,
+   "name_at_review": "Zone change › Move cards to exile",
+   "verdict": "coherent"
+  },
+  "g4fd88e4c": {
+   "key_states_effect": true,
+   "n": 59,
+   "name_at_review": "Static: cost change › Spells cost less",
+   "verdict": "coherent"
+  },
+  "g51d7dd24": {
+   "key_states_effect": true,
+   "n": 60,
+   "name_at_review": "Damage › Deal damage to each player, all of them",
+   "verdict": "coherent"
+  },
+  "g530e230f": {
+   "key_states_effect": true,
+   "n": 61,
+   "name_at_review": "Copy › Become a copy of a creature",
+   "verdict": "coherent"
+  },
+  "g5472bd4d": {
+   "key_states_effect": true,
+   "n": 62,
+   "name_at_review": "Game / player › Roll a die",
+   "verdict": "coherent"
+  },
+  "g553a6c91": {
+   "key_states_effect": true,
+   "n": 63,
+   "name_at_review": "Static: other rule › Cast spells with an added ability, less common kinds",
+   "verdict": "coherent"
+  },
+  "g56937b04": {
+   "key_states_effect": true,
+   "n": 64,
+   "name_at_review": "Static: continuous › Continuous effect on things: grants an ability, other kinds of target",
+   "verdict": "coherent"
+  },
+  "g56a5ef47": {
+   "key_states_effect": true,
+   "n": 65,
+   "name_at_review": "Library › Seek a card, cards go to hand",
+   "verdict": "coherent"
+  },
+  "g583a2d6e": {
+   "key_states_effect": true,
+   "n": 66,
+   "name_at_review": "Library › Reveal the top cards of a library",
+   "verdict": "loose"
+  },
+  "g5c01768a": {
+   "key_states_effect": true,
+   "n": 67,
+   "name_at_review": "Zone change › Move cards to the graveyard, less common kinds",
+   "verdict": "loose"
+  },
+  "g5e0a98c5": {
+   "key_states_effect": true,
+   "n": 68,
+   "name_at_review": "Pump / grant › Make this permanent bigger",
+   "verdict": "coherent"
+  },
+  "g5e1c592f": {
+   "key_states_effect": true,
+   "n": 69,
+   "name_at_review": "Pump / grant › Make things bigger or smaller by a counted amount, other kinds of target",
+   "verdict": "loose"
+  },
+  "g5f13c592": {
+   "key_states_effect": true,
+   "n": 70,
+   "name_at_review": "Library › Reveal the top cards of a library, cards go to the battlefield",
+   "verdict": "coherent"
+  },
+  "g5fa0a838": {
+   "key_states_effect": true,
+   "n": 71,
+   "name_at_review": "Library › Surveil",
+   "verdict": "coherent"
+  },
+  "g612b376b": {
+   "key_states_effect": true,
+   "n": 72,
+   "name_at_review": "Zone change › Move cards from hand to the battlefield",
+   "verdict": "coherent"
+  },
+  "g619d41fd": {
+   "key_states_effect": true,
+   "n": 73,
+   "name_at_review": "Discard / hand › Reveal a hand",
+   "verdict": "coherent"
+  },
+  "g61f01efe": {
+   "key_states_effect": true,
+   "n": 74,
+   "name_at_review": "Pump / grant › Make a creature smaller, all of them",
+   "verdict": "coherent"
+  },
+  "g6304c26e": {
+   "key_states_effect": true,
+   "n": 75,
+   "name_at_review": "Tokens › Create creature tokens, less common kinds",
+   "verdict": "coherent"
+  },
+  "g651968d6": {
+   "key_states_effect": true,
+   "n": 76,
+   "name_at_review": "Zone change › Move cards to exile, ones you control, less common kinds",
+   "verdict": "coherent"
+  },
+  "g670e5f0e": {
+   "key_states_effect": true,
+   "n": 77,
+   "name_at_review": "Copy › Copy a spell or ability (which one is not recorded), chosen before",
+   "verdict": "coherent"
+  },
+  "g67f10a96": {
+   "key_states_effect": true,
+   "n": 78,
+   "name_at_review": "Pump / grant › Give things a gained effect, power and toughness up, other kinds of target",
+   "verdict": "coherent"
+  },
+  "g6b310da0": {
+   "key_states_effect": true,
+   "n": 79,
+   "name_at_review": "Pump / grant › Give things flying, other kinds of target",
+   "verdict": "coherent"
+  },
+  "g6c66c5f6": {
+   "key_states_effect": true,
+   "n": 80,
+   "name_at_review": "Tap / untap › Tap, less common kinds",
+   "verdict": "loose"
+  },
+  "g6d86ff77": {
+   "key_states_effect": true,
+   "n": 81,
+   "name_at_review": "Zone change › Move cards from the graveyard to the battlefield",
+   "verdict": "coherent"
+  },
+  "g6da6f006": {
+   "key_states_effect": true,
+   "n": 82,
+   "name_at_review": "Damage › Deal damage to any target, from a spell or activated ability",
+   "verdict": "coherent"
+  },
+  "g6edf26de": {
+   "key_states_effect": true,
+   "n": 83,
+   "name_at_review": "Card draw › Draw cards, from a spell or activated ability",
+   "verdict": "coherent"
+  },
+  "g7173187e": {
+   "key_states_effect": true,
+   "n": 84,
+   "name_at_review": "Pump / grant › Make a creature bigger, all of them",
+   "verdict": "coherent"
+  },
+  "g72b4c614": {
+   "key_states_effect": true,
+   "n": 85,
+   "name_at_review": "Library › Search a library",
+   "verdict": "coherent"
+  },
+  "g735dcd40": {
+   "key_states_effect": true,
+   "n": 86,
+   "name_at_review": "Life › Gain life, by you",
+   "verdict": "coherent"
+  },
+  "g74ce1881": {
+   "key_states_effect": true,
+   "n": 87,
+   "name_at_review": "Pump / grant › Make things bigger, other kinds of target",
+   "verdict": "loose"
+  },
+  "g78f2f869": {
+   "key_states_effect": true,
+   "n": 88,
+   "name_at_review": "Zone change › Move cards from the graveyard to exile, less common kinds",
+   "verdict": "coherent"
+  },
+  "g7a1a1580": {
+   "key_states_effect": true,
+   "n": 89,
+   "name_at_review": "Zone change › Move cards from the library to exile",
+   "verdict": "coherent"
+  },
+  "g7a4c3ee9": {
+   "key_states_effect": true,
+   "n": 90,
+   "name_at_review": "Damage › Deal damage, less common kinds",
+   "verdict": "loose"
+  },
+  "g7bd762da": {
+   "key_states_effect": true,
+   "n": 91,
+   "name_at_review": "Life › Lose life, less common kinds",
+   "verdict": "coherent"
+  },
+  "g80774c9f": {
+   "key_states_effect": true,
+   "n": 92,
+   "name_at_review": "Counters › Put power/toughness counters on this permanent",
+   "verdict": "coherent"
+  },
+  "g816e0ba8": {
+   "key_states_effect": true,
+   "n": 93,
+   "name_at_review": "Discard / hand › Discard cards",
+   "verdict": "coherent"
+  },
+  "g8233cc99": {
+   "key_states_effect": true,
+   "n": 94,
+   "name_at_review": "Cast / play › Cast a card (the zone is not recorded), without paying its cost",
+   "verdict": "loose"
+  },
+  "g82dfcb78": {
+   "key_states_effect": true,
+   "n": 95,
+   "name_at_review": "Tokens › Create a token that is a copy of the thing chosen before",
+   "verdict": "coherent"
+  },
+  "g83e1b63d": {
+   "key_states_effect": true,
+   "n": 96,
+   "name_at_review": "Zone change › Move cards to the battlefield",
+   "verdict": "coherent"
+  },
+  "g847a2ea9": {
+   "key_states_effect": true,
+   "n": 97,
+   "name_at_review": "Damage › Deal damage in another form, less common kinds",
+   "verdict": "coherent"
+  },
+  "g85efe024": {
+   "key_states_effect": true,
+   "n": 98,
+   "name_at_review": "Counters › Put +1/+1 counters on a creature",
+   "verdict": "coherent"
+  },
+  "g864599ed": {
+   "key_states_effect": true,
+   "n": 99,
+   "name_at_review": "Control › Gain control of a creature",
+   "verdict": "coherent"
+  },
+  "g8673dc92": {
+   "key_states_effect": true,
+   "n": 100,
+   "name_at_review": "Damage › Deal damage to a creature or planeswalker",
+   "verdict": "coherent"
+  },
+  "g87f1a9c6": {
+   "key_states_effect": true,
+   "n": 101,
+   "name_at_review": "Counters › Give a player counters, poison counters, less common kinds",
+   "verdict": "coherent"
+  },
+  "g88688ce8": {
+   "key_states_effect": true,
+   "n": 102,
+   "name_at_review": "Pump / grant › Make a creature smaller",
+   "verdict": "coherent"
+  },
+  "g8877cac4": {
+   "key_states_effect": true,
+   "n": 103,
+   "name_at_review": "Pump / grant › Give things a creature type, other kinds of target",
+   "verdict": "coherent"
+  },
+  "g8b3dcf74": {
+   "key_states_effect": false,
+   "n": 104,
+   "name_at_review": "Static: continuous › Continuous effect on this permanent",
+   "note": "'Continuous effect on this permanent' does not say what it does",
+   "verdict": "loose"
+  },
+  "g8c90f1bc": {
+   "key_states_effect": true,
+   "n": 105,
+   "name_at_review": "Tokens › Create a token that is a copy of a creature",
+   "verdict": "coherent"
+  },
+  "g8dbb2cba": {
+   "key_states_effect": true,
+   "n": 106,
+   "name_at_review": "Pump / grant › Give things indestructible",
+   "verdict": "coherent"
+  },
+  "g8e758b1d": {
+   "key_states_effect": true,
+   "n": 107,
+   "name_at_review": "Tap / untap › Untap an artifact, less common kinds",
+   "verdict": "coherent"
+  },
+  "g905cc013": {
+   "key_states_effect": true,
+   "n": 108,
+   "name_at_review": "Counters › Put counters, less common kinds",
+   "verdict": "coherent"
+  },
+  "g90b8080f": {
+   "key_states_effect": true,
+   "n": 109,
+   "name_at_review": "Static: continuous › Continuous effect on things: gives indestructible, other kinds of target",
+   "verdict": "coherent"
+  },
+  "g90c772a8": {
+   "key_states_effect": true,
+   "n": 110,
+   "name_at_review": "Sacrifice › Sacrifice a creature",
+   "verdict": "loose"
+  },
+  "g915cca39": {
+   "key_states_effect": true,
+   "n": 111,
+   "name_at_review": "Zone change › Move cards to exile, all of them",
+   "verdict": "loose"
+  },
+  "g91c5dfc0": {
+   "key_states_effect": true,
+   "n": 112,
+   "name_at_review": "Discard / hand › Reveal a hand, by target player",
+   "verdict": "coherent"
+  },
+  "g91ef2b63": {
+   "key_states_effect": true,
+   "n": 113,
+   "name_at_review": "Tokens › Create a token that is a copy of an artifact",
+   "verdict": "coherent"
+  },
+  "g930e7985": {
+   "key_states_effect": false,
+   "n": 114,
+   "name_at_review": "Static: other rule › Triggers an extra time",
+   "note": "no member has usable text",
+   "verdict": "incoherent"
+  },
+  "g932742f3": {
+   "key_states_effect": true,
+   "n": 115,
+   "name_at_review": "Static: continuous › Continuous effect on things: gives haste, other kinds of target",
+   "verdict": "coherent"
+  },
+  "g9331964a": {
+   "key_states_effect": true,
+   "n": 116,
+   "name_at_review": "Copy › Copy a spell or ability (which one is not recorded), less common kinds",
+   "verdict": "coherent"
+  },
+  "g9465f1c3": {
+   "key_states_effect": true,
+   "n": 117,
+   "name_at_review": "Tokens › Create creature tokens with flying",
+   "verdict": "coherent"
+  },
+  "g947d1231": {
+   "key_states_effect": true,
+   "n": 118,
+   "name_at_review": "Tap / untap › Untap a creature",
+   "verdict": "coherent"
+  },
+  "g954d3569": {
+   "key_states_effect": true,
+   "n": 119,
+   "name_at_review": "Sacrifice › Sacrifice the thing chosen before",
+   "verdict": "loose"
+  },
+  "g96a3cd4d": {
+   "key_states_effect": true,
+   "n": 120,
+   "name_at_review": "Zone change › Move cards to exile, ones an opponent controls",
+   "verdict": "coherent"
+  },
+  "g9775086a": {
+   "key_states_effect": true,
+   "n": 121,
+   "name_at_review": "Counter spell › Counter a card",
+   "verdict": "coherent"
+  },
+  "g9969d9ee": {
+   "key_states_effect": true,
+   "n": 122,
+   "name_at_review": "Counters › Put +1/+1 counters, other kinds of target",
+   "verdict": "coherent"
+  },
+  "g99b53737": {
+   "key_states_effect": true,
+   "n": 123,
+   "name_at_review": "Static: continuous › Continuous effect on things: gives lifelink, other kinds of target",
+   "verdict": "coherent"
+  },
+  "g9a836d1f": {
+   "key_states_effect": true,
+   "n": 124,
+   "name_at_review": "Library › Scry",
+   "verdict": "coherent"
+  },
+  "g9b10aa7d": {
+   "key_states_effect": false,
+   "n": 125,
+   "name_at_review": "Pump / grant › Give things a gained effect, less common kinds",
+   "note": "'a gained effect' does not say what is gained",
+   "verdict": "loose"
+  },
+  "g9b41354e": {
+   "key_states_effect": true,
+   "n": 126,
+   "name_at_review": "Library › Reveal cards until a match",
+   "verdict": "coherent"
+  },
+  "g9da41233": {
+   "key_states_effect": true,
+   "n": 127,
+   "name_at_review": "Zone change › Phase out, less common kinds",
+   "verdict": "coherent"
+  },
+  "g9f889213": {
+   "key_states_effect": true,
+   "n": 128,
+   "name_at_review": "Counters › Put +1/+1 counters on this permanent, at the beginning of a phase",
+   "verdict": "coherent"
+  },
+  "g9fd81c7c": {
+   "key_states_effect": true,
+   "n": 129,
+   "name_at_review": "Card draw › Draw cards, on another kind of trigger",
+   "verdict": "coherent"
+  },
+  "ga0733398": {
+   "key_states_effect": true,
+   "n": 130,
+   "name_at_review": "Zone change › Put a card in a library, less common kinds",
+   "verdict": "coherent"
+  },
+  "ga0accd0e": {
+   "key_states_effect": true,
+   "n": 131,
+   "name_at_review": "Destroy › Destroy a creature, all of them",
+   "verdict": "coherent"
+  },
+  "ga20b6273": {
+   "key_states_effect": true,
+   "n": 132,
+   "name_at_review": "Zone change › Move cards from hand to the library, less common kinds",
+   "verdict": "coherent"
+  },
+  "ga36e5cf9": {
+   "key_states_effect": true,
+   "n": 133,
+   "name_at_review": "Control › Gain control of things, less common kinds",
+   "verdict": "coherent"
+  },
+  "ga8dfc96c": {
+   "key_states_effect": true,
+   "n": 134,
+   "name_at_review": "Pump / grant › Give things a card type, other kinds of target",
+   "verdict": "coherent"
+  },
+  "gac2f0056": {
+   "key_states_effect": true,
+   "n": 135,
+   "name_at_review": "Counter spell › Counter a spell, less common kinds",
+   "verdict": "coherent"
+  },
+  "gb13149b8": {
+   "key_states_effect": true,
+   "n": 136,
+   "name_at_review": "Mana › Add mana",
+   "verdict": "coherent"
+  },
+  "gb194ed8f": {
+   "key_states_effect": true,
+   "n": 137,
+   "name_at_review": "Static: continuous › Continuous effect on this permanent: adds power",
+   "verdict": "coherent"
+  },
+  "gb60cb084": {
+   "key_states_effect": true,
+   "n": 138,
+   "name_at_review": "Library › Search a library, put it in hand",
+   "verdict": "coherent"
+  },
+  "gb81ecc1b": {
+   "key_states_effect": true,
+   "n": 139,
+   "name_at_review": "Life › Lose life",
+   "verdict": "coherent"
+  },
+  "gbb1e0c52": {
+   "key_states_effect": true,
+   "n": 140,
+   "name_at_review": "Protection › Regenerate, less common kinds",
+   "verdict": "coherent"
+  },
+  "gbb3c0674": {
+   "key_states_effect": true,
+   "n": 141,
+   "name_at_review": "Pump / grant › Give things double strike, other kinds of target",
+   "verdict": "coherent"
+  },
+  "gbb5818dc": {
+   "key_states_effect": false,
+   "n": 142,
+   "name_at_review": "Pump / grant › Give things a set power, other kinds of target",
+   "note": "the key says 'set power'; members also animate enchantments",
+   "verdict": "loose"
+  },
+  "gbf449a55": {
+   "key_states_effect": true,
+   "n": 143,
+   "name_at_review": "Zone change › Move cards from hand to exile, less common kinds",
+   "verdict": "coherent"
+  },
+  "gbfd74328": {
+   "key_states_effect": false,
+   "n": 144,
+   "name_at_review": "Pump / grant › Give a creature a different rule",
+   "note": "'a different rule' does not say what the rule is",
+   "verdict": "coherent"
+  },
+  "gbfd89943": {
+   "key_states_effect": true,
+   "n": 145,
+   "name_at_review": "Zone change › Return a nonland permanent to its owner's hand",
+   "verdict": "coherent"
+  },
+  "gc031e969": {
+   "key_states_effect": true,
+   "n": 146,
+   "name_at_review": "Destroy › Destroy a creature",
+   "verdict": "coherent"
+  },
+  "gc0bf96ae": {
+   "key_states_effect": true,
+   "n": 147,
+   "name_at_review": "Discard / hand › Discard cards, by you",
+   "verdict": "coherent"
+  },
+  "gc4a9760d": {
+   "key_states_effect": true,
+   "n": 148,
+   "name_at_review": "Destroy › Destroy the thing chosen before",
+   "verdict": "loose"
+  },
+  "gc793493b": {
+   "key_states_effect": true,
+   "n": 149,
+   "name_at_review": "Zone change › Return things to their owners' hands",
+   "verdict": "loose"
+  },
+  "gc928155b": {
+   "key_states_effect": true,
+   "n": 150,
+   "name_at_review": "Static: other rule › Cast cards from a graveyard, less common kinds",
+   "verdict": "coherent"
+  },
+  "gc984454d": {
+   "key_states_effect": true,
+   "n": 151,
+   "name_at_review": "Tokens › Create creature tokens, on another kind of trigger",
+   "verdict": "coherent"
+  },
+  "gc9c855de": {
+   "key_states_effect": true,
+   "n": 152,
+   "name_at_review": "Destroy › Destroy an artifact",
+   "verdict": "coherent"
+  },
+  "gca145a1d": {
+   "key_states_effect": false,
+   "n": 153,
+   "name_at_review": "Pump / grant › Give things a gained effect, other kinds of target",
+   "note": "'a gained effect' covers colour changes, flashback, can't-be-blocked and more",
+   "verdict": "loose"
+  },
+  "gcc543c4b": {
+   "key_states_effect": true,
+   "n": 154,
+   "name_at_review": "Counters › Put +1/+1 counters on this permanent, when a card moves between zones",
+   "verdict": "coherent"
+  },
+  "gcc5eb683": {
+   "key_states_effect": true,
+   "n": 155,
+   "name_at_review": "Destroy › Destroy an artifact or enchantment",
+   "verdict": "coherent"
+  },
+  "gce229fbc": {
+   "key_states_effect": true,
+   "n": 156,
+   "name_at_review": "Pump / grant › Make any target bigger",
+   "verdict": "loose"
+  },
+  "gcf39a1b6": {
+   "key_states_effect": true,
+   "n": 157,
+   "name_at_review": "Copy › Become a copy, less common kinds",
+   "verdict": "coherent"
+  },
+  "gcfe3505b": {
+   "key_states_effect": true,
+   "n": 158,
+   "name_at_review": "Discard / hand › Discard cards, by target player",
+   "verdict": "coherent"
+  },
+  "gd055f7fe": {
+   "key_states_effect": true,
+   "n": 159,
+   "name_at_review": "Counters › Put counters, when a card moves between zones, less common kinds",
+   "verdict": "coherent"
+  },
+  "gd157897a": {
+   "key_states_effect": true,
+   "n": 160,
+   "name_at_review": "Damage › Deal damage to the thing chosen before",
+   "verdict": "loose"
+  },
+  "gd250da2e": {
+   "key_states_effect": true,
+   "n": 161,
+   "name_at_review": "Zone change › Move cards to exile, ones you control",
+   "verdict": "coherent"
+  },
+  "gd278cbc6": {
+   "key_states_effect": true,
+   "n": 162,
+   "name_at_review": "Tokens › Create creature tokens",
+   "verdict": "coherent"
+  },
+  "gd5ef8639": {
+   "key_states_effect": true,
+   "n": 163,
+   "name_at_review": "Discard / hand › Discard cards, less common kinds",
+   "verdict": "coherent"
+  },
+  "gd6e85df0": {
+   "key_states_effect": true,
+   "n": 164,
+   "name_at_review": "Static: continuous › Continuous effect on this permanent: gives flying",
+   "verdict": "coherent"
+  },
+  "gd7e46601": {
+   "key_states_effect": true,
+   "n": 165,
+   "name_at_review": "Pump / grant › Give things a gained ability, other kinds of target",
+   "verdict": "loose"
+  },
+  "gd82881c9": {
+   "key_states_effect": true,
+   "n": 166,
+   "name_at_review": "Pump / grant › Give things trample, other kinds of target",
+   "verdict": "coherent"
+  },
+  "gd952cd43": {
+   "key_states_effect": false,
+   "n": 167,
+   "name_at_review": "Attach › Attach to a creature",
+   "note": "members are mostly text-less and mix attach with equip cost changes",
+   "verdict": "loose"
+  },
+  "gda30ae0f": {
+   "key_states_effect": true,
+   "n": 168,
+   "name_at_review": "Zone change › Move cards from the graveyard to the battlefield, ones you control",
+   "verdict": "coherent"
+  },
+  "gda4df178": {
+   "key_states_effect": true,
+   "n": 169,
+   "name_at_review": "Counters › Put counters, at the beginning of a phase, less common kinds",
+   "verdict": "coherent"
+  },
+  "gdc61abde": {
+   "key_states_effect": true,
+   "n": 170,
+   "name_at_review": "Tokens › Create a token that is a copy of something, less common kinds",
+   "verdict": "coherent"
+  },
+  "gdf448fe9": {
+   "key_states_effect": false,
+   "n": 171,
+   "name_at_review": "Counters › Put counters, through a replacement effect, less common kinds",
+   "note": "the key says 'put counters'; members include boons and returns",
+   "verdict": "loose"
+  },
+  "gdfe942d5": {
+   "key_states_effect": true,
+   "n": 172,
+   "name_at_review": "Static: continuous › Continuous effect on things: gives vigilance, other kinds of target",
+   "verdict": "coherent"
+  },
+  "ge1ad3ff7": {
+   "key_states_effect": true,
+   "n": 173,
+   "name_at_review": "Tokens › Create creature tokens, at the beginning of a phase",
+   "verdict": "coherent"
+  },
+  "ge32d2d43": {
+   "key_states_effect": true,
+   "n": 174,
+   "name_at_review": "Card draw › Draw cards, at the beginning of a phase",
+   "verdict": "loose"
+  },
+  "ge3826e04": {
+   "key_states_effect": true,
+   "n": 175,
+   "name_at_review": "Static: continuous › Continuous effect on things: grants a trigger, other kinds of target",
+   "verdict": "coherent"
+  },
+  "ge397f792": {
+   "key_states_effect": true,
+   "n": 176,
+   "name_at_review": "Static: continuous › Continuous effect on this permanent: gives first strike",
+   "verdict": "coherent"
+  },
+  "ge63316ef": {
+   "key_states_effect": true,
+   "n": 177,
+   "name_at_review": "Zone change › Return things to their owners' hands, less common kinds",
+   "verdict": "loose"
+  },
+  "ge7110183": {
+   "key_states_effect": true,
+   "n": 178,
+   "name_at_review": "Zone change › Move cards from hand to the battlefield, ones you control",
+   "verdict": "coherent"
+  },
+  "ge9907993": {
+   "key_states_effect": true,
+   "n": 179,
+   "name_at_review": "Library › Look at the top cards of a library, cards go to exile",
+   "verdict": "coherent"
+  },
+  "geb57cbf5": {
+   "key_states_effect": true,
+   "n": 180,
+   "name_at_review": "Library › Search a library for a card, put it in hand",
+   "verdict": "coherent"
+  },
+  "gec10891d": {
+   "key_states_effect": true,
+   "n": 181,
+   "name_at_review": "Library › Reveal the top cards of a library, cards go to hand, less common kinds",
+   "verdict": "coherent"
+  },
+  "ged5e2bdc": {
+   "key_states_effect": true,
+   "n": 182,
+   "name_at_review": "Library › Look at the top cards of a library, cards go to hand",
+   "verdict": "coherent"
+  },
+  "gefb2b4e3": {
+   "key_states_effect": true,
+   "n": 183,
+   "name_at_review": "Zone change › Move cards from hand to exile, ones you control, less common kinds",
+   "verdict": "coherent"
+  },
+  "gf0f44291": {
+   "key_states_effect": true,
+   "n": 184,
+   "name_at_review": "Library › Look at the top cards of a library",
+   "verdict": "coherent"
+  },
+  "gf32540af": {
+   "key_states_effect": true,
+   "n": 185,
+   "name_at_review": "Zone change › Return the thing chosen before to its owner's hand",
+   "verdict": "loose"
+  },
+  "gf4215b41": {
+   "key_states_effect": true,
+   "n": 186,
+   "name_at_review": "Pump / grant › Give things flying",
+   "verdict": "coherent"
+  },
+  "gf5cb8d6b": {
+   "key_states_effect": true,
+   "n": 187,
+   "name_at_review": "Tap / untap › Untap, less common kinds",
+   "verdict": "coherent"
+  },
+  "gf5dc5de8": {
+   "key_states_effect": true,
+   "n": 188,
+   "name_at_review": "Zone change › Move cards to the library, less common kinds",
+   "verdict": "coherent"
+  },
+  "gf8c85491": {
+   "key_states_effect": true,
+   "n": 189,
+   "name_at_review": "Library › Search a library, put it onto the battlefield",
+   "verdict": "coherent"
+  },
+  "gfa0ab749": {
+   "key_states_effect": true,
+   "n": 190,
+   "name_at_review": "Zone change › Return things to their owners' hands, from the graveyard, ones you control",
+   "verdict": "coherent"
+  },
+  "gfa1df9b1": {
+   "key_states_effect": true,
+   "n": 191,
+   "name_at_review": "Mana › Add mana, less common kinds",
+   "verdict": "coherent"
+  },
+  "gfc741598": {
+   "key_states_effect": true,
+   "n": 192,
+   "name_at_review": "Counters › Put lore counters on this permanent",
+   "verdict": "coherent"
+  },
+  "gfca0dd78": {
+   "key_states_effect": true,
+   "n": 193,
+   "name_at_review": "Static: continuous › Continuous effect on equipped creature: adds power",
+   "verdict": "coherent"
+  },
+  "gfdc9b1c5": {
+   "key_states_effect": true,
+   "n": 194,
+   "name_at_review": "Static: restriction › Can't be blocked, this permanent",
+   "verdict": "coherent"
+  },
+  "gffebaf7c": {
+   "key_states_effect": true,
+   "n": 195,
+   "name_at_review": "Zone change › Return things to their owners' hands, from the graveyard, less common kinds",
+   "verdict": "coherent"
+  }
+ }
+}

@@ -332,6 +332,156 @@ def main():
         gl = c.js("Object.keys(TAX.leaves).find(k => TAX.leaves[k].gap_abilities > 0)")
         c.js("show('l:%s')" % gl)
         check("22 a group says how many of its abilities came from cards with an unread part", c.wait("document.querySelector('#panel .sub') && document.querySelector('#panel .sub').innerText.includes('placed from cards with a part the parser did not read')", 60))
+        # 23 the loosely grouped layer and the "couldn't read yet" list
+        c.js("location.hash=''")
+        check("23 the tree has the loosely grouped section, labeled not checked", c.wait("!!document.querySelector('#tree .row[data-k=\"LG:\"]')", 60)
+              and "not checked" in c.js("[...document.querySelectorAll('#tree .blk')].map(x => x.innerText).join('|')").lower())
+        check("23 it has a 'Cards we couldn't read yet' row", c.js("!!document.querySelector('#tree .row[data-k=\"UR:\"]')") is True)
+        c.js("document.querySelector('#tree .row[data-k=\"LG:\"]').click()")
+        check("23 the section opens to families and says it is not organized", c.wait("document.querySelectorAll('#tree .row[data-k^=\"lf:\"]').length > 10")
+              and "Not checked for accuracy" in c.js("document.querySelector('#panel').innerText"), c.js("document.querySelector('#panel').innerText.slice(0, 160)"))
+        c.js("document.querySelector('#tree .row[data-k^=\"lf:\"]').click()")
+        check("23 a family opens to groups", c.wait("document.querySelectorAll('#tree .row[data-k^=\"lg:\"]').length > 0"))
+        c.js("document.querySelector('#tree .row[data-k^=\"lg:\"]').click()")
+        check("23 a loose group lists cards, each with its text and why it is not a real placement",
+              c.wait("document.querySelectorAll('#list .card').length > 3") and c.js("[...document.querySelectorAll('#list .card')].slice(0, 10).every(x => x.innerText.includes('Not a real placement because'))") is True,
+              c.js("document.querySelector('#panel h2').innerText"))
+        check("23 the group heading carries the label", "Not checked for accuracy" in c.js("document.querySelector('#panel').innerText"))
+        bk = c.js("Object.keys(LOOSE.groups).find(g => LOOSE.groups[g].kind === 'bucket' && LOOSE.groups[g].subs.length >= 3)")
+        c.js("show('lg:%s')" % bk)
+        check("23 a bucket shows its kinds as headings with counts", c.wait("document.querySelectorAll('#list .subhead').length >= 2") and c.js("document.querySelector('#panel .note').innerText.length") > 20)
+        ca = c.js("Object.keys(LOOSE.groups).find(g => LOOSE.groups[g].kind === 'catchall')")
+        c.js("show('lg:%s')" % ca)
+        check("23 a catch-all group shows its kinds as headings", c.wait("document.querySelectorAll('#list .subhead').length >= 3"), c.js("document.querySelector('#panel h2').innerText"))
+        c.js("document.querySelector('#tree .row[data-k=\"UR:\"]').click()")
+        check("23 the couldn't-read list shows a reason on every row", c.wait("document.querySelectorAll('#list .card').length > 10")
+              and c.js("[...document.querySelectorAll('#list .card')].slice(0, 20).every(x => x.innerText.includes('Why:'))") is True)
+        first = c.js("UNREAD.rows[0][1]")
+        check("23 the list is sorted by popularity", c.js("UNREAD.rows.slice(0, 200).every((r, i, a) => i === 0 || (r[1] != null && a[i - 1][1] != null && r[1] >= a[i - 1][1]))") is True, str(first))
+        # the headline did not move
+        cov = c.js("document.getElementById('cov').innerText")
+        check("23 the headline is unchanged by the layer", "24,336 of 33,183" in cov and "73.3%" in cov and "27,590" in cov and "83.1%" in cov, cov[:150].replace("\n", " "))
+        check("23 the tree still counts every pile card once", c.js("TAX.totals.not_yet_organized") == 5593 and c.js("LOOSE.meta.cards_with_a_group + LOOSE.meta.cards_not_read") == 5593)
+        # 24 Find a card for loose-group cards, no-family cards, placed cards and left-out cards
+        picks = c.js("""(() => {
+          const pick = (arr, n) => { const out = []; for (let i = 1; out.length < n && i < arr.length; i++) { const k = arr[Math.floor(arr.length * i / (n + 1))]; out.push(k); } return out; };
+          const ok = o => CARDS[o] && /^[A-Za-z' ,-]+$/.test(CARDS[o].n);
+          const loose = Object.keys(LOOSE.by_card).filter(ok).sort();
+          const unread = UNREAD.rows.map(r => r[0]).filter(ok).sort();
+          const placed = Object.keys(CARDS).filter(o => ok(o) && CARDS[o].ab.some(a => a[2] === 'p') && !LOOSE.by_card[o]).sort();
+          const left = Object.keys(FLAGS.cards).filter(o => FLAGS.evidence[o] && FLAGS.evidence[o].in_card_set === false || true).sort();
+          return {loose: pick(loose, 5).map(o => CARDS[o].n), unread: pick(unread, 5).map(o => CARDS[o].n), placed: pick(placed, 5).map(o => CARDS[o].n),
+                  left: pick(left, 3).map(o => FLAGS.evidence[o].name)};
+        })()""")
+        def ask(name):
+            return c.js("""(async () => { document.getElementById('q').value = %s; await find(%s);
+              const want = %s.toLowerCase(); const frs = [...document.querySelectorAll('#findres .fr')];
+              const fr = frs.find(f => f.querySelector('.nm').innerText.toLowerCase() === want) || frs[0];
+              return fr ? {text: fr.innerText, lg: fr.querySelectorAll('[data-go^=\"lg:\"]').length, ur: fr.querySelectorAll('[data-go=\"UR:\"]').length, n: frs.length} : null })()""" % (json.dumps(name), json.dumps(name), json.dumps(name)))
+        for nm in picks["loose"]:
+            a = ask(nm)
+            check("24 Find a card: %s resolves to its loose groups with the label" % nm, bool(a) and a["lg"] >= 1 and "Not checked for accuracy" in a["text"] and "not yet organized" in a["text"].lower(), str(a)[:140])
+        for nm in picks["unread"]:
+            a = ask(nm)
+            check("24 Find a card: %s resolves to the couldn't-read-yet list" % nm, bool(a) and a["ur"] == 1 and a["lg"] == 0, str(a)[:140])
+        for nm in picks["placed"]:
+            a = ask(nm)
+            check("24 Find a card: placed card %s shows no loose-group text" % nm, bool(a) and a["lg"] == 0 and a["ur"] == 0 and "Not checked" not in a["text"], str(a)[:140])
+        for nm in picks["left"]:
+            a = ask(nm)
+            check("24 Find a card: left-out card %s is answered, with no loose-group text" % nm, bool(a) and a["lg"] == 0 and a["ur"] == 0, str(a)[:140])
+        # a chip from Find a card opens the group
+        a = ask(picks["loose"][0])
+        c.js("document.querySelector('#findres .fr [data-go^=\"lg:\"]').click()")
+        check("24 a loose-group link in Find a card opens that group", c.wait("document.querySelectorAll('#list .card').length > 0 && !!document.querySelector('#panel .loosehead')"),
+              str(c.js("[document.querySelector('#panel h2') && document.querySelector('#panel h2').innerText, document.querySelectorAll('#list .card').length, location.hash]")))
+        c.js("show('c:' + Object.keys(LOOSE.by_card)[0])")
+        check("24 the card page of a loose-group card links its groups", c.wait("document.querySelectorAll('.cardpage .loosenote [data-go^=\"lg:\"]').length >= 1", 60))
+        c.js("show('c:' + UNREAD.rows[0][0])")
+        check("24 the card page of a no-family card links the couldn't-read-yet list", c.wait("!!document.querySelector('.cardpage .loosenote [data-go=\"UR:\"]')", 60))
+        # 25 the hide switch drops the layer's counts too
+        c.js("document.getElementById('hidenopic').checked = false; document.getElementById('hidenopic').dispatchEvent(new Event('change'))")
+        n_off = c.js("lAllN()")
+        c.js("document.getElementById('hidenopic').checked = true; document.getElementById('hidenopic').dispatchEvent(new Event('change'))")
+        n_on = c.js("lAllN()")
+        check("25 hidden (no-picture) cards drop out of the layer's counts, and come back when the switch is off", n_on < n_off and n_off == c.js("LOOSE.meta.cards_with_a_group"), "%s -> %s" % (n_off, n_on))
+        # 26 the tentative layer
+        c.js("location.hash=''")
+        c.wait("!!document.getElementById('showtent')", 60)
+        check("26 the switch is on by default", c.js("document.getElementById('showtent').checked") is True)
+        check("26 the header gives three figures with bases, the precise and broad ones unchanged",
+              c.wait("document.getElementById('cov').innerText.includes('counting tentative placements')", 60)
+              and all(x in c.js("document.getElementById('cov').innerText") for x in ("24,336 of 33,183", "73.3%", "27,590", "83.1%", "29,457", "88.8%")), c.js("document.getElementById('cov').innerText")[:400].replace("\n", " "))
+        check("26 the pile shown is the build's pile minus the tentative cards", "Not yet organized: 3,726" in c.js("document.getElementById('cov').innerText") and "tentatively placed: 1,867" in c.js("document.getElementById('cov').innerText"))
+        fam = c.js("TENT.families[0].key")
+        c.js("(() => { open.add('f:%s'); renderTree(); return true })()" % fam)
+        check("26 a family has a Tentative groups row with the tentative badge", c.wait("!!document.querySelector('#tree .row[data-k=\"tf:%s\"] .b-tent')" % fam))
+        c.js("document.querySelector('#tree .row[data-k=\"tf:%s\"]').click()" % fam)
+        check("26 it opens to tentative groups, each badged", c.wait("document.querySelectorAll('#tree .row[data-k^=\"tg:\"] .b-tent').length > 0")
+              and "Tentative placement: grouped by effect type, not fully checked." in c.js("document.getElementById('panel').innerText"))
+        c.js("document.querySelector('#tree .row[data-k^=\"tg:\"]').click()")
+        check("26 a tentative group lists cards with the text and why it is not a real placement",
+              c.wait("document.querySelectorAll('#list .card').length > 3") and c.js("[...document.querySelectorAll('#list .card')].slice(0, 10).every(x => x.innerText.includes('Not a real placement because'))") is True
+              and "Not counted in the precise or the broad figure" in c.js("document.getElementById('panel').innerText"))
+        gu = c.js("(() => { const g = Object.keys(TENT.groups).find(k => TENT.groups[k].m.some(r => TENT.meta.reasons[r[2]] === 'part of the ability was not read')); return g })()")
+        c.js("show('tg:%s')" % gu)
+        check("26 an unread-part row says part of the ability was not read", c.wait("document.querySelectorAll('#list .card').length > 0") and
+              c.js("[...document.querySelectorAll('#list .card')].some(x => x.innerText.includes('part of the ability was not read'))") is True)
+        check("26 no gap-test failure is placed", c.js("TENT.meta.rules.hold_gap_test_failures") is True and c.js("!TENT.meta.reasons.some(r => r.includes('unread clause') || r.includes('no rules text of its own'))") is True)
+        # reconciliation, from the data the page holds
+        tot = c.js("(() => { const v = TAX.totals.views; return [v.placed + v.broad_only + v.keyword_block + v.no_abilities + v.replacement_group, TENT.meta.cards, TAX.totals.not_yet_organized - TENT.meta.cards, v.not_a_card, TAX.totals.universe] })()")
+        check("26 placed + tentative + still unorganized + not cards = 38,921", sum(tot[:4]) == tot[4] == 38921, str(tot))
+        # u: lists lose the tentative cards
+        c.js("show('u:2')")
+        n_on = c.js("(c => c)(document.querySelector('#panel .sub').innerText)")
+        check("26 the Not-yet-organized lists leave the tentative cards out", c.wait("document.querySelectorAll('#list .card').length > 3") and "tentatively placed" in n_on, n_on[:120])
+        # the switch removes every tentative placement
+        c.js("document.getElementById('showtent').checked = false; document.getElementById('showtent').dispatchEvent(new Event('change'))")
+        check("26 switched off: no third figure, no tentative rows, the pile is back to 5,593",
+              c.wait("!document.getElementById('cov').innerText.includes('counting tentative')") and "Not yet organized: 5,593" in c.js("document.getElementById('cov').innerText")
+              and c.js("document.querySelectorAll('#tree .b-tent').length") == 0 and c.js("document.querySelectorAll('#tree .row[data-k^=\"tf:\"]').length") == 0)
+        check("26 switched off: the headline's first two figures are unchanged", "24,336 of 33,183" in c.js("document.getElementById('cov').innerText") and "27,590" in c.js("document.getElementById('cov').innerText"))
+        c.js("show('tg:%s')" % gu)
+        check("26 switched off: a link to a tentative group says it is switched off", c.wait("document.getElementById('panel').innerText.includes('switched off')"))
+        c.js("document.getElementById('showtent').checked = true; document.getElementById('showtent').dispatchEvent(new Event('change'))")
+        check("26 switched on again: the third figure is back", c.wait("document.getElementById('cov').innerText.includes('counting tentative placements')"))
+        # Find a card: 5 tentative, 5 loose-only, 5 placed, 3 excluded
+        pk = c.js("""(() => {
+          const pick = (arr, n) => { const out = []; for (let i = 1; out.length < n && i < arr.length; i++) out.push(arr[Math.floor(arr.length * i / (n + 1))]); return out; };
+          const ok = o => CARDS[o] && /^[A-Za-z' ,-]+$/.test(CARDS[o].n);
+          const tent = Object.keys(TENT.by_card).filter(ok).sort();
+          const loose = Object.keys(LOOSE.by_card).filter(o => ok(o) && !TENT.by_card[o]).sort();
+          const placed = Object.keys(CARDS).filter(o => ok(o) && CARDS[o].ab.some(a => a[2] === 'p') && !LOOSE.by_card[o]).sort();
+          const left = Object.keys(FLAGS.cards).filter(o => FLAGS.evidence[o]).sort();
+          return {tent: pick(tent, 5).map(o => CARDS[o].n), loose: pick(loose, 5).map(o => CARDS[o].n), placed: pick(placed, 5).map(o => CARDS[o].n), left: pick(left, 3).map(o => FLAGS.evidence[o].name)};
+        })()""")
+
+        def ask2(name):
+            return c.js("""(async () => { document.getElementById('q').value = %s; await find(%s);
+              const want = %s.toLowerCase(); const frs = [...document.querySelectorAll('#findres .fr')];
+              const fr = frs.find(f => f.querySelector('.nm').innerText.toLowerCase() === want) || frs[0];
+              return fr ? {text: fr.innerText, tg: fr.querySelectorAll('[data-go^=\\"tg:\\"]').length, lg: fr.querySelectorAll('[data-go^=\\"lg:\\"]').length, ur: fr.querySelectorAll('[data-go=\\"UR:\\"]').length} : null })()""" % (json.dumps(name), json.dumps(name), json.dumps(name)))
+        for nm in pk["tent"]:
+            a = ask2(nm)
+            check("27 Find a card: tentative card %s names its tentative groups and says not fully checked" % nm, bool(a) and a["tg"] >= 1 and "not fully checked" in a["text"] and "Not counted in the precise or the broad figure" in a["text"], str(a)[:160])
+        for nm in pk["loose"]:
+            a = ask2(nm)
+            check("27 Find a card: loose-only card %s has loose groups and no tentative group" % nm, bool(a) and a["lg"] >= 1 and a["tg"] == 0 and "Not checked for accuracy" in a["text"], str(a)[:160])
+        for nm in pk["placed"]:
+            a = ask2(nm)
+            check("27 Find a card: placed card %s shows no loose or tentative text" % nm, bool(a) and a["lg"] == 0 and a["tg"] == 0 and a["ur"] == 0 and "tentative" not in a["text"].lower(), str(a)[:160])
+        for nm in pk["left"]:
+            a = ask2(nm)
+            check("27 Find a card: left-out card %s is answered with no loose or tentative text" % nm, bool(a) and a["lg"] == 0 and a["tg"] == 0 and "tentative" not in a["text"].lower(), str(a)[:160])
+        a = ask2(pk["tent"][0])
+        c.js("document.querySelector('#findres .fr [data-go^=\"tg:\"]').click()")
+        check("27 a tentative-group link in Find a card opens the group", c.wait("document.querySelectorAll('#list .card').length > 0 && !!document.querySelector('#panel .tentnote')"))
+        c.js("show('c:' + Object.keys(TENT.by_card)[0])")
+        check("27 the card page of a tentative card says so", c.wait("!!document.querySelector('.cardpage .loosenote .b-tent')", 60))
+        c.js("show('C:')")
+        c.wait("document.querySelectorAll('#list .crow').length > 5", 60)
+        c.js("document.getElementById('cf-st').value = 't'; document.getElementById('cf-st').dispatchEvent(new Event('input', {bubbles: true}))")
+        check("27 the Cards tab can filter tentatively placed cards", c.wait("document.getElementById('cfcount').innerText.startsWith('1,8') || document.getElementById('cfcount').innerText.startsWith('1,7')"), c.js("document.getElementById('cfcount').innerText"))
         if SHOTS:
             open(os.path.join(SHOTS, "browser_deeplink.png"), "wb").write(base64.b64decode(c.call("Page.captureScreenshot", format="png")["data"]))
     finally:

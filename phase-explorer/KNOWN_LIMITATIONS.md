@@ -888,6 +888,64 @@ abilities came from cards with an unread part, and the unread part stays on the 
 "Sacrifice this permanent"); the unread clause changed no assignment; 0 wrong among the 10 abilities of top-3,000 cards. Seed 20261015, after the build, 40 placed gap-card abilities (20 from top-3,000 cards, 20 from unknown-trigger-mode
 or unrecognized-condition cards): **0 wrong**. Bars were 5 of 100 and 2 of 40. These samples are rough: 100 abilities cannot tell 4% from 6%, and 40 cannot show a rate.
 
+## 14. The "Loosely grouped" browse layer for the Not-yet-organized pile (2026-10)
+
+**What it is.** `src/build_loose_groups.py` writes `build/loose_groups.json` and `build/loose_unread.json`. The page lists them under "Not yet organized, browsed loosely": a section "Loosely grouped by effect" (family, then group)
+and a list "Cards we couldn't read yet". Every group says "Loosely grouped by effect. Not checked for accuracy." It is a finding aid. **Nothing in it is a placement**: it is not read by the taxonomy build, does not touch leaves,
+leaf formation, the 5-member minimum, the thresholds, the parser or the headline, and each of the 5,593 pile cards is still counted once as "Not yet organized" (placed 22,541 + broad only 3,254 + keyword 1,245 + no abilities 346 +
+replacement groups 204 + unorganized 5,593 = 33,183 in scope; + 5,738 not cards = 38,921). Headline unchanged: 24,336 of 33,183 = 73.3% (basis: placed by an ability in an unflagged leaf of 5 or more, plus the keyword block,
+"No abilities" and the replacement groups); 27,590 = 83.1% with the broad groups.
+
+**How the groups are made (fields already in the parse; no text matching, no tag data).** Each usable ability of a pile card (including abilities held back for a dropped condition, abilities with an unread part, and gap-card
+abilities that failed the tests; each says so) gets a key of a few fields per family (`FIELDS` in `src/probe_loose_groups_v2.py`). A key with fewer than 10 cards drops its last field, and so on; a group of more than 50 cards is split
+once more by `when` (the block it came from and the trigger mode) or the object type; effect types still under 10 cards go into one bucket per family, "Less common effects, by kind", whose sub-headings are the effect types
+(sub-headings under 3 cards fold into "Other kinds"). The two groups still over 100 cards are plainly labeled catch-alls with sub-headings (Destroy by object type, Continuous effect by what it does). Sub-headings are headings,
+not groups. 4,293 of the 5,593 cards get a group; the other 1,300 (1,231 with an unread part, 27 not parsed, 24 no effect to group, 9 text may be lost, 8 known parse mistakes, 1 too unusual) go to the "couldn't read yet" list,
+sorted by popularity with the reason on each row (80 of them are in the top 3,000).
+
+**Limits (logged, not fixed).**
+* *Copy:* the parse does not say whether a spell or an ability is copied (one effect type covers both). The group names say "Copy a spell or ability (which one is not recorded)". *Cast:* the parse has no source zone for
+  "cast from ...". The names say "(the zone is not recorded)". Both are on the parser-gap worklist; neither can be split by field until the parser records them.
+* A member row shows the whole rules line of the ability, so in a card with several abilities a group can look wider than its key (a card whose counter clause is one of several lines appears under the counter group).
+  227 of 4,905 member rows have no ability text of their own ("it has no rules text of its own": gap-card items) and show "(no separate rules line)".
+* A group can contain a card for an ability that is the weaker half of a gap card or a held-back condition; each member row says why it is not a real placement. Names are generated from the key fields with fixed wording; they are
+  not edited by hand.
+* The name defect check (the existing scan and claims check) found 0 hard defects and 0 claims hits in 220 names; it did not catch two kinds of fault that the hand check did (a stray trailing word, a repeated phrase), both fixed
+  since. The scan also would not have caught two different groups with one name, so the build now refuses to write if any two names are equal.
+* *Hand checks* (seeds 20261017 and 20261018; reads written before names and keys were looked at): 22 groups, not the 30 asked for (the over-100 stratum has 2 groups, not 10, and 23 buckets remained for the third stratum),
+  0 incoherent (11 coherent, 11 loose); 40 names, 0 misleading (3 had wording warts that were fixed before the verdict was written). 22 groups and 40 names cannot show a rate. The checks are not independent of the generator:
+  the same model wrote the wording and the reads. What is independent of it is the fixed seed, the member text (taken from the parse's own rules lines), and the machine counts (reconciliation, hashes, identical builds).
+
+## 15. Tentative placements: loose groups promoted, beside the main groups, never counted as organized (2026-10)
+
+**What it is.** `src/build_tentative.py` promotes some loose groups (section 14) to **tentative placements** (method `loose_tentative` in `build/tentative_ledger.json`; `min3_tentative` is reserved and not built). The page shows them in a
+"Tentative groups" row at the end of each family and on the group pages with a **tentative** badge and the wording "Tentative placement: grouped by effect type, not fully checked."; Find a card and the card page name them. A header checkbox
+("show tentative placements", on by default) hides every tentative placement, the third figure, and puts the cards back into the pile count. **Nothing in the taxonomy build, the leaves, leaf formation, the 5-member minimum, the thresholds,
+the placement rules, the parser, the headline's definition or the loose layer reads the tentative layer.** The build still lists every tentative card as "Not yet organized"; `tentative` is a derived field in new files, and the page subtracts it.
+
+**Three figures, always with their bases.** Precise 24,336 of 33,183 = 73.3% (placed by an ability in an unflagged leaf of 5 or more, plus the keyword block, "No abilities" and the replacement groups). With broad 27,590 = 83.1% (plus 3,254 cards
+whose abilities sit only in groups broader than they look). **With tentative 29,457 = 88.8%** (the broad figure plus 1,867 not-yet-organized cards with an eligible ability in a tentative group). The archived view's 74.8% is on a different
+basis. Reconciliation: 27,590 placed + 1,867 tentative + 3,726 still unorganized + 5,738 not cards = 38,921; each card is counted once.
+
+**Rules.** Candidates: the 195 plain loose groups (not the two catch-alls, not the "Less common effects, by kind" buckets). An ability is eligible only if it is not held for a dropped condition, has ability text, and is not a gap-test failure.
+A group is promoted if my blind read of up to 8 eligible members (seed 20261021) is coherent or loose, its name states the effect, it has at least 5 eligible cards, at most half its cards are text-less, and it is not both loose and a backoff
+residual. The reads are `corrections/tentative_groups.json`; the build applies the rules. A card appears under every tentative group one of its eligible abilities fits. Abilities with an unread part stay in, and every such row says "part of the ability was not read".
+
+**What each hold removed (cards).** Scope as first measured: 168 groups, 2,256 cards. Hold the 10 groups that are both loose and backoff residuals: 158 groups, 2,107 cards (-149). Hold the gap-test failures as well: 145 groups, **1,867 cards (-240 more;
+-247 if applied alone)**. Attach was held under the text-less rule before these numbers (51 of its 64 cards have no ability text; it has 13 eligible cards). Of the 1,867, 791 rest on at least one rare-shape ability of a clean card and 1,076 rest only
+on abilities with an unread part.
+
+**Limits (logged, not fixed).**
+* A tentative placement is a text-and-field reading of one ability, not a checked placement. Abilities with an unread part can mean more than their read part says; they are marked as such and could be held in a later version (counting only rare-shape abilities would give 791 cards).
+* Copy (spell versus ability) and Cast (source zone) are still not recorded by the parser; their groups keep the honest names, and the Cast group is not promoted (its members also hold can't-cast restrictions).
+* Some effect types are mis-typed by the parser: "Second Sunrise" (returns cards from the graveyard to the battlefield) is filed under "Return things to their owners' hands". It was the one wrong placement in the 40-placement check.
+* The ledger file is new data only (`build/tentative_ledger.json`); `ability_ledger.json` and every existing status are unchanged.
+* The group names are the loose names; "Deal damage in another form to a creature, all of them" was reworded to "Deal damage to each creature" (and its fallback to "Deal damage to many things at once").
+
+**Checks (rough: small samples).** Names: 20 promoted names hand-checked against the members (seed 20261022): 0 misleading; the defect and claims checks found 0 in 168 names. Placements, seed 20261020, 40 drawn (20 rare-shape abilities, 20 unread-part abilities;
+text read first, my read written before the group was shown): **1 wrong, 5 loose, 34 right**; by stratum: rare-shape 1 wrong of 20, unread-part 0 wrong of 20. Bars: more than 5 wrong overall, or more than 3 of 20 in one stratum, would have turned the layer off or held the stratum:
+neither was tripped. **40 cannot show a rate** and the reads are not independent of the generator (the same model wrote the group wording and judged it). Independent of it: the seeds, the member text, the counts, the hashes, the reconciliation, the browser run.
+
 ## Reproducing these numbers
 
 ```

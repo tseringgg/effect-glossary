@@ -20,6 +20,7 @@ It's built on an open-source rules parser that is still in progress. Most cards 
 - Some groups are marked as broader than their name says. The parser doesn't record every detail (who draws, for example), so those groups can hold more than the name suggests.
 - Group names can be imprecise. The cards inside a group are right more often than its label is. If a name confuses you, tell me.
 - About 73% of constructed-legal cards are in a group, and about 83% counting the broad ones. The rest are in "Not yet organized," and each one says why. They're still findable.
+- Some cards in "Not yet organized" are also shown under "Tentative groups" in each family (about 1,900 cards; about 89% of the card set counting them). They are grouped by effect type but not fully checked, so treat them as hints. A switch at the top hides them.
 - Silver-border, playtest, acorn and similar cards are left out, since they aren't meant for constructed play. Find a card tells you when a card is one of these.
 - Cards released since April are included but parsed by an older version of the parser, so a few newer mechanics may show a gap.
 - "Suggestion" links can be wrong. Where a card shows a "closest group" or "also fits" link, it's a hint, not a placement.

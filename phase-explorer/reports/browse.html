@@ -6,10 +6,10 @@
 <title>Card abilities, grouped</title>
 <style>
 :root { --bg:#fbfbf8; --fg:#1d1d1b; --muted:#6b6a64; --line:#deddd6; --panel:#ffffff; --accent:#2f5d8a;
-        --chip:#eef2f6; --broad:#9a5b00; --broadbg:#fff4e0; --held:#7a1f1f; --sel:#e3ecf5; }
+        --chip:#eef2f6; --broad:#9a5b00; --broadbg:#fff4e0; --held:#7a1f1f; --sel:#e3ecf5; --tent:#1f6b64; --tentbg:#dcefec; }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) { --bg:#17181a; --fg:#e8e6df; --muted:#a29f96; --line:#33343a; --panel:#1f2023;
-        --accent:#8db8e3; --chip:#2a2f36; --broad:#f0b453; --broadbg:#3a2e17; --held:#f0a0a0; --sel:#24323f; }
+        --accent:#8db8e3; --chip:#2a2f36; --broad:#f0b453; --broadbg:#3a2e17; --held:#f0a0a0; --sel:#24323f; --tent:#7fd0c8; --tentbg:#1f3a37; }
 }
 * { box-sizing: border-box; }
 body { margin:0; background:var(--bg); color:var(--fg); font:14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
@@ -38,6 +38,8 @@ section#panel { padding:12px 16px; overflow:auto; max-height: calc(100vh - 140px
 .badge { font-size:10px; padding:0 5px; border-radius:8px; margin-left:4px; white-space:nowrap; }
 .b-broad { background:var(--broadbg); color:var(--broad); border:1px solid var(--broad); }
 .b-auto { color:var(--muted); border:1px dashed var(--line); }
+.b-tent { color:var(--tent); font-style:italic; border:1px solid var(--tent); background:repeating-linear-gradient(135deg, var(--tentbg) 0 4px, transparent 4px 8px); }
+.tentnote { background:var(--tentbg); border-left:3px solid var(--tent); padding:6px 10px; margin:8px 0; }
 .b-dev { color:var(--muted); font-family:ui-monospace, monospace; font-size:11px; }
 .note { background:var(--broadbg); color:var(--fg); border-left:3px solid var(--broad); padding:6px 10px; margin:8px 0; }
 .explain { color:var(--muted); margin:6px 0 10px; }
@@ -87,6 +89,8 @@ button { background:var(--chip); color:var(--fg); border:1px solid var(--line); 
 .tiledet { background:var(--panel); border:1px solid var(--line); padding:8px 10px; border-radius:4px; }
 .devonly { display:none; }
 body.dev .devonly { display:inline; }
+.loosenote { margin-top: 4px; font-size: 12px; color: var(--muted, #666); }
+.loosehead { margin: 2px 0 8px; font-weight: 600; }
 </style>
 </head>
 <body>
@@ -99,6 +103,7 @@ body.dev .devonly { display:inline; }
     <input id="q" type="search" placeholder="type a card name" autocomplete="off">
     <label class="prov" title="Cards that Scryfall has no picture for"><input type="checkbox" id="hidenopic" checked> hide cards with no picture</label>
     <span class="prov" id="hidenote"></span>
+    <label class="prov" title="Groups that are tentative: grouped by effect type, not fully checked"><input type="checkbox" id="showtent" checked> show tentative placements</label>
     <span class="prov">· <a href="../archive/card-level-view-2026-10/reports/browse.html">archived card-level view</a> (its numbers do not match this view)</span>
     <span class="prov devonly">· dev: <a href="ledger.html">coverage ledger</a> · <a href="card-explorer.html">parse-audit explorer</a> (both show the archived view)</span>
   </div>
@@ -118,7 +123,7 @@ body.dev .devonly { display:inline; }
       <label class="h">Mana value</label>
       <div class="two"><input id="cf-mvmin" type="number" min="0" placeholder="min"><input id="cf-mvmax" type="number" min="0" placeholder="max"></div>
       <label class="h" for="cf-st">Where it is in this view</label>
-      <select id="cf-st"><option value="">any</option><option value="l">grouped by its abilities</option><option value="b">only in groups broader than they look</option><option value="u">not yet organized</option><option value="k">keyword block</option><option value="g">replacement group</option><option value="v">no abilities</option></select>
+      <select id="cf-st"><option value="">any</option><option value="l">grouped by its abilities</option><option value="b">only in groups broader than they look</option><option value="u">not yet organized</option><option value="t">tentatively placed (not fully checked)</option><option value="k">keyword block</option><option value="g">replacement group</option><option value="v">no abilities</option></select>
       <p class="sub" id="cfcount"></p>
     </div>
   </nav>
@@ -133,7 +138,15 @@ if (DEV) document.body.classList.add("dev");
 const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const fmt = n => Number(n).toLocaleString("en-US");
 const PAGE = 150;
-let TAX = null, MEM = null, CARDS = null, UNORG = null, LOOK = null, LIDX = null;
+let TAX = null, MEM = null, CARDS = null, UNORG = null, LOOK = null, LIDX = null, LOOSE = null, UNREAD = null, TENT = null, TENTTRIED = false;
+// the tentative layer (build/tentative_placements.json): loose groups promoted to tentative placements; one switch hides it all
+let SHOWT = true;
+try { if (localStorage.getItem("showTentative") === "0") SHOWT = false; } catch (e) { /* storage unavailable: keep the default */ }
+const tentOn = () => SHOWT && !!TENT && TENT.meta.enabled && TENT.meta.groups > 0;
+const isTent = oid => tentOn() && !!TENT.by_card[oid];
+const TENT_LABEL = "Tentative placement: grouped by effect type, not fully checked.";
+const tgN = g => counting() ? nvis(g.m.map(r => r[0])) : g.cards;
+const tfN = f => counting() ? nvis([].concat(...f.groups.map(gid => TENT.groups[gid].m.map(r => r[0])))) : f.cards;
 const NODES = {}, NODE_FAM = {};
 const open = new Set();
 let selected = null, MODE = "abilities";
@@ -172,8 +185,35 @@ const famAb = f => counting() ? f.nodes.reduce((a, nd) => a + nodeAb(nd), 0) : f
 const blkLeafN = (blk, lid) => counting() ? nvis(blk.leaves[lid].cards) : blk.leaves[lid].n;
 const branchN = (blk, br) => counting() ? nvis([].concat(...br.leaves.map(lid => blk.leaves[lid].cards))) : br.n_cards;
 const blockN = (blk, total) => counting() ? nvis([].concat(...Object.values(blk.leaves).map(l => l.cards))) : total;
-const unorgN = g => counting() && UNORG ? nvis(g.list.map(c => c.c)) : g.cards;
+const unorgN = g => UNORG && (counting() || tentOn()) ? nvis(g.list.map(c => c.c).filter(o => !isTent(o))) : g.cards;
 async function needUnorg() { if (!UNORG) UNORG = (await J("ability_taxonomy_unorganized.json")).groups; }
+// the "Loosely grouped" layer and the "couldn't read yet" list (build/loose_groups.json, build/loose_unread.json): a browse aid, never counted as organized
+async function needLoose() {
+  if (!LOOSE) { try { LOOSE = await J("loose_groups.json"); } catch (e) { LOOSE = null; } }
+  if (!UNREAD) { try { UNREAD = await J("loose_unread.json"); } catch (e) { UNREAD = null; } }
+  if (!TENTTRIED) { TENTTRIED = true; try { TENT = await J("tentative_placements.json"); } catch (e) { TENT = null; } }
+}
+const LOOSE_LABEL = "Loosely grouped by effect. Not checked for accuracy.";
+const lgN = g => counting() ? nvis(g.m.map(r => r[0])) : g.cards;
+const lfN = f => counting() ? nvis([].concat(...f.groups.map(gid => LOOSE.groups[gid].m.map(r => r[0])))) : f.cards;
+const lAllN = () => counting() ? nvis(Object.keys(LOOSE.by_card)) : LOOSE.meta.cards_with_a_group;
+const unreadN = () => counting() ? nvis(UNREAD.rows.map(r => r[0])) : UNREAD.cards;
+// the loose groups (and the "couldn't read yet" list) a pile card is in, as links; used on the card page and in Find a card
+function tentChips(oid) {
+  if (!isTent(oid)) return "";
+  return `<div class="loosenote"><span class="badge b-tent">tentative</span> ${esc(TENT_LABEL)} Not counted in the precise or the broad figure. Tentatively grouped: ` +
+    TENT.by_card[oid].map(gid => `<span class="lnk chip" data-go="tg:${esc(gid)}">${esc(TENT.groups[gid].name)}</span>`).join(" ") + `</div>`;
+}
+function looseChips(oid) {
+  if (LOOSE && LOOSE.by_card[oid]) {
+    return tentChips(oid) + `<div class="loosenote">${esc(LOOSE_LABEL)}${isTent(oid) ? "" : " Still counted as not yet organized."} Groups: ` + LOOSE.by_card[oid].map(gid =>
+      `<span class="lnk chip" data-go="lg:${esc(gid)}">${esc(LOOSE.groups[gid].name)}</span>`).join(" ") + `</div>`;
+  }
+  if (UNREAD && UNREAD.rows.some(r => r[0] === oid)) {
+    return `<div class="loosenote">We couldn't read this card yet, so it has no loose group. <span class="lnk chip" data-go="UR:">Cards we couldn't read yet</span></div>`;
+  }
+  return "";
+}
 // the cards left out because they are not meant for constructed play, by reason (read from build/card_flags.json)
 function ncByReason() {
   const by = {};
@@ -218,7 +258,11 @@ function header() {
     `<span class="basis">Basis: ${esc(t.headline.basis)}.</span></div>` +
     `<div>${fmt(t.with_broad.cards)} of ${fmt(t.in_scope)} (${t.with_broad.pct}%) counting groups broader than they look. ` +
     `<span class="basis">Basis: ${esc(t.with_broad.basis)}.</span></div>` +
-    `<div class="basis">Not yet organized: ${fmt(t.not_yet_organized)}. Not cards (tokens, art cards, planes, …): ${fmt(t.not_cards)}. ` +
+    (tentOn() ? `<div>${fmt(TENT.meta.headline.with_tentative[0])} of ${fmt(t.in_scope)} (${TENT.meta.headline.with_tentative[1]}%) counting tentative placements, which are not fully checked. ` +
+      `<span class="basis">Basis: ${esc(TENT.meta.headline.with_tentative[2])}.</span></div>` : "") +
+    `<div class="basis">Not yet organized: ${fmt(tentOn() ? t.not_yet_organized - TENT.meta.cards : t.not_yet_organized)}` +
+    (tentOn() ? `; tentatively placed: ${fmt(TENT.meta.cards)} (a derived count: the build still lists them as not yet organized)` : "") +
+    `. Not cards (tokens, art cards, planes, …): ${fmt(t.not_cards)}. ` +
     `The archived card-level view grouped ${fmt(t.archived_view.cards)} (${t.archived_view.pct}%) on a different basis (${esc(t.archived_view.basis)}).</div>`;
 }
 
@@ -251,6 +295,12 @@ function renderTree() {
         h.push(row("l3", "r:" + nd.id, `Other: ${esc(nd.name).toLowerCase()} <span class="badge b-auto">${nd.rolled.length} small groups</span>`, n));
       }
     }
+    const tf = tentOn() ? TENT.families.find(x => x.key === f.key) : null;
+    if (tf) {
+      const tk = "tf:" + f.key;
+      h.push(row("l2", tk, `Tentative groups <span class="badge b-tent">tentative</span>`, tfN(tf), { kids: true }));
+      if (open.has(tk)) for (const gid of tf.groups) h.push(row("l3", "tg:" + gid, esc(TENT.groups[gid].short) + ` <span class="badge b-tent">tentative</span>`, tgN(TENT.groups[gid])));
+    }
   }
   const kb = TAX.blocks.keyword, rb = TAX.blocks.replacement, nb = TAX.blocks.no_abilities;
   h.push(`<div class="blk">Grouped by rule</div>`);
@@ -280,6 +330,16 @@ function renderTree() {
   window.BROAD_NOTES = notes; window.BROAD_BY = byNote;
   h.push(`<div class="blk">Not yet organized</div>`);
   for (const g of TAX.unorganized) h.push(row("l1", "u:" + g.id, esc(g.name), UNORG ? unorgN(UNORG.find(x => x.id === g.id) || g) : g.cards));
+  if (LOOSE) {
+    h.push(`<div class="blk">Not yet organized, browsed loosely <span class="badge b-broad">not checked</span></div>`);
+    h.push(row("l1", "LG:", "Loosely grouped by effect", lAllN(), { kids: true }));
+    if (open.has("LG:")) for (const f of LOOSE.families) {
+      const fk = "lf:" + f.key;
+      h.push(row("l2", fk, esc(f.name), lfN(f), { kids: true }));
+      if (open.has(fk)) for (const gid of f.groups) h.push(row("l3", "lg:" + gid, esc(LOOSE.groups[gid].short) + (tentOn() && TENT.groups[gid] ? ` <span class="badge b-tent">tentative</span>` : ""), lgN(LOOSE.groups[gid])));
+    }
+    if (UNREAD) h.push(row("l1", "UR:", "Cards we couldn't read yet", unreadN()));
+  }
   if (FLAGS) {
     const by = ncByReason();
     h.push(`<div class="blk">Left out: not meant for constructed play</div>`);
@@ -291,12 +351,12 @@ function renderTree() {
 document.getElementById("tree").addEventListener("click", e => {
   const r = e.target.closest(".row"); if (!r) return;
   const k = r.dataset.k;
-  if (/^(f|n|K|G|kb|gb|B):?/.test(k) && !/^(kl|gl|l|r|u):/.test(k)) {
+  if (/^(f|n|K|G|kb|gb|B|LG|lf|tf):?/.test(k) && !/^(kl|gl|l|r|u|lg|tg):/.test(k)) {
     const wasOpen = open.has(k);
     if (wasOpen) open.delete(k); else open.add(k);
     renderTree();
     // show() re-opens a node it displays, so only call it when the click opened the node; a click that closes it just closes it
-    if (!wasOpen && (k.startsWith("f:") || k.startsWith("n:") || k.startsWith("B:"))) show(k);
+    if (!wasOpen && (k.startsWith("f:") || k.startsWith("n:") || k.startsWith("B:") || k.startsWith("LG:") || k.startsWith("lf:") || k.startsWith("tf:"))) show(k);
     return;
   }
   show(k);
@@ -476,7 +536,85 @@ async function show(k) {
       (nd.rolled.length ? `<div><span class="lnk" data-go="r:${esc(id)}">Other: ${esc(nd.name).toLowerCase()}</span> <span class="sub">${nd.rolled.length} groups of fewer than ${TAX.meta.rules.display_threshold}</span></div>` : "");
     return;
   }
+  if (kind === "LG" || kind === "lf" || kind === "lg" || kind === "UR" || kind === "tf" || kind === "tg") { await needLoose(); }
+  if ((kind === "tf" || kind === "tg") && !tentOn()) {
+    P.innerHTML = `<p class="explain">Tentative placements are switched off (tick “show tentative placements” at the top to see them).</p>`;
+    return;
+  }
+  if (kind === "tf") {
+    const f = TENT.families.find(x => x.key === id);
+    open.add("f:" + id); open.add(k); renderTree();
+    P.innerHTML = `<h2>${esc(f.name)}: tentative groups <span class="badge b-tent">tentative</span></h2><div class="tentnote"><b>${esc(TENT_LABEL)}</b> These groups sit beside the main groups; they are not counted in the precise or the broad figure.</div>` +
+      f.groups.map(gid => `<div><span class="lnk" data-go="tg:${esc(gid)}">${esc(TENT.groups[gid].short)}</span> <span class="sub">${fmt(tgN(TENT.groups[gid]))} cards</span></div>`).join("");
+    return;
+  }
+  if (kind === "LG" && LOOSE) {
+    open.add("LG:"); renderTree();
+    P.innerHTML = `<h2>Loosely grouped by effect</h2><div class="note"><b>${esc(LOOSE_LABEL)}</b> These cards are not organized. Each one is still counted as “Not yet organized”; ` +
+      `nothing here counts toward the coverage figure at the top. A card is listed under every group one of its abilities fits, and each card says why that ability is not a real placement. ` +
+      `${fmt(lAllN())} of the ${fmt(LOOSE.meta.pile)} not-yet-organized cards have a loose group; the other ${fmt(LOOSE.meta.cards_not_read)} are under “Cards we couldn't read yet”.` +
+      (tentOn() ? ` ${fmt(TENT.meta.cards)} of the cards with a loose group are also tentatively placed (see “Tentative groups” in each family); they are counted as tentative, not as not yet organized.` : "") + `</div>` +
+      LOOSE.families.map(f => `<div><span class="lnk" data-go="lf:${esc(f.key)}">${esc(f.name)}</span> <span class="sub">${fmt(lfN(f))} cards · ${f.groups.length} groups</span></div>`).join("");
+    return;
+  }
+  if (kind === "lf" && LOOSE) {
+    const f = LOOSE.families.find(x => x.key === id);
+    open.add("LG:"); open.add(k); renderTree();
+    P.innerHTML = `<h2>${esc(f.name)}</h2><p class="sub">${esc(LOOSE_LABEL)} ${fmt(lfN(f))} cards.</p>` +
+      f.groups.map(gid => `<div><span class="lnk" data-go="lg:${esc(gid)}">${esc(LOOSE.groups[gid].short)}</span> <span class="sub">${fmt(lgN(LOOSE.groups[gid]))} cards</span></div>`).join("");
+    return;
+  }
   P.innerHTML = `<p class="explain">Loading…</p>`;
+  if (kind === "tg" && TENT && TENT.groups[id]) {
+    await needCards();
+    const g = TENT.groups[id], fam = TENT.families.find(x => x.groups.includes(id));
+    open.add("f:" + fam.key); open.add("tf:" + fam.key); renderTree();
+    const items = [];
+    for (const r of g.m) {
+      const extra = `<div class="ab"><span class="why">${esc(r[1] || "(no separate rules line for this ability)")}</span>${r[3] ? ` <span class="sub">(+${r[3]} more ability in this group)</span>` : ""}</div>` +
+        `<div class="gap">Not a real placement because ${esc(TENT.meta.reasons[r[2]])}.</div>`;
+      items.push({ oid: r[0], extra: extra, html: cardHTML(r[0], null, null).replace(`<div class="det" hidden>`, extra + `<div class="det" hidden>`) });
+    }
+    setList(`<h2>${esc(g.name)} <span class="badge b-tent">tentative</span></h2><p class="loosehead">${esc(TENT_LABEL)}</p>` +
+      `<div class="tentnote">Not counted in the precise or the broad figure. These cards come from the Not-yet-organized pile and are listed here instead of there; ${LOOSE && LOOSE.groups[id] ? `the loose group “${esc(LOOSE.groups[id].short)}” has ${fmt(g.loose_cards)} cards, ${fmt(g.cards)} of them tentative.` : ""}</div>` +
+      `<p class="sub">${fmt(tgN(g))} cards, most popular first.</p>`, items);
+    return;
+  }
+  if (kind === "lg" && LOOSE && LOOSE.groups[id]) {
+    await needCards();
+    const g = LOOSE.groups[id], fam = LOOSE.families.find(x => x.groups.includes(id));
+    open.add("LG:"); open.add("lf:" + fam.key); renderTree();
+    const items = [];
+    let last = -1;
+    const visN = {};
+    for (const r of g.m) if (visible(r[0])) visN[r[3]] = (visN[r[3]] || 0) + 1;
+    for (const r of g.m) {
+      if (g.subs && r[3] !== last && visible(r[0])) {
+        last = r[3];
+        items.push(`<div class="subhead">${esc(g.subs[r[3]].name)} <span class="sub">${fmt(HIDE ? visN[r[3]] : g.subs[r[3]].cards)} cards</span></div>`);
+      }
+      const others = (LOOSE.by_card[r[0]] || []).filter(x => x !== id).slice(0, 4);
+      const extra = `<div class="ab"><span class="why">${esc(r[1] || "(no separate rules line for this ability)")}</span>${r[4] ? ` <span class="sub">(+${r[4]} more ability in this group)</span>` : ""}</div>` +
+        `<div class="gap">Not a real placement because ${esc(LOOSE.meta.reasons[r[2]])}.</div>` +
+        (others.length ? `<div class="also">Also loosely in: ${others.map(x => `<span class="lnk" data-go="lg:${esc(x)}">${esc(LOOSE.groups[x].name)}</span>`).join(" · ")}</div>` : "");
+      items.push({ oid: r[0], extra: extra, html: cardHTML(r[0], null, null).replace(`<div class="det" hidden>`, extra + `<div class="det" hidden>`) });
+    }
+    setList(`<h2>${esc(g.name)}${tentOn() && TENT.groups[id] ? ` <span class="badge b-tent">tentative</span>` : ""}</h2><p class="loosehead">${esc(LOOSE_LABEL)}</p>` + (g.note ? `<div class="note">${esc(g.note)}</div>` : "") +
+      (tentOn() && TENT.groups[id] ? `<div class="tentnote">This group is also a tentative group (${esc(TENT_LABEL)}) for the cards with an eligible ability. <span class="lnk" data-go="tg:${esc(id)}">open the tentative group</span></div>` : "") +
+      `<p class="sub">${fmt(lgN(g))} cards, most popular first. ${tentOn() ? "Cards that are also tentatively placed are counted as tentative; the others are" : "These cards are still counted as"} not yet organized.</p>`, items);
+    return;
+  }
+  if (kind === "UR" && UNREAD) {
+    await needCards();
+    const items = UNREAD.rows.map(r => {
+      const c = UNREAD.causes[r[2]];
+      const extra = `<div class="gap">Why: ${esc(c.name)}.${r[3] ? ` Not understood: “${esc(r[3])}”.` : ""}${r[1] != null ? ` Popularity rank ${fmt(r[1])}.` : ""}</div>`;
+      return { oid: r[0], extra: extra, html: cardHTML(r[0], null, null).replace(`<div class="det" hidden>`, extra + `<div class="det" hidden>`) };
+    });
+    setList(`<h2>Cards we couldn't read yet</h2><div class="note">The parser produced nothing we can group these cards on. They are not in any group above, and each is still counted as not yet organized. ` +
+      `Most popular first; the reason is shown on each card.</div><p class="sub">${fmt(unreadN())} cards.</p>`, items);
+    return;
+  }
   if (kind === "l") {
     await needCards();
     const l = TAX.leaves[id], nd = NODES[l.node];
@@ -535,7 +673,7 @@ async function show(k) {
     await needCards();
     await needUnorg();
     const g = UNORG.find(x => String(x.id) === id);
-    const items = g.list.map(c => {
+    const items = g.list.filter(c => !isTent(c.c)).map(c => {
       let extra = "";
       if (c.g) extra += `<div class="gap">Not understood: ${c.g.map(x => "“" + esc(x[1]) + "”").join("; ")}</div>`;
       if (c.held) extra += `<div class="gap">${c.held} of its abilities would fit a group; they are held back while gap cards are checked.</div>`;
@@ -544,19 +682,19 @@ async function show(k) {
       if (c.note) extra += `<div class="gap">${esc(c.note)}</div>`;
       return { oid: c.c, extra: extra, html: cardHTML(c.c, null, null).replace(`<div class="det" hidden>`, extra + `<div class="det" hidden>`) };
     });
-    setList(`<h2>Not yet organized › ${esc(g.name)}</h2><p class="explain">${esc(g.explain)}</p><p class="sub">${fmt(unorgN(g))} cards. This is about the tool, not the card.</p>`, items);
+    setList(`<h2>Not yet organized › ${esc(g.name)}</h2><p class="explain">${esc(g.explain)}</p><p class="sub">${fmt(unorgN(g))} cards. This is about the tool, not the card.${tentOn() && g.list.some(c => isTent(c.c)) ? ` ${fmt(g.list.filter(c => isTent(c.c)).length)} more are tentatively placed and listed under “Tentative groups”.` : ""}</p>`, items);
   }
 }
 
 // ---------------------------------------------------------------- cards mode
-const KINDW = { l: "grouped by its abilities", b: "only in groups broader than they look", u: "not yet organized", k: "keyword block", g: "replacement group", v: "no abilities" };
+const KINDW = { t: "tentatively placed (not fully checked)", l: "grouped by its abilities", b: "only in groups broader than they look", u: "not yet organized", k: "keyword block", g: "replacement group", v: "no abilities" };
 let CLIST = null, ENT = null, PIDX = null;
 const PCH = new Map();
 async function needLookup() {
   if (!LOOK) { LOOK = await J("ability_taxonomy_lookup.json"); LIDX = AbilityFind.build(LOOK); }
 }
 async function needCardList() {
-  await needCards(); await needLookup();
+  await needCards(); await needLookup(); await needLoose();
   if (CLIST) return;
   CLIST = []; ENT = new Map();
   for (const e of LOOK.entries) {
@@ -577,6 +715,15 @@ function setMode(m, quiet) {
   else { document.getElementById("panel").innerHTML = `<p class="explain">Pick a group on the left. Each card is listed under every group one of its abilities fits, and shows the text of that ability.</p>`; location.hash = ""; selected = null; renderTree(); }
 }
 document.getElementById("hidenopic").checked = HIDE;
+document.getElementById("showtent").checked = SHOWT;
+document.getElementById("showtent").addEventListener("change", e => {
+  SHOWT = e.target.checked;
+  try { localStorage.setItem("showTentative", SHOWT ? "1" : "0"); } catch (err) { /* ignore */ }
+  header(); renderTree();
+  if (selected && (selected.startsWith("tf:") || selected.startsWith("tg:"))) show(selected);
+  else if (selected && (selected.startsWith("u:") || selected === "LG:" || selected.startsWith("lg:") || selected.startsWith("lf:"))) show(selected);
+  else if (MODE === "cards") showCardList();
+});
 function hideChanged() {
   try { localStorage.setItem("hideNoPicture", HIDE ? "1" : "0"); } catch (err) { /* ignore */ }
   hideNote(); renderTree();
@@ -584,6 +731,7 @@ function hideChanged() {
 }
 document.getElementById("hidenopic").addEventListener("change", e => { HIDE = e.target.checked; hideChanged(); });
 document.getElementById("tabs").addEventListener("click", e => { const b = e.target.closest("button[data-mode]"); if (b && b.dataset.mode !== MODE) setMode(b.dataset.mode); });
+const effKind = c => c.kind === "u" && isTent(c.oid) ? "t" : c.kind;
 function cardMatches() {
   const q = LIDX.norm(document.getElementById("cf-name").value);
   const cols = [...document.querySelectorAll("#cf-cols input:checked")].map(x => x.value);
@@ -597,7 +745,7 @@ function cardMatches() {
     if (ty && c.ty.toLowerCase().indexOf(ty) < 0) return false;
     if (lo !== "" && c.mv < +lo) return false;
     if (hi !== "" && c.mv > +hi) return false;
-    if (st && c.kind !== st) return false;
+    if (st && effKind(c) !== st) return false;
     return true;
   });
 }
@@ -609,7 +757,7 @@ async function showCardList() {
   const nopic = CLIST.filter(c => hidden(c.oid)).length;
   document.getElementById("cfcount").textContent = `${fmt(hits.length)} of ${fmt(CLIST.length - nopic)} cards match` + (nopic ? ` (${fmt(nopic)} hidden).` : ".");
   setList(`<h2>Cards</h2><p class="sub">${fmt(hits.length)} of ${fmt(CLIST.length - nopic)} cards. Pick one to see which group each of its abilities is in. Tokens, art cards and other non-cards are not listed.</p>`,
-    hits.map(c => ({ oid: c.oid, html: `<div class="card crow" data-go="c:${esc(c.oid)}"><span class="nm lnk">${esc(c.n)}</span>${costHTML(CARDS[c.oid])}<span class="ty">${esc(c.ty)}</span><span class="badge b-auto">${esc(KINDW[c.kind])}</span></div>`, extra: `<div class="sub">${esc(KINDW[c.kind])}</div>` })));
+    hits.map(c => ({ oid: c.oid, html: `<div class="card crow" data-go="c:${esc(c.oid)}"><span class="nm lnk">${esc(c.n)}</span>${costHTML(CARDS[c.oid])}<span class="ty">${esc(c.ty)}</span><span class="badge ${effKind(c) === "t" ? "b-tent" : "b-auto"}">${esc(KINDW[effKind(c)])}</span></div>`, extra: `<div class="sub">${esc(KINDW[effKind(c)])}</div>` })));
 }
 let cfTimer = null;
 document.getElementById("cardf").addEventListener("input", () => { clearTimeout(cfTimer); cfTimer = setTimeout(() => { if (MODE === "cards") showCardList(); }, 200); });
@@ -635,10 +783,11 @@ async function showCardPage(oid) {
   await needCardList();
   const c = CARDS[oid], e = ENT.get(oid);
   if (!c || !e) { P.innerHTML = `<p class="explain">No such card.</p>`; return; }
+  if (e[3] === "u") await needLoose();
   const a = AbilityFind.describe(LIDX, e, answerCtx());
   P.innerHTML = `<div class="cardpage">` + (MODE === "cards" ? `<p class="sub"><span class="lnk" data-go="C:">← back to the card list</span></p>` : "") +
     `<h2>${esc(c.n)} ${costHTML(c)} <span class="ty">${esc(c.ty)}</span></h2>` +
-    `<p>${esc(a.text)}${answerLinks(a)}</p>` + detailHTML(oid) +
+    `<p>${esc(a.text)}${answerLinks(a)}</p>` + (e[3] === "u" ? looseChips(oid) : "") + detailHTML(oid) +
     (DEV ? `<p class="subhead">Parsed structure (dev)</p><p><button class="psbtn" data-oid="${esc(oid)}">Show what the parser read</button></p><div class="psout"></div>` : "") + `</div>`;
 }
 async function parsedStructure(oid) {
@@ -669,11 +818,12 @@ async function find(q) {
   if (!LOOK) { out.innerHTML = `<div class="sub">Loading the card list…</div>`; await needLookup(); }
   const ctx = answerCtx();
   const r = AbilityFind.search(LIDX, q, 12);
+  if (r.matches.some(en => en[3] === "u")) await needLoose();
   out.innerHTML = (r.total ? "" : `<div class="sub">No card or catalogue entry matches.</div>`) + r.matches.map(en => {
     const a = AbilityFind.describe(LIDX, en, ctx);
     let links = answerLinks(a);
     if (en[3] !== "o") links += ` <span class="lnk chip" data-go="c:${esc(en[0])}">card page</span>`;
-    return `<div class="fr"><span class="nm">${esc(a.name)}</span>${a.others.length ? ` <span class="sub">(${a.others.map(esc).join(" / ")})</span>` : ""}: ${esc(a.text)}${links}</div>`;
+    return `<div class="fr"><span class="nm">${esc(a.name)}</span>${a.others.length ? ` <span class="sub">(${a.others.map(esc).join(" / ")})</span>` : ""}: ${esc(a.text)}${links}${en[3] === "u" ? looseChips(en[0]) : ""}</div>`;
   }).join("") + (r.total > 12 ? `<div class="sub">${fmt(r.total)} matches; showing 12.</div>` : "");
 }
 document.getElementById("findres").addEventListener("click", e => { const go = e.target.closest("[data-go]"); if (go) show(go.dataset.go); });
@@ -696,11 +846,11 @@ window.addEventListener("hashchange", () => {
   }
   for (const f of TAX.families) for (const nd of f.nodes) { NODES[nd.id] = Object.assign({ fam: f.key }, nd); NODE_FAM[nd.id] = f.name; }
   header(); renderTree();
-  needCards().then(needUnorg).then(() => { hideNote(); renderTree(); });
+  needCards().then(needUnorg).then(needLoose).then(() => { hideNote(); header(); renderTree(); });
   document.getElementById("foot").innerHTML =
     `Data: ${esc(TAX.meta.rules.snapshot)}. Method: ${esc(TAX.meta.rules.backoff)}, minimum ${TAX.meta.rules.minimum}; ` +
     `names are generated (edits: corrections/ability_taxonomy_names.json); no tag data is used to place anything. ` +
-    `Gap-card abilities are measured and held out. The coverage figure here and the archived view's 74.8% are measured on different bases. ` +
+    `"Tentative groups" are loose groups promoted by hand-read rules; they are not fully checked and are never part of the precise or the broad figure (switch them off at the top). The "Loosely grouped" browse layer is a finding aid: it is not checked and is never counted as organized. The coverage figure here and the archived view's 74.8% are measured on different bases. ` +
     `<a href="ability-taxonomy-report.md">Results and limits</a> · <a href="ability-taxonomy-design.md">Design</a> · <a href="../KNOWN_LIMITATIONS.md">Known limitations §12</a>.`;
   const h = decodeURIComponent(location.hash.slice(1));
   if (h) { if (h.startsWith("C:")) setMode("cards", true); show(h); }
