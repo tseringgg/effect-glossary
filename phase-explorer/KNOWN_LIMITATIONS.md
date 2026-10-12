@@ -946,6 +946,33 @@ on abilities with an unread part.
 text read first, my read written before the group was shown): **1 wrong, 5 loose, 34 right**; by stratum: rare-shape 1 wrong of 20, unread-part 0 wrong of 20. Bars: more than 5 wrong overall, or more than 3 of 20 in one stratum, would have turned the layer off or held the stratum:
 neither was tripped. **40 cannot show a rate** and the reads are not independent of the generator (the same model wrote the group wording and judged it). Independent of it: the seeds, the member text, the counts, the hashes, the reconciliation, the browser run.
 
+## 16. Tentative promotions, second round: renamed groups and sub-headings; what the dropped-condition flags really are (2026-10)
+
+**Figures (this supersedes the numbers in section 15; the rules there still hold).** Precise 24,336 of 33,183 = 73.3% and with broad 27,590 = 83.1% are unchanged. **With tentative: 29,683 = 89.5%** (the broad figure plus 2,093 not-yet-organized cards with an eligible ability in a tentative group).
+Pile 5,593 -> **3,500** still not yet organized. Reconciliation: 27,590 placed + 2,093 tentative + 3,500 unorganized + 5,738 not cards = 38,921. Each tentative card is still a "Not yet organized" card in the build; the page subtracts it.
+
+**What was promoted.** 177 tentative groups (145 plain, 2 renamed, 30 sub-heading groups); 226 cards are new (49 from the renamed groups, 177 from the sub-headings; 231 were expected).
+* *Renamed groups.* Three groups had been held only because their name did not say what they hold. Two are promoted under new names ("Give a creature an effect like can't attack, can't block or can't be blocked"; "Continuous effect, only as long as something is true", which claims no subject because its
+  members apply to this permanent, a paired creature or an equipped creature). The third ("Give things a combat effect like can't block or can't be blocked, other kinds of target") reads loose and is a backoff residual, so the existing hold on loose residual groups keeps it out (5 cards): that is why 226, not 231.
+* *Sub-headings.* A promoted sub-heading of a catch-all or a "Less common effects" bucket becomes a tentative group of its own, named from fixed wording ("Continuous effect on other kinds of target: gives deathtouch", "Destroy a permanent", "Connive", ...). The catch-alls and the buckets themselves are not promoted and are unchanged in the loose layer. A card is counted once however many tentative groups hold it.
+  The rule is the same as for plain groups (hand read not incoherent, the name states the effect, at least 5 eligible cards, at most half text-less); the reads are in `corrections/tentative_groups.json` (`subheadings`). Two sub-headings that read loose were re-read on a fresh seed (20261024): "gives flying" stays; "adds a creature type" stays only as "adds a creature or land type" (half its members add a land type).
+* New wording: "adds a creature or land type", "Double counters, life or mana", "Can attack as though it didn't have defender".
+
+**The unread-part switch.** `HOLD_UNREAD_PART_ABILITIES` in `src/build_tentative.py` (default False: unchanged) turns off, alone, the placements that rest on an ability with an unread part. With it on: **805 tentative cards, with tentative 28,395 = 85.6%, pile 4,788**.
+Of the 2,093 tentative cards, 1,159 rest only on abilities with an unread part and 934 have at least one rare-shape ability. `PROMOTE_RENAMED_GROUPS` and `PROMOTE_SUBHEADINGS` turn the two new promotions off separately.
+
+**Dropped-condition flags are almost all real (measured; corrects an earlier claim).** The 44% false rate in section 4 was the old quick heuristic's, not the detector's: the detector cleared those false positives (reports/condition-drops.md). A fresh read of 100 of the detector's 1,606 held abilities on cards still in the pile
+(seed 20261023, one per card, stratified by sub-shape, my verdict written before the detector's evidence was shown) found **84 real drops, 15 unclear (almost all because an Unimplemented node holds the clause) and 1 false flag** (a condition that belongs to the other face of a double-faced card): a false-flag rate of 1% (95% range 0.2-5.4%; 100 reads cannot show a rate).
+Lifting false flags would therefore move almost nothing; the 1,342 dropped-condition cards are a representation or parser problem. The detector's benign sub-variant "search this way -> shuffle" (39 abilities) is a separate policy choice, not lifted: see `reports/false-flags-and-promotions.md` and `build/benign_shuffle_flags.json`.
+
+**Limits (logged, not fixed).**
+* "Continuous effect, only as long as something is true" holds some members that are not "as long as" clauses (Wall of Stolen Identity, an enters-as-a-copy clause, sits in it), and "Set a life total" holds a member that sets a creature's base power (Baffling Defenses). Both were the one wrong placement in their stratum.
+* The wording of the as-long-as group changed after the 40-placement check (from "applies" to "only", for a vocabulary check); the meaning is the same.
+* The 20-name hand check and the claims check were run on the proposed names; one wording was then changed, as above.
+
+**Checks (rough: small samples).** 40 placements, seed 20261026 (20 from the renamed groups, 20 from the sub-heading groups; ability text read and my read written before the group was shown): **35 right, 3 loose, 2 wrong** (renamed groups 1 of 20, sub-headings 1 of 20). Bars: more than 5 wrong overall, or more than 3 of 20 in a stratum, would have
+turned the new promotions off or held the stratum: neither tripped. **40 cannot show a rate** and the reads are not independent of the generator. Independent of it: the seeds, the member text, the counts, the hashes, the reconciliation and the browser run.
+
 ## Reproducing these numbers
 
 ```

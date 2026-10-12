@@ -17,6 +17,7 @@ python src/build_ability_taxonomy.py      # -> build/ability_taxonomy*.json (tre
 python src/test_abilityfind.py            # Find a card: all 38,921 entries + named lookups, in a JS engine
 python src/build_loose_groups.py          # -> build/loose_groups.json, build/loose_unread.json (the "Loosely grouped" browse layer and the "couldn't read yet" list; browse aid only, reads nothing the taxonomy build reads; about a minute; run after the build above)
 python src/build_tentative.py             # -> build/tentative_placements.json, build/tentative_ledger.json (loose groups promoted to TENTATIVE placements by the hand reads in corrections/tentative_groups.json; method loose_tentative; TENTATIVE_LAYER = False writes an empty layer; run after build_loose_groups.py)
+python src/check_promotions.py draw       # fresh check of the 2026-10 promotions (renamed groups and sub-heading groups; seed 20261026): `show`, write build/promotion_check_reads.json, `reveal`, then `result`
 python src/check_tentative.py draw        # fresh check of 40 tentative placements (seed 20261020): `show`, write build/tentative_check_reads.json, `reveal`, then `result`
 python src/check_loose_groups.py draw     # hand checks for that layer: seeded draws, then `reveal` after the reads file is written (see the report)
 python src/test_browse_browser.py         # drives reports/browse.html in headless Edge (needs msedge and websocket-client)

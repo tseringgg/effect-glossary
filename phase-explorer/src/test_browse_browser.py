@@ -406,13 +406,14 @@ def main():
         n_on = c.js("lAllN()")
         check("25 hidden (no-picture) cards drop out of the layer's counts, and come back when the switch is off", n_on < n_off and n_off == c.js("LOOSE.meta.cards_with_a_group"), "%s -> %s" % (n_off, n_on))
         # 26 the tentative layer
+        TM = json.load(open(os.path.join(HERE, 'build', 'tentative_placements.json'), encoding='utf-8'))['meta']
         c.js("location.hash=''")
         c.wait("!!document.getElementById('showtent')", 60)
         check("26 the switch is on by default", c.js("document.getElementById('showtent').checked") is True)
         check("26 the header gives three figures with bases, the precise and broad ones unchanged",
               c.wait("document.getElementById('cov').innerText.includes('counting tentative placements')", 60)
-              and all(x in c.js("document.getElementById('cov').innerText") for x in ("24,336 of 33,183", "73.3%", "27,590", "83.1%", "29,457", "88.8%")), c.js("document.getElementById('cov').innerText")[:400].replace("\n", " "))
-        check("26 the pile shown is the build's pile minus the tentative cards", "Not yet organized: 3,726" in c.js("document.getElementById('cov').innerText") and "tentatively placed: 1,867" in c.js("document.getElementById('cov').innerText"))
+              and all(x in c.js("document.getElementById('cov').innerText") for x in ("24,336 of 33,183", "73.3%", "27,590", "83.1%", format(TM["headline"]["with_tentative"][0], ","), str(TM["headline"]["with_tentative"][1]) + "%")), c.js("document.getElementById('cov').innerText")[:400].replace("\n", " "))
+        check("26 the pile shown is the build's pile minus the tentative cards", ("Not yet organized: " + format(TM["still_unorganized"], ",")) in c.js("document.getElementById('cov').innerText") and ("tentatively placed: " + format(TM["cards"], ",")) in c.js("document.getElementById('cov').innerText"))
         fam = c.js("TENT.families[0].key")
         c.js("(() => { open.add('f:%s'); renderTree(); return true })()" % fam)
         check("26 a family has a Tentative groups row with the tentative badge", c.wait("!!document.querySelector('#tree .row[data-k=\"tf:%s\"] .b-tent')" % fam))
@@ -481,7 +482,37 @@ def main():
         c.js("show('C:')")
         c.wait("document.querySelectorAll('#list .crow').length > 5", 60)
         c.js("document.getElementById('cf-st').value = 't'; document.getElementById('cf-st').dispatchEvent(new Event('input', {bubbles: true}))")
-        check("27 the Cards tab can filter tentatively placed cards", c.wait("document.getElementById('cfcount').innerText.startsWith('1,8') || document.getElementById('cfcount').innerText.startsWith('1,7')"), c.js("document.getElementById('cfcount').innerText"))
+        check("27 the Cards tab can filter tentatively placed cards", c.wait("document.getElementById('cfcount').innerText.startsWith('%s')" % format(TM['cards'] - 15, ',')[:3]), c.js("document.getElementById('cfcount').innerText"))
+        # 28 the 2026-10 promotions: the renamed groups and the sub-heading groups
+        check("28 the build says what the new promotions are and the unread-part switch is off by default",
+              c.js("TENT.meta.rules.promote_renamed_groups && TENT.meta.rules.promote_subheadings && TENT.meta.rules.hold_unread_part_abilities === false") is True
+              and c.js("TENT.meta.unread_part_off.cards") < c.js("TENT.meta.cards"))
+        check("28 groups of the three kinds are present", c.js("[...new Set(Object.values(TENT.groups).map(g => g.origin.startsWith('sub-heading') ? 'sub-heading' : g.origin))].sort().join('|')") == "plain group|renamed group|sub-heading")
+        check("28 the cards that only the new promotions reach number what the build says",
+              c.js("Object.keys(TENT.by_card).filter(o => TENT.by_card[o].every(g => TENT.groups[g].origin !== 'plain group')).length") == TM["new_cards_from_the_2026_10_promotions"],
+              str(c.js("Object.keys(TENT.by_card).filter(o => TENT.by_card[o].every(g => TENT.groups[g].origin !== 'plain group')).length")))
+        newg = c.js("Object.keys(TENT.groups).find(g => TENT.groups[g].origin.startsWith('sub-heading'))")
+        c.js("location.hash=''; show('tg:%s')" % newg)
+        check("28 a sub-heading group opens as a tentative group with the badge, label and reasons",
+              c.wait("document.querySelectorAll('#list .card').length > 3 && !!document.querySelector('#panel h2 .b-tent')") and "Tentative placement: grouped by effect type, not fully checked." in c.js("document.getElementById('panel').innerText")
+              and c.js("[...document.querySelectorAll('#list .card')].every(x => x.innerText.includes('Not a real placement because'))") is True)
+        rg = c.js("Object.keys(TENT.groups).find(g => TENT.groups[g].origin === 'renamed group')")
+        c.js("show('tg:%s')" % rg)
+        check("28 a renamed group opens too", c.wait("document.querySelectorAll('#list .card').length > 3 && !!document.querySelector('#panel h2 .b-tent')"), c.js("document.querySelector('#panel h2').innerText"))
+        check("28 the as-long-as group claims no subject", "this permanent" not in " ".join(c.js("Object.values(TENT.groups).filter(g => g.name.includes('as long as')).map(g => g.name)")).lower())
+        npk = c.js("""(() => {
+          const ok = o => CARDS[o] && /^[A-Za-z' ,-]+$/.test(CARDS[o].n);
+          const only = Object.keys(TENT.by_card).filter(o => ok(o) && TENT.by_card[o].every(g => TENT.groups[g].origin !== 'plain group')).sort();
+          const out = []; for (let i = 1; out.length < 5 && i < only.length; i++) out.push(only[Math.floor(only.length * i / 6)]);
+          return out.map(o => CARDS[o].n);
+        })()""")
+        for nm in npk:
+            a = ask2(nm)
+            check("28 Find a card: newly promoted card %s names its tentative groups" % nm, bool(a) and a["tg"] >= 1 and "not fully checked" in a["text"] and "Not counted in the precise or the broad figure" in a["text"], str(a)[:160])
+        c.js("document.getElementById('showtent').checked = false; document.getElementById('showtent').dispatchEvent(new Event('change'))")
+        check("28 switched off: the new groups disappear with the rest", c.wait("document.querySelectorAll('#tree .b-tent').length === 0") and "Not yet organized: 5,593" in c.js("document.getElementById('cov').innerText"))
+        c.js("document.getElementById('showtent').checked = true; document.getElementById('showtent').dispatchEvent(new Event('change'))")
+        check("28 switched on again", c.wait("document.getElementById('cov').innerText.includes('counting tentative placements')"))
         if SHOTS:
             open(os.path.join(SHOTS, "browser_deeplink.png"), "wb").write(base64.b64decode(c.call("Page.captureScreenshot", format="png")["data"]))
     finally:

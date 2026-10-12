@@ -1,5 +1,5 @@
 {
- "_about": "Hand reads of the 195 plain loose groups for the tentative layer (2026-10, seed 20261021): the read of up to 8 eligible member texts (written before the group name was shown), and whether the group's name states the effect. Input to src/build_tentative.py, which applies the structural rules (minimum eligible cards, text-less share, holds) itself. A group not listed here is not promoted.",
+ "_about": "Hand reads of the 195 plain loose groups for the tentative layer (2026-10, seed 20261021): the read of up to 8 eligible member texts (written before the group name was shown), and whether the group's name states the effect. Input to src/build_tentative.py, which applies the structural rules (minimum eligible cards, text-less share, holds) itself. A group not listed here is not promoted. 'subheadings' holds the reads of the 33 catch-all and bucket sub-headings that had at least 5 eligible cards (seed 20261023; the 2 that read loose were re-read on seed 20261024); the build promotes a sub-heading as a tentative group of its own under the same rules.",
  "groups": {
   "g01f9a86f": {
    "key_states_effect": true,
@@ -208,10 +208,11 @@
    "verdict": "loose"
   },
   "g27678898": {
-   "key_states_effect": false,
+   "key_states_effect": true,
    "n": 35,
    "name_at_review": "Pump / grant › Give things a different rule, other kinds of target",
-   "note": "'a different rule' does not say what the rule is",
+   "note": "renamed 2026-10: now 'Give things a combat effect like can't block or can't be blocked, other kinds of target'",
+   "renamed": true,
    "verdict": "loose"
   },
   "g2c760bf7": {
@@ -624,10 +625,11 @@
    "verdict": "coherent"
   },
   "g8b3dcf74": {
-   "key_states_effect": false,
+   "key_states_effect": true,
    "n": 104,
    "name_at_review": "Static: continuous › Continuous effect on this permanent",
-   "note": "'Continuous effect on this permanent' does not say what it does",
+   "note": "renamed 2026-10: now 'Continuous effect, only as long as something is true' (no subject claimed: members apply to this permanent, a paired creature or an equipped creature)",
+   "renamed": true,
    "verdict": "loose"
   },
   "g8c90f1bc": {
@@ -868,10 +870,11 @@
    "verdict": "coherent"
   },
   "gbfd74328": {
-   "key_states_effect": false,
+   "key_states_effect": true,
    "n": 144,
    "name_at_review": "Pump / grant › Give a creature a different rule",
-   "note": "'a different rule' does not say what the rule is",
+   "note": "renamed 2026-10: now 'Give a creature an effect like can't attack, can't block or can't be blocked'",
+   "renamed": true,
    "verdict": "coherent"
   },
   "gbfd89943": {
@@ -1182,6 +1185,241 @@
    "n": 195,
    "name_at_review": "Zone change › Return things to their owners' hands, from the graveyard, less common kinds",
    "verdict": "coherent"
+  }
+ },
+ "subheadings": {
+  "g2bae0e35::adds a card type": {
+   "key_states_effect": true,
+   "n": 1,
+   "read": "permanents become other card types (static type change)",
+   "verdict": "coherent",
+   "was_labelled": "adds a card type"
+  },
+  "g2bae0e35::adds a creature or land type": {
+   "key_states_effect": true,
+   "n": 2,
+   "read": "land types and creature types and base power/toughness set by static effects",
+   "reread_20261024": "stays in: reads loose again; named 'adds a creature or land type' because half its members add a land type",
+   "verdict": "loose",
+   "was_labelled": "adds a creature type"
+  },
+  "g2bae0e35::adds power by a count": {
+   "key_states_effect": true,
+   "n": 3,
+   "read": "creatures get +N/+N for each counter or other creature",
+   "verdict": "coherent",
+   "was_labelled": "adds power by a count"
+  },
+  "g2bae0e35::gives deathtouch": {
+   "key_states_effect": true,
+   "n": 4,
+   "read": "has deathtouch (and lifelink), usually conditional",
+   "verdict": "coherent",
+   "was_labelled": "gives deathtouch"
+  },
+  "g2bae0e35::gives double strike": {
+   "key_states_effect": true,
+   "n": 5,
+   "read": "has double strike, usually conditional",
+   "verdict": "coherent",
+   "was_labelled": "gives double strike"
+  },
+  "g2bae0e35::gives first strike": {
+   "key_states_effect": true,
+   "n": 6,
+   "read": "has first strike, usually conditional",
+   "verdict": "coherent",
+   "was_labelled": "gives first strike"
+  },
+  "g2bae0e35::gives flying": {
+   "key_states_effect": true,
+   "n": 7,
+   "read": "has flying together with other changes",
+   "reread_20261024": "stays in: all 5 members read as flying plus other changes",
+   "verdict": "loose",
+   "was_labelled": "gives flying"
+  },
+  "g2bae0e35::gives hexproof": {
+   "key_states_effect": true,
+   "n": 8,
+   "read": "has hexproof",
+   "verdict": "coherent",
+   "was_labelled": "gives hexproof"
+  },
+  "g2bae0e35::gives menace": {
+   "key_states_effect": true,
+   "n": 9,
+   "read": "has menace, usually conditional",
+   "verdict": "coherent",
+   "was_labelled": "gives menace"
+  },
+  "g4be24b67::permanent": {
+   "key_states_effect": true,
+   "n": 10,
+   "read": "destroy target or all permanents",
+   "verdict": "coherent",
+   "was_labelled": "permanent"
+  },
+  "o-attach::Attach, uncommon cases": {
+   "key_states_effect": true,
+   "n": 11,
+   "read": "attach Equipment or Auras",
+   "verdict": "coherent",
+   "was_labelled": "Attach, uncommon cases"
+  },
+  "o-card-draw::Connive": {
+   "key_states_effect": true,
+   "n": 12,
+   "read": "connive",
+   "verdict": "coherent",
+   "was_labelled": "Connive"
+  },
+  "o-card-draw::Draw cards, uncommon cases": {
+   "key_states_effect": true,
+   "n": 13,
+   "read": "each opponent or player draws a card",
+   "verdict": "coherent",
+   "was_labelled": "Draw cards, uncommon cases"
+  },
+  "o-choice-wrapper::Choose a target": {
+   "key_states_effect": false,
+   "n": 14,
+   "read": "choose: new targets, a creature type, permanents to keep (mixed)",
+   "verdict": "loose",
+   "was_labelled": "Choose a target"
+  },
+  "o-combat::Goad a creature": {
+   "key_states_effect": true,
+   "n": 15,
+   "read": "goad creatures",
+   "verdict": "coherent",
+   "was_labelled": "Goad a creature"
+  },
+  "o-counters::Double counters, life or mana": {
+   "key_states_effect": true,
+   "n": 16,
+   "read": "double counters, life or mana",
+   "verdict": "coherent",
+   "was_labelled": "Double counters"
+  },
+  "o-counters::Give a player counters": {
+   "key_states_effect": true,
+   "n": 17,
+   "read": "players get rad counters",
+   "verdict": "coherent",
+   "was_labelled": "Give a player counters"
+  },
+  "o-counters::Move counters": {
+   "key_states_effect": true,
+   "n": 18,
+   "read": "move counters between permanents",
+   "verdict": "coherent",
+   "was_labelled": "Move counters"
+  },
+  "o-game-player::Take an extra turn": {
+   "key_states_effect": true,
+   "n": 19,
+   "read": "take an extra turn",
+   "verdict": "coherent",
+   "was_labelled": "Take an extra turn"
+  },
+  "o-library::Reveal cards until a match": {
+   "key_states_effect": true,
+   "n": 20,
+   "read": "reveal cards from the top until a match, then put it somewhere",
+   "verdict": "coherent",
+   "was_labelled": "Reveal cards until a match"
+  },
+  "o-life::Gain life": {
+   "key_states_effect": true,
+   "n": 21,
+   "read": "players gain life",
+   "verdict": "coherent",
+   "was_labelled": "Gain life"
+  },
+  "o-life::Set a life total": {
+   "key_states_effect": true,
+   "n": 22,
+   "read": "a life total or power becomes a set value",
+   "verdict": "coherent",
+   "was_labelled": "Set a life total"
+  },
+  "o-pump-grant::Double power and toughness": {
+   "key_states_effect": true,
+   "n": 23,
+   "read": "double power",
+   "verdict": "coherent",
+   "was_labelled": "Double power and toughness"
+  },
+  "o-static-cost-change::Spells cost more": {
+   "key_states_effect": true,
+   "n": 24,
+   "read": "spells cost more to cast",
+   "verdict": "coherent",
+   "was_labelled": "Spells cost more"
+  },
+  "o-static-other-rule::Cast from hand without paying": {
+   "key_states_effect": true,
+   "n": 25,
+   "read": "cast spells from hand without paying",
+   "verdict": "coherent",
+   "was_labelled": "Cast from hand without paying"
+  },
+  "o-static-other-rule::Has shroud": {
+   "key_states_effect": true,
+   "n": 26,
+   "read": "has shroud",
+   "verdict": "coherent",
+   "was_labelled": "Has shroud"
+  },
+  "o-static-other-rule::Other rule changes": {
+   "key_states_effect": false,
+   "n": 27,
+   "read": "can't play lands / can't be equipped / can't transform (restrictions, mixed)",
+   "verdict": "loose",
+   "was_labelled": "Other rule changes"
+  },
+  "o-static-restriction::Can attack as though it didn't have defender": {
+   "key_states_effect": true,
+   "n": 28,
+   "read": "can attack as though it didn't have defender",
+   "verdict": "coherent",
+   "was_labelled": "Can attack despite defender"
+  },
+  "o-static-restriction::Can't enter the battlefield from a zone": {
+   "key_states_effect": true,
+   "n": 29,
+   "read": "cards can't enter the battlefield",
+   "verdict": "coherent",
+   "was_labelled": "Can't enter the battlefield from a zone"
+  },
+  "o-static-restriction::Doesn't untap": {
+   "key_states_effect": true,
+   "n": 30,
+   "read": "permanents don't untap",
+   "verdict": "coherent",
+   "was_labelled": "Doesn't untap"
+  },
+  "o-static-restriction::Spells can't be cast": {
+   "key_states_effect": true,
+   "n": 31,
+   "read": "spells can't be cast",
+   "verdict": "coherent",
+   "was_labelled": "Spells can't be cast"
+  },
+  "o-tokens::Investigate": {
+   "key_states_effect": true,
+   "n": 32,
+   "read": "investigate",
+   "verdict": "coherent",
+   "was_labelled": "Investigate"
+  },
+  "o-zone-change::Move cards between zones, uncommon cases": {
+   "key_states_effect": false,
+   "n": 33,
+   "read": "put cards from exile or outside the game into hand or battlefield (mixed)",
+   "verdict": "loose",
+   "was_labelled": "Move cards between zones, uncommon cases"
   }
  }
 }

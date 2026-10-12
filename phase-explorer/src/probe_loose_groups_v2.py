@@ -262,7 +262,7 @@ EFFECT = {
     "static:ReduceAbilityCost": "Abilities cost less", "static:CastWithFlash": "Cast as though it had flash", "static:PerTurnDrawLimit": "Limit cards drawn each turn",
     "static:MaximumHandSize": "Change the maximum hand size", "static:PerTurnCastLimit": "Limit spells cast each turn", "static:AdditionalLandDrop": "Play additional lands",
     "static:NoMaximumHandSize": "No maximum hand size", "static:MayPlayAdditionalLand": "May play an additional land", "static:MayLookAtTopOfLibrary": "May look at the top of a library",
-    "static:CantBeBlockedBy": "Can't be blocked by certain creatures", "static:CantBeBlocked": "Can't be blocked", "static:CantUntap": "Doesn't untap", "static:CanAttackWithDefender": "Can attack despite defender",
+    "static:CantBeBlockedBy": "Can't be blocked by certain creatures", "static:CantBeBlocked": "Can't be blocked", "static:CantUntap": "Doesn't untap", "static:CanAttackWithDefender": "Can attack as though it didn't have defender",
     "static:CantBeCast": "Spells can't be cast", "static:CantAttack": "Can't attack", "static:MustAttack": "Must attack", "static:CantEnterBattlefieldFrom": "Can't enter the battlefield from a zone",
     "static:CantBlock": "Can't block", "static:CantCastFrom": "Can't cast from a zone", "static:CantBeCountered": "Can't be countered", "static:MustBlock": "Must block",
     "static:CantLoseTheGame": "Can't lose the game", "static:CantGainLife": "Can't gain life", "static:CantBeBlockedExceptBy": "Can't be blocked except by certain creatures",
@@ -270,7 +270,7 @@ EFFECT = {
     "static:CantAttackOrBlock": "Can't attack or block", "static:CantBeCopied": "Can't be copied", "static:MustBeBlocked": "Must be blocked",
     "Detain": "Detain a permanent", "Investigate": "Investigate", "Forage": "Forage", "Populate": "Populate", "Transform": "Transform a permanent", "ManifestDread": "Manifest dread",
     "BecomePrepared": "Become prepared", "Manifest": "Manifest a card", "SetDayNight": "Set day or night", "PhaseOut": "Phase out", "Shuffle": "Shuffle a library", "PutOnTopOrBottom": "Put a card on top or bottom",
-    "PutAtLibraryPosition": "Put a card in a library", "GivePlayerCounter": "Give a player counters", "MoveCounters": "Move counters", "Double": "Double counters", "GainEnergy": "Get energy",
+    "PutAtLibraryPosition": "Put a card in a library", "GivePlayerCounter": "Give a player counters", "MoveCounters": "Move counters", "Double": "Double counters, life or mana", "GainEnergy": "Get energy",
     "MultiplyCounter": "Multiply counters", "Proliferate": "Proliferate", "Monstrosity": "Monstrosity",
 }
 
@@ -280,7 +280,7 @@ def effect_word(ft):
 
 
 CONT_WORDS = {"AddPower": "adds power", "AddToughness": "adds toughness", "AddKeyword": "adds a keyword", "GrantAbility": "grants an ability", "GrantTrigger": "grants a trigger",
-              "AddSubtype": "adds a creature type", "AddType": "adds a card type", "RemoveAllAbilities": "removes all abilities", "SetPower": "sets power", "SetToughness": "sets toughness",
+              "AddSubtype": "adds a creature or land type", "AddType": "adds a card type", "RemoveAllAbilities": "removes all abilities", "SetPower": "sets power", "SetToughness": "sets toughness",
               "AddColor": "adds a color", "SetBasicLandType": "sets land types", "AddAllCreatureTypes": "adds every creature type", "AddDynamicPower": "adds power by a count", "SetDynamicPower": "sets power by a count", "RemoveKeyword": "removes an ability", "SetColor": "sets a color", "AddStaticMode": "adds a different rule", "": "affects it"}
 OBJ_FIELD = {"objc": "objc", "objc2": "objc2", "sact": "sact"}
 KWFIX = {"firststrike": "first strike", "doublestrike": "double strike", "deathtouch": "deathtouch", "lifelink": "lifelink"}
@@ -358,10 +358,18 @@ def loose_name(key):
         head = "Make " + (ob or "things") + " " + sg
     elif ft == "GenericEffect":
         g = d.get("grant", "")
-        head = "Give " + (ob or "things") + " " + (KWFIX.get(g.replace("keyword ", ""), g.replace("keyword ", "")) if g.startswith("keyword") else GRANT_WORDS.get(g, g or "a gained effect"))
+        if g == "AddStaticMode":
+            # fixed wording per field value: the parse records which static mode only in a second field, so name the family of effects (with an object known, the three the members show)
+            head = "Give " + ob + " an effect like can't attack, can't block or can't be blocked" if ob else "Give things a combat effect like can't block or can't be blocked"
+        else:
+            head = "Give " + (ob or "things") + " " + (KWFIX.get(g.replace("keyword ", ""), g.replace("keyword ", "")) if g.startswith("keyword") else GRANT_WORDS.get(g, g or "a gained effect"))
     elif ft == "static:Continuous":
         g = d.get("grant", "")
-        head = "Continuous effect on " + (ob or "things") + ((": " + CONT_WORDS.get(g, "gives " + KWFIX.get(g.replace("keyword ", ""), g.replace("keyword ", "")) if g.startswith("keyword") else g)) if g else "")
+        if "grant" in d and g == "":
+            # nothing the parse records says what it does; every member of such a group is an "as long as ..." effect, applied to this permanent or to a paired or equipped creature, so no subject is claimed
+            head = "Continuous effect, only as long as something is true"
+        else:
+            head = "Continuous effect on " + (ob or "things") + ((": " + CONT_WORDS.get(g, "gives " + KWFIX.get(g.replace("keyword ", ""), g.replace("keyword ", "")) if g.startswith("keyword") else g)) if g else "")
     elif ft == "Attach":
         head = "Attach" + (" to " + ob if ob else "")
     elif ft == "Counter":
