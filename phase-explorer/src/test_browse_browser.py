@@ -409,6 +409,10 @@ def main():
         TM = json.load(open(os.path.join(HERE, 'build', 'tentative_placements.json'), encoding='utf-8'))['meta']
         c.js("location.hash=''")
         c.wait("!!document.getElementById('showtent')", 60)
+        c.wait("document.getElementById('cov').innerText.includes('counting tentative placements')", 60)
+        # sections 26-28 were written before the condition annotations: run them with the annotation switch off (section 29 covers it)
+        c.js("document.getElementById('showann').checked = false; document.getElementById('showann').dispatchEvent(new Event('change'))")
+        c.js("document.getElementById('showtag').checked = false; document.getElementById('showtag').dispatchEvent(new Event('change'))")
         check("26 the switch is on by default", c.js("document.getElementById('showtent').checked") is True)
         check("26 the header gives three figures with bases, the precise and broad ones unchanged",
               c.wait("document.getElementById('cov').innerText.includes('counting tentative placements')", 60)
@@ -513,6 +517,255 @@ def main():
         check("28 switched off: the new groups disappear with the rest", c.wait("document.querySelectorAll('#tree .b-tent').length === 0") and "Not yet organized: 5,593" in c.js("document.getElementById('cov').innerText"))
         c.js("document.getElementById('showtent').checked = true; document.getElementById('showtent').dispatchEvent(new Event('change'))")
         check("28 switched on again", c.wait("document.getElementById('cov').innerText.includes('counting tentative placements')"))
+        # 29 the condition annotations (abilities held for an unread condition; the gap-test stratum on its own line)
+        AM = json.load(open(os.path.join(HERE, 'build', 'annotation_placements.json'), encoding='utf-8'))['meta']
+        c.js("document.getElementById('showann').checked = true; document.getElementById('showann').dispatchEvent(new Event('change'))")
+        check("29 the annotation switch is on by default (checkbox exists, labelled)", c.js("document.getElementById('showann').checked") is True and "Show condition annotations" in c.js("document.getElementById('showann').parentElement.innerText"))
+        cov = c.js("document.getElementById('cov').innerText")
+        hl = AM["headline"]
+        check("29 the header gives the fourth figure with its basis, and the gap-test figure on its own line, the first three unchanged",
+              c.wait("document.getElementById('cov').innerText.includes('condition annotations')", 60)
+              and all(x in cov for x in ("24,336 of 33,183", "27,590", "29,683")) and (format(hl["with_annotation"][0], ",") + " of 33,183") in cov and (str(hl["with_annotation"][1]) + "%") in cov
+              and (format(hl["with_gap_stratum"][0], ",") + " of 33,183") in cov and (str(hl["with_gap_stratum"][1]) + "%") in cov, cov[:700].replace("\n", " "))
+        check("29 the fourth and the gap-test figures are separate lines (not blended)",
+              c.js("[...document.querySelectorAll('#cov > div')].filter(d => d.innerText.includes('condition annotations') || d.innerText.includes('unread-part stratum')).length") == 2)
+        check("29 the pile is the build's pile minus tentative and annotated; both annotated counts are named",
+              ("Not yet organized: " + format(AM["still_unorganized_after_gap_stratum"], ",")) in cov and ("annotated: " + format(AM["condition_cards_new"], ",")) in cov and (format(AM["gap_cards_new"], ",") + " (card part not read)") in cov, cov[-420:].replace("\n", " "))
+        tot = c.js("(() => { const v = TAX.totals.views; return [v.placed + v.broad_only + v.keyword_block + v.no_abilities + v.replacement_group, TENT.meta.cards, ANN.meta.condition_cards_new, ANN.meta.gap_cards_new, TAX.totals.not_yet_organized - TENT.meta.cards - ANN.meta.condition_cards_new - ANN.meta.gap_cards_new, v.not_a_card, TAX.totals.universe] })()")
+        check("29 placed + tentative + annotated (both strata) + still unorganized + not cards = 38,921", sum(tot[:6]) == tot[6] == 38921, str(tot))
+        fam = c.js("ANN.families[0].key")
+        c.js("(() => { open.add('f:%s'); renderTree(); return true })()" % fam)
+        check("29 a family has a Condition annotations row with its own badge", c.wait("!!document.querySelector('#tree .row[data-k=\"af:%s\"] .b-ann')" % fam))
+        sty = c.js("""(() => { const m = document.querySelector('#tree .b-ann'); const t = document.querySelector('#tree .b-tent'); const a = document.querySelector('#tree .b-auto'); const b = document.querySelector('#tree .b-broad');
+          const bs = e => e ? getComputedStyle(e).borderTopStyle : null; return [bs(m), bs(t), bs(a), bs(b), m.className, t ? t.className : null] })()""")
+        check("29 the annotation badge is dotted and differs from the tentative (striped), broad and other badges", sty[0] == "dotted" and sty[0] not in (sty[1], sty[3]) , str(sty))
+        c.js("document.querySelector('#tree .row[data-k=\"af:%s\"]').click()" % fam)
+        check("29 the family row opens to annotation groups, each badged", c.wait("document.querySelectorAll('#tree .row[data-k^=\"ag:\"] .b-ann').length > 0"))
+        kc = c.js("Object.keys(ANN.groups).find(k => ANN.groups[k].m.some(r => r[6] === 'c' && r[4] === 0))")
+        c.js("show('ag:%s')" % kc)
+        check("29 a group lists cards with the leaf's ability text, the badge and the unread condition, in the agreed wording",
+              c.wait("document.querySelectorAll('#list .card').length > 0")
+              and c.js("[...document.querySelectorAll('#list .card')].every(x => x.innerText.includes('Condition not read') && x.innerText.includes('This ability has a condition the tool did not read:') && x.innerText.includes('The condition may change what the ability does.'))") is True
+              and "Not counted in the precise, with-broad or with-tentative figure" in c.js("document.getElementById('panel').innerText"))
+        c.js("show('ag:%s')" % kc)
+        check("29 the condition text on a row is a quote from that card's own oracle text",
+              c.js("""(() => { const g = ANN.groups[%s]; return g.m.filter(r => r[6] === 'c').slice(0, 25).every(r => { const t = CARDS[r[0]].t.replace(/\\s+/g, ' '); const cl = r[2].replace(/[.]$/, ''); return t.includes(cl) || t.replace(CARDS[r[0]].n, '~').includes(cl) }) })()""" % json.dumps(kc)) is True)
+        ko = c.js("Object.keys(ANN.groups).find(k => ANN.groups[k].m.some(r => r[4] === 2))")
+        c.js("show('ag:%s')" % ko)
+        check("29 an 'unless / if you don't' condition says it may change what the ability does, even to the opposite", c.wait("document.querySelectorAll('#list .card').length > 0") and "even to the opposite" in c.js("document.getElementById('list').innerText"))
+        ki = c.js("Object.keys(ANN.groups).find(k => ANN.groups[k].m.some(r => r[4] === 1))")
+        c.js("show('ag:%s')" % ki)
+        check("29 an 'instead / otherwise' condition says it may make the ability do something else instead", c.wait("document.querySelectorAll('#list .card').length > 0") and "or make it do something else instead" in c.js("document.getElementById('list').innerText"))
+        kg = c.js("Object.keys(ANN.groups).find(k => ANN.groups[k].m.some(r => r[6] === 'g'))")
+        c.js("show('ag:%s')" % kg)
+        check("29 a gap-test group row says the ability was read and another part of the card was not, with the unread text",
+              c.wait("document.querySelectorAll('#list .card').length > 0") and "Card part not read" in c.js("document.getElementById('list').innerText")
+              and "This ability was read, but another part of this card was not:" in c.js("document.getElementById('list').innerText"))
+        # Find a card: 5 annotated (condition stratum), 3 annotated (gap stratum), 5 tentative, 5 loose, 5 placed, 3 excluded
+        pk2 = c.js("""(() => {
+          const pick = (arr, n) => { const out = []; for (let i = 1; out.length < n && i < arr.length; i++) out.push(arr[Math.floor(arr.length * i / (n + 1))]); return out; };
+          const ok = o => CARDS[o] && /^[A-Za-z' ,-]+$/.test(CARDS[o].n);
+          const a1 = Object.keys(ANN.by_card).filter(o => ok(o) && ANN.cs[o] === 'c' && !TENT.by_card[o]).sort();
+          const a2 = Object.keys(ANN.by_card).filter(o => ok(o) && ANN.cs[o] === 'g' && !TENT.by_card[o]).sort();
+          const a3 = Object.keys(ANN.by_card).filter(o => ok(o) && TENT.by_card[o]).sort();
+          const tent = Object.keys(TENT.by_card).filter(o => ok(o) && !ANN.by_card[o]).sort();
+          const loose = Object.keys(LOOSE.by_card).filter(o => ok(o) && !TENT.by_card[o] && !ANN.by_card[o]).sort();
+          const placed = Object.keys(CARDS).filter(o => ok(o) && CARDS[o].ab.some(a => a[2] === 'p') && !LOOSE.by_card[o]).sort();
+          const left = Object.keys(FLAGS.cards).filter(o => FLAGS.evidence[o]).sort();
+          return {ann: pick(a1, 5).map(o => CARDS[o].n), gap: pick(a2, 3).map(o => CARDS[o].n), both: pick(a3, 2).map(o => CARDS[o].n), tent: pick(tent, 5).map(o => CARDS[o].n), loose: pick(loose, 5).map(o => CARDS[o].n), placed: pick(placed, 5).map(o => CARDS[o].n), left: pick(left, 3).map(o => FLAGS.evidence[o].name)};
+        })()""")
+
+        def ask3(name):
+            return c.js("""(async () => { document.getElementById('q').value = %s; await find(%s);
+              const want = %s.toLowerCase(); const frs = [...document.querySelectorAll('#findres .fr')];
+              const fr = frs.find(f => f.querySelector('.nm').innerText.toLowerCase() === want) || frs[0];
+              return fr ? {text: fr.innerText, ann: fr.querySelectorAll('.b-ann').length, ag: fr.querySelectorAll('[data-go^=\\"ag:\\"]').length, tg: fr.querySelectorAll('[data-go^=\\"tg:\\"]').length, lg: fr.querySelectorAll('[data-go^=\\"lg:\\"]').length} : null })()""" % (json.dumps(name), json.dumps(name), json.dumps(name)))
+        for nm in pk2["ann"]:
+            a = ask3(nm)
+            check("29 Find a card: annotated card %s says what is unread, in the same wording" % nm, bool(a) and a["ann"] >= 1 and a["ag"] >= 1 and "This ability has a condition the tool did not read:" in a["text"] and "Condition not read" in a["text"] and "may change what the ability does" in a["text"], str(a)[:200])
+        for nm in pk2["gap"]:
+            a = ask3(nm)
+            check("29 Find a card: gap-test card %s says another part of the card was not read" % nm, bool(a) and a["ann"] >= 1 and "Card part not read" in a["text"] and "another part of this card was not" in a["text"], str(a)[:200])
+        for nm in pk2["both"]:
+            a = ask3(nm)
+            check("29 Find a card: card %s is tentative and annotated and says it is counted once" % nm, bool(a) and a["ann"] >= 1 and a["tg"] >= 1 and "counted once, as tentative" in a["text"], str(a)[:200])
+        for nm in pk2["tent"]:
+            a = ask3(nm)
+            check("29 Find a card: tentative card %s has no annotation text" % nm, bool(a) and a["ann"] == 0 and a["tg"] >= 1, str(a)[:160])
+        for nm in pk2["loose"]:
+            a = ask3(nm)
+            check("29 Find a card: loose card %s has no annotation text" % nm, bool(a) and a["ann"] == 0 and a["lg"] >= 1, str(a)[:160])
+        for nm in pk2["placed"]:
+            a = ask3(nm)
+            check("29 Find a card: placed card %s has no annotation text" % nm, bool(a) and a["ann"] == 0 and a["ag"] == 0, str(a)[:160])
+        for nm in pk2["left"]:
+            a = ask3(nm)
+            check("29 Find a card: left-out card %s has no annotation text" % nm, bool(a) and a["ann"] == 0 and a["ag"] == 0, str(a)[:160])
+        a = ask3(pk2["ann"][0])
+        c.js("document.querySelector('#findres .fr [data-go^=\"ag:\"]').click()")
+        check("29 an annotation link in Find a card opens the group", c.wait("document.querySelectorAll('#list .card').length > 0 && !!document.querySelector('#panel .annnote')"))
+        oa = c.js("Object.keys(ANN.by_card).find(o => !TENT.by_card[o] && ANN.cs[o] === 'c')")
+        c.js("show('c:%s')" % oa)
+        check("29 the card page of an annotated card shows the badge and the unread condition", c.wait("!!document.querySelector('.cardpage .annnote .b-ann')", 60))
+        c.js("show('C:')")
+        c.wait("document.querySelectorAll('#list .crow').length > 5", 60)
+        c.js("document.getElementById('cf-st').value = 'a'; document.getElementById('cf-st').dispatchEvent(new Event('input', {bubbles: true}))")
+        check("29 the Cards tab can filter annotated cards", c.wait("document.getElementById('cfcount').innerText.startsWith('%s')" % format(AM['condition_cards_new'] + AM['gap_cards_new'] - 15, ',')[:3]), c.js("document.getElementById('cfcount').innerText"))
+        c.js("document.getElementById('cf-st').value = ''; document.getElementById('cf-st').dispatchEvent(new Event('input', {bubbles: true}))")
+        # phone width: 390 px
+        c.call("Emulation.setDeviceMetricsOverride", width=390, height=844, deviceScaleFactor=1, mobile=True)
+        c.js("show('ag:%s')" % kc)
+        c.wait("document.querySelectorAll('#list .card').length > 0", 60)
+        ph = c.js("""(() => { const cs = [...document.querySelectorAll('#list .card')].slice(0, 30); const hs = cs.map(x => x.getBoundingClientRect().height).sort((a, b) => a - b);
+          const ns = cs.map(x => (x.querySelector('.annnote') || x).getBoundingClientRect().height).sort((a, b) => a - b); const lh = parseFloat(getComputedStyle(document.body).lineHeight) || 20;
+          return {w: window.innerWidth, scrollW: document.documentElement.scrollWidth, cardMedianPx: hs[Math.floor(hs.length / 2)], cardMaxPx: hs[hs.length - 1], noteMedianPx: ns[Math.floor(ns.length / 2)], noteMaxPx: ns[ns.length - 1], lineHeight: lh, cards: cs.length} })()""")
+        check("29 phone width 390 px: no sideways scroll on an annotation list", ph["scrollW"] <= ph["w"] + 1, str(ph))
+        json.dump(ph, open(os.path.join(HERE, 'build', 'annotation_phone_width.json'), 'w'), indent=1)
+        c.js("show('c:%s')" % oa)
+        c.wait("!!document.querySelector('.cardpage .annnote .b-ann')", 60)
+        ph2 = c.js("(() => { const n = document.querySelector('.cardpage .annnote'); return {w: window.innerWidth, scrollW: document.documentElement.scrollWidth, noteHeightPx: n.getBoundingClientRect().height} })()")
+        check("29 phone width 390 px: no sideways scroll on an annotated card page", ph2["scrollW"] <= ph2["w"] + 1, str(ph2))
+        c.call("Emulation.clearDeviceMetricsOverride")
+        # the switch removes every annotation
+        c.js("document.getElementById('showann').checked = false; document.getElementById('showann').dispatchEvent(new Event('change'))")
+        cov = c.js("document.getElementById('cov').innerText")
+        check("29 switched off: no annotation rows or badges, no fourth figure or gap-test figure, no annotated counts, the pile is back to the tentative-only count",
+              c.wait("document.querySelectorAll('#tree .b-ann').length === 0") and "condition annotations" not in cov and "unread-part stratum" not in cov and "annotated:" not in cov
+              and ("Not yet organized: " + format(AM["still_unorganized_after_tentative"], ",")) in cov and c.js("document.querySelectorAll('#tree .row[data-k^=\"af:\"]').length") == 0, cov[-300:].replace("\n", " "))
+        check("29 switched off: the first three figures are unchanged", all(x in cov for x in ("24,336 of 33,183", "27,590", "29,683")))
+        c.js("show('ag:%s')" % kc)
+        check("29 switched off: a link to an annotation group says it is switched off", c.wait("document.getElementById('panel').innerText.includes('switched off')"))
+        a = ask3(pk2["ann"][0])
+        check("29 switched off: Find a card shows no annotation text for an annotated card", bool(a) and a["ann"] == 0 and "did not read" not in a["text"], str(a)[:160])
+        c.js("document.getElementById('showann').checked = true; document.getElementById('showann').dispatchEvent(new Event('change'))")
+        check("29 switched on again: the fourth figure is back", c.wait("document.getElementById('cov').innerText.includes('condition annotations')"))
+        c.js("document.getElementById('showtent').checked = false; document.getElementById('showtent').dispatchEvent(new Event('change'))")
+        cov = c.js("document.getElementById('cov').innerText")
+        check("29 tentative switched off alone: the annotations stay, and every annotated card (both strata, tentative or not) leaves the pile",
+              c.wait("document.querySelectorAll('#tree .b-tent').length === 0") and "condition annotations" in cov and ("Not yet organized: " + format(5593 - AM["cards"], ",")) in cov, cov[-260:].replace("\n", " "))
+        c.js("document.getElementById('showtent').checked = true; document.getElementById('showtent').dispatchEvent(new Event('change'))")
+        c.wait("document.getElementById('cov').innerText.includes('counting tentative placements')")
+        # 30 the community-tag layer (the 1,300 cards with no readable ability, grouped by Scryfall community tag)
+        TG = json.load(open(os.path.join(HERE, 'build', 'tag_placements.json'), encoding='utf-8'))['meta']
+        c.js("localStorage.removeItem('showTags')")
+        c.call("Page.navigate", url="http://127.0.0.1:%d/reports/browse.html" % PORT_HTTP)
+        c.wait("document.querySelectorAll('#tree .row').length > 10", 90)
+        c.wait("!!document.getElementById('showtag') && document.getElementById('cov').innerText.includes('Basis')", 90)
+        c.wait("typeof TAGS !== 'undefined' && !!TAGS", 90)
+        check("30 the community-tag switch is on by default (checkbox exists, labelled)", c.js("document.getElementById('showtag').checked") is True and "Show community-tag groups" in c.js("document.getElementById('showtag').parentElement.innerText"))
+        c.wait("document.getElementById('cov').innerText.includes('community-tag group')", 60)
+        cov = c.js("document.getElementById('cov').innerText")
+        h6 = TG["headline"]["with_tag"]
+        check("30 the header gives the sixth figure with its basis and the snapshot date on its own line; the first five unchanged",
+              all(x in cov for x in ("24,336 of 33,183", "27,590", "29,683", "30,643", "30,803")) and (format(h6[0], ",") + " of 33,183") in cov and ("%g" % h6[1] + "%") in cov and "Tag snapshot 2026-10-14" in cov.replace("\n", " "), cov[:900].replace("\n", " "))
+        check("30 the sixth figure is its own line (not blended with the annotation or gap-test lines)",
+              c.js("[...document.querySelectorAll('#cov > div')].filter(d => d.innerText.includes('community-tag group')).length") == 1 and c.js("[...document.querySelectorAll('#cov > div')].filter(d => d.innerText.includes('community-tag group') && (d.innerText.includes('unread-part stratum') || d.innerText.includes('condition annotations'))).length") == 0)
+        check("30 the pile is the pile after tentative, annotation (both strata) and tag; the tag count is named",
+              ("Not yet organized: " + format(TG["still_unorganized_after_tag_with_gap_stratum"], ",")) in cov and ("grouped by community tag: " + format(TG["cards"], ",")) in cov, cov[-420:].replace("\n", " "))
+        tot = c.js("(() => { const v = TAX.totals.views; return [v.placed + v.broad_only + v.keyword_block + v.no_abilities + v.replacement_group, TENT.meta.cards, ANN.meta.condition_cards_new, ANN.meta.gap_cards_new, TAGS.meta.cards, TAX.totals.not_yet_organized - TENT.meta.cards - ANN.meta.condition_cards_new - ANN.meta.gap_cards_new - TAGS.meta.cards, v.not_a_card, TAX.totals.universe] })()")
+        check("30 placed + tentative + annotation + gap stratum + tag + unorganized + not cards = 38,921", sum(tot[:7]) == tot[7] == 38921, str(tot))
+        c.js("(() => { open.add('LG:'); renderTree(); return true })()")
+        check("30 the tree has a 'Grouped by community tag' section with its own badge, beside 'Cards we couldn't read yet'", c.wait("!!document.querySelector('#tree .row[data-k=\"CT:\"] .b-tag') && !!document.querySelector('#tree .row[data-k=\"UR:\"]')"))
+        sty = c.js("""(() => { const m = document.querySelector('#tree .b-tag'); const a = document.querySelector('#tree .b-ann'); const t = document.querySelector('#tree .b-tent'); const bs = e => e ? getComputedStyle(e).borderTopStyle : null; return [bs(m), bs(a), bs(t)] })()""")
+        check("30 the tag badge is double-bordered and differs from the annotation (dotted) and tentative badges", sty[0] == "double" and sty[0] not in (sty[1], sty[2]), str(sty))
+        c.js("document.querySelector('#tree .row[data-k=\"CT:\"]').click()")
+        check("30 the section opens with the wording, the counts, the snapshot date and what happens to cards without a group",
+              c.wait("document.getElementById('panel').innerText.includes(\"Not checked against the card's parsed text.\")") and "Tag snapshot 2026-10-14" in c.js("document.getElementById('panel').innerText")
+              and "stay in that list and in the pile" in c.js("document.getElementById('panel').innerText") and (format(TG["groups"], ",") + " groups") in c.js("document.getElementById('panel').innerText"))
+        check("30 the section lists one row per group (the 3 broad tags are not groups)", c.js("document.querySelectorAll('#tree .row[data-k^=\"ct:\"]').length") == TG["groups"] and TG["wide_tags_not_groups"] == 3)
+        gid = c.js("TAGS.order[Math.floor(TAGS.order.length / 2)]")
+        c.js("document.querySelector('#tree .row[data-k=\"ct:%s\"]').click()" % gid)
+        check("30 a group lists its cards, each with the label, the tag and the snapshot date",
+              c.wait("document.querySelectorAll('#list .card').length > 3")
+              and c.js("[...document.querySelectorAll('#list .card')].every(x => x.innerText.includes(\"Grouped by community tag. Not checked against the card's parsed text.\") && x.innerText.includes('Tag:') && x.innerText.includes('Tag snapshot 2026-10-14'))") is True)
+        check("30 the group's count matches the data", c.js("TAGS.groups['%s'].cards" % gid) == c.js("TAGS.groups['%s'].m.length" % gid) and (str(c.js("TAGS.groups['%s'].cards" % gid)) + " cards") in c.js("document.querySelector('#panel .sub').innerText"))
+        check("30 every name has a name_source of rule or model_written (user_edit allowed), and no 'verified' wording",
+              c.js("Object.values(TAGS.groups).every(g => ['rule', 'model_written', 'user_edit'].includes(g.name_source))") is True and c.js("!document.body.innerText.toLowerCase().includes('verified')") is True)
+        # Cards we couldn't read yet: tag chips and the tag filter
+        c.js("show('UR:')")
+        check("30 'Cards we couldn't read yet' has a tag filter and shows each card's tag chips",
+              c.wait("!!document.getElementById('urtag') && document.querySelectorAll('#list .card').length > 3") and c.js("document.getElementById('urtag').options.length") == TG["groups"] + TG["wide_tags_not_groups"] + 1
+              and c.js("[...document.querySelectorAll('#list .card')].slice(0, 5).every(x => x.innerText.includes('community tag'))") is True)
+        c.js("(() => { const s = document.getElementById('urtag'); s.value = %s; s.dispatchEvent(new Event('change')); return true })()" % json.dumps(gid))
+        n_g = c.js("TAGS.groups['%s'].cards" % gid)
+        check("30 choosing a tag filters the list to that tag's cards", c.wait("document.querySelector('#panel .sub:last-of-type') && document.querySelector('#panel').innerText.includes('%d cards carry the chosen tag')" % n_g, 30) and c.js("document.querySelectorAll('#list .card').length") <= n_g)
+        wt = c.js("Object.keys(TAGS.wide)[0]")
+        c.js("(() => { const s = document.getElementById('urtag'); s.value = 'w:%s'; s.dispatchEvent(new Event('change')); return true })()" % wt)
+        n_w = c.js("TAGS.wide['%s'].cards" % wt)
+        check("30 a broad tag (over 100 cards, not a group) works as a filter", c.wait("document.querySelector('#panel').innerText.includes('%d cards carry the chosen tag')" % n_w, 30), "%s cards" % n_w)
+        c.js("URTAG = ''; show('UR:')")
+        # Find a card: 5 tagged, 5 unreadable without a usable group, 5 placed, 5 tentative, 3 excluded
+        pk3 = c.js("""(() => {
+          const pick = (arr, n) => { const out = []; for (let i = 1; out.length < n && i < arr.length; i++) out.push(arr[Math.floor(arr.length * i / (n + 1))]); return out; };
+          const ok = o => CARDS[o] && /^[A-Za-z' ,-]+$/.test(CARDS[o].n);
+          const tagged = Object.keys(TAGS.by_card).filter(ok).sort();
+          const nog = TAGS.no_group.filter(ok).sort();
+          const tent = Object.keys(TENT.by_card).filter(o => ok(o) && !TAGS.by_card[o]).sort();
+          const placed = Object.keys(CARDS).filter(o => ok(o) && CARDS[o].ab.some(a => a[2] === 'p') && !LOOSE.by_card[o]).sort();
+          const left = Object.keys(FLAGS.cards).filter(o => FLAGS.evidence[o]).sort();
+          return {tagged: pick(tagged, 5).map(o => CARDS[o].n), nog: pick(nog, 5).map(o => CARDS[o].n), tent: pick(tent, 5).map(o => CARDS[o].n), placed: pick(placed, 5).map(o => CARDS[o].n), left: pick(left, 3).map(o => FLAGS.evidence[o].name)};
+        })()""")
+
+        def ask4(name):
+            return c.js("""(async () => { document.getElementById('q').value = %s; await find(%s);
+              const want = %s.toLowerCase(); const frs = [...document.querySelectorAll('#findres .fr')];
+              const fr = frs.find(f => f.querySelector('.nm').innerText.toLowerCase() === want) || frs[0];
+              return fr ? {text: fr.innerText, tag: fr.querySelectorAll('.b-tag').length, ct: fr.querySelectorAll('[data-go^=\\"ct:\\"]').length} : null })()""" % (json.dumps(name), json.dumps(name), json.dumps(name)))
+        for nm in pk3["tagged"]:
+            a = ask4(nm)
+            check("30 Find a card: tagged card %s names its tag groups with the label and the snapshot date" % nm, bool(a) and a["tag"] >= 1 and a["ct"] >= 1 and "Not checked against the card's parsed text." in a["text"] and "Tag snapshot 2026-10-14" in a["text"], str(a)[:200])
+        for nm in pk3["nog"]:
+            a = ask4(nm)
+            check("30 Find a card: unreadable card %s without a usable group says so" % nm, bool(a) and a["tag"] >= 1 and a["ct"] == 0 and "No community-tag group yet" in a["text"], str(a)[:200])
+        for nm in pk3["placed"]:
+            a = ask4(nm)
+            check("30 Find a card: placed card %s shows no community-tag text" % nm, bool(a) and a["tag"] == 0 and "community tag" not in a["text"].lower(), str(a)[:160])
+        for nm in pk3["tent"]:
+            a = ask4(nm)
+            check("30 Find a card: tentative card %s shows no community-tag text" % nm, bool(a) and a["tag"] == 0 and "community tag" not in a["text"].lower(), str(a)[:160])
+        for nm in pk3["left"]:
+            a = ask4(nm)
+            check("30 Find a card: left-out card %s shows no community-tag text" % nm, bool(a) and a["tag"] == 0 and "community tag" not in a["text"].lower(), str(a)[:160])
+        a = ask4(pk3["tagged"][0])
+        c.js("document.querySelector('#findres .fr [data-go^=\"ct:\"]').click()")
+        check("30 a tag link in Find a card opens the group", c.wait("document.querySelectorAll('#list .card').length > 0 && !!document.querySelector('#panel .tagnote')"))
+        oa = c.js("Object.keys(TAGS.by_card)[0]")
+        c.js("show('c:%s')" % oa)
+        check("30 the card page of a tagged card shows the badge, the label and the snapshot date", c.wait("!!document.querySelector('.cardpage .tagnote .b-tag')", 60) and "Tag snapshot 2026-10-14" in c.js("document.querySelector('.cardpage .tagnote').innerText"))
+        c.js("show('C:')")
+        c.wait("document.querySelectorAll('#list .crow').length > 5", 60)
+        c.js("document.getElementById('cf-st').value = 'm'; document.getElementById('cf-st').dispatchEvent(new Event('input', {bubbles: true}))")
+        check("30 the Cards tab can filter community-tag cards", c.wait("document.getElementById('cfcount').innerText.startsWith('%s')" % format(TG['cards'], ',')), c.js("document.getElementById('cfcount').innerText"))
+        c.js("document.getElementById('cf-st').value = ''; document.getElementById('cf-st').dispatchEvent(new Event('input', {bubbles: true}))")
+        # phone width
+        c.call("Emulation.setDeviceMetricsOverride", width=390, height=844, deviceScaleFactor=1, mobile=True)
+        c.js("show('ct:%s')" % gid)
+        c.wait("document.querySelectorAll('#list .card').length > 0", 60)
+        ph = c.js("""(() => { const cs = [...document.querySelectorAll('#list .card')].slice(0, 30); const ns = cs.map(x => (x.querySelector('.tagnote') || x).getBoundingClientRect().height).sort((a, b) => a - b);
+          return {w: window.innerWidth, scrollW: document.documentElement.scrollWidth, noteMedianPx: ns[Math.floor(ns.length / 2)], noteMaxPx: ns[ns.length - 1], lineHeight: parseFloat(getComputedStyle(document.body).lineHeight) || 20, cards: cs.length} })()""")
+        check("30 phone width 390 px: no sideways scroll on a tag group list", ph["scrollW"] <= ph["w"] + 1, str(ph))
+        json.dump(ph, open(os.path.join(HERE, 'build', 'tag_layer_phone_width.json'), 'w'), indent=1)
+        c.js("show('UR:')")
+        c.wait("!!document.getElementById('urtag')", 60)
+        ph2 = c.js("(() => ({w: window.innerWidth, scrollW: document.documentElement.scrollWidth}))()")
+        check("30 phone width 390 px: no sideways scroll on 'Cards we couldn't read yet' with the filter", ph2["scrollW"] <= ph2["w"] + 1, str(ph2))
+        c.call("Emulation.clearDeviceMetricsOverride")
+        # switched off
+        c.js("document.getElementById('showtag').checked = false; document.getElementById('showtag').dispatchEvent(new Event('change'))")
+        cov = c.js("document.getElementById('cov').innerText")
+        check("30 switched off: no tag rows or badges, no sixth figure, no tag counts, the pile back to the annotation-state count",
+              c.wait("document.querySelectorAll('#tree .b-tag').length === 0") and "community-tag group" not in cov and "grouped by community tag" not in cov
+              and ("Not yet organized: " + format(TG["pile_before"] - AM['gap_cards_new'], ",")) in cov and c.js("document.querySelectorAll('#tree .row[data-k=\"CT:\"]').length") == 0, cov[-300:].replace("\n", " "))
+        check("30 switched off: the first five figures are unchanged", all(x in cov for x in ("24,336 of 33,183", "27,590", "29,683", "30,643", "30,803")))
+        c.js("show('UR:')")
+        check("30 switched off: 'Cards we couldn't read yet' shows all the cards, with no tag filter and no tag chips",
+              c.wait("document.querySelectorAll('#list .card').length > 3") and c.js("!document.getElementById('urtag')") is True and c.js("!document.getElementById('list').innerText.includes('community tag')") is True)
+        c.js("show('ct:%s')" % gid)
+        check("30 switched off: a link to a tag group says it is switched off", c.wait("document.getElementById('panel').innerText.includes('switched off')"))
+        a = ask4(pk3["tagged"][0])
+        check("30 switched off: Find a card shows no community-tag text for a tagged card", bool(a) and a["tag"] == 0 and "community tag" not in a["text"].lower(), str(a)[:160])
+        c.js("document.getElementById('showtag').checked = true; document.getElementById('showtag').dispatchEvent(new Event('change'))")
+        check("30 switched on again: the sixth figure is back", c.wait("document.getElementById('cov').innerText.includes('community-tag group')"))
         if SHOTS:
             open(os.path.join(SHOTS, "browser_deeplink.png"), "wb").write(base64.b64decode(c.call("Page.captureScreenshot", format="png")["data"]))
     finally:

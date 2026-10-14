@@ -1,0 +1,98 @@
+{
+ "note": "Community tags that describe how a card was designed, printed, errata'd, named or templated, not what it does. Hand-written 2026-10-14 from the 353 tags that form a group of 5 or more among the 1,300 cards with no readable ability, plus a scan of all 1,131 surviving tags for the same kinds of word. Applied by src/tag_layer_filter.py on top of the existing filter (oracle type, floor of 20 taggings, the card_function_search denylist). Matched by slug (tag UUIDs are the key in the layer; the slug is resolved to the UUID at build time, so a renamed tag is caught by the UUID list in build/tag_layer_filter.json). Added after the 2026-10-14 placement check: the prefix type-addition- (errata that added a type to a card) was missed in the first pass and surfaced as one wrong placement.",
+ "categories": {
+  "errata": {
+   "reason": "the tag records a type-line, keyword or token errata, not an effect",
+   "prefixes": [
+    "type-errata",
+    "token-errata",
+    "keyword-errata",
+    "day-zero-errata",
+    "deprecated-",
+    "type-addition-"
+   ],
+   "slugs": [
+    "digital-to-paper"
+   ]
+  },
+  "name_or_flavor_trivia": {
+   "reason": "the tag is about the card's name, franchise, art or collector status",
+   "prefixes": [
+    "dnd-",
+    "preexisting-dnd-",
+    "unique-"
+   ],
+   "slugs": [
+    "punny-name",
+    "rhyming-name",
+    "portmanteau",
+    "real-life-animal-name",
+    "quote-name",
+    "creature-type-name",
+    "game-name",
+    "mathy-name",
+    "three-letter-name",
+    "magic-term-name",
+    "doctor-who-episode-name",
+    "shares-name-with-a-mechanic",
+    "shares-name-with-a-set",
+    "40k-model",
+    "multi-character-card",
+    "virtual-legendary",
+    "legendary-team-up",
+    "pair-commander",
+    "5c-set-mechanic-commander",
+    "commander-set-booster-cards",
+    "legends-retold",
+    "playtest-forecast",
+    "open-attraction",
+    "unprinted-token",
+    "paper-compatible",
+    "weaker-in-singleton-formats",
+    "useless-in-singleton-formats",
+    "draft-matters",
+    "synergy-name-sticker",
+    "named-token"
+   ]
+  },
+  "templating_or_rules_jargon": {
+   "reason": "the tag is about how the text is written or ruled, not what the card does",
+   "prefixes": [
+    "offcolor-",
+    "french-vanilla-",
+    "vanilla-"
+   ],
+   "slugs": [
+    "untracked-indefinite-effect",
+    "unnoted-tracked-information",
+    "notorious-templating",
+    "faux-targeting",
+    "named-choice",
+    "rules-nightmare",
+    "fun-ruling",
+    "inverted-effects",
+    "keyword-soup",
+    "mix-and-match",
+    "breaks-ktk-morph-rule",
+    "color-break",
+    "restricted-mana"
+   ]
+  },
+  "set_design_or_generic": {
+   "reason": "the tag is a set-design pattern or a vague quality label (a drawback, catching up), not a described effect",
+   "suffixes": [
+    "-with-set-mechanic",
+    "-with-set-s-mechanic"
+   ],
+   "prefixes": [
+    "hate-set-"
+   ],
+   "slugs": [
+    "drawback",
+    "catch-up",
+    "bear-with-set-s-mechanic",
+    "hate-set-mechanic"
+   ]
+  }
+ }
+}

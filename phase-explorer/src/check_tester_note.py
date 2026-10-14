@@ -47,8 +47,22 @@ def main():
     snap = tax["meta"]["rules"]["snapshot"]
     check("the snapshot predates 'since April' (cards released since are in the overlay)", "2026-04" in snap, snap[:80])
     sug = ("closest group" in page.lower()) or ("also fits" in page.lower())
-    check("the page has 'closest group' / 'also fits' suggestion links (the last bullet of the note)", sug,
-          "" if sug else "the main view has none (they exist only in the archived card-level view); drop or reword that bullet")
+    promises = ("closest group" in note.lower()) or ("also fits" in note.lower()) or ("suggestion" in note.lower())
+    check("the note promises no 'closest group' / 'also fits' suggestion links unless the page has them", (not promises) or sug,
+          "the page has none (they exist only in the archived card-level view); the note's bullet was removed on 2026-10-12" if not sug else "")
+    tm, am = jl("tentative_placements.json")["meta"], jl("annotation_placements.json")["meta"]
+    mt = re.search(r"about ([\d,]+) cards; about (\d+)% of the card set counting them", note)
+    check("the note's tentative line matches the build (cards and percentage)", bool(mt) and round(float(tm["headline"]["with_tentative"][1])) == int(mt.group(2)) and abs(int(mt.group(1).replace(",", "")) - tm["cards"]) <= 100,
+          "build %s cards, %s%%" % (tm["cards"], tm["headline"]["with_tentative"][1]))
+    ma = re.search(r"Condition annotations.*?about ([\d,]+) more cards.*?about (\d+)% of the card set counting them", note, re.S)
+    check("the note's condition-annotation line matches the build (cards and percentage)", bool(ma) and round(float(am["headline"]["with_annotation"][1])) == int(ma.group(2)) and abs(int(ma.group(1).replace(",", "")) - am["condition_cards_new"]) <= 100,
+          "build %s new cards, %s%%" % (am["condition_cards_new"], am["headline"]["with_annotation"][1]))
+    tgm = jl("tag_placements.json")["meta"]
+    mg = re.search(r"about ([\d,]+) of the 1,300.*?about (\d+)% of the card set", note, re.S)
+    check("the note's community-tag line matches the build (cards and percentage)", bool(mg) and round(float(tgm["headline"]["with_tag"][1])) == int(mg.group(2)) and abs(int(mg.group(1).replace(",", "")) - tgm["cards"]) <= 100,
+          "build %s cards, %s%%" % (tgm["cards"], tgm["headline"]["with_tag"][1]))
+    check("the page has the community-tag switch, the badge and the agreed wording", all(x in page for x in ("showtag", "Show community-tag groups", "b-tag", "Not checked against the card's parsed text", "Tag snapshot")) or all(x in page for x in ("showtag", "Show community-tag groups", "b-tag", "tagSnap")))
+    check("the page has the annotation switch, the badge and the agreed wording", all(x in page for x in ("showann", "Show condition annotations", "b-ann", "did not read")))
     print("NOTE  the note says 'constructed-legal'; the build's denominator is the card set after leaving out non-cards and cards not meant for constructed play (%s cards). It is not a legality test: "
           "it still holds, for example, cards of sets that have not released yet." % format(t["in_scope"], ","))
     sys.exit(0 if all(out) else 1)

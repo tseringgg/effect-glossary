@@ -6,10 +6,10 @@
 <title>Card abilities, grouped</title>
 <style>
 :root { --bg:#fbfbf8; --fg:#1d1d1b; --muted:#6b6a64; --line:#deddd6; --panel:#ffffff; --accent:#2f5d8a;
-        --chip:#eef2f6; --broad:#9a5b00; --broadbg:#fff4e0; --held:#7a1f1f; --sel:#e3ecf5; --tent:#1f6b64; --tentbg:#dcefec; }
+        --chip:#eef2f6; --broad:#9a5b00; --broadbg:#fff4e0; --held:#7a1f1f; --sel:#e3ecf5; --tent:#1f6b64; --tentbg:#dcefec; --ann:#6a3d9a; --annbg:#f1e9f7; --tag:#a4306f; --tagbg:#f8e6f0; }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) { --bg:#17181a; --fg:#e8e6df; --muted:#a29f96; --line:#33343a; --panel:#1f2023;
-        --accent:#8db8e3; --chip:#2a2f36; --broad:#f0b453; --broadbg:#3a2e17; --held:#f0a0a0; --sel:#24323f; --tent:#7fd0c8; --tentbg:#1f3a37; }
+        --accent:#8db8e3; --chip:#2a2f36; --broad:#f0b453; --broadbg:#3a2e17; --held:#f0a0a0; --sel:#24323f; --tent:#7fd0c8; --tentbg:#1f3a37; --ann:#c9a7ee; --annbg:#2d2339; --tag:#e79ac4; --tagbg:#3a1f2f; }
 }
 * { box-sizing: border-box; }
 body { margin:0; background:var(--bg); color:var(--fg); font:14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
@@ -39,6 +39,13 @@ section#panel { padding:12px 16px; overflow:auto; max-height: calc(100vh - 140px
 .b-broad { background:var(--broadbg); color:var(--broad); border:1px solid var(--broad); }
 .b-auto { color:var(--muted); border:1px dashed var(--line); }
 .b-tent { color:var(--tent); font-style:italic; border:1px solid var(--tent); background:repeating-linear-gradient(135deg, var(--tentbg) 0 4px, transparent 4px 8px); }
+.b-ann { color:var(--ann); border:1px dotted var(--ann); background:transparent; }
+.b-ann::before { content:"? "; font-weight:700; }
+.b-tag { color:var(--tag); border:3px double var(--tag); background:transparent; }
+.tagnote { background:var(--tagbg); border-left:4px double var(--tag); padding:6px 10px; margin:8px 0; }
+.tagstale { color:var(--held); font-weight:700; }
+.annnote { background:var(--annbg); border-left:3px dotted var(--ann); padding:6px 10px; margin:8px 0; }
+.annnote .clause { font-style:italic; }
 .tentnote { background:var(--tentbg); border-left:3px solid var(--tent); padding:6px 10px; margin:8px 0; }
 .b-dev { color:var(--muted); font-family:ui-monospace, monospace; font-size:11px; }
 .note { background:var(--broadbg); color:var(--fg); border-left:3px solid var(--broad); padding:6px 10px; margin:8px 0; }
@@ -104,6 +111,8 @@ body.dev .devonly { display:inline; }
     <label class="prov" title="Cards that Scryfall has no picture for"><input type="checkbox" id="hidenopic" checked> hide cards with no picture</label>
     <span class="prov" id="hidenote"></span>
     <label class="prov" title="Groups that are tentative: grouped by effect type, not fully checked"><input type="checkbox" id="showtent" checked> show tentative placements</label>
+    <label class="prov" title="Abilities the tool held back for an unread condition (or an unread part of the card), shown in the group they would belong in. Tentative: not counted in the first three figures"><input type="checkbox" id="showann" checked> Show condition annotations</label>
+    <label class="prov" title="Cards with no readable ability, grouped by Scryfall community tag. Not checked against the parse; not counted in the first five figures"><input type="checkbox" id="showtag" checked> Show community-tag groups</label>
     <span class="prov">· <a href="../archive/card-level-view-2026-10/reports/browse.html">archived card-level view</a> (its numbers do not match this view)</span>
     <span class="prov devonly">· dev: <a href="ledger.html">coverage ledger</a> · <a href="card-explorer.html">parse-audit explorer</a> (both show the archived view)</span>
   </div>
@@ -123,7 +132,7 @@ body.dev .devonly { display:inline; }
       <label class="h">Mana value</label>
       <div class="two"><input id="cf-mvmin" type="number" min="0" placeholder="min"><input id="cf-mvmax" type="number" min="0" placeholder="max"></div>
       <label class="h" for="cf-st">Where it is in this view</label>
-      <select id="cf-st"><option value="">any</option><option value="l">grouped by its abilities</option><option value="b">only in groups broader than they look</option><option value="u">not yet organized</option><option value="t">tentatively placed (not fully checked)</option><option value="k">keyword block</option><option value="g">replacement group</option><option value="v">no abilities</option></select>
+      <select id="cf-st"><option value="">any</option><option value="l">grouped by its abilities</option><option value="b">only in groups broader than they look</option><option value="u">not yet organized</option><option value="t">tentatively placed (not fully checked)</option><option value="a">annotated: an unread condition or card part (not fully checked)</option><option value="m">grouped by community tag (not checked)</option><option value="k">keyword block</option><option value="g">replacement group</option><option value="v">no abilities</option></select>
       <p class="sub" id="cfcount"></p>
     </div>
   </nav>
@@ -147,6 +156,58 @@ const isTent = oid => tentOn() && !!TENT.by_card[oid];
 const TENT_LABEL = "Tentative placement: grouped by effect type, not fully checked.";
 const tgN = g => counting() ? nvis(g.m.map(r => r[0])) : g.cards;
 const tfN = f => counting() ? nvis([].concat(...f.groups.map(gid => TENT.groups[gid].m.map(r => r[0])))) : f.cards;
+// the condition-annotation layer (build/annotation_placements.json): abilities held for a dropped condition, or by the gap test, shown in the group they would belong in. Tentative; one switch hides it all
+let ANN = null, ANNTRIED = false, SHOWA = true;
+try { if (localStorage.getItem("showAnnotations") === "0") SHOWA = false; } catch (e) { /* storage unavailable: keep the default */ }
+const annOn = () => SHOWA && !!ANN && ANN.meta.enabled;
+const hasAnn = oid => annOn() && !!ANN.by_card[oid];
+const isAnn = oid => hasAnn(oid) && !isTent(oid);           // an annotated card that leaves the pile (a tentative card keeps its tentative count)
+const isAnnC = oid => isAnn(oid) && ANN.cs[oid] === "c";
+const isAnnG = oid => isAnn(oid) && ANN.cs[oid] === "g";
+const inPile = oid => !isTent(oid) && !isAnn(oid) && !isTag(oid);
+const annCounts = () => { const n = { c: 0, g: 0 }; if (annOn()) for (const o of Object.keys(ANN.by_card)) if (isAnn(o)) n[ANN.cs[o]]++; return n; };
+const agN = g => counting() ? nvis(g.m.map(r => r[0])) : g.cards;
+const afN = f => counting() ? nvis([].concat(...f.groups.map(k => ANN.groups[k].m.map(r => r[0])))) : f.cards;
+function annNote(r) {
+  const L = ANN.meta.note;
+  if (r[6] === "g") return `${esc(L.g)} ${r[7].length ? r[7].map(t => "<span class=\"clause\">“" + esc(t) + "”</span>").join("; ") : "(its text is not shown)"}. ${esc(L.tail_g)}`;
+  return `${esc(L.c)} <span class="clause">“${esc(r[2])}”</span>. ${esc(L.tail[String(r[4])])}`;
+}
+const annBadge = r => `<span class="badge b-ann">${esc(ANN.meta.labels[r[6]])}</span>`;
+function annChips(oid) {
+  if (!hasAnn(oid)) return "";
+  let h = "";
+  for (const k of ANN.by_card[oid]) {
+    const g = ANN.groups[k];
+    for (const r of g.m) if (r[0] === oid) h += `<div class="annnote">${annBadge(r)} <b>${esc(g.name)}</b> <span class="lnk chip" data-go="ag:${esc(k)}">open this group</span><div class="ab"><span class="why">${esc(r[1])}</span></div><div>${annNote(r)}</div></div>`;
+  }
+  return h + `<div class="sub">Tentative: not counted in the precise, with-broad or with-tentative figure.${isTent(oid) ? " This card is also tentatively placed; it is counted once, as tentative." : ""}</div>`;
+}
+// the community-tag layer (build/tag_placements.json): the 1,300 cards with no readable ability, grouped by Scryfall community tag. Separate and labeled; one switch hides it all
+let TAGS = null, TAGTRIED = false, SHOWTAG = true, URTAG = "";
+try { if (localStorage.getItem("showTags") === "0") SHOWTAG = false; } catch (e) { /* storage unavailable: keep the default */ }
+const tagOn = () => SHOWTAG && !!TAGS && TAGS.meta.enabled;
+const isTag = oid => tagOn() && !!TAGS.by_card[oid];
+const tgcN = g => counting() ? nvis(g.m) : g.cards;
+const ctAllN = () => counting() ? nvis(Object.keys(TAGS.by_card)) : TAGS.meta.cards;
+const TAG_STALE_DAYS = 60;
+function tagSnap() {
+  const d = TAGS.meta.snapshot.slice(0, 10), age = Math.floor((Date.now() - Date.parse(TAGS.meta.snapshot)) / 86400000);
+  return age > TAG_STALE_DAYS ? `<span class="tagstale">Tag snapshot ${esc(d)} is ${age} days old: newer cards may have no tags yet.</span>` : `Tag snapshot ${esc(d)}.`;
+}
+function tagChips(oid) {
+  if (!tagOn()) return "";
+  const gs = TAGS.by_card[oid];
+  const wide = (TAGS.wide_by_card[oid] || []).map(t => esc(TAGS.wide[t].name)).join("; ");
+  if (gs) {
+    return `<div class="tagnote"><span class="badge b-tag">${esc(TAGS.meta.badge)}</span> ${esc(TAGS.meta.label)} Not counted in the first five figures. ${tagSnap()} Groups: ` +
+      gs.map(t => `<span class="lnk chip" data-go="ct:${esc(t)}">${esc(TAGS.groups[t].name)}</span>`).join(" ") + (wide ? ` <span class="sub">(broad tags, not groups: ${wide})</span>` : "") + `</div>`;
+  }
+  if (TAGS.no_group.includes(oid)) {
+    return `<div class="tagnote"><span class="badge b-tag">${esc(TAGS.meta.badge)}</span> No community-tag group yet for this card${wide ? ` (it carries only broad tags, which are filters, not groups: ${wide})` : ""}. ${tagSnap()}</div>`;
+  }
+  return "";
+}
 const NODES = {}, NODE_FAM = {};
 const open = new Set();
 let selected = null, MODE = "abilities";
@@ -185,13 +246,25 @@ const famAb = f => counting() ? f.nodes.reduce((a, nd) => a + nodeAb(nd), 0) : f
 const blkLeafN = (blk, lid) => counting() ? nvis(blk.leaves[lid].cards) : blk.leaves[lid].n;
 const branchN = (blk, br) => counting() ? nvis([].concat(...br.leaves.map(lid => blk.leaves[lid].cards))) : br.n_cards;
 const blockN = (blk, total) => counting() ? nvis([].concat(...Object.values(blk.leaves).map(l => l.cards))) : total;
-const unorgN = g => UNORG && (counting() || tentOn()) ? nvis(g.list.map(c => c.c).filter(o => !isTent(o))) : g.cards;
+const unorgN = g => UNORG && (counting() || tentOn() || annOn()) ? nvis(g.list.map(c => c.c).filter(inPile)) : g.cards;
 async function needUnorg() { if (!UNORG) UNORG = (await J("ability_taxonomy_unorganized.json")).groups; }
 // the "Loosely grouped" layer and the "couldn't read yet" list (build/loose_groups.json, build/loose_unread.json): a browse aid, never counted as organized
 async function needLoose() {
   if (!LOOSE) { try { LOOSE = await J("loose_groups.json"); } catch (e) { LOOSE = null; } }
   if (!UNREAD) { try { UNREAD = await J("loose_unread.json"); } catch (e) { UNREAD = null; } }
   if (!TENTTRIED) { TENTTRIED = true; try { TENT = await J("tentative_placements.json"); } catch (e) { TENT = null; } }
+  if (!TAGTRIED) {
+    TAGTRIED = true;
+    try { TAGS = await J("tag_placements.json"); } catch (e) { TAGS = null; }
+  }
+  if (!ANNTRIED) {
+    ANNTRIED = true;
+    try {
+      ANN = await J("annotation_placements.json");
+      ANN.cs = {};                                           // the stratum of a card: "c" (condition not read) wins over "g" (card part not read)
+      for (const g of Object.values(ANN.groups)) for (const r of g.m) if (ANN.cs[r[0]] !== "c") ANN.cs[r[0]] = r[6];
+    } catch (e) { ANN = null; }
+  }
 }
 const LOOSE_LABEL = "Loosely grouped by effect. Not checked for accuracy.";
 const lgN = g => counting() ? nvis(g.m.map(r => r[0])) : g.cards;
@@ -205,14 +278,15 @@ function tentChips(oid) {
     TENT.by_card[oid].map(gid => `<span class="lnk chip" data-go="tg:${esc(gid)}">${esc(TENT.groups[gid].name)}</span>`).join(" ") + `</div>`;
 }
 function looseChips(oid) {
+  const A = annChips(oid) + tagChips(oid);
   if (LOOSE && LOOSE.by_card[oid]) {
-    return tentChips(oid) + `<div class="loosenote">${esc(LOOSE_LABEL)}${isTent(oid) ? "" : " Still counted as not yet organized."} Groups: ` + LOOSE.by_card[oid].map(gid =>
+    return A + tentChips(oid) + `<div class="loosenote">${esc(LOOSE_LABEL)}${isTent(oid) ? "" : " Still counted as not yet organized."} Groups: ` + LOOSE.by_card[oid].map(gid =>
       `<span class="lnk chip" data-go="lg:${esc(gid)}">${esc(LOOSE.groups[gid].name)}</span>`).join(" ") + `</div>`;
   }
   if (UNREAD && UNREAD.rows.some(r => r[0] === oid)) {
-    return `<div class="loosenote">We couldn't read this card yet, so it has no loose group. <span class="lnk chip" data-go="UR:">Cards we couldn't read yet</span></div>`;
+    return A + `<div class="loosenote">We couldn't read this card yet, so it has no loose group. <span class="lnk chip" data-go="UR:">Cards we couldn't read yet</span></div>`;
   }
-  return "";
+  return A;
 }
 // the cards left out because they are not meant for constructed play, by reason (read from build/card_flags.json)
 function ncByReason() {
@@ -260,8 +334,16 @@ function header() {
     `<span class="basis">Basis: ${esc(t.with_broad.basis)}.</span></div>` +
     (tentOn() ? `<div>${fmt(TENT.meta.headline.with_tentative[0])} of ${fmt(t.in_scope)} (${TENT.meta.headline.with_tentative[1]}%) counting tentative placements, which are not fully checked. ` +
       `<span class="basis">Basis: ${esc(TENT.meta.headline.with_tentative[2])}.</span></div>` : "") +
-    `<div class="basis">Not yet organized: ${fmt(tentOn() ? t.not_yet_organized - TENT.meta.cards : t.not_yet_organized)}` +
+    (annOn() ? `<div>${fmt(ANN.meta.headline.with_annotation[0])} of ${fmt(t.in_scope)} (${ANN.meta.headline.with_annotation[1]}%) also counting condition annotations: abilities with a condition the tool did not read, tentative and not fully checked. ` +
+      `<span class="basis">Basis: ${esc(ANN.meta.headline.with_annotation[2])}.</span></div>` +
+      (ANN.meta.gap_cards_new ? `<div>${fmt(ANN.meta.headline.with_gap_stratum[0])} of ${fmt(t.in_scope)} (${ANN.meta.headline.with_gap_stratum[1]}%) on its own line, adding the unread-part stratum. ` +
+        `<span class="basis">Basis: ${esc(ANN.meta.headline.with_gap_stratum[2])}.</span></div>` : "") : "") +
+    (tagOn() ? `<div>${fmt(TAGS.meta.headline.with_tag[0])} of ${fmt(t.in_scope)} (${TAGS.meta.headline.with_tag[1]}%) on its own line, adding the cards with no readable ability that sit in a community-tag group. Not an organized figure. ` +
+      `<span class="basis">Basis: ${esc(TAGS.meta.headline.with_tag[2])}. ${tagSnap()}</span></div>` : "") +
+    `<div class="basis">Not yet organized: ${fmt(t.not_yet_organized - (tentOn() ? TENT.meta.cards : 0) - (annOn() ? annCounts().c + annCounts().g : 0) - (tagOn() ? TAGS.meta.cards : 0))}` +
     (tentOn() ? `; tentatively placed: ${fmt(TENT.meta.cards)} (a derived count: the build still lists them as not yet organized)` : "") +
+    (annOn() ? `; annotated: ${fmt(annCounts().c)} (condition not read) and ${fmt(annCounts().g)} (card part not read), counted separately` : "") +
+    (tagOn() ? `; grouped by community tag: ${fmt(TAGS.meta.cards)}, counted separately` : "") +
     `. Not cards (tokens, art cards, planes, …): ${fmt(t.not_cards)}. ` +
     `The archived card-level view grouped ${fmt(t.archived_view.cards)} (${t.archived_view.pct}%) on a different basis (${esc(t.archived_view.basis)}).</div>`;
 }
@@ -301,6 +383,12 @@ function renderTree() {
       h.push(row("l2", tk, `Tentative groups <span class="badge b-tent">tentative</span>`, tfN(tf), { kids: true }));
       if (open.has(tk)) for (const gid of tf.groups) h.push(row("l3", "tg:" + gid, esc(TENT.groups[gid].short) + ` <span class="badge b-tent">tentative</span>`, tgN(TENT.groups[gid])));
     }
+    const af = annOn() ? ANN.families.find(x => x.key === f.key) : null;
+    if (af) {
+      const ak = "af:" + f.key;
+      h.push(row("l2", ak, `Condition annotations <span class="badge b-ann">tentative</span>`, afN(af), { kids: true }));
+      if (open.has(ak)) for (const k of af.groups) h.push(row("l3", "ag:" + k, esc(ANN.groups[k].name) + ` <span class="badge b-ann">${ANN.groups[k].m.some(r => r[6] === "c") ? "condition not read" : "card part not read"}</span>`, agN(ANN.groups[k])));
+    }
   }
   const kb = TAX.blocks.keyword, rb = TAX.blocks.replacement, nb = TAX.blocks.no_abilities;
   h.push(`<div class="blk">Grouped by rule</div>`);
@@ -339,6 +427,10 @@ function renderTree() {
       if (open.has(fk)) for (const gid of f.groups) h.push(row("l3", "lg:" + gid, esc(LOOSE.groups[gid].short) + (tentOn() && TENT.groups[gid] ? ` <span class="badge b-tent">tentative</span>` : ""), lgN(LOOSE.groups[gid])));
     }
     if (UNREAD) h.push(row("l1", "UR:", "Cards we couldn't read yet", unreadN()));
+    if (UNREAD && tagOn()) {
+      h.push(row("l1", "CT:", `Grouped by community tag <span class="badge b-tag">${esc(TAGS.meta.badge)}</span>`, ctAllN(), { kids: true }));
+      if (open.has("CT:")) for (const gid of TAGS.order) h.push(row("l2", "ct:" + gid, esc(TAGS.groups[gid].name), tgcN(TAGS.groups[gid])));
+    }
   }
   if (FLAGS) {
     const by = ncByReason();
@@ -536,7 +628,58 @@ async function show(k) {
       (nd.rolled.length ? `<div><span class="lnk" data-go="r:${esc(id)}">Other: ${esc(nd.name).toLowerCase()}</span> <span class="sub">${nd.rolled.length} groups of fewer than ${TAX.meta.rules.display_threshold}</span></div>` : "");
     return;
   }
-  if (kind === "LG" || kind === "lf" || kind === "lg" || kind === "UR" || kind === "tf" || kind === "tg") { await needLoose(); }
+  if (kind === "LG" || kind === "lf" || kind === "lg" || kind === "UR" || kind === "tf" || kind === "tg" || kind === "af" || kind === "ag" || kind === "CT" || kind === "ct") { await needLoose(); }
+  if ((kind === "CT" || kind === "ct") && !tagOn()) {
+    P.innerHTML = `<p class="explain">Community-tag groups are switched off (tick “Show community-tag groups” at the top to see them).</p>`;
+    return;
+  }
+  if (kind === "CT") {
+    open.add("CT:"); renderTree();
+    const M = TAGS.meta;
+    P.innerHTML = `<h2>Grouped by community tag <span class="badge b-tag">${esc(M.badge)}</span></h2><div class="tagnote"><b>${esc(M.label)}</b> These are the ${fmt(M.scope_cards)} cards the parser produced nothing readable for. ` +
+      `Each group is one Scryfall community tag (from Tagger, the Scryfall tagging project) that ${fmt(M.rules.group_min)} to ${fmt(M.rules.group_max)} of them carry. A card is listed under every group it is in and counted once. This is not an organized placement, and no tag is checked against the card's parsed text. ${tagSnap()}</div>` +
+      `<p class="sub">${fmt(ctAllN())} cards are in a group (${fmt(M.groups)} groups). ${fmt(M.cards_without_a_usable_group)} cards have no usable group: ${fmt(M.cards_with_no_functional_tag)} carry no functional tag, ${fmt(M.cards_with_tags_but_no_usable_group)} carry only tags that are too rare (under 5 of these cards) or too broad (over 100: ${fmt(M.cards_only_in_groups_over_100)} of them carry only broad tags, which work as filters in “Cards we couldn't read yet”, not as groups). Those stay in that list and in the pile.</p>` +
+      TAGS.order.map(gid => `<div><span class="lnk" data-go="ct:${esc(gid)}">${esc(TAGS.groups[gid].name)}</span> <span class="sub">${fmt(tgcN(TAGS.groups[gid]))} cards</span></div>`).join("");
+    return;
+  }
+  if (kind === "ct") {
+    await needCards();
+    const g = TAGS.groups[id];
+    open.add("CT:"); renderTree();
+    const items = g.m.map(o => {
+      const others = (TAGS.by_card[o] || []).filter(t => t !== id).map(t => `<span class="lnk chip" data-go="ct:${esc(t)}">${esc(TAGS.groups[t].name)}</span>`).join(" ");
+      const extra = `<div class="tagnote"><span class="badge b-tag">${esc(TAGS.meta.badge)}</span> ${esc(TAGS.meta.label)} Tag: <b>${esc(g.slug)}</b>. ${tagSnap()}${others ? " Also in: " + others : ""}</div>`;
+      return { oid: o, extra: extra, html: cardHTML(o, null, null).replace(`<div class="det" hidden>`, extra + `<div class="det" hidden>`) };
+    });
+    setList(`<h2>${esc(g.name)} <span class="badge b-tag">${esc(TAGS.meta.badge)}</span></h2><p class="loosehead">${esc(TAGS.meta.label)}</p>` +
+      `<div class="tagnote">Tag <b>${esc(g.slug)}</b> carries ${fmt(g.all_cards)} cards in all; ${fmt(g.cards)} of them are cards we couldn't read. ${g.description ? esc(g.description) + " " : ""}` +
+      `The group name is ${g.name_source === "rule" ? "made from the tag by a fixed rule" : g.name_source === "user_edit" ? "edited by hand" : "written to say what the tag means"}, not taken from the cards. ${tagSnap()}</div><p class="sub">${fmt(tgcN(g))} cards.</p>`, items);
+    return;
+  }
+  if ((kind === "af" || kind === "ag") && !annOn()) {
+    P.innerHTML = `<p class="explain">Condition annotations are switched off (tick “Show condition annotations” at the top to see them).</p>`;
+    return;
+  }
+  if (kind === "af") {
+    const f = ANN.families.find(x => x.key === id);
+    open.add("f:" + id); open.add(k); renderTree();
+    P.innerHTML = `<h2>${esc(f.name)}: condition annotations <span class="badge b-ann">tentative</span></h2><div class="annnote"><b>These abilities have a condition (or sit on a card with a part) the tool did not read.</b> Each is shown in the group it would belong in if that were ignored. They sit beside the main groups and are not counted in the precise, the broad or the tentative figure.</div>` +
+      f.groups.map(gk => `<div><span class="lnk" data-go="ag:${esc(gk)}">${esc(ANN.groups[gk].name)}</span> <span class="sub">${fmt(agN(ANN.groups[gk]))} cards</span></div>`).join("");
+    return;
+  }
+  if (kind === "ag") {
+    await needCards();
+    const g = ANN.groups[id];
+    open.add("f:" + g.fam); open.add("af:" + g.fam); renderTree();
+    const items = [];
+    for (const r of g.m) {
+      const extra = `<div class="ab"><span class="why">${esc(r[1])}</span></div><div class="annnote">${annBadge(r)} ${annNote(r)}</div>`;
+      items.push({ oid: r[0], extra: extra, html: cardHTML(r[0], null, null).replace(`<div class="det" hidden>`, extra + `<div class="det" hidden>`) });
+    }
+    setList(`<h2>${esc(g.name)} <span class="badge b-ann">tentative</span></h2><p class="loosehead">${g.kind === "leaf" ? "Shown beside the group “" + esc(g.name) + "” in the main tree." : "Shown beside the tentative group “" + esc(g.name) + "”."} Not fully checked.</p>` +
+      `<div class="annnote">Each row is an ability the tool held back; the unread text is on the row. Not counted in the precise, with-broad or with-tentative figure.</div><p class="sub">${fmt(agN(g))} cards.</p>`, items);
+    return;
+  }
   if ((kind === "tf" || kind === "tg") && !tentOn()) {
     P.innerHTML = `<p class="explain">Tentative placements are switched off (tick “show tentative placements” at the top to see them).</p>`;
     return;
@@ -606,13 +749,20 @@ async function show(k) {
   }
   if (kind === "UR" && UNREAD) {
     await needCards();
-    const items = UNREAD.rows.map(r => {
+    const tagHas = o => !URTAG || (URTAG.startsWith("w:") ? (TAGS.wide[URTAG.slice(2)].m.includes(o)) : (TAGS.groups[URTAG] && TAGS.groups[URTAG].m.includes(o)));
+    const rows = UNREAD.rows.filter(r => !tagOn() || tagHas(r[0]));
+    const items = rows.map(r => {
       const c = UNREAD.causes[r[2]];
-      const extra = `<div class="gap">Why: ${esc(c.name)}.${r[3] ? ` Not understood: “${esc(r[3])}”.` : ""}${r[1] != null ? ` Popularity rank ${fmt(r[1])}.` : ""}</div>`;
+      const extra = `<div class="gap">Why: ${esc(c.name)}.${r[3] ? ` Not understood: “${esc(r[3])}”.` : ""}${r[1] != null ? ` Popularity rank ${fmt(r[1])}.` : ""}</div>` + tagChips(r[0]);
       return { oid: r[0], extra: extra, html: cardHTML(r[0], null, null).replace(`<div class="det" hidden>`, extra + `<div class="det" hidden>`) };
     });
-    setList(`<h2>Cards we couldn't read yet</h2><div class="note">The parser produced nothing we can group these cards on. They are not in any group above, and each is still counted as not yet organized. ` +
-      `Most popular first; the reason is shown on each card.</div><p class="sub">${fmt(unreadN())} cards.</p>`, items);
+    const filt = tagOn() ? `<p class="sub"><label>Filter by community tag <select id="urtag"><option value="">any (${fmt(unreadN())} cards)</option>` +
+      TAGS.order.slice().sort((a, b) => TAGS.groups[a].name.localeCompare(TAGS.groups[b].name)).map(t => `<option value="${esc(t)}">${esc(TAGS.groups[t].name)} (${TAGS.groups[t].cards})</option>`).join("") +
+      Object.keys(TAGS.wide).map(t => `<option value="w:${esc(t)}">${esc(TAGS.wide[t].name)} (broad tag, ${TAGS.wide[t].cards})</option>`).join("") + `</select></label></p>` : "";
+    setList(`<h2>Cards we couldn't read yet</h2><div class="note">The parser produced nothing we can group these cards on. They are not in any group above, and each is still counted as not yet organized` +
+      `${tagOn() ? ", unless it sits in a community-tag group (counted on its own line)" : ""}. Most popular first; the reason is shown on each card.</div>${filt}<p class="sub">${fmt(items.length)} cards${URTAG && tagOn() ? " carry the chosen tag" : ""}.</p>`, items);
+    const sel = document.getElementById("urtag");
+    if (sel) { sel.value = URTAG; sel.onchange = () => { URTAG = sel.value; show("UR:"); }; }
     return;
   }
   if (kind === "l") {
@@ -673,7 +823,7 @@ async function show(k) {
     await needCards();
     await needUnorg();
     const g = UNORG.find(x => String(x.id) === id);
-    const items = g.list.filter(c => !isTent(c.c)).map(c => {
+    const items = g.list.filter(c => inPile(c.c)).map(c => {
       let extra = "";
       if (c.g) extra += `<div class="gap">Not understood: ${c.g.map(x => "“" + esc(x[1]) + "”").join("; ")}</div>`;
       if (c.held) extra += `<div class="gap">${c.held} of its abilities would fit a group; they are held back while gap cards are checked.</div>`;
@@ -682,12 +832,12 @@ async function show(k) {
       if (c.note) extra += `<div class="gap">${esc(c.note)}</div>`;
       return { oid: c.c, extra: extra, html: cardHTML(c.c, null, null).replace(`<div class="det" hidden>`, extra + `<div class="det" hidden>`) };
     });
-    setList(`<h2>Not yet organized › ${esc(g.name)}</h2><p class="explain">${esc(g.explain)}</p><p class="sub">${fmt(unorgN(g))} cards. This is about the tool, not the card.${tentOn() && g.list.some(c => isTent(c.c)) ? ` ${fmt(g.list.filter(c => isTent(c.c)).length)} more are tentatively placed and listed under “Tentative groups”.` : ""}</p>`, items);
+    setList(`<h2>Not yet organized › ${esc(g.name)}</h2><p class="explain">${esc(g.explain)}</p><p class="sub">${fmt(unorgN(g))} cards. This is about the tool, not the card.${tentOn() && g.list.some(c => isTent(c.c)) ? ` ${fmt(g.list.filter(c => isTent(c.c)).length)} more are tentatively placed and listed under “Tentative groups”.` : ""}${annOn() && g.list.some(c => isAnn(c.c)) ? ` ${fmt(g.list.filter(c => isAnn(c.c)).length)} more have an annotated ability and are listed under “Condition annotations”.` : ""}</p>`, items);
   }
 }
 
 // ---------------------------------------------------------------- cards mode
-const KINDW = { t: "tentatively placed (not fully checked)", l: "grouped by its abilities", b: "only in groups broader than they look", u: "not yet organized", k: "keyword block", g: "replacement group", v: "no abilities" };
+const KINDW = { m: "grouped by community tag (not checked)", t: "tentatively placed (not fully checked)", a: "annotated: an unread condition or card part (not fully checked)", l: "grouped by its abilities", b: "only in groups broader than they look", u: "not yet organized", k: "keyword block", g: "replacement group", v: "no abilities" };
 let CLIST = null, ENT = null, PIDX = null;
 const PCH = new Map();
 async function needLookup() {
@@ -724,6 +874,22 @@ document.getElementById("showtent").addEventListener("change", e => {
   else if (selected && (selected.startsWith("u:") || selected === "LG:" || selected.startsWith("lg:") || selected.startsWith("lf:"))) show(selected);
   else if (MODE === "cards") showCardList();
 });
+document.getElementById("showtag").checked = SHOWTAG;
+document.getElementById("showtag").addEventListener("change", e => {
+  SHOWTAG = e.target.checked;
+  try { localStorage.setItem("showTags", SHOWTAG ? "1" : "0"); } catch (err) { /* ignore */ }
+  header(); renderTree();
+  if (selected && (selected === "CT:" || selected.startsWith("ct:") || selected.startsWith("u:") || selected === "UR:" || selected === "LG:" || selected.startsWith("lg:") || selected.startsWith("lf:"))) show(selected);
+  else if (MODE === "cards") showCardList();
+});
+document.getElementById("showann").checked = SHOWA;
+document.getElementById("showann").addEventListener("change", e => {
+  SHOWA = e.target.checked;
+  try { localStorage.setItem("showAnnotations", SHOWA ? "1" : "0"); } catch (err) { /* ignore */ }
+  header(); renderTree();
+  if (selected && (selected.startsWith("af:") || selected.startsWith("ag:") || selected.startsWith("u:") || selected === "LG:" || selected.startsWith("lg:") || selected.startsWith("lf:"))) show(selected);
+  else if (MODE === "cards") showCardList();
+});
 function hideChanged() {
   try { localStorage.setItem("hideNoPicture", HIDE ? "1" : "0"); } catch (err) { /* ignore */ }
   hideNote(); renderTree();
@@ -731,7 +897,7 @@ function hideChanged() {
 }
 document.getElementById("hidenopic").addEventListener("change", e => { HIDE = e.target.checked; hideChanged(); });
 document.getElementById("tabs").addEventListener("click", e => { const b = e.target.closest("button[data-mode]"); if (b && b.dataset.mode !== MODE) setMode(b.dataset.mode); });
-const effKind = c => c.kind === "u" && isTent(c.oid) ? "t" : c.kind;
+const effKind = c => c.kind === "u" && isTent(c.oid) ? "t" : (c.kind === "u" && isAnn(c.oid) ? "a" : (c.kind === "u" && isTag(c.oid) ? "m" : c.kind));
 function cardMatches() {
   const q = LIDX.norm(document.getElementById("cf-name").value);
   const cols = [...document.querySelectorAll("#cf-cols input:checked")].map(x => x.value);
@@ -757,7 +923,7 @@ async function showCardList() {
   const nopic = CLIST.filter(c => hidden(c.oid)).length;
   document.getElementById("cfcount").textContent = `${fmt(hits.length)} of ${fmt(CLIST.length - nopic)} cards match` + (nopic ? ` (${fmt(nopic)} hidden).` : ".");
   setList(`<h2>Cards</h2><p class="sub">${fmt(hits.length)} of ${fmt(CLIST.length - nopic)} cards. Pick one to see which group each of its abilities is in. Tokens, art cards and other non-cards are not listed.</p>`,
-    hits.map(c => ({ oid: c.oid, html: `<div class="card crow" data-go="c:${esc(c.oid)}"><span class="nm lnk">${esc(c.n)}</span>${costHTML(CARDS[c.oid])}<span class="ty">${esc(c.ty)}</span><span class="badge ${effKind(c) === "t" ? "b-tent" : "b-auto"}">${esc(KINDW[effKind(c)])}</span></div>`, extra: `<div class="sub">${esc(KINDW[effKind(c)])}</div>` })));
+    hits.map(c => ({ oid: c.oid, html: `<div class="card crow" data-go="c:${esc(c.oid)}"><span class="nm lnk">${esc(c.n)}</span>${costHTML(CARDS[c.oid])}<span class="ty">${esc(c.ty)}</span><span class="badge ${effKind(c) === "t" ? "b-tent" : (effKind(c) === "a" ? "b-ann" : (effKind(c) === "m" ? "b-tag" : "b-auto"))}">${esc(KINDW[effKind(c)])}</span></div>`, extra: `<div class="sub">${esc(KINDW[effKind(c)])}</div>` })));
 }
 let cfTimer = null;
 document.getElementById("cardf").addEventListener("input", () => { clearTimeout(cfTimer); cfTimer = setTimeout(() => { if (MODE === "cards") showCardList(); }, 200); });
