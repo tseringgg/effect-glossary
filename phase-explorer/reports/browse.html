@@ -106,6 +106,17 @@ body.dev .devonly { display:inline; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .b-hand { color:#08121c; } }
 .b-sib { color:var(--tent); border:1px dashed var(--tent); background:repeating-linear-gradient(135deg, var(--tentbg) 0 4px, transparent 4px 8px); font-style:italic; }
 .sibline { margin-top:6px; padding:4px 8px; border-left:4px dashed var(--tent); background:var(--tentbg); font-size:13px; }
+.batchbar { margin-top:6px; padding:6px 10px; border:2px solid var(--hand); background:var(--handbg); }
+.batchbar button { margin-left:6px; } .batchbar ul { margin:4px 0; padding-left:18px; }
+.bctl { margin:8px 0; display:flex; gap:16px; flex-wrap:wrap; align-items:center; } .bctl input[type=range] { width:200px; vertical-align:middle; }
+.bbar { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin:8px 0; padding:6px 0; position:sticky; top:0; background:var(--bg); z-index:4; border-bottom:1px solid var(--line); }
+.bbar .bgrow { margin-left:auto; display:flex; gap:8px; }
+.brow { border-bottom:1px solid var(--line); padding:6px 0; display:grid; grid-template-columns:minmax(150px,230px) 1fr; gap:4px 12px; align-items:start; }
+.brow.review { background:repeating-linear-gradient(135deg, transparent 0 8px, var(--chip) 8px 9px); } .brow.handled { opacity:.9; }
+.bcard img { width:52px; float:left; margin-right:8px; border-radius:4%; } .bcard .nm { font-weight:600; }
+.bit { display:flex; flex-wrap:wrap; gap:2px 8px; align-items:baseline; padding:2px 0; } .bit .why { flex-basis:100%; color:var(--muted); font-size:12px; padding-left:24px; } .bit .score { font-weight:700; font-variant-numeric:tabular-nums; }
+.bsug details { margin-top:2px; } .breview { border:1px solid var(--hand); border-radius:6px; padding:8px 10px; margin:8px 0; background:var(--handbg); } .breview .bit { background:var(--panel); border-bottom:1px solid var(--line); padding:3px 4px; }
+@media (max-width: 800px) { .brow { grid-template-columns:1fr; } .bbar { top:0; } .bbar button, .bit input, .bctl input { min-height:44px; } .bit input[type=checkbox] { min-width:28px; } .bctl input[type=range] { width:100%; } }
 .b-hg { color:var(--hand); border:1px dashed var(--hand); background:transparent; font-weight:600; }
 .b-nofit { color:var(--muted); border:1px solid var(--muted); text-decoration:line-through; text-decoration-style:double; }
 .b-unsaved { background:var(--warn); color:#fff; border:1px solid var(--warn); font-weight:700; }
@@ -146,6 +157,7 @@ body.dev .devonly { display:inline; }
   <div class="handline" id="handline" hidden></div>
   <div class="sibline" id="sibline" hidden></div>
   <div class="savebanner" id="savebanner" hidden></div>
+  <div class="batchbar" id="batchbar" hidden></div>
   <div class="find">
     <label for="q">Find a card:</label>
     <input id="q" type="search" placeholder="type a card name" autocomplete="off">
@@ -155,6 +167,7 @@ body.dev .devonly { display:inline; }
     <label class="prov" title="Abilities the tool held back for an unread condition (or an unread part of the card), shown in the group they would belong in. Tentative: not counted in the first three figures"><input type="checkbox" id="showann" checked> Show condition annotations</label>
     <label class="prov" title="Cards with no readable ability, grouped by Scryfall community tag. Not checked against the parse; not counted in the first five figures"><input type="checkbox" id="showtag" checked> Show community-tag groups</label>
     <label class="prov" id="showsiblab" title="Tentative placements for abilities that have exactly a group's signature but were held out by the grouping rule (the plain variant of a group). Not checked; counted in no figure" hidden><input type="checkbox" id="showsib" checked> Show sibling placements</label>
+    <label class="prov" id="showbatchlab" title="Batch actions: place from suggestions, confirm or reject soft placements, undo a batch. Unticked, every batch control and badge is hidden" hidden><input type="checkbox" id="showbatch" checked> Show batch actions</label>
     <label class="prov" id="showhandlab" title="Placements made by hand in the edit panel (corrections/manual_placements.json). Unticked, every hand edit is hidden everywhere and the edit panel is off" hidden><input type="checkbox" id="showhand" checked> Show hand edits</label>
     <span class="prov">· <a href="../archive/card-level-view-2026-10/reports/browse.html">archived card-level view</a> (its numbers do not match this view)</span>
     <span class="prov devonly">· dev: <a href="ledger.html">coverage ledger</a> · <a href="card-explorer.html">parse-audit explorer</a> (both show the archived view)</span>
@@ -448,6 +461,7 @@ async function loadManual() {
   recomputeHand();
   document.getElementById("queuetab").hidden = false;
   document.getElementById("showhandlab").hidden = false;
+  if (MI.batch) document.getElementById("showbatchlab").hidden = false;
   document.getElementById("qf-gap").checked = !SHOWA;      // "1,175 with the gap-test stratum on": the stratum is a separate filter, tied to the annotation switch to start with
 }
 function mergedDoc() {                                  // the saved file plus the edits that could not be saved, for display only
@@ -534,6 +548,7 @@ function handLine() {
   el.innerHTML = `<span class="badge b-hand">placed by hand</span> <b>${fmt(c.placed_by_hand_new)} of ${fmt(scope)} (${(100 * c.placed_by_hand_new / scope).toFixed(2)}%)</b> cards the tool had nowhere to put, now in a group by hand. ` +
     `Its own line: never added to the figures above, and not checked. ` +
     `Confirmed by hand: ${fmt(c.confirmed_by_hand)} (tentative ${fmt(of.tentative)}, annotation ${fmt(of.annotation)}, tag ${fmt(of.tag)}); they stay in their own figure. ` +
+    (c.batches !== undefined && SHOWBATCH ? `Of these, placed in a batch: ${fmt(c.placed_by_hand_batch)}; confirmed in a batch: ${fmt(c.confirmed_by_hand_batch)} (${fmt(c.batches)} batch${c.batches === 1 ? "" : "es"}, ${fmt(c.batches_undone)} undone). ` : "") +
     `Edits on cards that were already placed: ${fmt(c.precise_cards_with_edits_not_counted)} (counted nowhere). Marked “nothing fits”: ${fmt(c.marked_nothing_fits)} (not a placement). Removals recorded: ${fmt(c.removals_recorded)} (no generated count changes). ` +
     `<span class="basis">Reconciliation: ${fmt(r.placed)} placed + ${fmt(r.tentative)} tentative + ${fmt(r.annotation)} annotation + ${fmt(r.tag)} tag + ${fmt(r.hand)} by hand + ${fmt(r.unorganized)} unorganized + ${fmt(r.not_cards)} not cards = ${fmt(r.sum)}. ` +
     `The unorganized figure includes the gap-test cards.</span>` +
@@ -547,7 +562,7 @@ function handMark(oid, gid) {                          // badges for one card ro
   const a = (MRESV.adds[oid] || {})[gid], r = (MRESV.removes[oid] || {})[gid];
   if (!a && !r) return "";
   const un = UNSAVED[oid + "|" + gid] ? ` <span class="badge b-unsaved">NOT SAVED</span>` : "";
-  return (a ? ` <span class="badge b-hand" title="${esc((a.date || "").slice(0, 10))}${a.note ? " — " + esc(a.note) : ""}">${gidHeld(oid, gid) ? "confirmed by hand" : "by hand"}</span>` : "") + (r ? ` <span class="badge b-nofit">removed by hand</span>` : "") + un;
+  return (a ? ` <span class="badge b-hand" title="${esc((a.date || "").slice(0, 10))}${a.note ? " — " + esc(a.note) : ""}">${gidHeld(oid, gid) ? "confirmed by hand" : "by hand"}${a.batch && SHOWBATCH ? ", batch" : ""}</span>` : "") + (r ? ` <span class="badge b-nofit">removed by hand</span>` : "") + un;
 }
 function handRows(gid, have) {                         // cards placed here by hand that the group's generated list does not hold; shown after the generated cards, never counted in the group's number
   if (!handOn() || !CARDS) return [];
@@ -561,8 +576,8 @@ function handFor(oid) {                                // what Find a card and t
   const c = MI.cards[oid], adds = MRESV.adds[oid] || {}, rem = MRESV.removes[oid] || {}, mk = MRESV.marks[oid], ak = Object.keys(adds);
   if (!ak.length && !Object.keys(rem).length && !mk) return null;
   const sr = ak.length && adds[ak[0]].source_at_edit && adds[ak[0]].source_at_edit.reason ? adds[ak[0]].source_at_edit.reason.text : (MI.causes[String(c[2])] || "");
-  return { adds: ak.map(g => ({ gid: g, name: MI.groups[g][0], layer: LAYW[MI.groups[g][3]], date: adds[g].date, note: adds[g].note })), fresh: c[1] === "u" && ak.length > 0, was: sr,
-           confirmed: ak.length && "tam".includes(c[1]) ? Manual.STATE_WORD[c[1]] : "", nofit: mk ? { date: mk.date, note: mk.note } : null, removed: Object.keys(rem).map(g => ({ name: MI.groups[g] ? MI.groups[g][0] : g })) };
+  return { adds: ak.map(g => ({ gid: g, name: MI.groups[g][0], layer: LAYW[MI.groups[g][3]], date: adds[g].date, note: adds[g].note, batch: SHOWBATCH ? adds[g].batch : null })), fresh: c[1] === "u" && ak.length > 0, was: sr,
+           confirmed: ak.length && "tam".includes(c[1]) ? Manual.STATE_WORD[c[1]] : "", nofit: mk ? { date: mk.date, note: mk.note } : null, removed: Object.keys(rem).map(g => ({ name: MI.groups[g] ? MI.groups[g][0] : g, batch: SHOWBATCH ? rem[g].batch : null })) };
 }
 const srcVisible = s => s === "T" ? SHOWT : s === "A" ? SHOWA : s === "M" ? SHOWTAG : s === "S" ? SHOWSIB : true;
 const offeredN = () => Object.values(MI.groups).filter(g => g[4]).length;
@@ -681,6 +696,229 @@ function qbarHTML() {
     `<span class="qn"><button data-act="qskip">Skip</button> <button data-act="qnext">Next card ▶</button></span></div>`;
 }
 
+// ---------------------------------------------------------------- batch actions (POST /api/manual/batch; src/manual_batch.py). Every request is ALL OR NOTHING. Nothing is ticked for you below the threshold, and nothing is placed without a click.
+let MFB = null, MFBPROMISE = null, SHOWBATCH = true, LASTBATCH = null, BUNSAVED = null;
+try { if (localStorage.getItem("showBatch") === "0") SHOWBATCH = false; } catch (e) { /* storage unavailable: keep the default */ }
+try { BUNSAVED = JSON.parse(localStorage.getItem("manualBatchUnsaved") || "null"); } catch (e) { BUNSAVED = null; }
+const BS = { thr: 0.90, skip: true, page: 0, ticks: new Map(), msg: "" };
+const GS = new Map();                                   // group review ticks: "gid|oid" -> bool
+const batchOn = () => handOn() && !!MI.batch && SHOWBATCH;
+function needFallback() { return MFBPROMISE || (MFBPROMISE = (async () => { try { MFB = await J("manual_fallback.json"); } catch (e) { MFB = { cards: {}, label: "" }; } })()); }
+async function reloadManualDoc() {
+  try { const r = await fetch("../corrections/manual_placements.json", { cache: "no-store" }); if (r.ok) { MDOC = await r.json(); if (!MDOC.edits) MDOC = emptyDoc(); } } catch (e) { /* keep the doc we have */ }
+  recomputeHand();
+}
+function persistBatchUnsaved() { try { if (BUNSAVED) localStorage.setItem("manualBatchUnsaved", JSON.stringify(BUNSAVED)); else localStorage.removeItem("manualBatchUnsaved"); } catch (e) { /* ignore */ } }
+async function postBatch(payload) {
+  try {
+    const r = await fetch("../api/manual/batch", { method: "POST", headers: { "Content-Type": "application/json", "X-Manual-Edit": "1" }, body: JSON.stringify(payload) });
+    let j = null;
+    try { j = await r.json(); } catch (e) { /* not JSON: a plain static server */ }
+    if (r.ok && j && j.ok) return { ok: true, j: j };
+    if (j && j.ok === false && r.status >= 400 && r.status < 500 && r.status !== 404) return { ok: false, refused: true, error: j.error, items: j.items || [] };
+    return { ok: false, refused: false, error: (j && j.error) || ("the server answered " + r.status + (r.status === 404 || r.status === 405 || r.status === 501 ? ": this server has no /api/manual/batch endpoint (start it with python src/serve.py, with batch actions switched on)" : "")) };
+  } catch (e) { return { ok: false, refused: false, error: "could not reach the server (" + e.message + ")" }; }
+}
+function batchBar() {
+  const el = document.getElementById("batchbar");
+  let h = "";
+  if (batchOn() && BUNSAVED) h += `<div class="bad"><b>NOT SAVED: batch of ${fmt(BUNSAVED.payload.items.length)} (${esc(BUNSAVED.payload.kind)})</b>: nothing was placed. ${esc(BUNSAVED.error)} <button data-bact="retry">Retry (same batch id; safe to repeat)</button> <button data-bact="discard">Discard</button></div>`;
+  if (batchOn() && BS.msg) h += `<div>${BS.msg}</div>`;
+  if (batchOn() && LASTBATCH && !LASTBATCH.undone) h += `<div>Last batch <b>${esc(LASTBATCH.id)}</b>: ${esc(LASTBATCH.what)} <button data-bact="undolast">Undo this batch</button></div>`;
+  el.innerHTML = h; el.hidden = !h;
+}
+document.getElementById("batchbar").addEventListener("click", e => {
+  const b = e.target.closest("button[data-bact]");
+  if (!b) return;
+  if (b.dataset.bact === "undolast") undoBatch(LASTBATCH.id);
+  if (b.dataset.bact === "retry" && BUNSAVED) sendBatch(BUNSAVED.payload, BUNSAVED.what, true);
+  if (b.dataset.bact === "discard") { BUNSAVED = null; persistBatchUnsaved(); batchBar(); }
+});
+async function sendBatch(payload, what, isRetry) {
+  BS.msg = `Saving batch of ${fmt(payload.items.length)}…`; batchBar();
+  const r = await postBatch(payload);
+  if (r.ok) {
+    BUNSAVED = null; persistBatchUnsaved();
+    await reloadManualDoc();
+    for (const it of payload.items) { BS.ticks.delete(it.oid + "|" + it.group); GS.delete(it.group + "|" + it.oid); }
+    LASTBATCH = { id: payload.id, what: (r.j.changed === false ? "already saved: " : "") + what, undone: false };
+    BS.msg = "";
+  } else if (r.refused) {
+    BS.msg = `<span class="bad"><b>NOT SAVED: the batch was refused, and nothing was written.</b> ${esc(r.error)}</span><ul>` + r.items.slice(0, 12).map(x => `<li>row ${x.row + 1}: ${x.oid && MI.cards[x.oid] ? esc(MI.cards[x.oid][0]) : "?"} — ${esc(x.error)}</li>`).join("") + (r.items.length > 12 ? `<li>… and ${r.items.length - 12} more</li>` : "") + `</ul>`;
+    BUNSAVED = null; persistBatchUnsaved();
+  } else {
+    BUNSAVED = { payload: payload, what: what, error: r.error }; persistBatchUnsaved(); BS.msg = "";
+  }
+  header(); renderTree(); batchBar(); refreshBatchViews();
+  return r.ok;
+}
+async function undoBatch(id) {
+  BS.msg = "Undoing…"; batchBar();
+  const r = await postBatch({ undo: id });
+  if (r.ok) {
+    await reloadManualDoc();
+    BS.msg = `Undid batch <b>${esc(r.j.batch)}</b>: ${fmt(r.j.removed)} entr${r.j.removed === 1 ? "y" : "ies"} removed${r.j.restored ? `, ${fmt(r.j.restored)} restored` : ""}${r.j.left_alone ? `, ${fmt(r.j.left_alone)} left alone because they were edited since` : ""}.`;
+    if (LASTBATCH && LASTBATCH.id === r.j.batch) LASTBATCH.undone = true;
+  } else BS.msg = `<span class="bad"><b>NOT UNDONE:</b> ${esc(r.error)}</span>`;
+  header(); renderTree(); batchBar(); refreshBatchViews();
+}
+function refreshBatchViews() { if (selected === "QB:") showBatchView(); else if (selected && (selected.startsWith("tg:") || selected.startsWith("ct:") || selected.startsWith("ag:") || selected.startsWith("l:") || selected.startsWith("Q:"))) show(selected); }
+// ---- the batch view (queue): cards with their suggestions, a checkbox each
+const tickOf = (oid, gid, dflt) => { const k = oid + "|" + gid; return BS.ticks.has(k) ? BS.ticks.get(k) : dflt; };
+function batchModel() {
+  const order = queueBase();
+  const R = Manual.batchRows(MI, MS.cards, MRESV, order, BS.thr, BS.skip, 0.70);
+  return R;
+}
+function brow(rw, handled) {
+  const c = MI.cards[rw.oid], url = imageURL(rw.oid, "small");
+  const it = (r, i) => {
+    const g = MI.groups[r[0]], dflt = !handled && rw.tier === "tick" && i === 0, on = tickOf(rw.oid, r[0], dflt);
+    return `<label class="bit"><input type="checkbox" data-bk="${esc(rw.oid)}|${esc(r[0])}" data-score="${r[1]}" ${on ? "checked" : ""}> <span class="score">${Number(r[1]).toFixed(2)}</span> <span class="lnk gname" data-go="${esc(Manual.goKey(r[0]))}">${esc(g[0])}</span> ${layBadge(g[3])} <span class="sub">${fmt(g[1])} ${g[3] === "hand" ? "rule matches" : "cards"} · ${esc(r[2].split("+").map(s => ({ sig: "signature", tag: "community tag", loose: "loose group", rule: "hand-group rule" }[s] || s)).join(" + "))}</span><span class="why">${esc(r[3])}</span></label>`;
+  };
+  const top = rw.items.slice(0, 1).map((r, i) => it(r, 0)).join(""), more = rw.items.slice(1);
+  return `<div class="brow${rw.tier === "review" ? " review" : ""}${handled ? " handled" : ""}" data-oid="${esc(rw.oid)}">` +
+    `<div class="bcard">${url ? `<img loading="lazy" src="${esc(url)}" alt="">` : ""}<span class="lnk nm" data-go="c:${esc(rw.oid)}">${esc(c[0])}</span>${c[4] != null ? ` <span class="sub">rank ${fmt(c[4])}</span>` : ""} <span class="sub">${esc(Manual.STATE_WORD[c[1]])}</span>` +
+    (rw.tier === "review" && !handled ? ` <span class="badge b-auto">review band: not ticked for you</span>` : "") + (handled ? ` <span class="badge b-nofit">already handled by hand: ${esc(rw.what)}; ticking overrides</span>` : "") + `</div>` +
+    `<div class="bsug">${top}${more.length ? `<details><summary>${more.length} more suggestion${more.length > 1 ? "s" : ""}</summary>${more.map((r, i) => it(r, i + 1)).join("")}</details>` : ""}</div></div>`;
+}
+function ticked() {                                       // the items ticked on the page now: [{oid, group, score, source, override}]
+  const out = [];
+  for (const el of document.querySelectorAll("#panel input[data-bk]")) if (el.checked) {
+    const [oid, gid] = el.dataset.bk.split("|"), row = el.closest(".brow"), r = (MS.cards[oid] || []).find(x => x[0] === gid);
+    if (r) out.push({ oid: oid, group: gid, action: "add", score: r[1], source: r[2], override: row.classList.contains("handled") });
+  }
+  return out;
+}
+function updateBatchCounts() {
+  const n = ticked().length, b = document.getElementById("bacc");
+  if (!b) return;
+  b.textContent = `Accept ticked (${fmt(n)})`; b.disabled = n === 0 || n > 100;
+  const w = document.getElementById("bwarn"); if (w) w.textContent = n > 100 ? `${fmt(n)} ticked: the limit is 100 per click. Untick some, or accept this page first.` : "";
+  const f = fbTicked().length, fb = document.getElementById("bfbacc");
+  if (fb) { fb.textContent = `Place ticked low-confidence (${fmt(f)})`; fb.disabled = f === 0 || f > 100; }
+}
+function fbTicked() {
+  const out = [];
+  for (const el of document.querySelectorAll("#panel input[data-fk]")) if (el.checked) { const [oid, gid] = el.dataset.fk.split("|"); out.push({ oid: oid, group: gid, action: "add" }); }
+  return out;
+}
+async function showBatchView() {
+  const P = document.getElementById("panel");
+  await needManual();
+  if (!batchOn()) { P.innerHTML = `<p class="explain">${MI && MI.batch ? "Batch actions are hidden. Tick “Show batch actions” at the top." : "Batch actions are switched off in this build (BATCH_ACTIONS)."}</p>`; return; }
+  P.innerHTML = `<p class="explain">Loading the batch view…</p>`;
+  await needSuggestions(); await needFallback(); await needCards();
+  CURCARD = null; selected = "QB:"; location.hash = encodeURIComponent("QB:");
+  const R = batchModel(), per = 100, pages = Math.max(1, Math.ceil(R.rows.length / per));
+  BS.page = Math.min(BS.page, pages - 1);
+  const pg = R.rows.slice(BS.page * per, BS.page * per + per), nt = R.rows.filter(r => r.tier === "tick").length;
+  const bl = Object.entries((MDOC && MDOC.batches) || {}).sort((a, b) => (b[1].seq || 0) - (a[1].seq || 0)).slice(0, 12);
+  const fbs = R.nosug.slice(0, 100);
+  P.innerHTML = `<h2>Batch view <span class="badge b-hand">by hand</span></h2><div class="handnote">Cards with their suggestions. <b>Nothing is placed until you press Accept.</b> Rows at or above the threshold start ticked; the review band (0.70 up to the threshold) starts unticked; tick more than one suggestion per card if you want. ` +
+    `Each click is one batch of at most 100 placements, all or nothing, with its own id, and “Undo this batch” takes it all back. Suggestions are not checked.</div>` +
+    `<div class="bctl"><label>Threshold <input type="range" id="bthr" min="0.70" max="1" step="0.01" value="${BS.thr}"> <b id="bthrv">${BS.thr.toFixed(2)}</b></label> <label><input type="checkbox" id="bskip" ${BS.skip ? "checked" : ""}> skip saga boilerplate (“Put lore counters on this permanent”)</label></div>` +
+    `<p class="sub">${fmt(R.rows.length)} cards listed (${fmt(nt)} at or above ${BS.thr.toFixed(2)}, the rest in the review band); ${fmt(R.below)} cards scoring below 0.70 are not listed; ${fmt(R.handled.length)} already handled by hand; ${fmt(R.nosug.length)} with no usable suggestion. This view follows the filters of the “To place” tab.</p>` +
+    `<div class="bbar"><button data-bact2="prev" ${BS.page ? "" : "disabled"}>◀</button> page ${BS.page + 1} of ${pages} <button data-bact2="next" ${BS.page < pages - 1 ? "" : "disabled"}>▶</button> <button data-bact2="all">Tick all on this page</button> <button data-bact2="none">Untick all on this page</button> ` +
+    `<span class="bgrow"><button id="bacc" data-bact2="accept">Accept ticked</button> <button data-bact2="undolast">Undo last batch</button></span> <span id="bwarn" class="bad"></span></div>` +
+    `<div id="brows">${pg.map(r => brow(r, false)).join("") || `<p class="sub">No cards at this threshold. Lower the threshold or change the filters.</p>`}</div>` +
+    (R.handled.length ? `<div class="subhead">Already handled by hand (${fmt(R.handled.length)}): never touched unless you tick an item here, which marks it as an override</div><div id="bhandled">${R.handled.slice(0, 100).filter(h => h.items.length).map(h => brow(Object.assign({ tier: "review" }, h), true)).join("")}</div>` : "") +
+    `<div class="subhead">No suggestion: possible homes <span class="badge b-auto">low confidence</span></div><p class="sub">${esc(MFB.label || "")} Never ticked for you. <b>Nothing fits</b> is one click and takes the card off the queue.</p>` +
+    `<div class="bbar"><span class="bgrow"><button id="bfbacc" data-bact2="fbaccept">Place ticked low-confidence</button></span></div><div id="bfb">${fbs.map(o => {
+      const c = MI.cards[o], cand = (MFB.cards[o] || []);
+      return `<div class="brow" data-oid="${esc(o)}"><div class="bcard"><span class="lnk nm" data-go="c:${esc(o)}">${esc(c[0])}</span>${c[4] != null ? ` <span class="sub">rank ${fmt(c[4])}</span>` : ""} <span class="badge b-auto">low confidence</span> <button class="eb" data-bact2="nofit" data-oid="${esc(o)}">Nothing fits</button></div><div class="bsug">` +
+        (cand.length ? cand.map(x => `<label class="bit"><input type="checkbox" data-fk="${esc(o)}|${esc(x[0])}"> <span class="lnk gname" data-go="${esc(Manual.goKey(x[0]))}">${esc(MI.groups[x[0]][0])}</span> ${layBadge(MI.groups[x[0]][3])} <span class="sub">${esc(x[1])}</span><span class="why">${esc(x[2])}</span></label>`).join("") : `<span class="sub">no possible home found: use the search in the card's edit panel, or Nothing fits</span>`) + `</div></div>`;
+    }).join("")}</div>` +
+    `<div class="subhead">Batches</div>` + (bl.length ? bl.map(([id, b]) => `<div class="grow"><b>${esc(id)}</b> <span class="sub">${esc(b.kind)} · ${fmt(b.count)} · ${esc((b.date || "").slice(0, 16).replace("T", " "))}${b.threshold != null ? " · threshold " + Number(b.threshold).toFixed(2) : ""}${b.undone ? " · undone" : ""}</span>${b.undone ? "" : ` <button class="eb" data-bact2="undoid" data-id="${esc(id)}">Undo this batch</button>`}</div>`).join("") : `<p class="sub">No batch yet.</p>`);
+  updateBatchCounts(); batchBar();
+}
+// ---- batch confirm / reject for the groups that hold soft placements (tentative, tag, sibling, annotation)
+function reviewRows(gid) {
+  const rows = [], [layer, id] = [gid.split(":")[0], gid.slice(gid.indexOf(":") + 1)];
+  const add = (oid, src, ev, dflt) => { if (MI.cards[oid] && MI.cards[oid][3].some(x => x[0] === gid && "TAMS".indexOf(x[1]) >= 0) && !rows.some(r => r.oid === oid && r.src === src)) rows.push({ oid, src, ev, dflt }); };
+  if (layer === "tent" && TENT && TENT.groups[id]) for (const r of TENT.groups[id].m) add(r[0], "tentative", `not a real placement because ${TENT.meta.reasons[r[2]]}`, true);
+  if (layer === "tag" && TAGS && TAGS.groups[id]) for (const o of TAGS.groups[id].m) add(o, "tag", `carries the community tag “${TAGS.groups[id].slug}”; not checked against the card's parsed text`, true);
+  if (layer === "leaf" && SIB && SIB.groups[id]) for (const r of SIB.groups[id].m) add(r[0], "sibling", `exactly this group's signature; held out because ${RARE_WORDS[r[2]] || r[2]}`, true);
+  const ak = layer === "leaf" ? "l:" + id : layer === "tent" ? "t:" + id : null;
+  if (ak && ANN && ANN.groups[ak]) for (const r of ANN.groups[ak].m) add(r[0], "annotation", r[6] === "g" ? "an ability was read but another part of the card was not: " + (r[7].length ? r[7].map(t => "“" + t + "”").join("; ") : "(text not shown)") : `a condition the tool did not read: “${r[2]}”${r[4] ? (r[4] === 2 ? " (it may change the ability to the opposite)" : " (it may make the ability do something else)") : ""}`, !r[4]);
+  return rows;
+}
+function reviewHTML(gid) {
+  if (!batchOn()) return "";
+  const rows = reviewRows(gid);
+  if (!rows.length) return "";
+  const adds = MRESV.adds, rem = MRESV.removes, per = rows.slice(0, 100);
+  const body = per.map(r => {
+    const had = (adds[r.oid] && adds[r.oid][gid]) ? "confirmed by hand" : (rem[r.oid] && rem[r.oid][gid]) ? "rejected by hand" : (adds[r.oid] || rem[r.oid] || MRESV.marks[r.oid]) ? "has another hand entry" : "";
+    const k = gid + "|" + r.oid, on = GS.has(k) ? GS.get(k) : (r.dflt && !had);
+    return `<label class="bit"><input type="checkbox" data-rk="${esc(r.oid)}" data-had="${had ? 1 : 0}" data-src="${esc(r.src)}" ${on ? "checked" : ""}> <span class="lnk nm" data-go="c:${esc(r.oid)}">${esc(MI.cards[r.oid][0])}</span> <span class="badge b-auto">${esc(r.src)}</span> ${had ? `<span class="badge b-nofit">${esc(had)}; ticking overrides</span>` : ""}<span class="why">${esc(r.ev)}</span></label>`;
+  }).join("");
+  return `<div class="breview" data-gid="${esc(gid)}"><b>Batch review</b> <span class="sub">${fmt(rows.length)} card${rows.length > 1 ? "s" : ""} hold this group as a soft placement${rows.length > 100 ? "; the first 100 are shown" : ""}. Confirm places them in this group by hand (they stay in their own figure); reject records that they do not belong. Nothing happens until you press a button; one click is one batch, all or nothing.</span>` +
+    `<div class="bbar"><button data-bact3="all">Tick all</button> <button data-bact3="none">Untick all</button> <span class="bgrow"><button id="rconf" data-bact3="confirm">Confirm ticked</button> <button id="rrej" data-bact3="reject">Reject ticked</button></span></div>${body}</div>`;
+}
+function injectReview(gid) {
+  const html = reviewHTML(gid);
+  if (!html) return;
+  const P = document.getElementById("panel"), vb = P.querySelector(".viewbar"), list = document.getElementById("list");
+  const tmp = document.createElement("div"); tmp.innerHTML = html;
+  (vb || list).before(tmp.firstChild);
+  updateReviewCounts();
+}
+function reviewTicked() { const box = document.querySelector(".breview"); return box ? [...box.querySelectorAll("input[data-rk]")].filter(e => e.checked) : []; }
+function updateReviewCounts() {
+  const n = reviewTicked().length;
+  for (const [id, t] of [["rconf", "Confirm"], ["rrej", "Reject"]]) { const b = document.getElementById(id); if (b) { b.textContent = `${t} ticked (${fmt(n)})`; b.disabled = n === 0 || n > 100; } }
+}
+function reviewBatch(kind) {
+  const box = document.querySelector(".breview"), gid = box.dataset.gid;
+  const items = reviewTicked().map(e => ({ oid: e.dataset.rk, group: gid, action: kind === "confirm" ? "add" : "remove", source: e.dataset.src, override: e.dataset.had === "1" }));
+  if (!items.length) return;
+  sendBatch({ id: Manual.newBatchId(new Date(), Math.random), kind: kind, threshold: null, note: "", items: items }, `${kind === "confirm" ? "confirmed" : "rejected"} ${fmt(items.length)} card${items.length > 1 ? "s" : ""} in “${MI.groups[gid][0]}”`);
+}
+function batchAct(a, b) {                                  // buttons inside the panel
+  if (a === "prev" || a === "next") { BS.page += a === "next" ? 1 : -1; showBatchView(); return true; }
+  if (a === "all" || a === "none") {
+    for (const row of document.querySelectorAll("#brows .brow")) [...row.querySelectorAll("input[data-bk]")].forEach((el, i) => { el.checked = a === "all" ? (i === 0 || el.checked) : false; BS.ticks.set(el.dataset.bk, el.checked); });
+    updateBatchCounts(); return true;
+  }
+  if (a === "gobatch") { show("QB:"); return true; }
+  if (a === "accept") {
+    const items = ticked();
+    if (!items.length || items.length > 100) return true;
+    sendBatch({ id: Manual.newBatchId(new Date(), Math.random), kind: "place", threshold: BS.thr, note: "", items: items }, `placed ${fmt(items.length)} suggestion${items.length > 1 ? "s" : ""} (threshold ${BS.thr.toFixed(2)})`);
+    return true;
+  }
+  if (a === "fbaccept") {
+    const items = fbTicked();
+    if (!items.length || items.length > 100) return true;
+    sendBatch({ id: Manual.newBatchId(new Date(), Math.random), kind: "fallback", threshold: BS.thr, note: "", items: items }, `placed ${fmt(items.length)} low-confidence possible home${items.length > 1 ? "s" : ""}`);
+    return true;
+  }
+  if (a === "nofit") { sendEdit({ oid: b.dataset.oid, group: Manual.NOFIT, action: "nofit", note: "" }); return true; }
+  if (a === "undolast") { if (LASTBATCH && !LASTBATCH.undone) undoBatch(LASTBATCH.id); else undoBatch("last"); return true; }
+  if (a === "undoid") { undoBatch(b.dataset.id); return true; }
+  return false;
+}
+document.getElementById("panel").addEventListener("click", e => {
+  const b = e.target.closest("button[data-bact2]");
+  if (b && !b.disabled) { batchAct(b.dataset.bact2, b); return; }
+  const r = e.target.closest("button[data-bact3]");
+  if (r && !r.disabled) {
+    const a = r.dataset.bact3, box = document.querySelector(".breview");
+    if (a === "all" || a === "none") { for (const el of box.querySelectorAll("input[data-rk]")) { el.checked = a === "all" && el.dataset.had !== "1"; GS.set(box.dataset.gid + "|" + el.dataset.rk, el.checked); } updateReviewCounts(); }
+    else reviewBatch(a);
+  }
+}, true);
+document.getElementById("panel").addEventListener("change", e => {
+  const t = e.target;
+  if (t.id === "bthr") { BS.thr = Math.round(+t.value * 100) / 100; BS.ticks.clear(); showBatchView(); }
+  else if (t.id === "bskip") { BS.skip = t.checked; BS.ticks.clear(); showBatchView(); }
+  else if (t.dataset && t.dataset.bk) { BS.ticks.set(t.dataset.bk, t.checked); updateBatchCounts(); }
+  else if (t.dataset && t.dataset.fk) updateBatchCounts();
+  else if (t.dataset && t.dataset.rk) { GS.set(t.closest(".breview").dataset.gid + "|" + t.dataset.rk, t.checked); updateReviewCounts(); }
+});
+document.getElementById("panel").addEventListener("input", e => { if (e.target.id === "bthr") document.getElementById("bthrv").textContent = (+e.target.value).toFixed(2); });
+
 // ---------------------------------------------------------------- header
 function header() {
   const t = TAX.totals, m = TAX.meta;
@@ -706,7 +944,7 @@ function header() {
     (tagOn() ? `; grouped by community tag: ${fmt(TAGS.meta.cards)}, counted separately` : "") +
     `. Not cards (tokens, art cards, planes, …): ${fmt(t.not_cards)}. ` +
     `The archived card-level view grouped ${fmt(t.archived_view.cards)} (${t.archived_view.pct}%) on a different basis (${esc(t.archived_view.basis)}).</div>`;
-  handLine(); sibLine(); updateBanner();
+  handLine(); sibLine(); updateBanner(); batchBar();
 }
 
 // ---------------------------------------------------------------- tree
@@ -1041,6 +1279,7 @@ async function show(k) {
       `<p class="sub">Rules: ${g.rules.map(r => `<b>${esc(r.id)}</b> ${esc(r.words)} (confidence ${r.confidence})`).join("; ")}. Defined in corrections/hand_groups.json, edited by hand.${g.retired ? " This group is retired: no suggestions, not offered in the search; placements already made into it stay." : ""}</p>`, items);
     return;
   }
+  if (kind === "QB") { await showBatchView(); return; }
   if (kind === "Q") {
     await needManual();
     if (!MI || !SHOWH) { P.innerHTML = `<p class="explain">${MI ? "Hand edits are hidden. Tick “Show hand edits” at the top to use the work queue." : "The work queue needs build/manual_index.json. Run python src/build_manual_layer.py."}</p>`; return; }
@@ -1050,7 +1289,7 @@ async function show(k) {
     P.innerHTML = `<h2>To place <span class="badge b-hand">by hand</span></h2><div class="handnote">These are cards the tool had nowhere to put (the not-yet-organized pile), most popular first. Open one, and add it to a group or mark “nothing fits”. ` +
       `A suggestion is only a suggestion: nothing is placed until you press Add.</div>` +
       `<p class="sub">${fmt(st.base.length)} cards in this view · ${fmt(st.done)} done · ${fmt(st.left.length)} left. In all: ${fmt(c.placed_by_hand_new)} placed by hand, ${fmt(c.confirmed_by_hand)} soft-placed cards confirmed, ${fmt(c.marked_nothing_fits)} marked “nothing fits”.</p>` +
-      `<p><button data-act="qnext">${CURCARD ? "Next card ▶" : "Start: first card ▶"}</button></p>` +
+      `<p><button data-act="qnext">${CURCARD ? "Next card ▶" : "Start: first card ▶"}</button>${batchOn() ? ` <button data-bact2="gobatch">Batch view</button>` : ""}</p>` +
       `<div class="subhead">Next in line</div>` + st.left.slice(0, 12).map(o => `<div class="crow card" data-go="c:${esc(o)}"><span class="nm lnk">${esc(MI.cards[o][0])}</span><span class="sub">${MI.cards[o][4] != null ? "popularity rank " + fmt(MI.cards[o][4]) : "not ranked"} · ${esc(Manual.STATE_WORD[MI.cards[o][1]])}${MI.cards[o][2] ? ": " + esc((MI.causes[MI.cards[o][2]] || "").split(":")[0]) : ""}</span></div>`).join("");
     return;
   }
@@ -1081,6 +1320,7 @@ async function show(k) {
     setList(`<h2>${esc(g.name)} <span class="badge b-tag">${esc(TAGS.meta.badge)}</span></h2><p class="loosehead">${esc(TAGS.meta.label)}</p>` +
       `<div class="tagnote">Tag <b>${esc(g.slug)}</b> carries ${fmt(g.all_cards)} cards in all; ${fmt(g.cards)} of them are cards we couldn't read. ${g.description ? esc(g.description) + " " : ""}` +
       `The group name is ${g.name_source === "rule" ? "made from the tag by a fixed rule" : g.name_source === "user_edit" ? "edited by hand" : "written to say what the tag means"}, not taken from the cards. ${tagSnap()}</div><p class="sub">${fmt(tgcN(g))} cards.</p>`, items);
+    injectReview("tag:" + id);
     return;
   }
   if ((kind === "af" || kind === "ag") && !annOn()) {
@@ -1105,6 +1345,7 @@ async function show(k) {
     }
     setList(`<h2>${esc(g.name)} <span class="badge b-ann">tentative</span></h2><p class="loosehead">${g.kind === "leaf" ? "Shown beside the group “" + esc(g.name) + "” in the main tree." : "Shown beside the tentative group “" + esc(g.name) + "”."} Not fully checked.</p>` +
       `<div class="annnote">Each row is an ability the tool held back; the unread text is on the row. Not counted in the precise, with-broad or with-tentative figure.</div><p class="sub">${fmt(agN(g))} cards.</p>`, items);
+    injectReview((id.charAt(0) === "l" ? "leaf:" : "tent:") + id.slice(2));
     return;
   }
   if ((kind === "tf" || kind === "tg") && !tentOn()) {
@@ -1149,6 +1390,7 @@ async function show(k) {
     setList(`<h2>${esc(g.name)} <span class="badge b-tent">tentative</span></h2><p class="loosehead">${esc(TENT_LABEL)}</p>` +
       `<div class="tentnote">Not counted in the precise or the broad figure. These cards come from the Not-yet-organized pile and are listed here instead of there; ${LOOSE && LOOSE.groups[id] ? `the loose group “${esc(LOOSE.groups[id].short)}” has ${fmt(g.loose_cards)} cards, ${fmt(g.cards)} of them tentative.` : ""}</div>` +
       `<p class="sub">${fmt(tgN(g))} cards, most popular first.</p>`, items);
+    injectReview("tent:" + id);
     return;
   }
   if (kind === "lg" && LOOSE && LOOSE.groups[id]) {
@@ -1203,6 +1445,7 @@ async function show(k) {
       l.notes.map(n => `<div class="note">${esc(n)} Cards here are not counted in the main coverage figure unless another ability groups them.</div>`).join("") +
       (DEV ? `<p class="b-dev">${esc(l.sig)} · level ${l.level} · ${esc(id)}</p>` : "");
     setList(head, leafItems(id));
+    injectReview("leaf:" + id);
   } else if (kind === "r") {
     await needCards();
     const nd = NODES[id];
@@ -1310,6 +1553,13 @@ document.getElementById("showsib").addEventListener("change", e => {
   SHOWSIB = e.target.checked;
   try { localStorage.setItem("showSibling", SHOWSIB ? "1" : "0"); } catch (err) { /* ignore */ }
   header(); renderTree();
+  if (selected) show(selected);
+});
+document.getElementById("showbatch").checked = SHOWBATCH;
+document.getElementById("showbatch").addEventListener("change", e => {
+  SHOWBATCH = e.target.checked;
+  try { localStorage.setItem("showBatch", SHOWBATCH ? "1" : "0"); } catch (err) { /* ignore */ }
+  header(); renderTree(); batchBar();
   if (selected) show(selected);
 });
 document.getElementById("showhand").checked = SHOWH;
@@ -1468,7 +1718,7 @@ window.addEventListener("hashchange", () => {
   const h = decodeURIComponent(location.hash.slice(1));
   if (!TAX || !h || h === selected) return;
   if (h.startsWith("C:")) setMode("cards", true);
-  if (h.startsWith("Q:")) setMode("queue", true);
+  if (h.startsWith("Q:") || h.startsWith("QB:")) setMode("queue", true);
   show(h);
 });
 
@@ -1489,7 +1739,7 @@ window.addEventListener("hashchange", () => {
     `"Tentative groups" are loose groups promoted by hand-read rules; they are not fully checked and are never part of the precise or the broad figure (switch them off at the top). The "Loosely grouped" browse layer is a finding aid: it is not checked and is never counted as organized. The coverage figure here and the archived view's 74.8% are measured on different bases. ` +
     `<a href="ability-taxonomy-report.md">Results and limits</a> · <a href="ability-taxonomy-design.md">Design</a> · <a href="../KNOWN_LIMITATIONS.md">Known limitations §12</a>.`;
   const h = decodeURIComponent(location.hash.slice(1));
-  if (h) { if (h.startsWith("C:")) setMode("cards", true); if (h.startsWith("Q:")) { await needManual(); setMode("queue", true); } show(h); }
+  if (h) { if (h.startsWith("C:")) setMode("cards", true); if (h.startsWith("Q:") || h.startsWith("QB:")) { await needManual(); setMode("queue", true); } show(h); }
 })();
 </script>
 </body>

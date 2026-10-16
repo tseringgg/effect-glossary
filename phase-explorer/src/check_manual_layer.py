@@ -19,9 +19,9 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import manual_common as MC
 
 HERE = MC.HERE
-NEW_BUILD = ("manual_index.json", "manual_layer.json", "manual_ids_seen.json", "manual_suggestions.json", "keyword_facet.json", "hand_group_hits.json", "sibling_placements.json", "sibling_ledger.json")
+NEW_BUILD = ("manual_index.json", "manual_layer.json", "manual_ids_seen.json", "manual_suggestions.json", "keyword_facet.json", "hand_group_hits.json", "sibling_placements.json", "sibling_ledger.json", "manual_fallback.json")
 NEW_REPORTS = ("manual-placements.md", "hand-groups.md")
-ALLOWED = {"src/check_manual_layer.py", "src/manual_common.py", "src/build_manual_layer.py", "src/build_manual_suggestions.py", "reports/manualedit.js", "src/serve.py", "reports/browse.html", "reports/abilityfind.js", "src/test_abilityfind.py", "TESTER_NOTE.md", "KNOWN_LIMITATIONS.md", "README.md", "src/check_tester_note.py"}
+ALLOWED = {"src/test_manual_browser.py", "reports/abilityfind.js", "src/test_abilityfind.py", "src/serve.py", "src/check_manual_layer.py", "src/manual_common.py", "src/build_manual_layer.py", "src/build_manual_suggestions.py", "reports/manualedit.js", "src/serve.py", "reports/browse.html", "reports/abilityfind.js", "src/test_abilityfind.py", "TESTER_NOTE.md", "KNOWN_LIMITATIONS.md", "README.md", "src/check_tester_note.py"}
 
 
 def manifest():
@@ -42,7 +42,7 @@ def is_new(rel):
     return ((rel.startswith("build/") and rel[6:] in NEW_BUILD) or (rel.startswith("reports/") and rel[8:] in NEW_REPORTS) or rel == "corrections/hand_groups.json"
             or rel in ("src/manual_common.py", "src/build_manual_layer.py", "src/build_manual_suggestions.py", "reports/manualedit.js", "src/check_manual_layer.py", "src/test_manual_endpoint.py", "src/test_manual_logic.py",
                        "src/test_manual_browser.py", "src/test_manual_find.py", "src/build_keyword_facet.py", "src/hand_groups.py", "src/build_hand_groups.py", "src/build_sibling.py", "src/test_keyword_facet.py",
-                       "src/test_hand_groups.py", "src/test_sibling.py", "src/test_features_browser.py"))
+                       "src/test_hand_groups.py", "src/test_sibling.py", "src/test_features_browser.py", "src/manual_batch.py", "src/test_batch_endpoint.py", "src/test_batch_logic.py", "src/test_batch_browser.py", "src/test_batch_find.py"))
 
 
 def run(args, env=None):
@@ -108,6 +108,25 @@ def main():
         on2 = manifest()
         check("the suggestions file (rebuilt after the flags came back on) is byte-identical to the one before", on2.get("build/manual_suggestions.json") == sug_before)
         check("a second build of each is byte-identical (%d files: facet, hand-group hits and report, manual index / layer / ids / report)" % len(names), all(on[k] == on2[k] for k in names), [k for k in names if on[k] != on2[k]])
+    elif cmd == "batchflag":
+        # python src/check_manual_layer.py batchflag BEFORE.json : BATCH_ACTIONS off must leave every output byte-identical to the build before batch actions existed (BEFORE.json = a snapshot from then)
+        before = json.load(open(sys.argv[2]))
+        keys = ["build/manual_index.json", "build/manual_layer.json", "build/manual_ids_seen.json", "reports/manual-placements.md", "build/manual_suggestions.json"]
+        on = manifest()
+        rc, out = run(["-c", "import sys; sys.path.insert(0, 'src'); import build_manual_layer as L; L.BATCH_ACTIONS = False; L.main(); import build_manual_suggestions as S; S.main()"])
+        print("   flag off:", out.strip().splitlines()[-1][:100] if out.strip() else rc)
+        off = manifest()
+        check("flag off: the manual index, layer, ids, report and suggestions are byte-identical to the build before batch actions", all(off.get(k) == before.get(k) for k in keys), [k for k in keys if off.get(k) != before.get(k)])
+        check("flag off: no fallback file", "build/manual_fallback.json" not in off)
+        check("flag off: every other file (all that existed before) is byte-identical to before", all(off.get(k) == v for k, v in before.items() if not is_new(k) and not k.startswith("corrections/manual_placements") and k not in ALLOWED and k != "reports/manualedit.js"),
+              [k for k, v in before.items() if off.get(k) != v and not is_new(k) and k not in ALLOWED][:5])
+        check("flag off: the real corrections file and its backup are byte-identical", all(off.get(k) == before.get(k) for k in ("corrections/manual_placements.json", "corrections/manual_placements.json.bak")))
+        rc, out = run(["-c", "import sys; sys.path.insert(0, 'src'); import build_manual_layer as L; L.main(); import build_manual_suggestions as S; S.main()"])
+        on2 = manifest()
+        check("flag on again: the files with batch fields come back byte-identical to the build before the flag was turned off", all(on2.get(k) == on.get(k) for k in keys + ["build/manual_fallback.json"]), [k for k in keys + ["build/manual_fallback.json"] if on2.get(k) != on.get(k)])
+        rc, out = run(["-c", "import sys; sys.path.insert(0, 'src'); import build_manual_layer as L; L.main(); import build_manual_suggestions as S; S.main()"])
+        on3 = manifest()
+        check("two builds in a row with the flag on are byte-identical (index, layer, ids, report, suggestions, fallback)", all(on3.get(k) == on2.get(k) for k in keys + ["build/manual_fallback.json"]))
     elif cmd == "reconcile":
         idx = MC.load_index()
         doc = MC.load_doc()

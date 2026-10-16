@@ -91,7 +91,11 @@ function handCases(names) {
     confirmed: { adds: [{ name: "Gain life", layer: "leaf", date: "2026-10-14T15:02:11", note: "" }], fresh: false, was: "", confirmed: "tentative", nofit: null, removed: [] },
     edit: { adds: [{ name: "Gain life", layer: "tentative group", date: "2026-10-14T15:02:11", note: "" }], fresh: false, was: "", confirmed: "", nofit: null, removed: [] },
     nofit: { adds: [], fresh: false, was: "", confirmed: "", nofit: { date: "2026-10-14T15:02:11", note: "" }, removed: [] },
-    removed: { adds: [], fresh: false, was: "", confirmed: "", nofit: null, removed: [{ name: "Draw cards" }] }
+    removed: { adds: [], fresh: false, was: "", confirmed: "", nofit: null, removed: [{ name: "Draw cards" }] },
+    batchplace: { adds: [{ name: "Destroy a noncreature permanent", layer: "leaf", date: "2026-10-15T15:02:11", note: "", batch: { id: "b-20261015-150211-ab12", kind: "place", score: 0.93, source: "sig+tag", threshold: 0.9 } }], fresh: true, was: "only in a held group", confirmed: "", nofit: null, removed: [] },
+    batchfallback: { adds: [{ name: "Gain life", layer: "leaf", date: "2026-10-15T15:02:11", note: "", batch: { id: "b-20261015-150211-ab13", kind: "fallback", score: null, source: "fallback:words", threshold: 0.9 } }], fresh: true, was: "no readable ability", confirmed: "", nofit: null, removed: [] },
+    batchconfirm: { adds: [{ name: "Gain life", layer: "tentative group", date: "2026-10-15T15:02:11", note: "", batch: { id: "b-20261015-150211-ab14", kind: "confirm", score: null, source: "tentative", threshold: null } }], fresh: false, was: "", confirmed: "tentative", nofit: null, removed: [] },
+    batchreject: { adds: [], fresh: false, was: "", confirmed: "", nofit: null, removed: [{ name: "Draw cards", batch: { id: "b-20261015-150211-ab15", kind: "reject", score: null, source: "tag", threshold: null } }] }
   };
   for (i = 0; i < names.length; i++) {
     e = AbilityFind.search(IDX, names[i], 1).matches[0];
@@ -163,16 +167,26 @@ def main():
             bad.append("a null hand answer changed the text: " + r["card"])
         if r["kind"] != "null" and ("undefined" in t or "verified" in t.lower() or " checked placement" in t.replace("not a checked one", "")):
             bad.append("bad wording: " + t)
-        if r["kind"] in ("fresh", "confirmed", "edit") and not ("by hand" in t and "“" in t):
+        if r["kind"] in ("fresh", "confirmed", "edit", "batchplace", "batchfallback", "batchconfirm") and not ("by hand" in t and "“" in t):
             bad.append("%s/%s does not say where and by hand: %s" % (r["card"], r["kind"], t))
-        if r["kind"] == "fresh" and (r["rk"] != "hand" or "Placed by hand: in" not in t or "only in a held group" not in t):
+        if r["kind"] in ("fresh", "batchplace", "batchfallback") and (r["rk"] != "hand" or "Placed by hand: in" not in t or ("no readable ability" if r["kind"] == "batchfallback" else "only in a held group") not in t):
             bad.append("fresh answer lacks the place or the original reason: " + t)
-        if r["kind"] != "fresh" and r["kind"] != "null" and not t.startswith(r["base"]):
+        if r["kind"] not in ("fresh", "null", "batchplace", "batchfallback") and not t.startswith(r["base"]):
             bad.append("%s/%s dropped the generated answer" % (r["card"], r["kind"]))
         if r["kind"] == "nofit" and "nothing fits" not in t:
             bad.append("nofit not stated")
         if r["kind"] == "removed" and "Removed by hand" not in t:
             bad.append("removal not stated")
+        if r["kind"] == "batchplace" and not all(x in t for x in ("placed in a batch", "score 0.93", "sig + tag", "threshold 0.90", "Placed by hand: in")):
+            bad.append("batch place wording: " + t)
+        if r["kind"] == "batchfallback" and "from the low-confidence fallback list" not in t:
+            bad.append("batch fallback wording: " + t)
+        if r["kind"] == "batchconfirm" and "confirmed in a batch" not in t:
+            bad.append("batch confirm wording: " + t)
+        if r["kind"] == "batchreject" and ("rejected in a batch" not in t or "Removed by hand" not in t):
+            bad.append("batch reject wording: " + t)
+        if r["kind"] in ("edit", "fresh", "confirmed") and "in a batch" in t:
+            bad.append("a single placement says it was in a batch: " + t)
     print("hand-placement answers: %d cases, %d problems" % (len(hc), len(bad)), bad[:5])
     for r in hc[:6]:
         print("   -", r["card"], "[%s]" % r["kind"], r["text"][:200])

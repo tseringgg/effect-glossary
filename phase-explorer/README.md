@@ -35,6 +35,12 @@ python src/test_manual_endpoint.py        # the endpoint with good and bad input
 python src/test_manual_logic.py           # reports/manualedit.js (in a JS engine) against the Python resolver on the real data
 python src/test_manual_browser.py         # the edit panel, queue and flags in headless Edge (temp corrections file)
 python src/check_manual_layer.py snapshot before.json   # hash every file; `verify before.json` after a change; `flag` (MANUAL_PLACEMENTS off/on, two identical builds); `reconcile`
+python src/build_manual_layer.py          # with BATCH_ACTIONS (default on) the index carries `batch`: true and the layer the batch sub-counts; off: byte-identical to the build before batch actions
+python src/test_batch_endpoint.py         # POST /api/manual/batch on temporary copies (the real corrections file is hashed before and after)
+python src/test_batch_logic.py            # the batch view's pure logic (JS) against an independent Python implementation; the batch counts
+python src/test_batch_browser.py          # the batch view, confirm / reject, undo, the cap, failures, the flag off, 390 px in headless Edge (temp corrections file)
+python src/test_batch_find.py             # Find a card: 5 batch-placed, 5 single, 5 tag, 5 tentative, 3 excluded
+python src/check_manual_layer.py batchflag before.json   # BATCH_ACTIONS off: every output byte-identical to the snapshot taken before batch actions
 python src/build_keyword_facet.py        # -> build/keyword_facet.json (the keyword facet: a FILTER, not a placement; flag KEYWORD_FACET; seconds)
 python src/build_hand_groups.py           # -> build/hand_group_hits.json, reports/hand-groups.md (rules of corrections/hand_groups.json evaluated over every card; suggestions only; flag HAND_GROUPS; run after the facet, before build_manual_layer.py and build_manual_suggestions.py)
 python src/build_sibling.py               # -> build/sibling_placements.json, build/sibling_ledger.json (tentative sibling-of-leaf placements; flag SIBLING_RULE; about a minute; run before build_manual_layer.py)
@@ -168,6 +174,13 @@ For the cards the tool had nowhere to put (the "Not yet organized" pile) and for
 * **Hand-defined groups** (`corrections/hand_groups.json`, hand-edited): ids `hand:<slug>` (never derived from anything; retire with `"retired": true`, never delete), rules of type `text` (literal phrases with a sentence-level `not`), `keyword` and `tag`. A rule only **suggests**; a member is an Add click, counted on the "placed by hand" line. Dashed "hand group" badge; the groups are in the panel's search. Seeded with `hand:wins-or-loses-the-game` (107 cards; the poison reminder is excluded by its `not` entry).
 * **Sibling placements** (`build/sibling_placements.json`): 27 abilities on 27 cards whose signature equals a leaf's but which the grouping rule left out because they are the plain variant. **Tentative**, badge "sibling", own switch "Show sibling placements", counted in no figure, removable in the edit panel.
 * Each has a build flag (`KEYWORD_FACET`, `HAND_GROUPS`, `SIBLING_RULE`); off writes nothing and removes the file. None changes a leaf, leaf formation, a threshold, the parser or any of the six figures.
+
+## Batch actions (the batch view and the batch review)
+
+* **Batch view** (queue tab, "Batch view"): cards with their top suggestion, score and reason and a checkbox each; **0.90** to start (saga boilerplate skipped), slider down to 0.70, the review band unticked; more than one suggestion per card can be ticked; at most 100 placements per click; "Accept ticked" is the only thing that places. Cards that already have a hand entry are listed apart and are only touched if ticked as an override. The 63 pile cards with no suggestion get a "No suggestion: possible homes (low confidence)" list, never ticked, with "Nothing fits" one click away.
+* **Batch review** (tentative, tag, sibling and annotation group pages): "Confirm ticked" / "Reject ticked" with a preview of card and evidence. Confirmed cards stay in their own figure ("confirmed by hand"); a reject is a recorded removal with a batch id and changes no generated count.
+* **Server:** `POST /api/manual/batch` validates every row first and writes once (temp file, rename, a copy of the old file in `corrections/backups/`): **all or nothing**. Every entry keeps `batch {id, kind, threshold, score, source}`; "Undo this batch" (or by id) removes a whole batch and restores what it replaced. Entries without `batch` are single placements.
+* **Counting:** "placed by hand, in a batch" is a sub-count inside "placed by hand" (a card also placed singly counts as single); reconciliation is unchanged; no figure moves. Flag `BATCH_ACTIONS` (off: byte-identical outputs) and the page checkbox "Show batch actions".
 
 ## Two pages
 

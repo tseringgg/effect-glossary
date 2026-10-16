@@ -16,6 +16,7 @@ import webbrowser
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import manual_common as MC
+import manual_batch as MB
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 8765
@@ -118,7 +119,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 rev = MC.load_doc()["revision"]
             except ValueError:
                 rev = None
-            self.send_json(200, {"ok": True, "enabled": idx is not None, "revision": rev})
+            self.send_json(200, {"ok": True, "enabled": idx is not None, "revision": rev, "batch": bool(idx and idx.get("batch"))})
             return
         super().do_GET()
 
@@ -145,10 +146,37 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         except Exception as exc:                      # never a silent failure: the page shows NOT SAVED with this text
             self.send_json(500, {"ok": False, "error": "server error: %s" % exc})
 
+    # POST /api/manual/batch: place from suggestions / the fallback list, confirm or reject soft placements, or undo a batch. ALL OR NOTHING; see src/manual_batch.py. 404 when BATCH_ACTIONS is off.
+    def do_batch(self):
+        try:
+            if not self.local_host():
+                raise MC.ApiError(403, "local requests only")
+            if self.headers.get("X-Manual-Edit") != "1" or "application/json" not in (self.headers.get("Content-Type") or ""):
+                raise MC.ApiError(400, "need Content-Type: application/json and X-Manual-Edit: 1")
+            try:
+                n = int(self.headers.get("Content-Length") or 0)
+            except ValueError:
+                raise MC.ApiError(400, "bad Content-Length")
+            if n > MB.MAX_BODY:
+                self.rfile.read(min(n, 1 << 20))
+                raise MC.ApiError(413, "body is %d bytes; the limit is %d" % (n, MB.MAX_BODY))
+            try:
+                body = json.loads(self.rfile.read(n) or b"{}")
+            except Exception as exc:
+                raise MC.ApiError(400, "bad JSON: %s" % exc)
+            self.send_json(200, MB.apply_batch(body))
+        except MC.ApiError as exc:
+            self.send_json(exc.status, dict({"ok": False, "error": exc.msg}, **(exc.extra or {})))
+        except Exception as exc:
+            self.send_json(500, {"ok": False, "error": "server error: %s" % exc})
+
     def do_POST(self):
         route = self.path.rstrip("/")
         if route == "/api/manual":
             self.do_manual()
+            return
+        if route == "/api/manual/batch":
+            self.do_batch()
             return
         if route == "/api/phrase":
             self.do_phrase()

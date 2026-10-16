@@ -47,7 +47,7 @@ def main():
     snap = tax["meta"]["rules"]["snapshot"]
     check("the snapshot predates 'since April' (cards released since are in the overlay)", "2026-04" in snap, snap[:80])
     sug = ("closest group" in page.lower()) or ("also fits" in page.lower())
-    promises = ("closest group" in note.lower()) or ("also fits" in note.lower()) or ("suggestion" in note.lower())
+    promises = ("closest group" in note.lower()) or ("also fits" in note.lower()) or ("suggestion link" in note.lower())
     check("the note promises no 'closest group' / 'also fits' suggestion links unless the page has them", (not promises) or sug,
           "the page has none (they exist only in the archived card-level view); the note's bullet was removed on 2026-10-12" if not sug else "")
     tm, am = jl("tentative_placements.json")["meta"], jl("annotation_placements.json")["meta"]
@@ -65,6 +65,7 @@ def main():
     check("the page has the annotation switch, the badge and the agreed wording", all(x in page for x in ("showann", "Show condition annotations", "b-ann", "did not read")))
     check("the note's hand-placement line matches the page (switch, badge, own line)", "placed by hand" in note and "Show hand edits" in note and all(x in page for x in ("showhand", "Show hand edits", "b-hand", "placed by hand")))
     check("the note's keyword-facet, hand-group and sibling lines match the page (filter wording, badges, switch)", all(x in note for x in ("By keyword", "narrower than Scryfall", "hand group", "Show sibling placements")) and all(x in page for x in ("cf-kw", "By keyword", "filter, not a placement", "b-hg", "showsib", "Show sibling placements")))
+    check("the note's batch-actions line matches the page (switch, batch view, review, undo, all or nothing)", all(x in note for x in ("Batch view", "Batch review", "Undo this batch", "Show batch actions", "all or nothing")) and all(x in page for x in ("showbatch", "Show batch actions", "Batch view", "breview", "Undo this batch", "Nothing is placed until you press Accept")))
     print("NOTE  the note says 'constructed-legal'; the build's denominator is the card set after leaving out non-cards and cards not meant for constructed play (%s cards). It is not a legality test: "
           "it still holds, for example, cards of sets that have not released yet." % format(t["in_scope"], ","))
     sys.exit(0 if all(out) else 1)

@@ -46,9 +46,9 @@ SRC_WORD = {"P": "precise", "B": "broad", "K": "keyword", "R": "replacement", "T
 
 
 class ApiError(Exception):
-    def __init__(self, status, msg):
+    def __init__(self, status, msg, extra=None):
         Exception.__init__(self, msg)
-        self.status, self.msg = status, msg
+        self.status, self.msg, self.extra = status, msg, extra
 
 
 # ------------------------------------------------------------------ files
@@ -64,6 +64,8 @@ def check_doc(doc):
         raise ValueError("'edits' is missing or not an object")
     if not isinstance(doc.get("history", []), list):
         raise ValueError("'history' is not a list")
+    if not isinstance(doc.get("batches", {}), dict):
+        raise ValueError("'batches' is not an object")
     for oid, e in doc["edits"].items():
         if not isinstance(e, dict) or not isinstance(e.get("groups"), dict):
             raise ValueError("edit for %s has no 'groups' object" % oid)
@@ -241,12 +243,17 @@ def resolve(index, doc):
     for oid in new + sorted(marks):
         key = str((doc["edits"][oid]["groups"].get(NOFIT) or next(iter(adds.get(oid, {}).values()), {})).get("source_at_edit", {}).get("reason", {}).get("code", 0))
         by_reason.setdefault(("nofit:" if oid in marks else "hand:") + key, []).append(oid)
+    bf = bool(index.get("batch"))
+    isb = lambda o: all(v.get("batch") for v in adds[o].values())
+    extra = ({"placed_by_hand_batch": sum(1 for o in new if isb(o)), "confirmed_by_hand_batch": sum(1 for v in conf.values() for o in v if isb(o)),
+              "batch_removals": sum(1 for v in removes.values() for x in v.values() if x.get("batch")), "batches": len(doc.get("batches", {})),
+              "batches_undone": sum(1 for b in doc.get("batches", {}).values() if b.get("undone"))} if bf else {})
     return {
-        "counts": {"placed_by_hand_new": len(new), "confirmed_by_hand": sum(len(v) for v in conf.values()),
+        "counts": dict({"placed_by_hand_new": len(new), "confirmed_by_hand": sum(len(v) for v in conf.values()),
                    "confirmed_by_hand_of_which": {"tentative": len(conf["t"]), "annotation": len(conf["a"]), "tag": len(conf["m"])},
                    "precise_cards_with_edits_not_counted": len(prec), "marked_nothing_fits": len([o for o in marks if state_of(o) != "o"]),
                    "removals_recorded": sum(len(v) for v in removes.values()), "adds": sum(len(v) for v in adds.values()),
-                   "orphans": len(orphans), "renamed": len(renamed), "stale_removals": len(stale)},
+                   "orphans": len(orphans), "renamed": len(renamed), "stale_removals": len(stale)}, **extra),
         "reconciliation": rec,
         "hand_new": new, "confirmed": {k: v for k, v in conf.items()}, "precise_edits": prec, "marked": sorted(marks),
         "orphans": orphans, "renamed": renamed, "stale": stale,

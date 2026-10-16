@@ -24,6 +24,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import manual_common as M
 
 MANUAL_PLACEMENTS = True
+BATCH_ACTIONS = True            # batch place / confirm / reject / undo (POST /api/manual/batch, the batch view). Off: no `batch` field in the index, no batch counts, no fallback file: every output is byte-identical to the build without batch actions
 HERE = M.HERE
 BUILD = os.path.join(HERE, "build")
 OUT_INDEX = os.path.join(BUILD, "manual_index.json")
@@ -147,8 +148,8 @@ def build_index():
                 state = "u"
             cause = 7 if oid_ in gap else (prim.get(oid_) or 0)
         cards[oid] = [name, state, cause, sorted([g, s] for g, s in gens.items()), rank.get(oid)]
-    return {"v": 1, "enabled": True, "groups": G, "cards": cards,
-            "causes": {str(k): v for k, v in M.CAUSE_TEXT.items()}, "layers": {"leaf": "leaf", "tent": "tentative group", "loose": "loose group", "tag": "community-tag group", "kw": "keyword group", "rp": "replacement group", "hand": "hand-defined group"}}
+    return dict({"v": 1, "enabled": True, "groups": G, "cards": cards,
+            "causes": {str(k): v for k, v in M.CAUSE_TEXT.items()}, "layers": {"leaf": "leaf", "tent": "tentative group", "loose": "loose group", "tag": "community-tag group", "kw": "keyword group", "rp": "replacement group", "hand": "hand-defined group"}}, **({"batch": True} if BATCH_ACTIONS else {}))
 
 
 def inventory_counts(idx):
@@ -158,7 +159,7 @@ def inventory_counts(idx):
 
 def main():
     if not MANUAL_PLACEMENTS:
-        for p in (OUT_INDEX, OUT_LAYER, OUT_SEEN, OUT_MD, os.path.join(BUILD, "manual_suggestions.json")):
+        for p in (OUT_INDEX, OUT_LAYER, OUT_SEEN, OUT_MD, os.path.join(BUILD, "manual_suggestions.json"), os.path.join(BUILD, "manual_fallback.json")):
             if os.path.exists(p):
                 os.remove(p)
         print("MANUAL_PLACEMENTS is off: nothing written; this script's own outputs removed")
@@ -202,7 +203,9 @@ def write_report(idx, res, inv, gone, renamed_ids):
          "| &nbsp;&nbsp;of which tentative / annotation / tag | %d / %d / %d |" % (c["confirmed_by_hand_of_which"]["tentative"], c["confirmed_by_hand_of_which"]["annotation"], c["confirmed_by_hand_of_which"]["tag"]),
          "| precisely placed cards with hand edits (counted nowhere) | %d |" % c["precise_cards_with_edits_not_counted"],
          "| marked: nothing fits (own count, not a placement) | %d |" % c["marked_nothing_fits"],
-         "| removals recorded (change no generated count) | %d |" % c["removals_recorded"], "",
+         "| removals recorded (change no generated count) | %d |" % c["removals_recorded"]] + (
+        ["| &nbsp;&nbsp;placed by hand, in a batch (inside the placed-by-hand line) | %d |" % c["placed_by_hand_batch"], "| &nbsp;&nbsp;confirmed by hand, in a batch (inside the confirmed line) | %d |" % c["confirmed_by_hand_batch"],
+         "| batches (undone) | %d (%d) |" % (c["batches"], c["batches_undone"])] if BATCH_ACTIONS else []) + [""] + [
          "## Reconciliation", "",
          "placed %s + tentative %s + annotation %s + tag %s + hand %s + unorganized %s + not cards %s = **%s** (universe %s)" % tuple(
              format(x, ",") for x in (r["placed"], r["tentative"], r["annotation"], r["tag"], r["hand"], r["unorganized"], r["not_cards"], r["sum"], len(idx["cards"]))), "",

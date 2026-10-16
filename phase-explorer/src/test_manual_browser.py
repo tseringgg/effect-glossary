@@ -168,7 +168,7 @@ def main():
             c.call("Page.navigate", url="about:blank")         # a hash-only navigation would not reload: go through a blank page first
             time.sleep(0.5)
             c.call("Page.navigate", url="http://127.0.0.1:%d/reports/browse.html%s" % (port, frag))
-            ok = c.wait("document.querySelectorAll('#tree .row').length > 10 && typeof MRES !== 'undefined' && MRES !== null", 180)
+            ok = c.wait("document.querySelectorAll('#tree .row').length > 10 && typeof MRES !== 'undefined' && MRES !== null && document.querySelectorAll('#cov > div:not(.basis)').length >= 6", 180)
             return ok
         ok = load(PORT_A)
         check("0 page boots with the hand layer loaded", ok and c.js("!document.getElementById('queuetab').hidden"), c.js("document.getElementById('prov').innerText.slice(0,40)"))

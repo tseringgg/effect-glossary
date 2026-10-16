@@ -146,9 +146,76 @@ def main():
            "label": "Suggestion, not a placement", "cards": out}
     with io.open(OUT, "w", encoding="utf-8", newline="\n") as fh:
         fh.write(json.dumps(doc, ensure_ascii=False, sort_keys=True, separators=(",", ":")))
+    import build_manual_layer as BML
+    fb_path = os.path.join(BUILD, "manual_fallback.json")
+    if not BML.BATCH_ACTIONS:
+        if os.path.exists(fb_path):
+            os.remove(fb_path)
+    else:
+        write_fallback(fb_path, idx, G, out, n_tl, n_t, placed, ct, fn, tag_names_ok=True)
     n_u = sum(1 for c in idx["cards"].values() if c[1] == "u")
     print("cards with suggestions %d of %d eligible (%d not-yet-organized pile cards: %d with a suggestion)" % (len(out), sum(1 for c in idx["cards"].values() if c[1] in ("u", "t", "a", "m")),
                                                                                                  n_u, sum(1 for o in out if idx["cards"][o][1] == "u")), dict(sources))
+
+
+FALLBACK_LABEL = "Low confidence: this card has no suggestion. These are possible homes found from its keyword, a community tag or words in its text; never pre-ticked."
+STOP = set("the a an of to and or you your that this it is in on for with target each any as at if then from by be can't".split())
+
+
+def _words(t):
+    import re
+    return {w for w in re.findall(r"[a-z]+", (t or "").lower()) if w not in STOP and len(w) > 2}
+
+
+def write_fallback(path, idx, G, out, n_tl, n_t, placed, ct, fn, tag_names_ok=True):
+    """build/manual_fallback.json: for each pile card with no suggestion, up to 5 possible homes, in this order: the keyword block named after a keyword the card carries (exact), a weak community-tag
+    leaf (F1 >= 0.02, at least 2 placed cards), then name-word overlap (at least 2 words and half of the group's name words). Deterministic; labelled low confidence; used only by the batch view."""
+    cards = jl("ability_taxonomy_cards.json")["cards"]
+    kfp = os.path.join(BUILD, "keyword_facet.json")
+    kw_of = collections.defaultdict(list)
+    if os.path.exists(kfp):
+        for k, v in jl("keyword_facet.json")["keywords"].items():
+            for o in v["c"]:
+                kw_of[o].append(k)
+    norm = lambda x: "".join(ch for ch in x.lower() if ch.isalnum())
+    kwg = {norm(g[3:].replace("+", "")): g for g, v in G.items() if v[3] == "kw" and v[4]}
+    gw = {g: _words(v[0]) for g, v in G.items() if v[4] and v[3] in ("leaf", "tent", "loose", "tag", "kw", "rp")}
+    res = {}
+    for oid in sorted(idx["cards"]):
+        c = idx["cards"][oid]
+        if c[1] != "u" or oid in out:
+            continue
+        cand, seen = [], set()
+
+        def add(gid, kind, why):
+            if gid in G and G[gid][4] and gid not in seen and len(cand) < 5:
+                seen.add(gid)
+                cand.append([gid, kind, why])
+        for k in sorted(kw_of.get(oid, ())):
+            g = kwg.get(norm(k))
+            if g:
+                add(g, "keyword", "the card carries the keyword %s (keyword block, exact name)" % k)
+        weak = {}
+        for t in sorted(ct.get(oid, ())):
+            for lid in sorted(n_tl.get(t, ())):
+                n = n_tl[t][lid]
+                if n < 2:
+                    continue
+                p_, q_ = n / float(n_t[t]), n / float(len(placed[lid]))
+                f1 = 2 * p_ * q_ / (p_ + q_)
+                if f1 >= 0.02 and f1 > weak.get(lid, (0,))[0]:
+                    weak[lid] = (f1, "weakly: community tag “%s”, %d of the group's %d cards carry it" % (fn[t]["slug"], n, len(placed[lid])))
+        for lid, (f1, why) in sorted(weak.items(), key=lambda x: (-x[1][0], x[0]))[:2]:
+            add("leaf:" + lid, "tag", why)
+        tw = _words(cards[oid]["t"])
+        lex = sorted(((len(tw & w) / float(len(w)), len(tw & w), g) for g, w in gw.items() if w and len(tw & w) >= 2 and len(tw & w) / float(len(w)) >= 0.5), key=lambda x: (-x[0], -x[1], x[2]))[:3]
+        for j, n, g in lex:
+            add(g, "words", "%d of the %d words of the group's name appear in the card's text" % (n, len(gw[g])))
+        res[oid] = cand
+    doc = {"v": 1, "label": FALLBACK_LABEL, "cards": res}
+    with io.open(path, "w", encoding="utf-8", newline="\n") as fh:
+        fh.write(json.dumps(doc, ensure_ascii=False, sort_keys=True, separators=(",", ":")))
+    print("fallback: %d pile cards without a suggestion; %d have at least one possible home" % (len(res), sum(1 for v in res.values() if v)))
 
 
 if __name__ == "__main__":

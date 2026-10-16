@@ -53,9 +53,19 @@ var Manual = (function () {
     var rec = { placed: placed, tentative: cnt.t || 0, annotation: cnt.a || 0, tag: cnt.m || 0, hand: n.length, unorganized: (cnt.u || 0) - n.length, not_cards: cnt.o || 0 };
     rec.sum = rec.placed + rec.tentative + rec.annotation + rec.tag + rec.hand + rec.unorganized + rec.not_cards;
     var marked = keys(marks).filter(function (o) { return cards[o][1] !== "o"; });
+    var batchOn = !!index.batch, isb = function (o) { var g, any = true; for (g in adds[o]) if (has(adds[o], g) && !adds[o][g].batch) any = false; return any; };
     var nr = 0; for (oid in removes) if (has(removes, oid)) nr += keys(removes[oid]).length;
     var na = 0; for (oid in adds) if (has(adds, oid)) na += keys(adds[oid]).length;
-    return {
+    var bx = {};
+    if (batchOn) {
+      var pb = 0, cb = 0, brm = 0, nb = 0, nu = 0, t, g2, bk;
+      for (i = 0; i < n.length; i++) if (isb(n[i])) pb++;
+      for (t in conf) if (has(conf, t)) for (i = 0; i < conf[t].length; i++) if (isb(conf[t][i])) cb++;
+      for (oid in removes) if (has(removes, oid)) for (g2 in removes[oid]) if (has(removes[oid], g2) && removes[oid][g2].batch) brm++;
+      for (bk in (doc && doc.batches) || {}) if (has(doc.batches, bk)) { nb++; if (doc.batches[bk].undone) nu++; }
+      bx = { placed_by_hand_batch: pb, confirmed_by_hand_batch: cb, batch_removals: brm, batches: nb, batches_undone: nu };
+    }
+    var cnts = {
       counts: { placed_by_hand_new: n.length, confirmed_by_hand: conf.t.length + conf.a.length + conf.m.length,
                 confirmed_by_hand_of_which: { tentative: conf.t.length, annotation: conf.a.length, tag: conf.m.length },
                 precise_cards_with_edits_not_counted: prec.length, marked_nothing_fits: marked.length, removals_recorded: nr, adds: na,
@@ -63,6 +73,56 @@ var Manual = (function () {
       reconciliation: rec, hand_new: n, confirmed: conf, precise_edits: prec, marked: keys(marks), orphans: orphans, renamed: renamed, stale: stale,
       adds: adds, removes: removes, marks: marks
     };
+    for (var bkk in bx) if (has(bx, bkk)) cnts.counts[bkk] = bx[bkk];
+    return cnts;
+  }
+
+  // ------------------------------------------------------------ the batch view (pure logic; the page only draws it)
+  // saga boilerplate: true of every Saga and says nothing about the card, so a batch never offers it as the card's home
+  function isBoilerplate(row, name) {
+    return /“(?:Saga ETB lore counter|Chapter \d+)”/.test(row[3] || "") || name === "Put lore counters on this permanent";
+  }
+  // the usable suggestions of one card: not already added by hand, not held precisely, not boilerplate (when asked)
+  function usableSuggestions(index, sugg, res, oid, skip) {
+    var rows = (sugg && sugg[oid]) || [], out = [], i, r, c = index.cards[oid], j, held, adds = (res.adds && res.adds[oid]) || {};
+    for (i = 0; i < rows.length && out.length < 5; i++) {
+      r = rows[i];
+      if (!has(index.groups, r[0]) || has(adds, r[0])) continue;
+      held = false;
+      for (j = 0; j < c[3].length; j++) if (c[3][j][0] === r[0] && PRECISE_SRC.indexOf(c[3][j][1]) >= 0) held = true;
+      if (held || (skip && isBoilerplate(r, index.groups[r[0]][0]))) continue;
+      out.push(r);
+    }
+    return out;
+  }
+  // order = oracle ids in queue order. -> {rows: [{oid, items, tier: 'tick'|'review'}], handled: [{oid, items, what}], nosug: [oid], below: n}
+  // a row is 'tick' when its top suggestion scores at least `thr` and 'review' (shown unticked) between `floor` and `thr`; a card with any hand entry is never a row, only `handled`.
+  function batchRows(index, sugg, res, order, thr, skip, floor) {
+    floor = floor == null ? 0.70 : floor;
+    var rows = [], handled = [], nosug = [], below = 0, i, oid, list, has_ = function (o) { return has(res.adds, o) || has(res.removes, o) || has(res.marks, o); }, what;
+    for (i = 0; i < order.length; i++) {
+      oid = order[i];
+      if (!has(index.cards, oid) || index.cards[oid][1] === "o") continue;
+      list = usableSuggestions(index, sugg, res, oid, skip);
+      if (has_(oid)) {
+        what = [];
+        if (has(res.adds, oid)) what.push(keys(res.adds[oid]).length + " hand add" + (keys(res.adds[oid]).length > 1 ? "s" : ""));
+        if (has(res.removes, oid)) what.push("a removal");
+        if (has(res.marks, oid)) what.push("marked nothing fits");
+        handled.push({ oid: oid, items: list, what: what.join(", ") });
+      } else if (!list.length) nosug.push(oid);
+      else if (list[0][1] >= thr - 1e-9) rows.push({ oid: oid, items: list, tier: "tick" });
+      else if (list[0][1] >= floor - 1e-9) rows.push({ oid: oid, items: list, tier: "review" });
+      else below++;
+    }
+    return { rows: rows, handled: handled, nosug: nosug, below: below };
+  }
+  // a batch id the server accepts: b-YYYYMMDD-HHMMSS-xxxx
+  function newBatchId(d, rnd) {
+    function p(n, w) { n = String(n); while (n.length < w) n = "0" + n; return n; }
+    var r = "", al = "abcdefghijklmnopqrstuvwxyz0123456789", i;
+    for (i = 0; i < 4; i++) r += al.charAt(Math.floor(rnd() * 36));
+    return "b-" + d.getFullYear() + p(d.getMonth() + 1, 2) + p(d.getDate(), 2) + "-" + p(d.getHours(), 2) + p(d.getMinutes(), 2) + p(d.getSeconds(), 2) + "-" + r;
   }
 
   // is this card finished for the work queue: placed by hand (any valid add) or marked 'nothing fits'
@@ -106,7 +166,7 @@ var Manual = (function () {
     return "";
   }
 
-  return { resolve: resolve, done: done, search: search, goKey: goKey, norm: norm, NOFIT: NOFIT, PRECISE_SRC: PRECISE_SRC, SRC_WORD: SRC_WORD, LAYER_WORD: LAYER_WORD, STATE_WORD: STATE_WORD };
+  return { resolve: resolve, done: done, isBoilerplate: isBoilerplate, usableSuggestions: usableSuggestions, batchRows: batchRows, newBatchId: newBatchId, search: search, goKey: goKey, norm: norm, NOFIT: NOFIT, PRECISE_SRC: PRECISE_SRC, SRC_WORD: SRC_WORD, LAYER_WORD: LAYER_WORD, STATE_WORD: STATE_WORD };
 })();
 
 if (typeof module !== "undefined") module.exports = Manual;

@@ -160,15 +160,22 @@ var AbilityFind = (function () {
   }
 
   /* Hand placements (src/manual_common.py, reports/manualedit.js). ctx.hand(oid) -> null, or
-   *   {adds: [{name, layer, date, note}], fresh: bool (a pile card the tool newly placed), was: "why it was unplaced", confirmed: "tentative|annotation|tag" or "",
+   *   {adds: [{name, layer, date, note, batch}], fresh: bool (a pile card the tool newly placed), was: "why it was unplaced", confirmed: "tentative|annotation|tag" or "",
    *    nofit: {date, note} or null, removed: [{name}]}
    * A hand placement always says where the card was placed and that it was by hand; it is never described as a checked placement. */
+  // "(placed in a batch, score 0.93 from sig + tag, threshold 0.90)": a.batch = {id, kind, score, source, threshold}
+  function batchWords(b) {
+    var d;
+    if (!b) return "";
+    d = b.kind === "confirm" ? "confirmed in a batch" : b.kind === "reject" ? "rejected in a batch" : b.kind === "fallback" ? "placed in a batch from the low-confidence fallback list, found by " + String(b.source || "").replace("fallback:", "") : "placed in a batch";
+    return " (" + d + (b.score != null ? ", score " + Number(b.score).toFixed(2) : "") + (b.source && b.kind !== "fallback" ? " from " + String(b.source).replace(/\+/g, " + ") : "") + (b.threshold != null ? ", threshold " + Number(b.threshold).toFixed(2) : "") + ")";
+  }
   function handText(base, h) {
     var i, parts = [], s = "", a;
     if (h.adds && h.adds.length) {
       for (i = 0; i < h.adds.length; i++) {
         a = h.adds[i];
-        parts.push("“" + a.name + "” (" + a.layer + ")" + (a.date ? ", added " + String(a.date).slice(0, 10) : "") + (a.note ? " — “" + a.note + "”" : ""));
+        parts.push("“" + a.name + "” (" + a.layer + ")" + (a.date ? ", added " + String(a.date).slice(0, 10) : "") + batchWords(a.batch) + (a.note ? " — “" + a.note + "”" : ""));
       }
       if (h.fresh) {
         s = "Placed by hand: in " + parts.join("; ") + ". This is a hand placement, not a checked one, and it is counted on its own line." +
@@ -183,7 +190,7 @@ var AbilityFind = (function () {
     if (h.nofit) base += " Marked by hand: nothing fits" + (h.nofit.date ? " (" + String(h.nofit.date).slice(0, 10) + ")" : "") + ". That is a note for the parser work, not a placement.";
     if (h.removed && h.removed.length) {
       parts = [];
-      for (i = 0; i < h.removed.length; i++) parts.push("“" + h.removed[i].name + "”");
+      for (i = 0; i < h.removed.length; i++) parts.push("“" + h.removed[i].name + "”" + batchWords(h.removed[i].batch));
       base += " Removed by hand from " + parts.join("; ") + "; the generated counts are unchanged.";
     }
     return base;
