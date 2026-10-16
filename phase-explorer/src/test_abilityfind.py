@@ -13,6 +13,8 @@ Checks
      answer is non-empty and never says "undefined".
   3. Ordering: in a result list no out-of-scope entry precedes a real card.
   4. The named lookups given on the command line (default: the Part 4 list) are printed.
+  5. Hand placements (ctx.hand, optional): with no ctx.hand every answer is unchanged; with one, a hand-placed card says where it was placed and that it was by hand (a newly placed pile card,
+     a confirmed soft card, an edit on a precisely placed card, a 'nothing fits' mark, a removal); nothing says "checked", "verified" or "undefined".
 """
 import io
 import json
@@ -82,6 +84,34 @@ function orderCheck(q) {
 """
 
 
+HAND_JS = r"""
+function handCases(names) {
+  var out = [], i, r, e, h, a0, a1, kinds = {
+    fresh: { adds: [{ name: "Destroy a noncreature permanent", layer: "leaf", date: "2026-10-14T15:02:11", note: "artifact, enchantment or land" }], fresh: true, was: "only in a held group", confirmed: "", nofit: null, removed: [] },
+    confirmed: { adds: [{ name: "Gain life", layer: "leaf", date: "2026-10-14T15:02:11", note: "" }], fresh: false, was: "", confirmed: "tentative", nofit: null, removed: [] },
+    edit: { adds: [{ name: "Gain life", layer: "tentative group", date: "2026-10-14T15:02:11", note: "" }], fresh: false, was: "", confirmed: "", nofit: null, removed: [] },
+    nofit: { adds: [], fresh: false, was: "", confirmed: "", nofit: { date: "2026-10-14T15:02:11", note: "" }, removed: [] },
+    removed: { adds: [], fresh: false, was: "", confirmed: "", nofit: null, removed: [{ name: "Draw cards" }] }
+  };
+  for (i = 0; i < names.length; i++) {
+    e = AbilityFind.search(IDX, names[i], 1).matches[0];
+    a0 = AbilityFind.describe(IDX, e, CTX);
+    for (var k in kinds) {
+      CTX.hand = (function (kk) { return function (oid) { return kk; }; })(kinds[k]);
+      a1 = AbilityFind.describe(IDX, e, CTX);
+      delete CTX.hand;
+      out.push({ card: names[i], kind: k, base: a0.text, text: a1.text, rk: a1.kind });
+    }
+    CTX.hand = function () { return null; };
+    a1 = AbilityFind.describe(IDX, e, CTX);
+    delete CTX.hand;
+    out.push({ card: names[i], kind: "null", base: a0.text, text: a1.text, rk: a1.kind });
+  }
+  return out;
+}
+"""
+
+
 def main():
     tax = load("ability_taxonomy.json")
     lookup = load("ability_taxonomy_lookup.json")
@@ -125,6 +155,28 @@ def main():
             if q in {y["name"] for y in reals} and first not in real_ids:
                 print("FAIL the real card does not come first for %r" % q); ok = False
     print("name collisions checked:", len(inv), "(a left-out twin never ranks above a real card)")
+    hc = dukpy.evaljs([src, JS_CTX, HAND_JS, "handCases(%s)" % json.dumps(["Lightning Bolt", "Armageddon", "Yargle"])], lookup=lookup, tax=tax)
+    bad = []
+    for r in hc:
+        t = r["text"]
+        if r["kind"] == "null" and t != r["base"]:
+            bad.append("a null hand answer changed the text: " + r["card"])
+        if r["kind"] != "null" and ("undefined" in t or "verified" in t.lower() or " checked placement" in t.replace("not a checked one", "")):
+            bad.append("bad wording: " + t)
+        if r["kind"] in ("fresh", "confirmed", "edit") and not ("by hand" in t and "“" in t):
+            bad.append("%s/%s does not say where and by hand: %s" % (r["card"], r["kind"], t))
+        if r["kind"] == "fresh" and (r["rk"] != "hand" or "Placed by hand: in" not in t or "only in a held group" not in t):
+            bad.append("fresh answer lacks the place or the original reason: " + t)
+        if r["kind"] != "fresh" and r["kind"] != "null" and not t.startswith(r["base"]):
+            bad.append("%s/%s dropped the generated answer" % (r["card"], r["kind"]))
+        if r["kind"] == "nofit" and "nothing fits" not in t:
+            bad.append("nofit not stated")
+        if r["kind"] == "removed" and "Removed by hand" not in t:
+            bad.append("removal not stated")
+    print("hand-placement answers: %d cases, %d problems" % (len(hc), len(bad)), bad[:5])
+    for r in hc[:6]:
+        print("   -", r["card"], "[%s]" % r["kind"], r["text"][:200])
+    ok = ok and not bad
     for name in ("Boltfire", "Abbot of the Sacred Meeple", "Bolshack Dragon", "Dogsnail Engine", "Very Cryptic Command", "Red Herring", "Pick Your Poison",
                  "Fast // Furious", "Bind // Liberate", "Start // Finish"):
         r = dukpy.evaljs([src, JS_CTX, "lookupCard(%s)" % json.dumps(name)], lookup=lookup, tax=tax)

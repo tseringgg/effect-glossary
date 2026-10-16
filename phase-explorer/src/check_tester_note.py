@@ -63,6 +63,8 @@ def main():
           "build %s cards, %s%%" % (tgm["cards"], tgm["headline"]["with_tag"][1]))
     check("the page has the community-tag switch, the badge and the agreed wording", all(x in page for x in ("showtag", "Show community-tag groups", "b-tag", "Not checked against the card's parsed text", "Tag snapshot")) or all(x in page for x in ("showtag", "Show community-tag groups", "b-tag", "tagSnap")))
     check("the page has the annotation switch, the badge and the agreed wording", all(x in page for x in ("showann", "Show condition annotations", "b-ann", "did not read")))
+    check("the note's hand-placement line matches the page (switch, badge, own line)", "placed by hand" in note and "Show hand edits" in note and all(x in page for x in ("showhand", "Show hand edits", "b-hand", "placed by hand")))
+    check("the note's keyword-facet, hand-group and sibling lines match the page (filter wording, badges, switch)", all(x in note for x in ("By keyword", "narrower than Scryfall", "hand group", "Show sibling placements")) and all(x in page for x in ("cf-kw", "By keyword", "filter, not a placement", "b-hg", "showsib", "Show sibling placements")))
     print("NOTE  the note says 'constructed-legal'; the build's denominator is the card set after leaving out non-cards and cards not meant for constructed play (%s cards). It is not a legality test: "
           "it still holds, for example, cards of sets that have not released yet." % format(t["in_scope"], ","))
     sys.exit(0 if all(out) else 1)

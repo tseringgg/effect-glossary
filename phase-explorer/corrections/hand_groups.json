@@ -1,0 +1,17 @@
+{
+ "_comment": "Hand-defined groups, edited by hand (no endpoint writes this file). Format and rules: src/hand_groups.py. A rule only SUGGESTS cards in the edit panel; a member is a person's Add click. Never delete a group: set \"retired\": true (a tombstone), or every hand placement into it becomes an orphan.",
+ "version": 1,
+ "groups": {
+  "wins-or-loses-the-game": {
+   "name": "Wins, loses or draws the game, or stops it",
+   "note": "Cards whose own text makes a player win, lose or draw the game, stops a player winning or losing it, or replaces the loss. Read against all 107 text matches and the 10 tag-only cards on 2026-10-15: the poison reminder line (\"A player with ten or more poison counters loses the game.\") is excluded by the 'not' entry; the weak 'has lost the game' references are not matched; no tag rule (8 of the 10 tag-only cards were not about the game's result).",
+   "created": "2026-10-15",
+   "retired": false,
+   "rules": [
+    {"id": "r1", "type": "text", "confidence": 0.7,
+     "any": ["win the game", "wins the game", "lose the game", "loses the game", "the game is a draw"],
+     "not": ["poison counters"]}
+   ]
+  }
+ }
+}

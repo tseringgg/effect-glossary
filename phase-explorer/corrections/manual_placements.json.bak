@@ -1,0 +1,827 @@
+{
+ "_comment": "Hand placements, written by src/serve.py (POST /api/manual); hand-editable. Keyed by oracle_id, then group id (layer:id). action is add | remove | nofit (nofit = 'nothing fits', group id none:fits). source_at_edit is what the card's placement was when it was edited (filled by the server). 'clear' deletes an entry (undo); history keeps the trace. Read by src/build_manual_layer.py; the page reads this file directly.",
+ "version": 1,
+ "revision": 32,
+ "edits": {
+  "0fd114c4-092b-4e28-b0dc-ef529f3bc73e": {
+   "name": "Jeska's Will",
+   "groups": {
+    "leaf:ae668a407a": {
+     "action": "add",
+     "date": "2026-10-15T14:59:09",
+     "note": "",
+     "group_name": "Exile cards from the top of a library, then cast it",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "tent:g372fc4a5"
+      ],
+      "reason": {
+       "code": 3,
+       "text": "gap-test hold: part of the card was not read, so its abilities are held back"
+      }
+     }
+    },
+    "leaf:a19a3fcea6": {
+     "action": "add",
+     "date": "2026-10-15T14:59:14",
+     "note": "",
+     "group_name": "Exile cards from the top of a library, then allow casting it",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "tent:g372fc4a5"
+      ],
+      "reason": {
+       "code": 3,
+       "text": "gap-test hold: part of the card was not read, so its abilities are held back"
+      }
+     }
+    },
+    "leaf:a0f2fe4689": {
+     "action": "add",
+     "date": "2026-10-15T14:59:25",
+     "note": "",
+     "group_name": "Exile cards from the top of a library, then choose a card and allow casting it",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "tent:g372fc4a5"
+      ],
+      "reason": {
+       "code": 3,
+       "text": "gap-test hold: part of the card was not read, so its abilities are held back"
+      }
+     }
+    },
+    "leaf:ad8db78783": {
+     "action": "add",
+     "date": "2026-10-15T14:59:26",
+     "note": "",
+     "group_name": "Exile cards from the top of a library, then cast a chosen card",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "tent:g372fc4a5"
+      ],
+      "reason": {
+       "code": 3,
+       "text": "gap-test hold: part of the card was not read, so its abilities are held back"
+      }
+     }
+    },
+    "leaf:a6e7a39d8b": {
+     "action": "add",
+     "date": "2026-10-15T14:59:29",
+     "note": "",
+     "group_name": "Exile cards from the top of a library",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "tent:g372fc4a5"
+      ],
+      "reason": {
+       "code": 3,
+       "text": "gap-test hold: part of the card was not read, so its abilities are held back"
+      }
+     }
+    }
+   }
+  },
+  "1de1b591-a73f-4974-b507-8c63e07a0868": {
+   "name": "Thassa's Oracle",
+   "groups": {
+    "leaf:a6392600dc": {
+     "action": "add",
+     "date": "2026-10-15T15:42:13",
+     "note": "",
+     "group_name": "Look at the top cards — what it applies to isn't recorded",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "tent:gf0f44291"
+      ],
+      "reason": {
+       "code": 2,
+       "text": "dropped-condition hold: an ability may be missing a condition, so it is held back"
+      }
+     }
+    }
+   }
+  },
+  "37c06f89-db36-4937-9404-2b07cd22e1a6": {
+   "name": "Dawn's Truce",
+   "groups": {
+    "leaf:a326d51b00": {
+     "action": "add",
+     "date": "2026-10-15T15:40:43",
+     "note": "",
+     "group_name": "Objects you control have hexproof",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "loose:o-game-player"
+      ],
+      "reason": {
+       "code": 3,
+       "text": "gap-test hold: part of the card was not read, so its abilities are held back"
+      }
+     }
+    },
+    "leaf:a75b89b151": {
+     "action": "add",
+     "date": "2026-10-15T15:40:44",
+     "note": "",
+     "group_name": "Give a gift",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "loose:o-game-player"
+      ],
+      "reason": {
+       "code": 3,
+       "text": "gap-test hold: part of the card was not read, so its abilities are held back"
+      }
+     }
+    },
+    "tag:fbbfa76e-f105-4c52-89cd-8a084016f343": {
+     "action": "add",
+     "date": "2026-10-15T15:40:50",
+     "note": "",
+     "group_name": "Gives hexproof",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "loose:o-game-player"
+      ],
+      "reason": {
+       "code": 3,
+       "text": "gap-test hold: part of the card was not read, so its abilities are held back"
+      }
+     }
+    },
+    "tag:a8d1455c-431c-473d-ac75-507f048da34c": {
+     "action": "add",
+     "date": "2026-10-15T15:40:51",
+     "note": "",
+     "group_name": "Gives indestructible",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "loose:o-game-player"
+      ],
+      "reason": {
+       "code": 3,
+       "text": "gap-test hold: part of the card was not read, so its abilities are held back"
+      }
+     }
+    },
+    "tag:6d148a4b-b566-4533-a5ec-13ae6bbbaf87": {
+     "action": "add",
+     "date": "2026-10-15T15:41:12",
+     "note": "",
+     "group_name": "Protects all",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "loose:o-game-player"
+      ],
+      "reason": {
+       "code": 3,
+       "text": "gap-test hold: part of the card was not read, so its abilities are held back"
+      }
+     }
+    }
+   }
+  },
+  "463865bc-087e-477b-9e86-84e77f1ad931": {
+   "name": "Seedborn Muse",
+   "groups": {
+    "leaf:a7ffa6cc42": {
+     "action": "add",
+     "date": "2026-10-15T15:34:59",
+     "note": "",
+     "group_name": "Untap all lands you control",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "tent:gf5cb8d6b"
+      ],
+      "reason": {
+       "code": 3,
+       "text": "gap-test hold: part of the card was not read, so its abilities are held back"
+      }
+     }
+    },
+    "leaf:aed1c5643d": {
+     "action": "add",
+     "date": "2026-10-15T15:35:00",
+     "note": "",
+     "group_name": "Untap all creatures you control (restriction varies)",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "tent:gf5cb8d6b"
+      ],
+      "reason": {
+       "code": 3,
+       "text": "gap-test hold: part of the card was not read, so its abilities are held back"
+      }
+     }
+    },
+    "leaf:ad7a8b13ea": {
+     "action": "add",
+     "date": "2026-10-15T15:35:05",
+     "note": "",
+     "group_name": "Untap a permanent",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "tent:gf5cb8d6b"
+      ],
+      "reason": {
+       "code": 3,
+       "text": "gap-test hold: part of the card was not read, so its abilities are held back"
+      }
+     }
+    },
+    "leaf:a92df7c171": {
+     "action": "add",
+     "date": "2026-10-15T15:35:07",
+     "note": "",
+     "group_name": "Untap another permanent",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "tent:gf5cb8d6b"
+      ],
+      "reason": {
+       "code": 3,
+       "text": "gap-test hold: part of the card was not read, so its abilities are held back"
+      }
+     }
+    }
+   }
+  },
+  "4f9e07ae-6341-4b46-9f77-f17ab659d266": {
+   "name": "Guardian Project",
+   "groups": {
+    "leaf:ab2d4667c5": {
+     "action": "add",
+     "date": "2026-10-15T15:36:35",
+     "note": "",
+     "group_name": "Draw cards — who draws isn't recorded",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "loose:g0cd826ee"
+      ],
+      "reason": {
+       "code": 2,
+       "text": "dropped-condition hold: an ability may be missing a condition, so it is held back"
+      }
+     }
+    }
+   }
+  },
+  "67f43ac6-2a58-4b53-b5d7-0330e2a252e2": {
+   "name": "Reflecting Pool",
+   "groups": {
+    "leaf:a2e446df6a": {
+     "action": "add",
+     "date": "2026-10-15T14:59:53",
+     "note": "",
+     "group_name": "Add colorless mana",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [],
+      "reason": {
+       "code": 1,
+       "text": "no readable ability: the parser produced nothing the tool can group it on"
+      }
+     }
+    },
+    "leaf:accdf0b683": {
+     "action": "add",
+     "date": "2026-10-15T14:59:54",
+     "note": "",
+     "group_name": "Add one mana of any color",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [],
+      "reason": {
+       "code": 1,
+       "text": "no readable ability: the parser produced nothing the tool can group it on"
+      }
+     }
+    }
+   }
+  },
+  "6c2c8bf3-9bf8-4a86-89d3-3bb36260dc51": {
+   "name": "Azusa, Lost but Seeking",
+   "groups": {
+    "leaf:a1bdfa8b6d": {
+     "action": "add",
+     "date": "2026-10-15T15:37:41",
+     "note": "",
+     "group_name": "A player may play an additional land each turn",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "loose:o-static-other-rule"
+      ],
+      "reason": {
+       "code": 4,
+       "text": "only in a catch-all: its abilities fit only a catch-all or 'less common effects' group"
+      }
+     }
+    }
+   }
+  },
+  "9b271430-f53d-42d6-a547-2f286dd9bcb6": {
+   "name": "Putrefy",
+   "groups": {
+    "leaf:a3ddc2c432": {
+     "action": "add",
+     "date": "2026-10-15T15:40:00",
+     "note": "",
+     "group_name": "Destroy an artifact or creature",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "loose:g4be24b67"
+      ],
+      "reason": {
+       "code": 4,
+       "text": "only in a catch-all: its abilities fit only a catch-all or 'less common effects' group"
+      }
+     }
+    }
+   }
+  },
+  "ae120613-97d6-4393-b39d-c3e6c076f5d6": {
+   "name": "Deflecting Swat",
+   "groups": {
+    "tag:e53138be-0cb1-4fb1-9d78-090608d75e8e": {
+     "action": "add",
+     "date": "2026-10-15T14:56:49",
+     "note": "",
+     "group_name": "Change target",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "loose:o-choice-wrapper"
+      ],
+      "reason": {
+       "code": 4,
+       "text": "only in a catch-all: its abilities fit only a catch-all or 'less common effects' group"
+      }
+     }
+    },
+    "tag:5882dba5-2955-4c88-a399-604f1cf58784": {
+     "action": "add",
+     "date": "2026-10-15T14:57:27",
+     "note": "",
+     "group_name": "Can be cast for an alternative cost",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "loose:o-choice-wrapper"
+      ],
+      "reason": {
+       "code": 4,
+       "text": "only in a catch-all: its abilities fit only a catch-all or 'less common effects' group"
+      }
+     }
+    },
+    "leaf:a596d70382": {
+     "action": "add",
+     "date": "2026-10-15T14:58:11",
+     "note": "",
+     "group_name": "Change targets an ability on the stack permanent or spell on the stack permanent with has single target",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "loose:o-choice-wrapper"
+      ],
+      "reason": {
+       "code": 4,
+       "text": "only in a catch-all: its abilities fit only a catch-all or 'less common effects' group"
+      }
+     }
+    },
+    "leaf:a0b8fe2efd": {
+     "action": "add",
+     "date": "2026-10-15T14:58:13",
+     "note": "",
+     "group_name": "Change targets a card with has single target",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "loose:o-choice-wrapper"
+      ],
+      "reason": {
+       "code": 4,
+       "text": "only in a catch-all: its abilities fit only a catch-all or 'less common effects' group"
+      }
+     }
+    }
+   }
+  },
+  "f36d1d8b-8303-44a9-ab56-531931641ea2": {
+   "name": "Academy Manufactor",
+   "groups": {
+    "leaf:a6acedb8ef": {
+     "action": "add",
+     "date": "2026-10-15T15:34:25",
+     "note": "",
+     "group_name": "Create Food tokens",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [],
+      "reason": {
+       "code": 1,
+       "text": "no readable ability: the parser produced nothing the tool can group it on"
+      }
+     }
+    },
+    "leaf:a0f9f16b11": {
+     "action": "add",
+     "date": "2026-10-15T15:34:34",
+     "note": "",
+     "group_name": "Investigate",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [],
+      "reason": {
+       "code": 1,
+       "text": "no readable ability: the parser produced nothing the tool can group it on"
+      }
+     }
+    },
+    "leaf:a0501bc60e": {
+     "action": "add",
+     "date": "2026-10-15T15:34:35",
+     "note": "",
+     "group_name": "Create Treasure tokens",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [],
+      "reason": {
+       "code": 1,
+       "text": "no readable ability: the parser produced nothing the tool can group it on"
+      }
+     }
+    }
+   }
+  },
+  "fd949f82-fc10-4e37-8aa9-6c7569fe3c55": {
+   "name": "Akroma's Will",
+   "groups": {
+    "leaf:ab9b16c884": {
+     "action": "add",
+     "date": "2026-10-15T15:34:03",
+     "note": "",
+     "group_name": "A permanent gains a keyword until end of turn (number varies)",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "loose:g8dbb2cba",
+       "tent:gf4215b41"
+      ],
+      "reason": {
+       "code": 3,
+       "text": "gap-test hold: part of the card was not read, so its abilities are held back"
+      }
+     }
+    },
+    "leaf:affb5b345f": {
+     "action": "add",
+     "date": "2026-10-15T15:34:06",
+     "note": "",
+     "group_name": "A permanent gains lifelink until end of turn",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "loose:g8dbb2cba",
+       "tent:gf4215b41"
+      ],
+      "reason": {
+       "code": 3,
+       "text": "gap-test hold: part of the card was not read, so its abilities are held back"
+      }
+     }
+    },
+    "leaf:a59f5e0595": {
+     "action": "add",
+     "date": "2026-10-15T15:34:07",
+     "note": "",
+     "group_name": "A permanent gains double strike until end of turn",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "loose:g8dbb2cba",
+       "tent:gf4215b41"
+      ],
+      "reason": {
+       "code": 3,
+       "text": "gap-test hold: part of the card was not read, so its abilities are held back"
+      }
+     }
+    },
+    "leaf:a2c7c9de89": {
+     "action": "add",
+     "date": "2026-10-15T15:34:08",
+     "note": "",
+     "group_name": "A permanent gains indestructible until end of turn",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "loose:g8dbb2cba",
+       "tent:gf4215b41"
+      ],
+      "reason": {
+       "code": 3,
+       "text": "gap-test hold: part of the card was not read, so its abilities are held back"
+      }
+     }
+    },
+    "leaf:aa5e0e266c": {
+     "action": "add",
+     "date": "2026-10-15T15:34:12",
+     "note": "",
+     "group_name": "A creature gains a keyword until end of turn",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "loose:g8dbb2cba",
+       "tent:gf4215b41"
+      ],
+      "reason": {
+       "code": 3,
+       "text": "gap-test hold: part of the card was not read, so its abilities are held back"
+      }
+     }
+    }
+   }
+  }
+ },
+ "history": [
+  {
+   "seq": 1,
+   "date": "2026-10-15T14:56:49",
+   "op": "add",
+   "oid": "ae120613-97d6-4393-b39d-c3e6c076f5d6",
+   "group": "tag:e53138be-0cb1-4fb1-9d78-090608d75e8e",
+   "note": ""
+  },
+  {
+   "seq": 2,
+   "date": "2026-10-15T14:57:27",
+   "op": "add",
+   "oid": "ae120613-97d6-4393-b39d-c3e6c076f5d6",
+   "group": "tag:5882dba5-2955-4c88-a399-604f1cf58784",
+   "note": ""
+  },
+  {
+   "seq": 3,
+   "date": "2026-10-15T14:58:11",
+   "op": "add",
+   "oid": "ae120613-97d6-4393-b39d-c3e6c076f5d6",
+   "group": "leaf:a596d70382",
+   "note": ""
+  },
+  {
+   "seq": 4,
+   "date": "2026-10-15T14:58:13",
+   "op": "add",
+   "oid": "ae120613-97d6-4393-b39d-c3e6c076f5d6",
+   "group": "leaf:a0b8fe2efd",
+   "note": ""
+  },
+  {
+   "seq": 5,
+   "date": "2026-10-15T14:59:09",
+   "op": "add",
+   "oid": "0fd114c4-092b-4e28-b0dc-ef529f3bc73e",
+   "group": "leaf:ae668a407a",
+   "note": ""
+  },
+  {
+   "seq": 6,
+   "date": "2026-10-15T14:59:14",
+   "op": "add",
+   "oid": "0fd114c4-092b-4e28-b0dc-ef529f3bc73e",
+   "group": "leaf:a19a3fcea6",
+   "note": ""
+  },
+  {
+   "seq": 7,
+   "date": "2026-10-15T14:59:25",
+   "op": "add",
+   "oid": "0fd114c4-092b-4e28-b0dc-ef529f3bc73e",
+   "group": "leaf:a0f2fe4689",
+   "note": ""
+  },
+  {
+   "seq": 8,
+   "date": "2026-10-15T14:59:26",
+   "op": "add",
+   "oid": "0fd114c4-092b-4e28-b0dc-ef529f3bc73e",
+   "group": "leaf:ad8db78783",
+   "note": ""
+  },
+  {
+   "seq": 9,
+   "date": "2026-10-15T14:59:29",
+   "op": "add",
+   "oid": "0fd114c4-092b-4e28-b0dc-ef529f3bc73e",
+   "group": "leaf:a6e7a39d8b",
+   "note": ""
+  },
+  {
+   "seq": 10,
+   "date": "2026-10-15T14:59:53",
+   "op": "add",
+   "oid": "67f43ac6-2a58-4b53-b5d7-0330e2a252e2",
+   "group": "leaf:a2e446df6a",
+   "note": ""
+  },
+  {
+   "seq": 11,
+   "date": "2026-10-15T14:59:54",
+   "op": "add",
+   "oid": "67f43ac6-2a58-4b53-b5d7-0330e2a252e2",
+   "group": "leaf:accdf0b683",
+   "note": ""
+  },
+  {
+   "seq": 12,
+   "date": "2026-10-15T15:34:03",
+   "op": "add",
+   "oid": "fd949f82-fc10-4e37-8aa9-6c7569fe3c55",
+   "group": "leaf:ab9b16c884",
+   "note": ""
+  },
+  {
+   "seq": 13,
+   "date": "2026-10-15T15:34:06",
+   "op": "add",
+   "oid": "fd949f82-fc10-4e37-8aa9-6c7569fe3c55",
+   "group": "leaf:affb5b345f",
+   "note": ""
+  },
+  {
+   "seq": 14,
+   "date": "2026-10-15T15:34:07",
+   "op": "add",
+   "oid": "fd949f82-fc10-4e37-8aa9-6c7569fe3c55",
+   "group": "leaf:a59f5e0595",
+   "note": ""
+  },
+  {
+   "seq": 15,
+   "date": "2026-10-15T15:34:08",
+   "op": "add",
+   "oid": "fd949f82-fc10-4e37-8aa9-6c7569fe3c55",
+   "group": "leaf:a2c7c9de89",
+   "note": ""
+  },
+  {
+   "seq": 16,
+   "date": "2026-10-15T15:34:12",
+   "op": "add",
+   "oid": "fd949f82-fc10-4e37-8aa9-6c7569fe3c55",
+   "group": "leaf:aa5e0e266c",
+   "note": ""
+  },
+  {
+   "seq": 17,
+   "date": "2026-10-15T15:34:25",
+   "op": "add",
+   "oid": "f36d1d8b-8303-44a9-ab56-531931641ea2",
+   "group": "leaf:a6acedb8ef",
+   "note": ""
+  },
+  {
+   "seq": 18,
+   "date": "2026-10-15T15:34:34",
+   "op": "add",
+   "oid": "f36d1d8b-8303-44a9-ab56-531931641ea2",
+   "group": "leaf:a0f9f16b11",
+   "note": ""
+  },
+  {
+   "seq": 19,
+   "date": "2026-10-15T15:34:35",
+   "op": "add",
+   "oid": "f36d1d8b-8303-44a9-ab56-531931641ea2",
+   "group": "leaf:a0501bc60e",
+   "note": ""
+  },
+  {
+   "seq": 20,
+   "date": "2026-10-15T15:34:59",
+   "op": "add",
+   "oid": "463865bc-087e-477b-9e86-84e77f1ad931",
+   "group": "leaf:a7ffa6cc42",
+   "note": ""
+  },
+  {
+   "seq": 21,
+   "date": "2026-10-15T15:35:00",
+   "op": "add",
+   "oid": "463865bc-087e-477b-9e86-84e77f1ad931",
+   "group": "leaf:aed1c5643d",
+   "note": ""
+  },
+  {
+   "seq": 22,
+   "date": "2026-10-15T15:35:05",
+   "op": "add",
+   "oid": "463865bc-087e-477b-9e86-84e77f1ad931",
+   "group": "leaf:ad7a8b13ea",
+   "note": ""
+  },
+  {
+   "seq": 23,
+   "date": "2026-10-15T15:35:07",
+   "op": "add",
+   "oid": "463865bc-087e-477b-9e86-84e77f1ad931",
+   "group": "leaf:a92df7c171",
+   "note": ""
+  },
+  {
+   "seq": 24,
+   "date": "2026-10-15T15:36:35",
+   "op": "add",
+   "oid": "4f9e07ae-6341-4b46-9f77-f17ab659d266",
+   "group": "leaf:ab2d4667c5",
+   "note": ""
+  },
+  {
+   "seq": 25,
+   "date": "2026-10-15T15:37:41",
+   "op": "add",
+   "oid": "6c2c8bf3-9bf8-4a86-89d3-3bb36260dc51",
+   "group": "leaf:a1bdfa8b6d",
+   "note": ""
+  },
+  {
+   "seq": 26,
+   "date": "2026-10-15T15:40:00",
+   "op": "add",
+   "oid": "9b271430-f53d-42d6-a547-2f286dd9bcb6",
+   "group": "leaf:a3ddc2c432",
+   "note": ""
+  },
+  {
+   "seq": 27,
+   "date": "2026-10-15T15:40:43",
+   "op": "add",
+   "oid": "37c06f89-db36-4937-9404-2b07cd22e1a6",
+   "group": "leaf:a326d51b00",
+   "note": ""
+  },
+  {
+   "seq": 28,
+   "date": "2026-10-15T15:40:44",
+   "op": "add",
+   "oid": "37c06f89-db36-4937-9404-2b07cd22e1a6",
+   "group": "leaf:a75b89b151",
+   "note": ""
+  },
+  {
+   "seq": 29,
+   "date": "2026-10-15T15:40:50",
+   "op": "add",
+   "oid": "37c06f89-db36-4937-9404-2b07cd22e1a6",
+   "group": "tag:fbbfa76e-f105-4c52-89cd-8a084016f343",
+   "note": ""
+  },
+  {
+   "seq": 30,
+   "date": "2026-10-15T15:40:51",
+   "op": "add",
+   "oid": "37c06f89-db36-4937-9404-2b07cd22e1a6",
+   "group": "tag:a8d1455c-431c-473d-ac75-507f048da34c",
+   "note": ""
+  },
+  {
+   "seq": 31,
+   "date": "2026-10-15T15:41:12",
+   "op": "add",
+   "oid": "37c06f89-db36-4937-9404-2b07cd22e1a6",
+   "group": "tag:6d148a4b-b566-4533-a5ec-13ae6bbbaf87",
+   "note": ""
+  },
+  {
+   "seq": 32,
+   "date": "2026-10-15T15:42:13",
+   "op": "add",
+   "oid": "1de1b591-a73f-4974-b507-8c63e07a0868",
+   "group": "leaf:a6392600dc",
+   "note": ""
+  }
+ ]
+}

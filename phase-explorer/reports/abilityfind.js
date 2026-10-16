@@ -152,10 +152,44 @@ var AbilityFind = (function () {
       res.text = "Not a card in this tool: " + (idx.lookup.oos[x[0]] || idx.lookup.oos.unlisted) + ".";
     }
     if (res.recovered) res.text += " (Recovered card: the original data had dropped it by mistake; it was regenerated and is read like any other card.)";
+    if (ctx.hand) {
+      h = ctx.hand(entry[0]);
+      if (h) { res.hand = h; res.text = handText(res.text, h); if (h.fresh) res.kind = "hand"; }
+    }
     return res;
   }
 
-  return { build: build, search: search, exact: exact, describe: describe, makeNorm: makeNorm };
+  /* Hand placements (src/manual_common.py, reports/manualedit.js). ctx.hand(oid) -> null, or
+   *   {adds: [{name, layer, date, note}], fresh: bool (a pile card the tool newly placed), was: "why it was unplaced", confirmed: "tentative|annotation|tag" or "",
+   *    nofit: {date, note} or null, removed: [{name}]}
+   * A hand placement always says where the card was placed and that it was by hand; it is never described as a checked placement. */
+  function handText(base, h) {
+    var i, parts = [], s = "", a;
+    if (h.adds && h.adds.length) {
+      for (i = 0; i < h.adds.length; i++) {
+        a = h.adds[i];
+        parts.push("“" + a.name + "” (" + a.layer + ")" + (a.date ? ", added " + String(a.date).slice(0, 10) : "") + (a.note ? " — “" + a.note + "”" : ""));
+      }
+      if (h.fresh) {
+        s = "Placed by hand: in " + parts.join("; ") + ". This is a hand placement, not a checked one, and it is counted on its own line." +
+          (h.was ? " Before that it was not yet organized: " + h.was + "." : "") + " The build itself still lists the card as not yet organized.";
+        base = s;
+      } else {
+        s = " Also placed by hand: in " + parts.join("; ") + "." +
+          (h.confirmed ? " It was already shown as " + h.confirmed + "; it stays counted there, and the hand placement is counted as confirmed." : " This edit is not counted in any figure.");
+        base += s;
+      }
+    }
+    if (h.nofit) base += " Marked by hand: nothing fits" + (h.nofit.date ? " (" + String(h.nofit.date).slice(0, 10) + ")" : "") + ". That is a note for the parser work, not a placement.";
+    if (h.removed && h.removed.length) {
+      parts = [];
+      for (i = 0; i < h.removed.length; i++) parts.push("“" + h.removed[i].name + "”");
+      base += " Removed by hand from " + parts.join("; ") + "; the generated counts are unchanged.";
+    }
+    return base;
+  }
+
+  return { build: build, search: search, exact: exact, describe: describe, makeNorm: makeNorm, handText: handText };
 })();
 
 if (typeof module !== "undefined") module.exports = AbilityFind;

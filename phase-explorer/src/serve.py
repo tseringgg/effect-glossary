@@ -14,6 +14,9 @@ import socketserver
 import sys
 import webbrowser
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import manual_common as MC
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 8765
 URL = f"http://localhost:{PORT}/reports/browse.html"
@@ -92,8 +95,61 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     # decision cannot live in localStorage, or branch_leaves.py would never see
     # it and resolved entries would come straight back. One small endpoint is
     # the whole mechanism. Dev-only, bound to 127.0.0.1, same as the server.
+    # ---- hand placements (corrections/manual_placements.json) -----------
+    # POST /api/manual {oid, group, action: add|remove|nofit|clear, note}. The server validates against build/manual_index.json, fills source_at_edit and the date itself,
+    # serializes the read-modify-write and writes through a temp file + rename. See src/manual_common.py. GET /api/manual/ping tells the page the endpoint exists.
+    def send_json(self, status, obj):
+        out = json.dumps(obj, ensure_ascii=False).encode("utf-8")
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Content-Length", str(len(out)))
+        self.send_header("Cache-Control", "no-store")
+        self.end_headers()
+        self.wfile.write(out)
+
+    def local_host(self):
+        host = (self.headers.get("Host") or "").rsplit(":", 1)[0].strip("[]")
+        return host in ("localhost", "127.0.0.1", "::1")
+
+    def do_GET(self):
+        if self.path.split("?")[0].rstrip("/") == "/api/manual/ping":
+            idx = MC.load_index()
+            try:
+                rev = MC.load_doc()["revision"]
+            except ValueError:
+                rev = None
+            self.send_json(200, {"ok": True, "enabled": idx is not None, "revision": rev})
+            return
+        super().do_GET()
+
+    def do_manual(self):
+        try:
+            if not self.local_host():
+                raise MC.ApiError(403, "local requests only")
+            if self.headers.get("X-Manual-Edit") != "1" or "application/json" not in (self.headers.get("Content-Type") or ""):
+                raise MC.ApiError(400, "need Content-Type: application/json and X-Manual-Edit: 1")
+            try:
+                n = int(self.headers.get("Content-Length") or 0)
+            except ValueError:
+                raise MC.ApiError(400, "bad Content-Length")
+            if n > MC.MAX_BODY:
+                self.rfile.read(min(n, 1 << 20))      # drain (bounded) so the client can read the 413 instead of a reset
+                raise MC.ApiError(413, "body is %d bytes; the limit is %d" % (n, MC.MAX_BODY))
+            try:
+                body = json.loads(self.rfile.read(n) or b"{}")
+            except Exception as exc:
+                raise MC.ApiError(400, "bad JSON: %s" % exc)
+            self.send_json(200, MC.apply_edit(body))
+        except MC.ApiError as exc:
+            self.send_json(exc.status, {"ok": False, "error": exc.msg})
+        except Exception as exc:                      # never a silent failure: the page shows NOT SAVED with this text
+            self.send_json(500, {"ok": False, "error": "server error: %s" % exc})
+
     def do_POST(self):
         route = self.path.rstrip("/")
+        if route == "/api/manual":
+            self.do_manual()
+            return
         if route == "/api/phrase":
             self.do_phrase()
             return

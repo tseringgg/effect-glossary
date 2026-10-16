@@ -28,6 +28,20 @@ python src/build_tag_layer.py             # -> build/tag_placements.json, build/
 python src/check_tag_names.py             # defect scan, vocabulary (allow list in corrections/tag_names.json), claims check, uniqueness over the group names; `draw` / `show` for the hand check of 30 names
 python src/check_tag_layer_build.py       # checks the finished tag file against the raw tag snapshot and the other layers (members carry the tag, floor, deny list, scope, figures, reconciliation)
 python src/check_tag_layer.py draw        # fresh placement check of the tag layer (seed 20261039, top 3,000 oversampled): `show 1 40`, write build/tag_check_reads.json, `reveal`
+python src/build_manual_layer.py          # -> build/manual_index.json, build/manual_layer.json, build/manual_ids_seen.json, reports/manual-placements.md (the hand-placement layer: group inventory, card index, hand placements resolved from corrections/manual_placements.json; seconds; flag MANUAL_PLACEMENTS)
+python src/build_manual_suggestions.py    # -> build/manual_suggestions.json (the top 5 suggestions per not-yet-organized card for the edit panel; about a minute; run after build_manual_layer.py)
+python src/serve.py                       # the page AND the save endpoint (POST /api/manual); a plain static server cannot save, and the page then says NOT SAVED
+python src/test_manual_endpoint.py        # the endpoint with good and bad input (temp file; the real corrections file is never touched)
+python src/test_manual_logic.py           # reports/manualedit.js (in a JS engine) against the Python resolver on the real data
+python src/test_manual_browser.py         # the edit panel, queue and flags in headless Edge (temp corrections file)
+python src/check_manual_layer.py snapshot before.json   # hash every file; `verify before.json` after a change; `flag` (MANUAL_PLACEMENTS off/on, two identical builds); `reconcile`
+python src/build_keyword_facet.py        # -> build/keyword_facet.json (the keyword facet: a FILTER, not a placement; flag KEYWORD_FACET; seconds)
+python src/build_hand_groups.py           # -> build/hand_group_hits.json, reports/hand-groups.md (rules of corrections/hand_groups.json evaluated over every card; suggestions only; flag HAND_GROUPS; run after the facet, before build_manual_layer.py and build_manual_suggestions.py)
+python src/build_sibling.py               # -> build/sibling_placements.json, build/sibling_ledger.json (tentative sibling-of-leaf placements; flag SIBLING_RULE; about a minute; run before build_manual_layer.py)
+python src/test_keyword_facet.py          # the facet against an independent recount; the flag; identical builds
+python src/test_hand_groups.py            # the rule evaluator, validation, retirement, the seeded group, the endpoint rules for hand:<slug> ids
+python src/test_sibling.py                # the sibling rule against an independent re-derivation; reversibility; the flag (about three minutes)
+python src/test_features_browser.py       # facet, hand groups and sibling placements in headless Edge (temp corrections file)
 python src/check_tentative.py draw        # fresh check of 40 tentative placements (seed 20261020): `show`, write build/tentative_check_reads.json, `reveal`, then `result`
 python src/check_loose_groups.py draw     # hand checks for that layer: seeded draws, then `reveal` after the reads file is written (see the report)
 python src/test_browse_browser.py         # drives reports/browse.html in headless Edge (needs msedge and websocket-client)
@@ -131,6 +145,29 @@ clean parses at the nearest leaf centroid in the clustering's own feature space
 layer: centroids come from clustered members only, and no leaf, branch, sector,
 map or cohesion number changes. Browse shows those cards with a dashed
 `nearby` chip and a separate "+N nearby" count, and can hide them.
+
+## Placing cards by hand (reports/browse.html, the edit panel and the "To place" tab)
+
+For the cards the tool had nowhere to put (the "Not yet organized" pile) and for cards that are only placed softly. Parser work is a later phase; this is how those cards become findable now.
+
+* **The panel** sits to the right of the card image on a card page (below the image on a phone): the card's groups now, each with its source (precise, tentative, annotation, tag, loose, by hand) and a Remove button; a search box over 1,901 group names; up to 5 **suggestions**
+  with a reason and a score; a note; "Nothing fits". A suggestion is a label, never a placement: nothing is placed until Add is pressed. **"To place"** is the work queue: the 1,335 pile cards (1,175 while "Show condition annotations" is on, because the 160 gap-test cards then count as
+  annotated), most popular first, filtered by why the card is not placed; soft-placed cards are an opt-in filter.
+* **Where it is saved:** `corrections/manual_placements.json` only, by `POST /api/manual` in `src/serve.py` (validated against `build/manual_index.json`, written through a temp file and a rename, one writer at a time). Keys are the oracle id and a group id `layer:id`
+  (`leaf`, `tent`, `loose`, `tag`, `kw`, `rp`); actions are `add`, `remove` and `nofit` ("nothing fits", group `none:fits`); each entry keeps its date, note, the group's name and what the card's placement was when it was edited (`source_at_edit`, with the original reason it was unplaced, for the parser phase).
+  An undo deletes the entry; `history` keeps the trace. No generated file is ever edited. A server without the endpoint shows **NOT SAVED** (red badge, banner, Retry, Download), and unsaved edits are never counted.
+* **Counting** (its own line, never added to the six figures): *placed by hand* = pile cards the tool newly placed, each once; *confirmed by hand* = tentative / annotation / tag cards a person confirmed (they stay in their own figure; shown as a sub-count); edits on precisely placed cards count nowhere;
+  *marked "nothing fits"* is its own count and never a placement; a removal is recorded and shown and changes no generated count. Reconciliation: placed + tentative + annotation + tag + by hand + unorganized + not cards = 38,921.
+* **Offered groups:** leaf, tentative, the 48 loose groups that are not tentative, tag, and the keyword and replacement blocks (1,901). Not offered: the loose catch-alls and "less common effects" buckets, annotation groups (views of a leaf or tentative group).
+* **Switches:** `MANUAL_PLACEMENTS` in `src/build_manual_layer.py` (off: nothing is written and the build is byte-for-byte the one without this layer) and the page checkbox "Show hand edits" (off: every hand edit, badge, count and the panel are hidden).
+* **Every build** lists orphaned edits (a group or card no longer in the build) and renamed groups in the console, `build/manual_layer.json` and `reports/manual-placements.md`, and the page says so; an orphaned edit is never remapped or dropped.
+
+## Keyword facet, hand-defined groups and sibling placements
+
+* **Keyword facet** (`build/keyword_facet.json`): a "Keyword" filter on the Cards tab and a "By keyword" list. **A filter, not a placement:** it changes no group and no figure. The parser's keyword list (172 names; 167 with 5 or more cards; 12,906 cards carry one) is narrower than Scryfall's (836 names, which also include keyword actions and ability words).
+* **Hand-defined groups** (`corrections/hand_groups.json`, hand-edited): ids `hand:<slug>` (never derived from anything; retire with `"retired": true`, never delete), rules of type `text` (literal phrases with a sentence-level `not`), `keyword` and `tag`. A rule only **suggests**; a member is an Add click, counted on the "placed by hand" line. Dashed "hand group" badge; the groups are in the panel's search. Seeded with `hand:wins-or-loses-the-game` (107 cards; the poison reminder is excluded by its `not` entry).
+* **Sibling placements** (`build/sibling_placements.json`): 27 abilities on 27 cards whose signature equals a leaf's but which the grouping rule left out because they are the plain variant. **Tentative**, badge "sibling", own switch "Show sibling placements", counted in no figure, removable in the edit panel.
+* Each has a build flag (`KEYWORD_FACET`, `HAND_GROUPS`, `SIBLING_RULE`); off writes nothing and removes the file. None changes a leaf, leaf formation, a threshold, the parser or any of the six figures.
 
 ## Two pages
 
@@ -424,3 +461,5 @@ looks wrong during real use.
 - [PROVENANCE.md](PROVENANCE.md) — snapshot identity
 - [corrections/corrections.json](corrections/corrections.json) — hand-maintained
   correction log, [corrections/SCHEMA.md](corrections/SCHEMA.md) for its format
+- [corrections/manual_placements.json](corrections/manual_placements.json) — hand placements (written by `src/serve.py`; created by the first edit; see "Placing cards by hand" above),
+  [reports/manual-placements.md](reports/manual-placements.md) — generated: counts, orphaned edits, the unplaced reason of every hand-handled card (for the parser phase)
