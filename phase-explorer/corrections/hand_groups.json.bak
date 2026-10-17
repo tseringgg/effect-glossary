@@ -1,0 +1,149 @@
+{
+ "_comment": "Hand-defined groups, edited by hand (no endpoint writes this file). Format and rules: src/hand_groups.py. A rule only SUGGESTS cards in the edit panel; a member is a person's Add click. Never delete a group: set \"retired\": true (a tombstone), or every hand placement into it becomes an orphan.",
+ "version": 1,
+ "groups": {
+  "wins-or-loses-the-game": {
+   "name": "Wins, loses or draws the game, or stops it",
+   "note": "Cards whose own text makes a player win, lose or draw the game, stops a player winning or losing it, or replaces the loss. Read against all 107 text matches and the 10 tag-only cards on 2026-10-15: the poison reminder line (\"A player with ten or more poison counters loses the game.\") is excluded by the 'not' entry; the weak 'has lost the game' references are not matched; no tag rule (8 of the 10 tag-only cards were not about the game's result).",
+   "created": "2026-10-15",
+   "retired": false,
+   "rules": [
+    {"id": "r1", "type": "text", "confidence": 0.7,
+     "any": ["win the game", "wins the game", "lose the game", "loses the game", "the game is a draw"],
+     "not": ["poison counters"]}
+   ]
+  },
+  "votes-an-additional-time": {
+   "name": "Votes an additional time",
+   "note": "Read on 2026-10-16 against every match in the 33,183-card scope; no false hit found. Cards that give their controller an extra vote while voting (4 matches: The Valeyard, Ballot Broker, Brago's Representative and Tivit). The broader group is the community-tag group \"Voting\" (25 cards), which fits these cards too; this one is named for what the cards do. Phase 2: the parser has no field for a vote count or for extra votes.",
+   "created": "2026-10-16",
+   "retired": false,
+   "rules": [
+    {"id": "r1", "type": "text", "confidence": 0.7,
+     "any": ["vote an additional time", "additional vote", "vote twice"],
+     "not": []}
+   ]
+  },
+  "opens-or-visits-attractions": {
+   "name": "Opens or visits Attractions",
+   "note": "Read on 2026-10-16 against every match in the 33,183-card scope; no false hit found. Cards that open, visit or count Attractions (Unfinity). Phase 2: the parser does not know Attractions, 'open an Attraction' or 'visit'.",
+   "created": "2026-10-16",
+   "retired": false,
+   "rules": [
+    {"id": "r1", "type": "text", "confidence": 0.7,
+     "any": ["attraction"],
+     "not": []}
+   ]
+  },
+  "cares-about-the-draft": {
+   "name": "Cares about the draft",
+   "note": "Read on 2026-10-16 against every match in the 33,183-card scope; no false hit found. Conspiracy-style draft-matters cards (draft this card face up, reveal as you draft, note who passed it). The 'not' entry 'spellbook' leaves out the Alchemy cards that say 'draft a card from its spellbook', a different mechanic. Phase 2: draft-time rules are outside the game rules the parser models.",
+   "created": "2026-10-16",
+   "retired": false,
+   "rules": [
+    {"id": "r1", "type": "text", "confidence": 0.7,
+     "any": ["draft this card", "as you draft", "you drafted", "cards you drafted", "during the draft", "draft each card", "booster pack", "drafted this"],
+     "not": ["spellbook"]}
+   ]
+  },
+  "conspiracy-starts-in-command-zone": {
+   "name": "Conspiracy that starts in the command zone",
+   "note": "Read on 2026-10-16 against every match in the 33,183-card scope; no false hit found. Conspiracy cards that start the game in the command zone, face up or face down (hidden and double agenda). Phase 2: no field for starting the game with a card in the command zone.",
+   "created": "2026-10-16",
+   "retired": false,
+   "rules": [
+    {"id": "r1", "type": "text", "confidence": 0.7,
+     "any": ["start the game with this conspiracy", "conspiracy face up in the command zone"],
+     "not": []}
+   ]
+  },
+  "plays-for-ante": {
+   "name": "Plays for ante",
+   "note": "Read on 2026-10-16 against every match in the 33,183-card scope; no false hit found. Cards that say 'remove this card from your deck before playing if you're not playing for ante' and ante a card. Read the first version of this rule (\"ante \") on 2026-10-16: it matched 'enchanted' on 1,435 cards, so the phrases are the four above, which match 9 cards. Phase 2: the ante zone is not modelled.",
+   "created": "2026-10-16",
+   "retired": false,
+   "rules": [
+    {"id": "r1", "type": "text", "confidence": 0.7,
+     "any": ["playing for ante", "in the ante", "antes the top", "the ante"],
+     "not": []}
+   ]
+  },
+  "cares-about-face-down-creatures": {
+   "name": "Cares about face-down creatures",
+   "note": "Read on 2026-10-16 against every match in the 33,183-card scope; no false hit found. Cards that look at, turn up, count, or give something to face-down creatures or permanents, without being morph, manifest or disguise cards themselves. No 'not' list: one that listed morph or manifest removed two true matches. Phase 2: no field for the face-down state of another permanent.",
+   "created": "2026-10-16",
+   "retired": false,
+   "rules": [
+    {"id": "r1", "type": "text", "confidence": 0.6,
+     "any": ["face-down creature", "face-down creatures", "face-down permanent"],
+     "not": []}
+   ]
+  },
+  "gives-landwalk": {
+   "name": "Gives landwalk",
+   "note": "Read on 2026-10-16 against every match in the 33,183-card scope; no false hit found. Cards that give a creature a landwalk ability, for a turn or for good (35 matches; 29 are already placed in groups for gaining a keyword). Split from 'Ignores or removes landwalk' on 2026-10-16. Phase 2: landwalk is a keyword to the parser, but a land type chosen or given is not.",
+   "created": "2026-10-16",
+   "retired": false,
+   "rules": [
+    {"id": "r1", "type": "text", "confidence": 0.6,
+     "any": ["gains islandwalk", "gains swampwalk", "gains forestwalk", "gains mountainwalk", "gains plainswalk", "gain islandwalk", "gain swampwalk", "gain forestwalk", "gain mountainwalk", "gain plainswalk", "has landwalk", "have landwalk", "landwalk of"],
+     "not": []}
+   ]
+  },
+  "ignores-or-removes-landwalk": {
+   "name": "Ignores or removes landwalk",
+   "note": "Read on 2026-10-16 against every match in the 33,183-card scope; no false hit found. Cards that let creatures with landwalk be blocked as though they didn't have it, or take landwalk away (10 matches). Phase 2: no field for 'blocked as though it didn't have' an ability.",
+   "created": "2026-10-16",
+   "retired": false,
+   "rules": [
+    {"id": "r1", "type": "text", "confidence": 0.7,
+     "any": ["blocked as though they didn't have", "lose flying and islandwalk", "lose all landwalk", "loses landwalk"],
+     "not": []}
+   ]
+  },
+  "cast-only-after-another-spell": {
+   "name": "Can only be cast after another spell",
+   "note": "Read on 2026-10-16 against every match in the 33,183-card scope; no false hit found. Spells that can only be cast if you have cast another spell this turn (3 cards, all unplaced when read). Phase 2: the parser keeps no condition on casting a spell.",
+   "created": "2026-10-16",
+   "retired": false,
+   "rules": [
+    {"id": "r1", "type": "text", "confidence": 0.7,
+     "any": ["only if you've cast another spell this turn", "only if you have cast another spell this turn"],
+     "not": []}
+   ]
+  },
+  "cant-have-counters-put-on-it": {
+   "name": "Can't have counters put on it",
+   "note": "Read on 2026-10-16 against every match in the 33,183-card scope; no false hit found. Cards that cannot have counters put on them (4 matches). Phase 2: counter prevention is not a field.",
+   "created": "2026-10-16",
+   "retired": false,
+   "rules": [
+    {"id": "r1", "type": "text", "confidence": 0.7,
+     "any": ["can't have counters put on", "can't have counters"],
+     "not": []}
+   ]
+  },
+  "stops-library-searches": {
+   "name": "Stops or limits library searches",
+   "note": "Read on 2026-10-16 against every match in the 33,183-card scope; no false hit found. Cards that stop players searching libraries or cut a search to the top cards (5 matches; the pool outside the pile is Mindlock Orb, Leonin Arbiter and Shadow of Doubt). Phase 2: search restrictions are not a field.",
+   "created": "2026-10-16",
+   "retired": false,
+   "rules": [
+    {"id": "r1", "type": "text", "confidence": 0.7,
+     "any": ["can't search", "searches the top", "would search a library", "cannot search"],
+     "not": []}
+   ]
+  },
+  "play-with-hands-revealed": {
+   "name": "Players play with their hands revealed",
+   "note": "Read on 2026-10-16 against every match in the 33,183-card scope; no false hit found. Cards that make a player play with their hand revealed (8 matches). Phase 2: a continuing 'reveal your hand' state is not a field.",
+   "created": "2026-10-16",
+   "retired": false,
+   "rules": [
+    {"id": "r1", "type": "text", "confidence": 0.7,
+     "any": ["hands revealed", "hand revealed", "play with their hands", "plays with their hand"],
+     "not": []}
+   ]
+  }
+ }
+}

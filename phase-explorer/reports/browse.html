@@ -39,6 +39,9 @@ section#panel { padding:12px 16px; overflow:auto; max-height: calc(100vh - 140px
 .badge { font-size:10px; padding:0 5px; border-radius:8px; margin-left:4px; white-space:nowrap; }
 .b-broad { background:var(--broadbg); color:var(--broad); border:1px solid var(--broad); }
 .b-auto { color:var(--muted); border:1px dashed var(--line); }
+.b-lowc { color:var(--broad); border:1px solid var(--broad); background:var(--broadbg); }
+.sugc { border-left:3px solid var(--line); margin:4px 0; padding-left:6px; }
+.sugm > summary { cursor:pointer; color:var(--muted); font-size:90%; }
 .b-tent { color:var(--tent); font-style:italic; border:1px solid var(--tent); background:repeating-linear-gradient(135deg, var(--tentbg) 0 4px, transparent 4px 8px); }
 .b-ann { color:var(--ann); border:1px dotted var(--ann); background:transparent; }
 .b-ann::before { content:"? "; font-weight:700; }
@@ -488,7 +491,45 @@ function recomputeHand() {
 }
 function persistUnsaved() { try { localStorage.setItem("manualUnsaved", JSON.stringify(Object.values(UNSAVED).map(u => u.payload))); } catch (e) { /* ignore */ } }
 let MSPROMISE = null;
-function needSuggestions() { return MSPROMISE || (MSPROMISE = (async () => { try { MS = await J("manual_suggestions.json"); } catch (e) { MS = { cards: {} }; } })()); }
+function needSuggestions() { return MSPROMISE || (MSPROMISE = (async () => { await loadText(); if (TXT) return; try { MS = await J("manual_suggestions.json"); } catch (e) { MS = { cards: {} }; } })()); }
+// ---- text suggestions (build/text_sug/*, switched by TEXT_SUGGESTIONS in src/build_text_suggestions.py; absent when it is off, and then nothing below runs). The merged rows of the queue cards come in one file; every other card's rows
+// come on demand, one small shard per card plus the few member-line shards it quotes. A row whose sources are only text / keyword name is low confidence and is never ticked for you.
+let TXT = null;
+const TXTROWS = new Map(), TSH = new Map(), TLN = new Map(), TLNV = new Map();
+async function loadText() {
+  try { const m = await J("text_sug/meta.json"), q = await J("text_sug/queue.json"); TXT = { meta: m }; MS = { cards: q.cards, label: q.label }; } catch (e) { TXT = null; }
+}
+function needLineShards(ids) {
+  const per = TXT.meta.line_shard, ps = [];
+  for (const id of new Set(ids)) { const n = Math.floor(id / per); if (!TLN.has(n)) TLN.set(n, J("text_sug/l/" + n + ".json").then(a => { TLNV.set(n, a); }, () => { TLNV.set(n, []); })); ps.push(TLN.get(n)); }
+  return Promise.all(ps);
+}
+const refsOf = rows => rows.filter(r => r.length > 6).map(r => r[6]);
+async function needTextFor(oid) {                       // rows of any card (queue cards are in MS already); shard and member lines loaded before the page draws
+  if (!TXT) return;
+  let rows = MS.cards[oid];
+  if (!rows) {
+    if (TXTROWS.has(oid)) return;
+    const k = oid.slice(0, 2);
+    if (!TSH.has(k)) TSH.set(k, J("text_sug/c/" + k + ".json").catch(() => ({})));
+    const sh = await TSH.get(k);
+    rows = (sh[oid] || []).map(r => r[2] < 0 ? [TXT.meta.groups[r[0]], r[1] / 1000, "kw", TXT.meta.engine_v2 ? r[5] : "the card carries the keyword " + r[5] + " (keyword block, exact name)"] : [TXT.meta.groups[r[0]], r[1] / 1000, "text", "", r[2], r[3], r[4]]);
+    TXTROWS.set(oid, rows);
+  }
+  await needLineShards(refsOf(rows));
+}
+const sugRowsOf = oid => (MS && MS.cards[oid]) || TXTROWS.get(oid) || [];
+function rowWhy(oid, r) {                               // the reason: the existing sources' own words, then the matching line of the text source
+  let w = r[3] || "";
+  if (r.length > 6 && CARDS && CARDS[oid]) {
+    const per = TXT.meta.line_shard, a = TLNV.get(Math.floor(r[6] / per)), m = a && a[r[6] % per];
+    if (m) { const own = (CARDS[oid].t || "").substr(r[4], r[5]).replace(/\s+/g, " "), tw = `its line “${own}” is closest to “${m[0]}” (${m[1]}) in this group`; w = w ? w + "; " + tw : tw; }
+  }
+  return w;
+}
+const SRCNAME = { sig: "signature", tag: "community tag", loose: "loose group", rule: "hand-group rule", text: "text similarity", kw: "keyword name" };
+const srcWords = s => s.split("+").map(x => SRCNAME[x] || x).join(" + ");
+const lowBadge = s => Manual.isTextOnly(s) ? ` <span class="badge b-lowc" title="found by text alone: a weak hint, never ticked for you">low confidence</span>` : "";
 async function postEdit(payload) {
   try {
     const r = await fetch("../api/manual", { method: "POST", headers: { "Content-Type": "application/json", "X-Manual-Edit": "1" }, body: JSON.stringify(payload) });
@@ -588,14 +629,18 @@ function gline(gid) {
 function sugHTML(oid) {
   if (!MS) return `<div class="sub">Loading suggestions…</div>`;
   const c = MI.cards[oid], adds = MRESV.adds[oid] || {};
-  const rows = (MS.cards[oid] || []).filter(r => MI.groups[r[0]] && !adds[r[0]] && !c[3].some(x => x[0] === r[0] && Manual.PRECISE_SRC.indexOf(x[1]) >= 0)).slice(0, 5);
-  if (!rows.length) return `<div class="sub">No suggestion for this card. Use the search above.</div>`;
-  return rows.map(r => {
+  const usable = sugRowsOf(oid).filter(r => MI.groups[r[0]] && !adds[r[0]] && !c[3].some(x => x[0] === r[0] && Manual.PRECISE_SRC.indexOf(x[1]) >= 0));
+  const v2 = !!(TXT && TXT.meta.engine_v2), rows = v2 ? usable : usable.slice(0, 5);
+  if (!rows.length) return `<div class="sub">${c[1] === "v" ? "This card has no rules text, so there is nothing to suggest from: it is in the “No abilities” block (see Groups now)." : "No suggestion for this card. Use the search above."}</div>`;
+  const one = r => {
     const g = MI.groups[r[0]], held = c[3].find(x => x[0] === r[0]);
     return `<div class="sug"><span class="score" title="how well the card and the group agree, 0 to 1; not a probability">${Number(r[1]).toFixed(2)}</span> <span class="lnk gname" data-go="${esc(Manual.goKey(r[0]))}">${esc(g[0])}</span> ` +
-      `${layBadge(g[3])}<span class="sub">${fmt(g[1])} ${g[3] === "hand" ? "rule matches" : "cards"} · ${esc(r[2].split("+").map(s => ({ sig: "signature", tag: "community tag", loose: "loose group", rule: "hand-group rule" }[s] || s)).join(" + "))}${held ? " · already shown here as " + esc(SRCW[held[1]]) + "; Add confirms it by hand" : ""}</span>` +
-      `<button class="eb" data-act="add" data-g="${esc(r[0])}">Add</button><div class="why">${esc(r[3])}</div></div>`;
-  }).join("");
+      `${layBadge(g[3])}<span class="sub">${fmt(g[1])} ${g[3] === "hand" ? "rule matches" : "cards"} · ${esc(srcWords(r[2]))}${held ? " · already shown here as " + esc(SRCW[held[1]]) + "; Add confirms it by hand" : ""}</span>${lowBadge(r[2])}` +
+      `<button class="eb" data-act="add" data-g="${esc(r[0])}">Add</button><div class="why">${esc(rowWhy(oid, r))}</div></div>`;
+  };
+  if (!v2) return rows.map(one).join("");
+  // ENGINE_V2: groups with near-identical names share one block (the best two shown, the rest behind "+N similar"); five blocks at most
+  return Manual.clusterRows(MI, rows).slice(0, 5).map(cl => `<div class="sugc">${cl.slice(0, 2).map(one).join("")}${cl.length > 2 ? `<details class="sugm"><summary>+${cl.length - 2} similar group${cl.length > 3 ? "s" : ""}</summary>${cl.slice(2).map(one).join("")}</details>` : ""}</div>`).join("");
 }
 function editPanelHTML(oid) {
   const c = MI.cards[oid];
@@ -774,7 +819,7 @@ function brow(rw, handled) {
   const c = MI.cards[rw.oid], url = imageURL(rw.oid, "small");
   const it = (r, i) => {
     const g = MI.groups[r[0]], dflt = !handled && rw.tier === "tick" && i === 0, on = tickOf(rw.oid, r[0], dflt);
-    return `<label class="bit"><input type="checkbox" data-bk="${esc(rw.oid)}|${esc(r[0])}" data-score="${r[1]}" ${on ? "checked" : ""}> <span class="score">${Number(r[1]).toFixed(2)}</span> <span class="lnk gname" data-go="${esc(Manual.goKey(r[0]))}">${esc(g[0])}</span> ${layBadge(g[3])} <span class="sub">${fmt(g[1])} ${g[3] === "hand" ? "rule matches" : "cards"} · ${esc(r[2].split("+").map(s => ({ sig: "signature", tag: "community tag", loose: "loose group", rule: "hand-group rule" }[s] || s)).join(" + "))}</span><span class="why">${esc(r[3])}</span></label>`;
+    return `<label class="bit"><input type="checkbox" data-bk="${esc(rw.oid)}|${esc(r[0])}" data-score="${r[1]}" ${on ? "checked" : ""}> <span class="score">${Number(r[1]).toFixed(2)}</span> <span class="lnk gname" data-go="${esc(Manual.goKey(r[0]))}">${esc(g[0])}</span> ${layBadge(g[3])} <span class="sub">${fmt(g[1])} ${g[3] === "hand" ? "rule matches" : "cards"} · ${esc(srcWords(r[2]))}</span>${lowBadge(r[2])}<span class="why">${esc(rowWhy(rw.oid, r))}</span></label>`;
   };
   const top = rw.items.slice(0, 1).map((r, i) => it(r, 0)).join(""), more = rw.items.slice(1);
   return `<div class="brow${rw.tier === "review" ? " review" : ""}${handled ? " handled" : ""}" data-oid="${esc(rw.oid)}">` +
@@ -813,9 +858,11 @@ async function showBatchView() {
   const R = batchModel(), per = 100, pages = Math.max(1, Math.ceil(R.rows.length / per));
   BS.page = Math.min(BS.page, pages - 1);
   const pg = R.rows.slice(BS.page * per, BS.page * per + per), nt = R.rows.filter(r => r.tier === "tick").length;
+  if (TXT) await needLineShards([].concat(...pg.map(r => refsOf(r.items)), ...R.handled.slice(0, 100).map(h => refsOf(h.items))));
   const bl = Object.entries((MDOC && MDOC.batches) || {}).sort((a, b) => (b[1].seq || 0) - (a[1].seq || 0)).slice(0, 12);
   const fbs = R.nosug.slice(0, 100);
   P.innerHTML = `<h2>Batch view <span class="badge b-hand">by hand</span></h2><div class="handnote">Cards with their suggestions. <b>Nothing is placed until you press Accept.</b> Rows at or above the threshold start ticked; the review band (0.70 up to the threshold) starts unticked; tick more than one suggestion per card if you want. ` +
+    `A row whose top suggestion comes from text alone (low confidence) or from a hand-group rule is always in the review band, whatever its score: it is never ticked for you. ` +
     `Each click is one batch of at most 100 placements, all or nothing, with its own id, and “Undo this batch” takes it all back. Suggestions are not checked.</div>` +
     `<div class="bctl"><label>Threshold <input type="range" id="bthr" min="0.70" max="1" step="0.01" value="${BS.thr}"> <b id="bthrv">${BS.thr.toFixed(2)}</b></label> <label><input type="checkbox" id="bskip" ${BS.skip ? "checked" : ""}> skip saga boilerplate (“Put lore counters on this permanent”)</label></div>` +
     `<p class="sub">${fmt(R.rows.length)} cards listed (${fmt(nt)} at or above ${BS.thr.toFixed(2)}, the rest in the review band); ${fmt(R.below)} cards scoring below 0.70 are not listed; ${fmt(R.handled.length)} already handled by hand; ${fmt(R.nosug.length)} with no usable suggestion. This view follows the filters of the “To place” tab.</p>` +
@@ -1653,7 +1700,7 @@ async function showCardPage(oid, keep) {
   if (!keep) P.innerHTML = `<p class="explain">Loading…</p>`;
   await needCardList();
   await needManual();
-  if (MI && SHOWH) await needSuggestions();
+  if (MI && SHOWH) { await needSuggestions(); await needCards(); await needTextFor(oid); }
   const c = CARDS[oid], e = ENT.get(oid);
   if (!c || !e) { P.innerHTML = `<p class="explain">No such card.</p>`; return; }
   if (e[3] === "u") await needLoose();

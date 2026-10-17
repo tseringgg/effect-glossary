@@ -44,7 +44,7 @@ def py_rows(idx, S, res, order, thr, skip, floor=0.70):
             handled.append(o)
         elif not lst:
             nosug.append(o)
-        elif lst[0][1] >= thr - 1e-9:
+        elif lst[0][1] >= thr - 1e-9 and not all(x in ("text", "kw", "rule") for x in lst[0][2].split("+")):                 # a text-only, keyword-name-only or hand-rule-only top row is never ticked for you
             rows.append((o, "tick", [r[0] for r in lst]))
         elif lst[0][1] >= floor - 1e-9:
             rows.append((o, "review", [r[0] for r in lst]))
@@ -107,7 +107,7 @@ def main():
     jr = dukpy.evaljs([src, "Manual.batchRows(dukpy.index, dukpy.sugg, dukpy.res, dukpy.order, 0.9, true, 0.7)"], index=idx, sugg=S, res=jre, order=order)
     ticked = [r for r in jr["rows"] if r["tier"] == "tick"]
     check("at 0.90 with boilerplate skipped, 498 or fewer pile cards are pre-ticked and every one has a top score of at least 0.90", 0 < len(ticked) <= 510 and all(r["items"][0][1] >= 0.9 - 1e-9 for r in ticked), len(ticked))
-    check("no row has a top score below 0.70; the review band is between 0.70 and the threshold", all(r["items"][0][1] >= 0.7 - 1e-9 for r in jr["rows"]) and all(r["items"][0][1] < 0.9 for r in jr["rows"] if r["tier"] == "review"))
+    check("no row has a top score below 0.70; the review band is between 0.70 and the threshold", all(r["items"][0][1] >= 0.7 - 1e-9 for r in jr["rows"]) and all(r["items"][0][1] < 0.9 or all(x in ("text", "kw", "rule") for x in r["items"][0][2].split("+")) for r in jr["rows"] if r["tier"] == "review"))        # a text-only top row is review at any score
     check("a saga's boilerplate suggestion is never offered when skipped", not any("Put lore counters on this permanent" == idx["groups"][x[0]][0] for r in jr["rows"] for x in r["items"]) and not any("Saga ETB lore counter" in x[3] for r in jr["rows"] for x in r["items"][:1]))
     jr2 = dukpy.evaljs([src, "Manual.batchRows(dukpy.index, dukpy.sugg, dukpy.res, dukpy.order, 0.9, false, 0.7)"], index=idx, sugg=S, res=jre, order=order)
     check("with the skip off the boilerplate cards come back (11 pile cards)", sum(1 for r in jr2["rows"] if any("Put lore counters" in idx["groups"][x[0]][0] for x in r["items"][:1])) >= 1)

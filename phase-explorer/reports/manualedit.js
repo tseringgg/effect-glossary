@@ -82,6 +82,41 @@ var Manual = (function () {
   function isBoilerplate(row, name) {
     return /“(?:Saga ETB lore counter|Chapter \d+)”/.test(row[3] || "") || name === "Put lore counters on this permanent";
   }
+  // text suggestions (build/text_sug, TEXT_SUGGESTIONS): a row whose every source is "text" or "kw" is low confidence and is never ticked for you, whatever its score
+  function isTextOnly(src) {
+    var p = String(src).split("+"), i;
+    for (i = 0; i < p.length; i++) if (p[i] !== "text" && p[i] !== "kw") return false;
+    return p.length > 0 && p[0] !== "";
+  }
+  // a row led only by text, keyword name or a hand-group rule is never ticked for you, whatever its score: none of them was part of what the 0.90 threshold was checked on
+  function neverTick(src) {
+    var p = String(src).split("+"), i;
+    for (i = 0; i < p.length; i++) if (p[i] !== "text" && p[i] !== "kw" && p[i] !== "rule") return false;
+    return p.length > 0 && p[0] !== "";
+  }
+  // ENGINE_V2 near-duplicate groups: names with the same words (token overlap of at least 0.7, parentheses and anything after a dash left out) share one row in the panel.
+  // First fit, in row order; the same function is in src/build_text_suggestions.py (cluster_rows) and a test compares them on every queue card.
+  var STOPN = { a: 1, an: 1, the: 1, of: 1, to: 1, or: 1, and: 1, it: 1, its: 1, "this": 1, "that": 1, his: 1, her: 1, their: 1, "from": 1, "in": 1, on: 1, "for": 1, "with": 1, you: 1, your: 1 };
+  function nameKey(name) {
+    var n = String(name).toLowerCase().replace(/\(.*?\)/g, "").replace(/\u2014.*$/, "").replace(/[^a-z0-9\/ +\-]/g, " "), t = n.split(/\s+/), k = {}, c = 0, i;
+    for (i = 0; i < t.length; i++) if (t[i] && !has(STOPN, t[i]) && !has(k, t[i])) { k[t[i]] = 1; c++; }
+    return { k: k, n: c };
+  }
+  function nearKeys(a, b) {
+    var inter = 0, x;
+    if (!a.n || !b.n) return false;
+    for (x in a.k) if (has(a.k, x) && has(b.k, x)) inter++;
+    return inter / (a.n + b.n - inter) >= 0.7;
+  }
+  function clusterRows(index, rows) {
+    var cl = [], keys = [], i, j, k, hit;
+    for (i = 0; i < rows.length; i++) {
+      k = nameKey(index.groups[rows[i][0]][0]); hit = -1;
+      for (j = 0; j < cl.length; j++) if (nearKeys(k, keys[j])) { hit = j; break; }
+      if (hit < 0) { cl.push([rows[i]]); keys.push(k); } else cl[hit].push(rows[i]);
+    }
+    return cl;
+  }
   // the usable suggestions of one card: not already added by hand, not held precisely, not boilerplate (when asked)
   function usableSuggestions(index, sugg, res, oid, skip) {
     var rows = (sugg && sugg[oid]) || [], out = [], i, r, c = index.cards[oid], j, held, adds = (res.adds && res.adds[oid]) || {};
@@ -111,7 +146,7 @@ var Manual = (function () {
         if (has(res.marks, oid)) what.push("marked nothing fits");
         handled.push({ oid: oid, items: list, what: what.join(", ") });
       } else if (!list.length) nosug.push(oid);
-      else if (list[0][1] >= thr - 1e-9) rows.push({ oid: oid, items: list, tier: "tick" });
+      else if (list[0][1] >= thr - 1e-9 && !neverTick(list[0][2])) rows.push({ oid: oid, items: list, tier: "tick" });
       else if (list[0][1] >= floor - 1e-9) rows.push({ oid: oid, items: list, tier: "review" });
       else below++;
     }
@@ -166,7 +201,7 @@ var Manual = (function () {
     return "";
   }
 
-  return { resolve: resolve, done: done, isBoilerplate: isBoilerplate, usableSuggestions: usableSuggestions, batchRows: batchRows, newBatchId: newBatchId, search: search, goKey: goKey, norm: norm, NOFIT: NOFIT, PRECISE_SRC: PRECISE_SRC, SRC_WORD: SRC_WORD, LAYER_WORD: LAYER_WORD, STATE_WORD: STATE_WORD };
+  return { resolve: resolve, done: done, isBoilerplate: isBoilerplate, isTextOnly: isTextOnly, neverTick: neverTick, clusterRows: clusterRows, usableSuggestions: usableSuggestions, batchRows: batchRows, newBatchId: newBatchId, search: search, goKey: goKey, norm: norm, NOFIT: NOFIT, PRECISE_SRC: PRECISE_SRC, SRC_WORD: SRC_WORD, LAYER_WORD: LAYER_WORD, STATE_WORD: STATE_WORD };
 })();
 
 if (typeof module !== "undefined") module.exports = Manual;

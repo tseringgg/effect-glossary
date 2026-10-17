@@ -40,6 +40,13 @@ python src/test_batch_endpoint.py         # POST /api/manual/batch on temporary 
 python src/test_batch_logic.py            # the batch view's pure logic (JS) against an independent Python implementation; the batch counts
 python src/test_batch_browser.py          # the batch view, confirm / reject, undo, the cap, failures, the flag off, 390 px in headless Edge (temp corrections file)
 python src/test_batch_find.py             # Find a card: 5 batch-placed, 5 single, 5 tag, 5 tentative, 3 excluded
+python src/build_text_suggestions.py    # -> build/text_sug/* (text suggestions for EVERY card: the merged rows of the queue cards in queue.json, compact on-demand shards for the rest) and reports/text-suggestions.md; flag TEXT_SUGGESTIONS; about 3 minutes; run after build_manual_suggestions.py. Suggestions only: nothing is placed, text-only rows are low confidence and never pre-ticked
+python src/test_text_suggestions.py       # the text files counted straight from the build (coverage, every row's group and quoted lines), the text-only rule in the batch logic, the server on a temporary corrections file
+python src/test_text_browser.py           # panel and batch view on a card that had no suggestion, a placed card, a tentative card, a hand-placed card, and the flag off, in headless Edge (temp corrections file)
+python src/test_hand_group_browser.py     # the 12 hand groups added 2026-10-16: group pages, panels, a single Add, the batch view with no rule-led row ticked (headless Edge, temp corrections file)
+python src/test_hand_group_browser.py     # (also covers the 25 groups added in the second round: one card each, the share shown in the top 5)
+python src/check_manual_layer.py enginev2 before.json     # ENGINE_V2 off reproduces the earlier text files byte for byte; on, two builds are identical and the ticked / batch rows are unchanged (builds into temporary folders)
+python src/check_manual_layer.py textflag before.json   # TEXT_SUGGESTIONS off: every other file byte-identical to the snapshot; on again: two identical builds
 python src/check_manual_layer.py batchflag before.json   # BATCH_ACTIONS off: every output byte-identical to the snapshot taken before batch actions
 python src/build_keyword_facet.py        # -> build/keyword_facet.json (the keyword facet: a FILTER, not a placement; flag KEYWORD_FACET; seconds)
 python src/build_hand_groups.py           # -> build/hand_group_hits.json, reports/hand-groups.md (rules of corrections/hand_groups.json evaluated over every card; suggestions only; flag HAND_GROUPS; run after the facet, before build_manual_layer.py and build_manual_suggestions.py)

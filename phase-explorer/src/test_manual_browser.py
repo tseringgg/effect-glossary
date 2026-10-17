@@ -213,7 +213,7 @@ def main():
         c.wait("document.querySelectorAll('#epsug .sug').length > 0")
         geo = c.js("(() => { const i = document.querySelector('.cl-img img, .cl-img .noimg').getBoundingClientRect(), p = document.getElementById('editpanel').getBoundingClientRect(); return [i.right, p.left, i.top, p.top]; })()")
         check("2 panel sits to the right of the card image at 1400 px", geo[0] <= geo[1] + 1 and abs(geo[2] - geo[3]) < 60, geo)
-        n_sug = c.js("document.querySelectorAll('#epsug .sug').length")
+        n_sug = c.js("document.querySelectorAll('#epsug .sugc').length") or c.js("document.querySelectorAll('#epsug .sug').length")          # ENGINE_V2: near-duplicate groups share a block; five blocks at most
         check("2 up to 5 suggestions, each with a score, a reason and an Add button", 1 <= n_sug <= 5 and c.js("[...document.querySelectorAll('#epsug .sug')].every(s => /^[01]\\.[0-9]{2}$/.test(s.querySelector('.score').innerText) && s.querySelector('.why').innerText.length > 10 && s.querySelector('button[data-act=add]'))"), n_sug)
         ept = c.js("document.getElementById('editpanel').innerText").lower()
         check("2 suggestions are labelled as not placements", "not placements" in ept and "nothing is placed until you press add" in ept)

@@ -24,6 +24,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import test_manual_browser as TB
 import manual_common as MC
 import test_batch_logic as TL
+import manual_batch as MB
 
 REAL = os.path.join(MC.HERE, "corrections", "manual_placements.json")
 
@@ -32,7 +33,23 @@ def sha(p):
     return hashlib.sha256(open(p, "rb").read()).hexdigest() if os.path.exists(p) else None
 
 
-class NoBatchIndex(TB.WithTemp, http.server.SimpleHTTPRequestHandler):       # serves the index WITHOUT the batch flag (what BATCH_ACTIONS off writes) and has no API
+class NoText(object):                                                      # this test covers the batch actions on the generated suggestions as they were before text suggestions: the text files answer 404 (test_text_browser.py covers them)
+    def do_GET(self):
+        if self.path.split("?")[0].startswith("/build/text_sug/"):
+            self.send_error(404)
+            return
+        super().do_GET()
+
+
+class RealNT(NoText, TB.Real):
+    pass
+
+
+class NoApiNT(NoText, TB.NoApi):
+    pass
+
+
+class NoBatchIndex(NoText, TB.WithTemp, http.server.SimpleHTTPRequestHandler):       # serves the index WITHOUT the batch flag (what BATCH_ACTIONS off writes) and has no API
     def __init__(self, *a, **k):
         super().__init__(*a, directory=TB.HERE, **k)
 
@@ -59,6 +76,7 @@ def main():
     idx = MC.load_index()
     C = idx["cards"]
     S = json.load(open(os.path.join(TB.HERE, "build", "manual_suggestions.json"), encoding="utf-8"))["cards"]
+    MB.load_suggestions = lambda: S                                           # the server validates against the same rows the page shows
     FB = json.load(open(os.path.join(TB.HERE, "build", "manual_fallback.json"), encoding="utf-8"))["cards"]
     tax = lambda n: json.load(open(os.path.join(TB.HERE, "build", n), encoding="utf-8"))
     order = [o for o in sorted(C, key=lambda o: (C[o][4] is None, C[o][4] or 0, C[o][0], o)) if C[o][1] == "u" and C[o][2] in (1, 2, 3, 4, 5)]
@@ -72,8 +90,8 @@ def main():
     def check(name, ok, detail=""):
         results.append((name, bool(ok), detail))
         print(("PASS " if ok else "FAIL ") + name + ((" - " + str(detail)) if detail else ""))
-    srvA = TB.Quiet(("127.0.0.1", TB.PORT_A), TB.Real)
-    srvB = TB.Quiet(("127.0.0.1", TB.PORT_B), TB.NoApi)
+    srvA = TB.Quiet(("127.0.0.1", TB.PORT_A), RealNT)
+    srvB = TB.Quiet(("127.0.0.1", TB.PORT_B), NoApiNT)
     port_c = TB.free_port()
     srvC = TB.Quiet(("127.0.0.1", port_c), NoBatchIndex)
     for s_ in (srvA, srvB, srvC):
@@ -149,7 +167,7 @@ def main():
         c.js("document.querySelector('button[data-bact2=none]').click()")
         # ---- an endpoint refusal of one bad row: ALL OR NOTHING
         c.js("document.querySelector('button[data-bact2=all]').click()")
-        c.js("(() => { const i = [...document.querySelectorAll('#brows input[data-bk]:checked')][3]; const [o, g] = i.dataset.bk.split('|'); MS.cards[o].find(r => r[0] === g)[1] = 0.123; })()")
+        c.js("(() => { const i = [...document.querySelectorAll('#brows input[data-bk]:checked')][3]; const [o, g] = i.dataset.bk.split('|'); const r = MS.cards[o].find(r => r[0] === g); r[1] = r[1] > 0.99 ? r[1] - 0.003 : r[1] + 0.003; })()")
         n_try = ticked()
         before = open(TB.DOC, "rb").read() if os.path.exists(TB.DOC) else b""
         c.js("document.getElementById('bacc').click()")
@@ -157,7 +175,7 @@ def main():
         bb = c.js("document.getElementById('batchbar').innerText")
         after = open(TB.DOC, "rb").read() if os.path.exists(TB.DOC) else b""
         check("4 ALL OR NOTHING: one refused row (a wrong score) refuses the batch: NOT SAVED, the row named, the file untouched", "NOT SAVED" in bb and "nothing was written" in bb and "row 4" in bb and before == after and not TB.doc()["edits"], bb[:160].replace("\n", " "))
-        check("4 after a refusal the ticks stay, so the person can fix and retry", ticked() == n_try)
+        check("4 after a refusal the ticks stay, so the person can fix and retry", ticked() == n_try, (ticked(), n_try))
         c.js("MS = null; MSPROMISE = null; needSuggestions().then(() => showBatchView())")
         c.wait("document.querySelectorAll('#brows .brow').length > 0 && !!document.getElementById('bacc')", 120)
         # ---- accept

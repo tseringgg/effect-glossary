@@ -21,7 +21,7 @@ import manual_common as MC
 HERE = MC.HERE
 NEW_BUILD = ("manual_index.json", "manual_layer.json", "manual_ids_seen.json", "manual_suggestions.json", "keyword_facet.json", "hand_group_hits.json", "sibling_placements.json", "sibling_ledger.json", "manual_fallback.json")
 NEW_REPORTS = ("manual-placements.md", "hand-groups.md")
-ALLOWED = {"src/test_manual_browser.py", "reports/abilityfind.js", "src/test_abilityfind.py", "src/serve.py", "src/check_manual_layer.py", "src/manual_common.py", "src/build_manual_layer.py", "src/build_manual_suggestions.py", "reports/manualedit.js", "src/serve.py", "reports/browse.html", "reports/abilityfind.js", "src/test_abilityfind.py", "TESTER_NOTE.md", "KNOWN_LIMITATIONS.md", "README.md", "src/check_tester_note.py"}
+ALLOWED = {"src/test_manual_browser.py", "reports/abilityfind.js", "src/test_abilityfind.py", "src/serve.py", "src/check_manual_layer.py", "src/manual_common.py", "src/build_manual_layer.py", "src/build_manual_suggestions.py", "src/manual_batch.py", "src/test_batch_browser.py", "src/test_batch_logic.py", "corrections/hand_groups.json", "src/build_text_suggestions.py", "src/test_hand_group_browser.py", "src/test_text_suggestions.py", "src/test_text_browser.py", "reports/manualedit.js", "src/serve.py", "reports/browse.html", "reports/abilityfind.js", "src/test_abilityfind.py", "TESTER_NOTE.md", "KNOWN_LIMITATIONS.md", "README.md", "src/check_tester_note.py"}
 
 
 def manifest():
@@ -39,10 +39,14 @@ def manifest():
 
 
 def is_new(rel):
-    return ((rel.startswith("build/") and rel[6:] in NEW_BUILD) or (rel.startswith("reports/") and rel[8:] in NEW_REPORTS) or rel == "corrections/hand_groups.json"
+    return (is_text(rel) or (rel.startswith("build/") and rel[6:] in NEW_BUILD) or (rel.startswith("reports/") and rel[8:] in NEW_REPORTS) or rel in ("corrections/hand_groups.json", "corrections/hand_groups.json.bak")
             or rel in ("src/manual_common.py", "src/build_manual_layer.py", "src/build_manual_suggestions.py", "reports/manualedit.js", "src/check_manual_layer.py", "src/test_manual_endpoint.py", "src/test_manual_logic.py",
                        "src/test_manual_browser.py", "src/test_manual_find.py", "src/build_keyword_facet.py", "src/hand_groups.py", "src/build_hand_groups.py", "src/build_sibling.py", "src/test_keyword_facet.py",
-                       "src/test_hand_groups.py", "src/test_sibling.py", "src/test_features_browser.py", "src/manual_batch.py", "src/test_batch_endpoint.py", "src/test_batch_logic.py", "src/test_batch_browser.py", "src/test_batch_find.py"))
+                       "src/test_hand_groups.py", "src/test_sibling.py", "src/test_features_browser.py", "src/manual_batch.py", "src/test_batch_endpoint.py", "src/test_batch_logic.py", "src/test_batch_browser.py", "src/test_batch_find.py", "src/build_text_suggestions.py", "src/test_text_suggestions.py", "src/test_text_browser.py", "src/test_hand_group_browser.py", "reports/text-suggestions.md"))
+
+
+def is_text(rel):
+    return rel.startswith("build/text_sug/") or rel == "reports/text-suggestions.md"
 
 
 def run(args, env=None):
@@ -68,7 +72,7 @@ def main():
         changed = sorted(k for k in before if k in now and before[k] != now[k])
         missing = sorted(k for k in before if k not in now)
         added = sorted(k for k in now if k not in before)
-        regen = [k for k in changed if is_new(k) and k.startswith(("build/", "reports/manual-", "reports/hand-"))]       # this work's own generated files, rebuilt on purpose
+        regen = [k for k in changed if is_new(k) and k.startswith(("build/", "reports/manual-", "reports/hand-", "reports/text-"))]       # this work's own generated files, rebuilt on purpose
         bad = [k for k in changed if k not in ALLOWED and k not in regen]
         check("every file that existed before still exists (%d files)" % len(before), not missing, missing[:5])
         check("no frozen file changed (archive, build, data, corrections, every other source file)", not bad, bad[:10])
@@ -127,6 +131,65 @@ def main():
         rc, out = run(["-c", "import sys; sys.path.insert(0, 'src'); import build_manual_layer as L; L.main(); import build_manual_suggestions as S; S.main()"])
         on3 = manifest()
         check("two builds in a row with the flag on are byte-identical (index, layer, ids, report, suggestions, fallback)", all(on3.get(k) == on2.get(k) for k in keys + ["build/manual_fallback.json"]))
+    elif cmd == "textflag":
+        # python src/check_manual_layer.py textflag BEFORE.json : TEXT_SUGGESTIONS off must leave every other file byte-identical to BEFORE.json (a snapshot from before text suggestions existed); on again, two builds are identical
+        before = json.load(open(sys.argv[2]))
+        on = manifest()
+        rc, out = run(["-c", "import sys; sys.path.insert(0, 'src'); import build_text_suggestions as T; T.TEXT_SUGGESTIONS = False; T.main()"])
+        print("   flag off:", out.strip().splitlines()[-1][:100] if out.strip() else rc)
+        off = manifest()
+        check("flag off: no text-suggestion file is left (build/text_sug, reports/text-suggestions.md)", not [k for k in off if is_text(k)], [k for k in off if is_text(k)][:3])
+        frozen = {k: v for k, v in before.items() if not is_new(k) and k not in ALLOWED and k != "reports/manualedit.js"}
+        check("flag off: every file of the snapshot that this work may not edit is byte-identical (%d files)" % len(frozen), all(off.get(k) == v for k, v in frozen.items()), [k for k, v in frozen.items() if off.get(k) != v][:5])
+        keep = [k for k in before if k.startswith("build/") and not is_text(k)]
+        check("flag off: the other generated files are byte-identical (%d build files)" % len(keep), all(off.get(k) == before[k] for k in keep), [k for k in keep if off.get(k) != before[k]][:5])
+        check("flag off: the real corrections file and its backup are byte-identical", all(off.get(k) == before.get(k) for k in ("corrections/manual_placements.json", "corrections/manual_placements.json.bak")))
+        check("flag off: no file was added outside the new-file list", not [k for k in off if k not in before and not is_new(k)])
+        rc, out = run(["src/build_text_suggestions.py"])
+        on2 = manifest()
+        tk = sorted(k for k in on2 if is_text(k))
+        check("flag on again: %d text-suggestion files come back byte-identical to the build before the flag was turned off" % len(tk), bool(tk) and all(on2.get(k) == on.get(k) for k in tk) and sorted(k for k in on if is_text(k)) == tk)
+        rc, out = run(["src/build_text_suggestions.py"])
+        on3 = manifest()
+        check("two builds in a row are byte-identical (%d files)" % len(tk), all(on3.get(k) == on2.get(k) for k in tk))
+    elif cmd == "enginev2":
+        # python src/check_manual_layer.py enginev2 BEFORE.json : BEFORE.json = a snapshot taken before ENGINE_V2 existed. Builds go to temporary directories (TEXT_SUG_OUT), never over the real build/text_sug.
+        # ENGINE_V2 off must reproduce the pre-V2 text files byte for byte; on, two builds are identical, match the real build/text_sug, and keep every row at 0.70 or more and the first row at 0.90 or more of every card.
+        import tempfile
+        before = json.load(open(sys.argv[2]))
+        tmp = tempfile.mkdtemp(prefix="enginev2_")
+
+        def build(flag, name):
+            out = os.path.join(tmp, name)
+            rc, text = run(["-c", "import sys; sys.path.insert(0, 'src'); import build_text_suggestions as T; T.ENGINE_V2 = %s; T.main()" % flag], env={"TEXT_SUG_OUT": out})
+            return out, rc
+
+        def tree(d):
+            m = {}
+            for dd, ds, fs in os.walk(d):
+                for f in fs:
+                    pth = os.path.join(dd, f)
+                    m[os.path.relpath(pth, d).replace(os.sep, "/")] = hashlib.sha256(open(pth, "rb").read()).hexdigest()
+            return m
+        off, rc0 = build(False, "off")
+        t_off = tree(off)
+        want = {k[len("build/text_sug/"):]: v for k, v in before.items() if k.startswith("build/text_sug/")}
+        want["text-suggestions.md"] = before.get("reports/text-suggestions.md")
+        check("ENGINE_V2 off: the build reproduces the %d text-suggestion files from before ENGINE_V2 byte for byte" % len(want), rc0 == 0 and t_off == want, [k for k in set(want) | set(t_off) if want.get(k) != t_off.get(k)][:5])
+        on1, rc1 = build(True, "on1")
+        on2, rc2 = build(True, "on2")
+        t1, t2 = tree(on1), tree(on2)
+        check("ENGINE_V2 on: two builds are byte-identical (%d files)" % len(t1), rc1 == 0 and rc2 == 0 and t1 == t2, [k for k in set(t1) | set(t2) if t1.get(k) != t2.get(k)][:5])
+        real = tree(os.path.join(HERE, "build", "text_sug"))
+        real["text-suggestions.md"] = hashlib.sha256(open(os.path.join(HERE, "reports", "text-suggestions.md"), "rb").read()).hexdigest()
+        check("ENGINE_V2 on: the build equals the files in build/text_sug", t1 == real, [k for k in set(t1) | set(real) if t1.get(k) != real.get(k)][:5])
+        qa = json.load(io.open(os.path.join(off, "queue.json"), encoding="utf-8"))["cards"]
+        qb = json.load(io.open(os.path.join(on1, "queue.json"), encoding="utf-8"))["cards"]
+        first = lambda rows, th: next((r[0] for r in rows if r[1] >= th), None)
+        check("ENGINE_V2: the first row at or above 0.90 is the same for all %d queue cards (what is ticked is unchanged)" % len(qa), all(first(qa[o], 0.9) == first(qb[o], 0.9) for o in qa))
+        check("ENGINE_V2: the rows at or above 0.70 are the same set for every queue card (the batch view's review band is unchanged)", all({r[0] for r in qa[o] if r[1] >= 0.7} == {r[0] for r in qb[o] if r[1] >= 0.7} for o in qa))
+        gone = [r[1] for o in qa for r in qa[o] if r[2] != "kw" and r[0] not in {x[0] for x in qb[o]}]
+        check("ENGINE_V2: a row that leaves the stored 7 is a keyword row or scores below 0.30 (%d rows leave)" % len(gone), all(x < 0.30 for x in gone), max(gone) if gone else 0)
     elif cmd == "reconcile":
         idx = MC.load_index()
         doc = MC.load_doc()

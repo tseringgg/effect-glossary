@@ -43,7 +43,7 @@ def _load(path):
 
 
 def load_suggestions():
-    d = _load(os.path.join(M.HERE, "build", "manual_suggestions.json"))
+    d = _load(os.path.join(M.HERE, "build", "text_sug", "queue.json")) or _load(os.path.join(M.HERE, "build", "manual_suggestions.json"))      # the merged rows when TEXT_SUGGESTIONS is on
     return d["cards"] if d else None
 
 
