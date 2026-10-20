@@ -1,0 +1,625 @@
+{
+ "_about": "Alias -> groups, hand-edited. Lookup is on the folded alias (lower case, letters and digits). Each id must be a group the page can open; 'name' is the group's name when written (a rename is reported at build, as for hand placements). Order = order shown. fit 'good' or 'partial'; a partial alias must say in 'note' what it leaves out, and the page shows that note on the row. Prefer stable ids (hand:, kw:, rp:, tag:); leaf:/tent:/loose: ids are hashes and can change between builds (about 34 of 1,273 leaf ids did): the build counts them and reports any alias whose id vanished as an ERROR.",
+ "v": 1,
+ "aliases": {
+  "wrath": {
+   "groups": [
+    {
+     "id": "leaf:a205bd3cf5",
+     "name": "Destroy all creatures (restriction varies)"
+    },
+    {
+     "id": "tag:3fb7e4fd-5304-4120-b7c4-8a89f70ad3f0",
+     "name": "Destroys everything of a kind (board wipe)"
+    },
+    {
+     "id": "leaf:a6fd8d49d0",
+     "name": "Destroy all nonland permanents (restriction varies)"
+    }
+   ],
+   "fit": "good"
+  },
+  "board wipe": {
+   "groups": [
+    {
+     "id": "tag:3fb7e4fd-5304-4120-b7c4-8a89f70ad3f0",
+     "name": "Destroys everything of a kind (board wipe)"
+    },
+    {
+     "id": "leaf:a205bd3cf5",
+     "name": "Destroy all creatures (restriction varies)"
+    },
+    {
+     "id": "tag:33b97ce5-f156-4332-9ecc-1e0256702f26",
+     "name": "Board wipe that is, or can be, one-sided"
+    }
+   ],
+   "fit": "good"
+  },
+  "sweeper": {
+   "groups": [
+    {
+     "id": "tag:3fb7e4fd-5304-4120-b7c4-8a89f70ad3f0",
+     "name": "Destroys everything of a kind (board wipe)"
+    },
+    {
+     "id": "leaf:a205bd3cf5",
+     "name": "Destroy all creatures (restriction varies)"
+    },
+    {
+     "id": "tag:33b97ce5-f156-4332-9ecc-1e0256702f26",
+     "name": "Board wipe that is, or can be, one-sided"
+    }
+   ],
+   "fit": "good"
+  },
+  "counterspell": {
+   "groups": [
+    {
+     "id": "leaf:a34ba37fca",
+     "name": "Counter a spell (card)"
+    },
+    {
+     "id": "leaf:a4de15e309",
+     "name": "Counter a spell (object varies)"
+    },
+    {
+     "id": "leaf:a8287ec8d6",
+     "name": "Counter a spell with targets"
+    }
+   ],
+   "fit": "good"
+  },
+  "tutor": {
+   "groups": [
+    {
+     "id": "leaf:a676908f1a",
+     "name": "Search your library for a card and put it into your hand (then move a chosen card and shuffle)"
+    },
+    {
+     "id": "leaf:a25a358f74",
+     "name": "Search your library for a card and put it into your hand (then move a chosen card and shuffle; object varies)"
+    },
+    {
+     "id": "tag:ce4076e8-fcfe-4018-a863-c60755359cbe",
+     "name": "Searches for a card and puts it into your hand"
+    }
+   ],
+   "fit": "good"
+  },
+  "ramp": {
+   "groups": [
+    {
+     "id": "leaf:ad63abdf62",
+     "name": "Search your library for a basic land and put it onto the battlefield (then move a chosen card and shuffle)"
+    },
+    {
+     "id": "leaf:aa22211a7e",
+     "name": "Search your library for a land and put it onto the battlefield (then move a chosen card and shuffle)"
+    },
+    {
+     "id": "tag:2f3e4ad7-5e60-41b4-bdbc-653f16869cf6",
+     "name": "Ramp: speeds up your resources"
+    }
+   ],
+   "fit": "partial",
+   "note": "Leaves out mana rocks and mana creatures (see 'mana dork'). The community-tag group lists only cards the parser could not read, so its sample is odd."
+  },
+  "mana dork": {
+   "groups": [
+    {
+     "id": "tag:bb6c0ff7-302d-48ff-aee9-5cfefd44e351",
+     "name": "Creature that makes mana again and again"
+    }
+   ],
+   "fit": "partial",
+   "note": "Only a slice: this tag group holds the mana creatures the parser could not read. Most mana creatures sit in 'Add one mana of any color' and 'Add mana of a fixed color', which also hold lands, so they are not listed."
+  },
+  "removal": {
+   "groups": [
+    {
+     "id": "leaf:a618b877c2",
+     "name": "Destroy a creature (restriction varies)"
+    },
+    {
+     "id": "tag:cc12d27d-1d0e-4849-9551-71caead74d24",
+     "name": "Spot removal"
+    },
+    {
+     "id": "tag:d91e421d-ff87-4aad-a4bf-5aefc51252b6",
+     "name": "Removal: creature"
+    }
+   ],
+   "fit": "good"
+  },
+  "spot removal": {
+   "groups": [
+    {
+     "id": "tag:cc12d27d-1d0e-4849-9551-71caead74d24",
+     "name": "Spot removal"
+    },
+    {
+     "id": "leaf:a618b877c2",
+     "name": "Destroy a creature (restriction varies)"
+    },
+    {
+     "id": "leaf:a34ba01884",
+     "name": "Destroy a permanent"
+    }
+   ],
+   "fit": "good"
+  },
+  "fog": {
+   "groups": [
+    {
+     "id": "rp:sig:fog",
+     "name": "Fog: prevent all combat damage"
+    },
+    {
+     "id": "tag:92c990fa-2b50-4f04-a95e-ad8b62284d7e",
+     "name": "Protects you from a whole combat"
+    },
+    {
+     "id": "tag:7fed074b-090a-45e6-8f30-46738726aeeb",
+     "name": "Stops or redirects damage from some sources only"
+    }
+   ],
+   "fit": "good"
+  },
+  "reanimate": {
+   "groups": [
+    {
+     "id": "leaf:a31121acb5",
+     "name": "Return a creature card from your graveyard onto the battlefield"
+    },
+    {
+     "id": "leaf:a4ba4fe8b8",
+     "name": "Return a creature card from a graveyard onto the battlefield"
+    },
+    {
+     "id": "tag:c05a300c-2ec4-446a-a399-b3c314497de7",
+     "name": "Returns creature cards from the graveyard to the battlefield"
+    }
+   ],
+   "fit": "good"
+  },
+  "bounce": {
+   "groups": [
+    {
+     "id": "leaf:aeeaa4286d",
+     "name": "Return a creature to its owner's hand (restriction varies) — “all” vs “target” isn't recorded"
+    },
+    {
+     "id": "leaf:a71f4f89fb",
+     "name": "Return a nonland permanent to its owner's hand — “all” vs “target” isn't recorded"
+    },
+    {
+     "id": "tag:28369f1b-1cf8-4077-99aa-e32fd59c19e1",
+     "name": "Removal: returns a permanent to its owner's hand"
+    }
+   ],
+   "fit": "good"
+  },
+  "mill": {
+   "groups": [
+    {
+     "id": "leaf:ace80e3e2d",
+     "name": "Mill cards"
+    },
+    {
+     "id": "tag:514b336c-7e68-465e-874f-e3de89dbbb53",
+     "name": "Uses cards from the top of an opponent's library"
+    },
+    {
+     "id": "tag:bcae5f6a-f68b-4217-8f6c-0b4d31abd045",
+     "name": "Puts cards from your library into your graveyard"
+    }
+   ],
+   "fit": "good"
+  },
+  "land denial": {
+   "groups": [
+    {
+     "id": "tag:cd12a44c-1aee-4ece-b8ea-3eb118ef0230",
+     "name": "Land denial: takes many lands away or keeps them tapped"
+    },
+    {
+     "id": "leaf:a5666a393e",
+     "name": "Destroy a land"
+    },
+    {
+     "id": "leaf:af8b4b4fed",
+     "name": "Destroy all lands (restriction varies)"
+    }
+   ],
+   "fit": "good"
+  },
+  "lifegain": {
+   "groups": [
+    {
+     "id": "leaf:a9a2ffd15d",
+     "name": "Gain life"
+    },
+    {
+     "id": "tag:4caab3cc-1d60-44fb-a26a-cc833bc67c97",
+     "name": "Gains life"
+    },
+    {
+     "id": "tag:2dabdf83-e041-48a4-b0e5-08e1842f008c",
+     "name": "Gains life again and again"
+    }
+   ],
+   "fit": "good"
+  },
+  "sacrifice outlet": {
+   "groups": [
+    {
+     "id": "tag:d5dcbcc6-d49b-4d76-9272-35a062bcb656",
+     "name": "Lets you sacrifice creatures"
+    },
+    {
+     "id": "tag:aa908dd5-bf9e-4835-bbbb-77579a1f0e5f",
+     "name": "Lets you sacrifice permanents again and again"
+    },
+    {
+     "id": "tag:cd9220c5-c4bc-4f31-857b-260dc6571cb1",
+     "name": "Lets you sacrifice lands"
+    }
+   ],
+   "fit": "good"
+  },
+  "edict": {
+   "groups": [
+    {
+     "id": "tag:d6de9944-a728-48ae-aed0-0932e07ccfa2",
+     "name": "Removal: sacrifice"
+    },
+    {
+     "id": "leaf:a3edf597b4",
+     "name": "Sacrifice a creature"
+    }
+   ],
+   "fit": "partial",
+   "note": "A community tag plus a broad group: 'Sacrifice a creature' mixes sacrifice as a cost with forced sacrifice. Leaves out edicts the tag misses."
+  },
+  "burn": {
+   "groups": [
+    {
+     "id": "leaf:a8adac729c",
+     "name": "Deal damage to any target"
+    },
+    {
+     "id": "tag:01c171be-e0db-443c-830d-578873c27792",
+     "name": "Burn creature"
+    },
+    {
+     "id": "tag:081ebf89-e53b-47ff-88e8-1535068212b0",
+     "name": "Burn player"
+    }
+   ],
+   "fit": "good"
+  },
+  "pinger": {
+   "groups": [
+    {
+     "id": "tag:a96e7ee2-d411-435f-978f-0f50e1ce7a16",
+     "name": "Deals 1 or 2 damage again and again"
+    }
+   ],
+   "fit": "good"
+  },
+  "anthem": {
+   "groups": [
+    {
+     "id": "tag:0454fcef-0118-4f10-b9d7-c071845bfbd4",
+     "name": "Gives your whole team +N/+N"
+    },
+    {
+     "id": "leaf:ab330b2331",
+     "name": "Creatures you control get +N/+N"
+    },
+    {
+     "id": "tag:e7f7559f-5ddd-4262-90ad-04f2ea2a735b",
+     "name": "Raises the power of your creatures (all of them, or a type)"
+    }
+   ],
+   "fit": "good"
+  },
+  "time walk": {
+   "groups": [
+    {
+     "id": "leaf:ae35abaaae",
+     "name": "Take an extra turn"
+    },
+    {
+     "id": "tag:03b17ebf-f5d3-4063-bfd4-1ae156a16a8f",
+     "name": "Extra turn"
+    }
+   ],
+   "fit": "good"
+  },
+  "clone": {
+   "groups": [
+    {
+     "id": "leaf:a7d5721735",
+     "name": "A creature becomes a copy"
+    },
+    {
+     "id": "tag:8873d737-51bf-416b-8124-9db521e00541",
+     "name": "Clone"
+    },
+    {
+     "id": "tag:7a6f7b6d-45b1-423f-97a7-4d083ea47ea0",
+     "name": "Copies creature"
+    }
+   ],
+   "fit": "good"
+  },
+  "copy spell": {
+   "groups": [
+    {
+     "id": "tag:cd853464-fcf5-4328-8170-fd51d0dba1f1",
+     "name": "Copies spell"
+    },
+    {
+     "id": "tent:g9331964a",
+     "name": "Copy › Copy a spell or ability (which one is not recorded), less common kinds"
+    },
+    {
+     "id": "tent:g670e5f0e",
+     "name": "Copy › Copy a spell or ability (which one is not recorded), chosen before"
+    }
+   ],
+   "fit": "partial",
+   "note": "Tentative groups, not fully checked. Leaves out the main 'Copy' groups, which are worded differently."
+  },
+  "steal": {
+   "groups": [
+    {
+     "id": "leaf:a3fafcc7c3",
+     "name": "Gain control of a creature"
+    },
+    {
+     "id": "tag:d1bd9028-e5d5-42e2-9409-7e59dec6d739",
+     "name": "Takes control of creature"
+    }
+   ],
+   "fit": "good"
+  },
+  "threaten": {
+   "groups": [
+    {
+     "id": "leaf:a765116ebf",
+     "name": "Gain control of a creature until end of turn, then untap it and grant an ability"
+    },
+    {
+     "id": "leaf:a5e9680659",
+     "name": "Gain control of a creature until end of turn"
+    }
+   ],
+   "fit": "good"
+  },
+  "graveyard hate": {
+   "groups": [
+    {
+     "id": "leaf:a9b27a85da",
+     "name": "Exile a card from a graveyard"
+    },
+    {
+     "id": "leaf:a2e0e17ec6",
+     "name": "Exile cards from a graveyard"
+    },
+    {
+     "id": "leaf:aad189804d",
+     "name": "Target player: exile a player from a graveyard"
+    }
+   ],
+   "fit": "good"
+  },
+  "wheel": {
+   "groups": [
+    {
+     "id": "leaf:ae6b4e6362",
+     "name": "Each player discards, then draw"
+    }
+   ],
+   "fit": "good"
+  },
+  "combat trick": {
+   "groups": [
+    {
+     "id": "tag:36f2a0d4-b689-4011-9750-472dd786f2de",
+     "name": "Combat trick"
+    },
+    {
+     "id": "leaf:a3a21c4de3",
+     "name": "A creature gets +N/+N until end of turn"
+    }
+   ],
+   "fit": "partial",
+   "note": "The second group is broad (it includes creature lands that pump themselves). Leaves out tricks that give a keyword or protection instead of +N/+N."
+  },
+  "hand disruption": {
+   "groups": [
+    {
+     "id": "leaf:a046925432",
+     "name": "Target player discards"
+    },
+    {
+     "id": "leaf:a6f13dd98c",
+     "name": "An opponent reveals their hand"
+    },
+    {
+     "id": "leaf:a0c72d1904",
+     "name": "An opponent reveals their hand, then target player discards"
+    }
+   ],
+   "fit": "good"
+  },
+  "disenchant": {
+   "groups": [
+    {
+     "id": "leaf:ac0f7e462c",
+     "name": "Destroy an enchantment"
+    },
+    {
+     "id": "leaf:abbd25bc55",
+     "name": "Destroy an artifact or enchantment"
+    }
+   ],
+   "fit": "good"
+  },
+  "artifact removal": {
+   "groups": [
+    {
+     "id": "leaf:adedb1b572",
+     "name": "Destroy an artifact"
+    },
+    {
+     "id": "leaf:abbd25bc55",
+     "name": "Destroy an artifact or enchantment"
+    },
+    {
+     "id": "tag:ea1ae714-3500-481b-9bdd-f33c57db8678",
+     "name": "Removal: artifact"
+    }
+   ],
+   "fit": "good"
+  },
+  "unblockable": {
+   "groups": [
+    {
+     "id": "leaf:a52acad018",
+     "name": "This permanent can't be blocked"
+    },
+    {
+     "id": "leaf:af99e3b2e4",
+     "name": "A creature can't be blocked until end of turn"
+    },
+    {
+     "id": "tag:efd1179a-681e-4acc-ada7-c7da4ff758fa",
+     "name": "Can't be blocked"
+    }
+   ],
+   "fit": "good"
+  },
+  "equipment": {
+   "groups": [
+    {
+     "id": "leaf:aa36c3f063",
+     "name": "Attach to a creature you control"
+    },
+    {
+     "id": "leaf:a4d6e34a25",
+     "name": "Equipped creature gets +N/+N"
+    }
+   ],
+   "fit": "good"
+  },
+  "tapper": {
+   "groups": [
+    {
+     "id": "leaf:a0524eef7e",
+     "name": "Tap a creature"
+    },
+    {
+     "id": "tag:7b3120c7-23fc-43df-b159-4950e2855823",
+     "name": "Creature that taps things"
+    },
+    {
+     "id": "leaf:afc1b298e4",
+     "name": "Tap a creature an opponent controls"
+    }
+   ],
+   "fit": "good"
+  },
+  "card advantage": {
+   "groups": [
+    {
+     "id": "tag:a9b682a7-47ed-4d0d-8a2f-30e9d075525f",
+     "name": "Card advantage"
+    },
+    {
+     "id": "tag:8cb1bab7-38db-4f6b-bee4-15d5c26a879d",
+     "name": "Repeatable: card advantage"
+    },
+    {
+     "id": "tag:0e87cf9c-591e-4f2a-b4fd-675021f120ae",
+     "name": "Draw engine"
+    }
+   ],
+   "fit": "partial",
+   "note": "Community tags, broad. Leaves out card-draw spells that carry no such tag (see the 'Draw cards' groups)."
+  },
+  "loot": {
+   "groups": [
+    {
+     "id": "leaf:a45bd56d8d",
+     "name": "Draw cards, then you discard — who draws isn't recorded"
+    },
+    {
+     "id": "tag:acd5f9bb-d9df-4929-aea3-aa826d7c36e3",
+     "name": "Repeatable: loot"
+    }
+   ],
+   "fit": "good"
+  },
+  "win con": {
+   "groups": [
+    {
+     "id": "hand:wins-or-loses-the-game",
+     "name": "Wins, loses or draws the game, or stops it"
+    }
+   ],
+   "fit": "good"
+  },
+  "cost reduction": {
+   "groups": [
+    {
+     "id": "tag:1a8e9788-b694-4330-a1a4-1aed6183bd57",
+     "name": "Makes spells cost less"
+    },
+    {
+     "id": "tag:159a2e0f-ac52-417f-b11c-bd6746abb2d7",
+     "name": "Makes instants and sorceries cost less"
+    }
+   ],
+   "fit": "partial",
+   "note": "Two small community-tag groups (5 cards each). Leaves out cost reducers that carry no such tag."
+  },
+  "fixing": {
+   "groups": [
+    {
+     "id": "leaf:accdf0b683",
+     "name": "Add one mana of any color"
+    },
+    {
+     "id": "tag:43d07dd1-ec75-4416-b5a0-dce4e951a4ca",
+     "name": "Mana filter"
+    }
+   ],
+   "fit": "partial",
+   "note": "The first group includes lands as well as spells and creatures. Leaves out fetch and search-for-land effects (see 'ramp')."
+  },
+  "pillowfort": {
+   "groups": [
+    {
+     "id": "tag:1cf4581e-ada4-46d3-8789-dfaab7d3cd46",
+     "name": "Stops creatures from attacking"
+    },
+    {
+     "id": "tag:92c990fa-2b50-4f04-a95e-ad8b62284d7e",
+     "name": "Protects you from a whole combat"
+    }
+   ],
+   "fit": "good"
+  }
+ },
+ "candidate_groups": {
+  "blink": "No group holds blink/flicker cards (exile, then return to the battlefield). Looked at: 'Exile this permanent - where it returns from isn't recorded' (phasing and delayed returns). A group for it is a candidate; the term is deliberately unmapped.",
+  "flicker": "Same as blink.",
+  "stax": "No group fits (static tax and lock pieces).",
+  "mana rock": "'Add colorless mana' mixes rocks with lands; no rock-only group.",
+  "cantrip": "No group; the 'Draw cards' groups are far too broad."
+ }
+}

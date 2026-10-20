@@ -1,0 +1,10 @@
+{
+ "fixed": "2026-10-19, before any ranking or alias code was run or written",
+ "seed_set": "baseline-A (hand-picked, not drawn; 6 per stratum; the 'fresh 20' in Part 3 will be a different set drawn on a new seed)",
+ "rule_for_sensible": "A group in the top 5 whose name (and, if unclear, its first three member cards) is what a Magic player means by the query. A group that merely contains the letters does not count. Judged by reading, names alone: no aliases, no fuzzy matching.",
+ "slang": ["wrath", "counterspell", "tutor", "fog", "stax", "looting"],
+ "keywords": ["flying", "deathtouch", "cycling", "landwalk", "ward", "first strike"],
+ "mechanics": ["draw cards", "extra turn", "search library", "copy spell", "discard", "untap lands"],
+ "partial": ["sacrific", "regener", "tok", "graveyard", "indestruct", "exil"],
+ "typos": ["destory", "sacrifise", "lifegian", "tokns", "graveyrad", "deathtoch"]
+}

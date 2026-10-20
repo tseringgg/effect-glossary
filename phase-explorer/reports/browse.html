@@ -150,6 +150,37 @@ body.dev .devonly { display:inline; }
   .editpanel button, .editpanel input[type=search], .editpanel input[type=text] { min-height:44px; }
   .editpanel .eb { flex:1 0 100%; }
 }
+/* suggested cards on a group page (reports/suggested.js): a dotted purple outline, so it is never mistaken for a member, a hand placement, a tentative or an annotation badge */
+:root { --sugg:#7a3fa0; --suggbg:#f3ebf9; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --sugg:#c9a0e8; --suggbg:#2a2133; } }
+.b-sugg { color:var(--sugg); border:1px dotted var(--sugg); background:transparent; font-weight:600; }
+.sctabs { display:flex; flex-wrap:wrap; gap:4px; margin:10px 0 8px; border-bottom:2px solid var(--line); }
+.sctabs button { border:1px solid var(--line); border-bottom:none; background:var(--chip); color:var(--fg); padding:5px 12px; border-radius:6px 6px 0 0; cursor:pointer; font:inherit; }
+.sctabs button.on { background:var(--bg); font-weight:700; box-shadow:0 2px 0 var(--bg); }
+.sctabs button[data-sctab=matches] { border-style:dotted; border-color:var(--sugg); color:var(--sugg); }
+.sc-off { display:none !important; }
+.suggsec { margin-top:6px; padding:8px 10px; border:2px dotted var(--sugg); border-radius:6px; background:var(--suggbg); }
+.suggsec h3 { margin:0 0 4px; font-size:14px; } .sgsub { margin-top:14px; }
+.sgctl { display:flex; flex-wrap:wrap; gap:6px 16px; align-items:center; margin:6px 0; }
+.sgrow { display:flex; flex-wrap:wrap; gap:4px 8px; align-items:baseline; padding:5px 0; border-bottom:1px solid var(--line); }
+.sgrow .score { font-variant-numeric:tabular-nums; font-weight:700; min-width:34px; }
+.sgrow .why { flex-basis:100%; color:var(--muted); font-size:12px; }
+.sgrow .eb { margin-left:auto; }
+@media (max-width: 800px) { .sctabs button { min-height:44px; flex:1 1 auto; } .suggsec button, .suggsec input[type=range] { min-height:44px; } .suggsec input[type=checkbox] { min-width:28px; min-height:28px; } .sgrow .eb { flex-basis:100%; margin-left:0; } }
+/* group search in the main box (reports/groupsearch.js): a group row is a link; one line of description; the match reason in italics */
+.gs-h { margin:10px 0 2px; font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+.gs-jump { margin:6px 0 0; font-size:13px; }
+.gr { display:block; padding:6px 8px; border:1px solid var(--line); border-radius:4px; margin:4px 0; background:var(--bg); color:var(--fg); text-decoration:none; overflow-wrap:anywhere; }
+.gr:hover, .gr:focus, .fr[tabindex]:focus, .gs-btn:focus { border-color:var(--accent); outline:2px solid var(--accent); outline-offset:0; }
+.gr .gn { font-weight:600; }
+.gr .gp { display:block; color:var(--muted); font-size:12px; }
+.gr .gd { display:block; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.gr .gm { display:block; font-size:12px; color:var(--muted); font-style:italic; }
+.gr .gl { display:block; font-size:12px; color:var(--broad); }
+.gs-btn { margin:4px 0; padding:6px 10px; border:1px solid var(--line); border-radius:4px; background:var(--chip); color:var(--fg); font:inherit; cursor:pointer; }
+.gs-famlist { margin-top:4px; }
+.sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+@media (max-width: 800px) { .gr, .gs-btn, .fr[tabindex] { min-height:44px; } .gs-jump a { display:inline-block; min-height:44px; line-height:44px; } .gr .gd { white-space:normal; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; } }
 </style>
 </head>
 <body>
@@ -175,6 +206,7 @@ body.dev .devonly { display:inline; }
     <span class="prov">· <a href="../archive/card-level-view-2026-10/reports/browse.html">archived card-level view</a> (its numbers do not match this view)</span>
     <span class="prov devonly">· dev: <a href="ledger.html">coverage ledger</a> · <a href="card-explorer.html">parse-audit explorer</a> (both show the archived view)</span>
   </div>
+  <div class="prov" id="gsnote" hidden></div>
   <div id="findres"></div>
 </header>
 <main>
@@ -220,6 +252,8 @@ body.dev .devonly { display:inline; }
 <footer class="prov" style="padding:10px 16px;border-top:1px solid var(--line)" id="foot"></footer>
 <script src="abilityfind.js"></script>
 <script src="manualedit.js"></script>
+<script src="suggested.js"></script>
+<script src="groupsearch.js"></script>
 <script>
 "use strict";
 const DEV = new URLSearchParams(location.search).get("dev") === "1";
@@ -465,8 +499,173 @@ async function loadManual() {
   document.getElementById("queuetab").hidden = false;
   document.getElementById("showhandlab").hidden = false;
   if (MI.batch) document.getElementById("showbatchlab").hidden = false;
+  await loadSC();
   document.getElementById("qf-gap").checked = !SHOWA;      // "1,175 with the gap-test stratum on": the stratum is a separate filter, tied to the annotation switch to start with
 }
+// ---------------------------------------------------------------- "Possible matches": a tab on a group page (reports/suggested.js; build/suggested_cards, switched by SUGGESTED_CARDS_VIEW in src/build_suggested_cards.py; absent when it is off, and then no tab is drawn and nothing below runs)
+// Suggestions only: a card in the tab is not a member, is counted in no figure, never appears on the group's own tab, and is placed only by pressing Add (the same POST /api/manual as the edit panel; counted exactly as the resolver counts it).
+// The tab bar needs only build/suggested_cards/meta.json (the count at the current floor); a group's files are read when its tab is opened.
+let SC = null, SCFLOOR = 0.70, SCINC = false, SCCUR = null, SCGEN = 0, SCTM = null, SCTAB = "members", SCWANT = null;
+const SCSH = new Map(), SCLN = new Map(), SCLNV = new Map();
+try { SCINC = localStorage.getItem("suggPlaced") === "1"; SCTAB = localStorage.getItem("groupTab") === "matches" ? "matches" : "members"; const f = parseFloat(localStorage.getItem("suggFloor")); if (f >= 0.5 && f <= 0.9) SCFLOOR = Math.round(f * 10) / 10; } catch (e) { /* storage unavailable: keep the defaults */ }
+async function loadSC() {
+  try { SC = await J("suggested_cards/meta.json"); } catch (e) { SC = null; }
+}
+const splitTab = h => { const m = /&tab=(matches|members)$/.exec(h); return m ? [h.slice(0, m.index), m[1]] : [h, ""]; };    // a pasted link: "#l%3Aabc&tab=matches"
+const scGet = p => { if (!SCSH.has(p)) SCSH.set(p, J("suggested_cards/" + p).catch(() => [])); return SCSH.get(p); };
+async function scLines(rows) {
+  if (!SCTM) { try { SCTM = await J("text_sug/meta.json"); } catch (e) { SCTM = { line_shard: 256 }; } }
+  const per = SCTM.line_shard, ns = new Set(rows.filter(r => r.length > 6).map(r => Math.floor(r[6] / per)));
+  await Promise.all([...ns].map(n => { if (!SCLN.has(n)) SCLN.set(n, J("text_sug/l/" + n + ".json").then(a => { SCLNV.set(n, a); }, () => { SCLNV.set(n, []); })); return SCLN.get(n); }));
+}
+function scWhy(r) {                                     // r = [oid, score, sources, reason, line start, line length, member line]: the existing sources' words, then the matching line, as in the edit panel
+  let w = r[3] || "";
+  if (r.length > 6 && SCTM && CARDS && CARDS[r[0]]) {
+    const per = SCTM.line_shard, a = SCLNV.get(Math.floor(r[6] / per)), m = a && a[r[6] % per];
+    if (m) { const own = (CARDS[r[0]].t || "").substr(r[4], r[5]).replace(/\s+/g, " "), tw = `its line “${own}” is closest to “${m[0]}” (${m[1]}) in this group`; w = w ? w + "; " + tw : tw; }
+  }
+  return w;
+}
+const scBlank = gid => ({ gid: gid, q: [], p: [], lq: [], lp: [], keep: {}, nS: SC.per_view, nL: SC.per_view, msg: "", loaded: {}, tab: "members" });
+const SCHIDE = ["#panel .viewbar", "#list", "#morewrap"];                  // the group's own tab: left exactly as it was, only hidden while the other tab is open
+const scTabLabel = () => `Possible matches (${fmt(Suggested.count(SC, SCCUR.gid, SCFLOOR, SCINC))})`;
+async function scAfter(k) {                              // called after every group page is drawn: a tab bar when the group has possible matches, nothing otherwise
+  for (const id of ["sctabs", "suggsec"]) { const o = document.getElementById(id); if (o) o.remove(); }
+  for (const sel of SCHIDE) for (const el of document.querySelectorAll(sel)) el.classList.remove("sc-off");
+  SCCUR = null;
+  const gen = ++SCGEN;
+  if (!SC || !MI || !SHOWH || !MRES) return;
+  const id = String(k).slice(String(k).indexOf(":") + 1), gid = Suggested.gidOfKey(String(k), !!(TENT && TENT.groups && TENT.groups[id]));
+  if (!gid || !MI.groups[gid] || !MI.groups[gid][4]) return;
+  const l = SC.lens[gid];
+  if (!Suggested.count(SC, gid, SCFLOOR, SCINC) && !(l && l[1] + l[2] > 0)) return;      // N is 0 and there is no community-tag block: no tab
+  const S = scBlank(gid);
+  S.k = k; SCCUR = S;
+  const bar = `<div id="sctabs" class="sctabs" role="tablist"><button role="tab" data-sctab="members">Cards in this group</button><button role="tab" data-sctab="matches">${esc(scTabLabel())}</button></div>`;
+  const first = document.querySelector("#panel .viewbar") || document.getElementById("list");
+  if (!first) { SCCUR = null; return; }
+  first.insertAdjacentHTML("beforebegin", bar);
+  let tab = SCTAB;
+  if (SCWANT && SCWANT.k === k) { tab = SCWANT.tab; }
+  SCWANT = null;
+  scSetTab(tab);
+}
+function scUrl() {                                       // the address carries the tab, so the link can be pasted; replaceState: no history entry and no hashchange
+  const S = SCCUR;
+  if (!S || selected !== S.k) return;
+  try { history.replaceState(null, "", "#" + encodeURIComponent(S.k) + (S.tab === "matches" ? "&tab=matches" : "")); } catch (e) { /* ignore */ }
+}
+async function scSetTab(tab) {
+  const S = SCCUR, gen = SCGEN;
+  if (!S) return;
+  S.tab = tab;
+  for (const b of document.querySelectorAll("#sctabs button")) { b.classList.toggle("on", b.dataset.sctab === tab); b.setAttribute("aria-selected", b.dataset.sctab === tab ? "true" : "false"); }
+  for (const sel of SCHIDE) for (const el of document.querySelectorAll(sel)) el.classList.toggle("sc-off", tab === "matches");
+  let sec = document.getElementById("suggsec");
+  if (sec) sec.classList.toggle("sc-off", tab !== "matches");
+  scUrl();
+  if (tab !== "matches" || sec) return;
+  const host = document.getElementById("morewrap") || document.getElementById("list");
+  host.insertAdjacentHTML("afterend", `<div id="suggsec" class="suggsec">Loading possible matches…</div>`);
+  await needCards();
+  if (gen !== SCGEN || S.tab !== "matches") return;
+  await scEnsure();
+  if (gen !== SCGEN) return;
+  scRender();
+}
+async function scEnsure() {                              // the files this tab needs: the queue-card file(s) always, the already-placed file(s) only once that tick is on
+  const S = SCCUR, e = SC.groups[S.gid], l = SC.lens[S.gid], jobs = [], L = S.loaded;
+  if (e && !L.q) { L.q = 1; jobs.push(e[1][0] > 0 ? scGet("g/" + e[0] + "q.json").then(a => { S.q = a; }) : Promise.resolve()); }
+  if (e && SCINC && !L.p) { L.p = 1; jobs.push(e[2][0] > 0 ? scGet("g/" + e[0] + "p.json").then(a => { S.p = a; }) : Promise.resolve()); }
+  if (l && !L.lq) { L.lq = 1; jobs.push(l[1] > 0 ? scGet("t/" + l[0] + "q.json").then(a => { S.lq = a; }) : Promise.resolve()); }
+  if (l && SCINC && !L.lp) { L.lp = 1; jobs.push(l[2] > 0 ? scGet("t/" + l[0] + "p.json").then(a => { S.lp = a; }) : Promise.resolve()); }
+  await Promise.all(jobs);
+}
+function scRowHTML(oid, r, placed, lens) {
+  const S = SCCUR, c = MI.cards[oid], done = !!S.keep[oid], un = UNSAVED[oid + "|" + S.gid] ? ` <span class="badge b-unsaved">NOT SAVED</span>` : "";
+  const ccard = CARDS && CARDS[oid] ? costHTML(CARDS[oid]) : "";
+  const where = placed ? `<span class="sub">${esc(Manual.STATE_WORD[c[1]])}; already in ${fmt(c[3].length)} group${c[3].length === 1 ? "" : "s"}: an Add is recorded and counted nowhere</span>` : `<span class="sub">${esc(Manual.STATE_WORD[c[1]])}</span>`;
+  const act = done ? `<span class="badge b-hand">added by hand ✓</span>${un}<button class="eb" data-sact="undo" data-oid="${esc(oid)}">Undo</button>` : `<button class="eb" data-sact="add" data-oid="${esc(oid)}">Add</button>`;
+  if (lens) return `<div class="sgrow" data-oid="${esc(oid)}"><span class="lnk nm" data-go="c:${esc(oid)}">${esc(c[0])}</span> ${ccard} ${where}${act}<div class="why">${esc(S.lensWhy)}</div></div>`;
+  return `<div class="sgrow" data-oid="${esc(oid)}"><span class="score" title="how well the card and the group agree, 0 to 1; not a probability">${Number(r[1]).toFixed(2)}</span> <span class="lnk nm" data-go="c:${esc(oid)}">${esc(c[0])}</span> ${ccard} ${where}` +
+    `<span class="sub">${esc(srcWords(r[2]))}</span>${lowBadge(r[2])}${act}<div class="why">${esc(scWhy(r))}</div></div>`;
+}
+function scRender() {
+  const S = SCCUR, el = document.getElementById("suggsec");
+  if (!S || !el || !MRESV) return;
+  const e = SC.groups[S.gid], l = SC.lens[S.gid], plain = {};
+  let h = "", shownRows = [];
+  const ctl = `<div class="sgctl"><label>Floor <input type="range" min="0.5" max="0.9" step="0.1" value="${SCFLOOR}" data-sctl="floor"> <b id="sgfloorv">${SCFLOOR.toFixed(2)}</b></label>` +
+    `<label><input type="checkbox" data-sctl="inc" ${SCINC ? "checked" : ""}> include already-placed cards</label></div>`;
+  if (e) {
+    const vis = Suggested.visible(MI, MRESV, S.gid, S.q, S.p, { floor: SCFLOOR, includePlaced: SCINC, keep: S.keep });
+    vis.rows = vis.rows.filter(r => visible(r.oid));
+    const hid = vis.hidden, shown = vis.rows.slice(0, S.nS), pn = SCINC ? 0 : e[2][Suggested.stepIdx(SC, SCFLOOR)];
+    shownRows = shown.map(r => r.row);
+    for (const r of vis.rows) plain[r.oid] = 1;
+    h += `<h3>Suggested cards <span class="badge b-sugg">suggestion</span></h3><div class="sub"><b>${esc(SC.label)}</b> Nothing is placed until you press Add. The number is how well the card and the group agree (0 to 1), not a probability.</div>` + ctl;
+    h += `<div class="sub">${fmt(vis.rows.length)} card${vis.rows.length === 1 ? "" : "s"} at ${SCFLOOR.toFixed(2)} or higher${vis.rows.length > shown.length ? `, showing the first ${fmt(shown.length)}` : ""}. ` +
+      (hid.handled || hid.nofit ? `Not shown: ${fmt(hid.handled)} already handled by hand, ${fmt(hid.nofit)} marked nothing fits. ` : "") +
+      (pn ? `${fmt(pn)} already-placed card${pn === 1 ? " is" : "s are"} hidden at this floor (tick “include already-placed cards”). ` : "") + `</div>`;
+    if (S.msg) h += `<div class="bad">${esc(S.msg)}</div>`;
+    h += shown.length ? shown.map(r => scRowHTML(r.oid, r.row, r.placed, false)).join("") : `<div class="sub">No suggested card for this group at this floor.</div>`;
+    if (vis.rows.length > shown.length) h += `<div class="more"><button data-sact="more" data-w="S">Show ${Math.min(SC.per_view, vis.rows.length - shown.length)} more (${fmt(vis.rows.length - shown.length)} left)</button></div>`;
+  } else {
+    h += `<h3>Suggested cards <span class="badge b-sugg">suggestion</span></h3><div class="sub"><b>${esc(SC.label)}</b> No card has this group in its top 5 at 0.50 or higher.</div>` + ctl;
+    if (S.msg) h += `<div class="bad">${esc(S.msg)}</div>`;
+  }
+  if (l) {
+    S.lensWhy = `the card carries the community tag “${l[3]}”, which this group is built from; a tag is a hint, not a placement`;
+    const lv = Suggested.lens(MI, MRESV, S.lq, S.lp, { includePlaced: SCINC, keep: S.keep, skip: plain }), lrows = lv.rows.filter(r => visible(r.oid)), lshown = lrows.slice(0, S.nL);
+    h += `<h3 class="sgsub">Community tag: ${esc(l[3])} <span class="badge b-sugg">community tag</span></h3><div class="sub"><b>${esc(SC.lens_label)}</b></div>`;
+    h += `<div class="sub">${fmt(lrows.length)} card${lrows.length === 1 ? "" : "s"}${lrows.length > lshown.length ? `, showing the first ${fmt(lshown.length)}` : ""}, most popular first. ` +
+      (lv.hidden.handled || lv.hidden.nofit ? `Not shown: ${fmt(lv.hidden.handled)} already handled by hand, ${fmt(lv.hidden.nofit)} marked nothing fits. ` : "") + (!SCINC && l[2] ? `${fmt(l[2])} already-placed cards carry this tag and are hidden. ` : "") + `</div>`;
+    h += lshown.length ? lshown.map(r => scRowHTML(r.oid, null, r.placed, true)).join("") : `<div class="sub">No other card carries this tag.</div>`;
+    if (lrows.length > lshown.length) h += `<div class="more"><button data-sact="more" data-w="L">Show ${Math.min(SC.per_view, lrows.length - lshown.length)} more (${fmt(lrows.length - lshown.length)} left)</button></div>`;
+  }
+  el.innerHTML = h;
+  const tb = document.querySelector('#sctabs button[data-sctab="matches"]');
+  if (tb) tb.textContent = scTabLabel();
+  scNeedWhy(shownRows);
+}
+async function scNeedWhy(rows) {                         // member-line shards for the rows on screen, then the reasons are drawn in place
+  const S = SCCUR;
+  if (!rows.some(r => r.length > 6)) return;
+  await scLines(rows);
+  if (SCCUR === S) { const el = document.getElementById("suggsec"); if (el) for (const r of rows) { const w = el.querySelector(`.sgrow[data-oid="${r[0]}"] .why`); if (w) w.textContent = scWhy(r); } }
+}
+document.getElementById("panel").addEventListener("click", async e => {
+  const tb = e.target.closest("button[data-sctab]");
+  if (tb && SCCUR) {
+    SCTAB = tb.dataset.sctab;                            // remembered per browser
+    try { localStorage.setItem("groupTab", SCTAB); } catch (err) { /* ignore */ }
+    scSetTab(SCTAB);
+    return;
+  }
+  const b = e.target.closest("[data-sact]");
+  if (!b || b.disabled || !SCCUR) return;
+  const S = SCCUR, a = b.dataset.sact, oid = b.dataset.oid;
+  if (a === "more") { if (b.dataset.w === "S") S.nS += SC.per_view; else S.nL += SC.per_view; scRender(); return; }
+  b.disabled = true; S.msg = "";
+  if (a === "add") {
+    S.keep[oid] = 1;
+    const ok = await sendEdit({ oid: oid, group: S.gid, action: "add", note: "" }, true);
+    if (!ok && !UNSAVED[oid + "|" + S.gid]) { delete S.keep[oid]; S.msg = LASTMSG; }
+  } else if (a === "undo") {
+    const ok = await sendEdit({ oid: oid, group: S.gid, action: "clear", note: "" }, true);
+    if (ok || !UNSAVED[oid + "|" + S.gid]) delete S.keep[oid];
+    if (!ok) S.msg = LASTMSG;
+  }
+  if (SCCUR === S) { refreshHand(); scRender(); }
+});
+document.getElementById("panel").addEventListener("input", e => { if (e.target.dataset && e.target.dataset.sctl === "floor") { const v = document.getElementById("sgfloorv"); if (v) v.textContent = (+e.target.value).toFixed(2); } });
+document.getElementById("panel").addEventListener("change", async e => {
+  const t = e.target.dataset && e.target.dataset.sctl;
+  if (!t || !SCCUR) return;
+  if (t === "floor") { SCFLOOR = Math.round(+e.target.value * 10) / 10; try { localStorage.setItem("suggFloor", String(SCFLOOR)); } catch (err) { /* ignore */ } SCCUR.nS = SC.per_view; }
+  if (t === "inc") { SCINC = e.target.checked; try { localStorage.setItem("suggPlaced", SCINC ? "1" : "0"); } catch (err) { /* ignore */ } SCCUR.nS = SC.per_view; SCCUR.nL = SC.per_view; await scEnsure(); }
+  scRender();
+});
 function mergedDoc() {                                  // the saved file plus the edits that could not be saved, for display only
   const d = JSON.parse(JSON.stringify(MDOC));
   for (const k of Object.keys(UNSAVED)) {
@@ -1266,7 +1465,8 @@ function toggleTile(tile) {
 }
 function leafItems(lid) { const base = (MEM[lid] || []).map(m => [m[0], m[1], lid]); return handRows("leaf:" + lid, new Set(base.map(x => x[0]))).concat(sibRows(lid), base); }
 
-async function show(k) {
+async function show(k) { await show0(k); scAfter(k); }
+async function show0(k) {
   selected = k; CURCARD = null; renderTree();
   location.hash = encodeURIComponent(k);
   const P = document.getElementById("panel");
@@ -1590,7 +1790,7 @@ document.getElementById("showtent").checked = SHOWT;
 document.getElementById("showtent").addEventListener("change", e => {
   SHOWT = e.target.checked;
   try { localStorage.setItem("showTentative", SHOWT ? "1" : "0"); } catch (err) { /* ignore */ }
-  header(); renderTree();
+  header(); renderTree(); gsRefresh();
   if (selected && (selected.startsWith("tf:") || selected.startsWith("tg:"))) show(selected);
   else if (selected && (selected.startsWith("u:") || selected === "LG:" || selected.startsWith("lg:") || selected.startsWith("lf:"))) show(selected);
   else if (MODE === "cards") showCardList();
@@ -1622,7 +1822,7 @@ document.getElementById("showtag").checked = SHOWTAG;
 document.getElementById("showtag").addEventListener("change", e => {
   SHOWTAG = e.target.checked;
   try { localStorage.setItem("showTags", SHOWTAG ? "1" : "0"); } catch (err) { /* ignore */ }
-  header(); renderTree();
+  header(); renderTree(); gsRefresh();
   if (selected && (selected === "CT:" || selected.startsWith("ct:") || selected.startsWith("u:") || selected === "UR:" || selected === "LG:" || selected.startsWith("lg:") || selected.startsWith("lf:"))) show(selected);
   else if (MODE === "cards") showCardList();
 });
@@ -1737,7 +1937,105 @@ async function parsedStructure(oid) {
   return h;
 }
 
-// ---------------------------------------------------------------- find a card
+// ---------------------------------------------------------------- find a card (and, with GROUP_SEARCH on, a group)
+// build/group_search/ (src/build_group_search.py, reports/groupsearch.js): names, aliases and short descriptions of groups, never card text. Off (the meta file answers 404): this section is exactly the card search it always was.
+let GSON = false, GSIDX = null, GSWORDS = null, GSLOGOK = false, FINDSEQ = 0;
+const GSCAP = 30, GSFIRST = 5, GSCARDS_FIRST = 4;
+async function gsBoot() {
+  try { const m = await J("group_search/meta.json"); GSON = !!(m && m.enabled); } catch (e) { GSON = false; }
+  if (!GSON) return;
+  document.querySelector(".find label[for=q]").textContent = "Find a card or group:";
+  document.getElementById("q").placeholder = "a card name, or a group such as “board wipe”";
+  const note = document.getElementById("gsnote");
+  note.hidden = false;
+  note.textContent = "Searches in this box are logged…";
+  try {
+    const r = await fetch("../api/groupsearch/ping");
+    const j = r.ok ? await r.json() : null;
+    GSLOGOK = !!(j && j.enabled);
+  } catch (e) { GSLOGOK = false; }
+  note.textContent = GSLOGOK ? "Searches in this box are logged on this computer (the words typed, how many results, and whether one was opened) in build/group_search_log.json, to improve the groups."
+    : "Searches in this box are not logged (this page is not running under src/serve.py).";
+}
+async function gsLoad() { if (!GSIDX) GSIDX = GroupSearch.build(await J("group_search/index.json")); }
+async function gsWords() {
+  if (GSWORDS) return;
+  const t = await (await fetch("../build/group_search/words.txt")).text(), o = {};
+  for (const w of t.split("\n")) if (w) o[w] = 1;
+  GSWORDS = o;
+}
+// the page key the group opens with right now, or "" when the page would not open it (a switched-off layer)
+function gsAllow(e) {
+  if (e.layer === "t") return tentOn() ? e.key : (e.twin || "");
+  if (e.layer === "c") return tagOn() ? e.key : "";
+  return e.key;
+}
+function gsCount(r) {
+  const e = r.e, id = e.gid.slice(e.gid.indexOf(":") + 1);
+  try {
+    if (r.key.startsWith("lg:")) return lgN(LOOSE.groups[r.key.slice(3)]);
+    if (e.layer === "l" && MEM && CARDS) return leafN(id);
+    if (e.layer === "k" && TAX) return blkLeafN(TAX.blocks.keyword, e.gid);
+    if (e.layer === "r" && TAX) return blkLeafN(TAX.blocks.replacement, id);
+    if (e.layer === "t" && TENT && TENT.groups[id]) return tgN(TENT.groups[id]);
+    if (e.layer === "o" && LOOSE) return lgN(LOOSE.groups[id]);
+    if (e.layer === "c" && TAGS) return tgcN(TAGS.groups[id]);
+    if (e.layer === "h" && HG) return HG.groups[id].cards;
+    if (e.layer === "y" && KFAC) return KFAC.keywords[id].n;
+  } catch (err) { /* the data is not loaded yet: the built size */ }
+  return e.size;
+}
+function gsBadge(r) {
+  const e = r.e;
+  if (r.key.startsWith("lg:") && e.layer === "t") return `<span class="badge b-broad">loose · not checked</span>`;
+  return { l: "", k: `<span class="badge b-auto">keyword block</span>`, r: `<span class="badge b-auto">replacement group</span>`, t: `<span class="badge b-tent">tentative</span>`,
+    o: `<span class="badge b-broad">loose · not checked</span>`, c: `<span class="badge b-tag">community tag · not checked</span>`, h: hgBadge(),
+    y: `<span class="badge b-auto">keyword filter, not a placement</span>` }[e.layer];
+}
+function gsRow(r) {
+  const e = r.e, n = gsCount(r);
+  const why = r.dym ? `did you mean “${esc(r.dym)}”` : r.why === "alias" ? `via alias “${esc(r.via)}”` : r.why === "slug" ? "matched: tag name" : r.why === "description" ? "matched: description" : r.why === "family" ? "matched: family" : "";
+  const noun = e.layer === "h" ? "rule matches" : "cards";
+  return `<a class="gr" data-nav data-go="${esc(r.key)}" href="#${esc(encodeURIComponent(r.key))}"${r.note && r.why === "alias" ? ` title="${esc(r.note)}"` : ""}>` +
+    `<span class="gn">${esc(e.name)}</span>${gsBadge(r)}<span class="sub">${fmt(n)} ${noun}</span>` +
+    `<span class="gp">${esc(e.path)}</span>` +
+    (e.desc ? `<span class="gd" title="${esc(e.desc)}">${esc(e.desc)}</span>` : "") +
+    (why ? `<span class="gm">${why}</span>` : "") +
+    (r.why === "alias" && r.fit === "partial" && r.note ? `<span class="gl">Note: ${esc(r.note)}</span>` : "") + `</a>`;
+}
+function gsMore(rows, first, kind) {
+  const hid = rows.slice(first);
+  return rows.slice(0, first).join("") + hid.map(h => h.replace(/^<(a|div) /, "<$1 hidden data-gsx=\"" + kind + "\" ")).join("") +
+    (hid.length ? `<button class="gs-btn" data-nav data-gsmore="${kind}">Show ${hid.length} more</button>` : "");
+}
+function gsSection(q, cardRows, cardTotal, res) {
+  const gr = res.groups.slice(0, GSCAP).map(gsRow), fam = res.family.slice(0, GSCAP).map(gsRow);
+  const nG = res.groups.length;
+  let h = `<div class="gs-jump" id="gs-jump"><a href="#" data-gsjump="gs-cards">Cards (${fmt(cardTotal)})</a> · <a href="#" data-gsjump="gs-groups">Groups (${fmt(nG)}${res.family.length ? " + " + fmt(res.family.length) + " by family" : ""})</a></div>`;
+  h += `<div id="gs-cards"><h3 class="gs-h">Cards</h3>` + (cardTotal ? gsMore(cardRows, GSCARDS_FIRST, "cards") + (cardTotal > 12 ? `<div class="sub">${fmt(cardTotal)} cards match; showing 12.</div>` : "") : `<div class="sub gs-none">No card name matches.</div>`) + `</div>`;
+  h += `<div id="gs-groups"><h3 class="gs-h">Groups</h3>`;
+  if (res.dym) h += `<div class="sub gs-dym">Nothing matched “${esc(res.dym.from)}” as typed. Did you mean “${esc(res.dym.to)}”? Those groups are listed with that label.</div>`;
+  if (nG) h += gsMore(gr, GSFIRST, "groups") + (nG > GSCAP ? `<div class="sub">${fmt(nG)} groups match; showing ${GSCAP}.</div>` : "");
+  else h += `<div class="sub gs-none">No group matches “${esc(q)}”.</div>`;
+  if (res.family.length) h += `<div class="gs-fam"><button class="gs-btn gs-famb" data-nav data-gsfam aria-expanded="false">${fmt(res.family.length)} more group${res.family.length === 1 ? "" : "s"} matched only by family or kind ▸</button><div class="gs-famlist" hidden>${fam.join("")}${res.family.length > GSCAP ? `<div class="sub">showing ${GSCAP} of ${fmt(res.family.length)}</div>` : ""}</div></div>`;
+  return h + `</div><div class="sr-only" aria-live="polite" id="gs-live">${nG} group${nG === 1 ? "" : "s"}, ${cardTotal} card${cardTotal === 1 ? "" : "s"}</div>`;
+}
+// the search log: one "search" event once the query has stood for a moment, one "open" event per result opened. The page says so beside the box.
+let gsLogTimer = null, gsPending = null, gsLogged = "";
+function gsPost(body) {
+  if (!GSLOGOK) return;
+  fetch("../api/groupsearch/log", { method: "POST", headers: { "Content-Type": "application/json", "X-Manual-Edit": "1" }, body: JSON.stringify(body) }).catch(() => { /* the log is a convenience */ });
+}
+function gsFlush() {
+  clearTimeout(gsLogTimer);
+  if (gsPending && gsPending.q !== gsLogged) { gsPost({ q: gsPending.q, t: "search", groups: gsPending.g, cards: gsPending.c }); gsLogged = gsPending.q; }
+}
+function gsLogSearch(q, g, c) {
+  if (LIDX.norm(q).length < 3) { gsPending = null; return; }
+  gsPending = { q: q, g: g, c: c };
+  clearTimeout(gsLogTimer);
+  gsLogTimer = setTimeout(gsFlush, 900);
+}
 let findTimer = null;
 document.getElementById("q").addEventListener("input", e => {
   clearTimeout(findTimer);
@@ -1745,25 +2043,78 @@ document.getElementById("q").addEventListener("input", e => {
 });
 async function find(q) {
   const out = document.getElementById("findres");
-  if (!q.trim()) { out.innerHTML = ""; return; }
+  if (!q.trim()) { out.innerHTML = ""; gsPending = null; return; }
+  const seq = ++FINDSEQ;
   if (!LOOK) { out.innerHTML = `<div class="sub">Loading the card list…</div>`; await needLookup(); }
   await needManual();
   const ctx = answerCtx();
   const r = AbilityFind.search(LIDX, q, 12);
   if (r.matches.some(en => en[3] === "u")) await needLoose();
-  out.innerHTML = (r.total ? "" : `<div class="sub">No card or catalogue entry matches.</div>`) + r.matches.map(en => {
+  const rows = r.matches.map(en => {
     const a = AbilityFind.describe(LIDX, en, ctx);
     let links = answerLinks(a);
     if (en[3] !== "o") links += ` <span class="lnk chip" data-go="c:${esc(en[0])}">card page</span>`;
-    return `<div class="fr"><span class="nm">${esc(a.name)}</span>${a.others.length ? ` <span class="sub">(${a.others.map(esc).join(" / ")})</span>` : ""}: ${esc(a.text)}${links}${a.hand && a.hand.fresh ? ` <span class="badge b-hand">placed by hand</span>` : ""}${en[3] === "u" && !(a.hand && a.hand.fresh) ? looseChips(en[0]) : ""}</div>`;
-  }).join("") + (r.total > 12 ? `<div class="sub">${fmt(r.total)} matches; showing 12.</div>` : "");
+    return `<div class="fr"${GSON && en[3] !== "o" ? ` tabindex="0" data-nav data-go="c:${esc(en[0])}"` : ""}><span class="nm">${esc(a.name)}</span>${a.others.length ? ` <span class="sub">(${a.others.map(esc).join(" / ")})</span>` : ""}: ${esc(a.text)}${links}${a.hand && a.hand.fresh ? ` <span class="badge b-hand">placed by hand</span>` : ""}${en[3] === "u" && !(a.hand && a.hand.fresh) ? looseChips(en[0]) : ""}</div>`;
+  });
+  if (!GSON) {
+    out.innerHTML = (r.total ? "" : `<div class="sub">No card or catalogue entry matches.</div>`) + rows.join("") + (r.total > 12 ? `<div class="sub">${fmt(r.total)} matches; showing 12.</div>` : "");
+    return;
+  }
+  try {
+    await gsLoad(); await needLoose();
+    let res = GroupSearch.search(GSIDX, q, { allow: gsAllow, words: GSWORDS });
+    if (res.needWords) { await gsWords(); res = GroupSearch.search(GSIDX, q, { allow: gsAllow, words: GSWORDS }); }
+    if (seq !== FINDSEQ) return;                      // a newer query has started
+    if (!r.total && !res.groups.length && !res.family.length) out.innerHTML = `<div class="sub">No card or group matches “${esc(q)}”. Try a card name, or a common term such as “board wipe”.</div>`;
+    else out.innerHTML = gsSection(q, rows, r.total, res);
+    gsLogSearch(q, res.groups.length, r.total);
+  } catch (err) {                                     // the group files are missing or broken: the card search, as it always was
+    out.innerHTML = (r.total ? "" : `<div class="sub">No card or catalogue entry matches.</div>`) + rows.join("") + (r.total > 12 ? `<div class="sub">${fmt(r.total)} matches; showing 12.</div>` : "");
+  }
 }
-document.getElementById("findres").addEventListener("click", e => { const go = e.target.closest("[data-go]"); if (go) show(go.dataset.go); });
+function gsRefresh() { if (GSON) { const q = document.getElementById("q").value; if (q.trim()) find(q); } }
+document.getElementById("findres").addEventListener("click", e => {
+  if (GSON) {
+    const mb = e.target.closest("[data-gsmore]");
+    if (mb) { for (const el of document.querySelectorAll("#findres [data-gsx=" + mb.dataset.gsmore + "]")) { el.hidden = false; } mb.remove(); return; }
+    const fb = e.target.closest("[data-gsfam]");
+    if (fb) { const l = fb.parentElement.querySelector(".gs-famlist"); l.hidden = !l.hidden; fb.setAttribute("aria-expanded", l.hidden ? "false" : "true"); return; }
+    const jp = e.target.closest("[data-gsjump]");
+    if (jp) { e.preventDefault(); document.getElementById(jp.dataset.gsjump).scrollIntoView(); return; }
+  }
+  const go = e.target.closest("[data-go]");
+  if (go) {
+    if (GSON) { e.preventDefault(); gsFlush(); if (gsPending) gsPost({ q: gsPending.q, t: "open", groups: gsPending.g, cards: gsPending.c }); }
+    show(go.dataset.go).then(() => { if (GSON && window.innerWidth <= 800) document.getElementById("panel").scrollIntoView(); });
+  }
+});
+// keyboard: ArrowDown (or Enter) in the box goes to the first result; Up/Down move through the results; Enter opens; Escape returns to the box, and in the box clears it
+const gsNav = () => [...document.querySelectorAll("#findres [data-nav]")].filter(el => !el.closest("[hidden]"));
+document.getElementById("q").addEventListener("keydown", async e => {
+  if (!GSON) return;
+  if (e.key === "Escape") { e.target.value = ""; clearTimeout(findTimer); document.getElementById("findres").innerHTML = ""; gsPending = null; return; }
+  if (e.key === "ArrowDown" || e.key === "Enter") {
+    e.preventDefault();
+    if (e.key === "Enter") { clearTimeout(findTimer); await find(e.target.value); }
+    const n = gsNav();
+    if (n.length) n[0].focus();
+  }
+});
+document.getElementById("findres").addEventListener("keydown", e => {
+  if (!GSON) return;
+  const n = gsNav(), i = n.indexOf(document.activeElement);
+  if (e.key === "ArrowDown" && i >= 0) { e.preventDefault(); if (i + 1 < n.length) n[i + 1].focus(); }
+  else if (e.key === "ArrowUp" && i >= 0) { e.preventDefault(); if (i > 0) n[i - 1].focus(); else document.getElementById("q").focus(); }
+  else if (e.key === "Escape") { e.preventDefault(); document.getElementById("q").focus(); }
+  else if (e.key === "Enter" && i >= 0 && n[i].tagName === "DIV") { e.preventDefault(); n[i].click(); }
+});
 
 // back / forward and pasted links: follow the hash when something other than show() changed it
 window.addEventListener("hashchange", () => {
-  const h = decodeURIComponent(location.hash.slice(1));
-  if (!TAX || !h || h === selected) return;
+  const [h, tab] = splitTab(decodeURIComponent(location.hash.slice(1)));
+  if (tab) SCWANT = { k: h, tab: tab };
+  if (TAX && h && h === selected) { if (tab && SCCUR && SCCUR.k === h) { SCWANT = null; scSetTab(tab); } return; }
+  if (!TAX || !h) return;
   if (h.startsWith("C:")) setMode("cards", true);
   if (h.startsWith("Q:") || h.startsWith("QB:")) setMode("queue", true);
   show(h);
@@ -1778,14 +2129,15 @@ window.addEventListener("hashchange", () => {
     return;
   }
   for (const f of TAX.families) for (const nd of f.nodes) { NODES[nd.id] = Object.assign({ fam: f.key }, nd); NODE_FAM[nd.id] = f.name; }
-  header(); renderTree();
-  needCards().then(needUnorg).then(needLoose).then(needManual).then(needKFac).then(needHG).then(needSib).then(() => { hideNote(); header(); renderTree(); });
+  header(); renderTree(); gsBoot();
+  needCards().then(needUnorg).then(needLoose).then(needManual).then(needKFac).then(needHG).then(needSib).then(() => { hideNote(); header(); renderTree(); if (selected && !SCCUR) scAfter(selected); });
   document.getElementById("foot").innerHTML =
     `Data: ${esc(TAX.meta.rules.snapshot)}. Method: ${esc(TAX.meta.rules.backoff)}, minimum ${TAX.meta.rules.minimum}; ` +
     `names are generated (edits: corrections/ability_taxonomy_names.json); no tag data is used to place anything. ` +
     `"Tentative groups" are loose groups promoted by hand-read rules; they are not fully checked and are never part of the precise or the broad figure (switch them off at the top). The "Loosely grouped" browse layer is a finding aid: it is not checked and is never counted as organized. The coverage figure here and the archived view's 74.8% are measured on different bases. ` +
     `<a href="ability-taxonomy-report.md">Results and limits</a> · <a href="ability-taxonomy-design.md">Design</a> · <a href="../KNOWN_LIMITATIONS.md">Known limitations §12</a>.`;
-  const h = decodeURIComponent(location.hash.slice(1));
+  const [h, tab] = splitTab(decodeURIComponent(location.hash.slice(1)));
+  if (h && tab) { await needManual(); SCWANT = { k: h, tab: tab }; }              // a link to a tab needs the hand layer and the meta file before the page is drawn
   if (h) { if (h.startsWith("C:")) setMode("cards", true); if (h.startsWith("Q:") || h.startsWith("QB:")) { await needManual(); setMode("queue", true); } show(h); }
 })();
 </script>

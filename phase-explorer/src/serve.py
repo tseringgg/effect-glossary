@@ -17,6 +17,7 @@ import webbrowser
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import manual_common as MC
 import manual_batch as MB
+import group_search_log as GSL
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 8765
@@ -113,6 +114,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         return host in ("localhost", "127.0.0.1", "::1")
 
     def do_GET(self):
+        if self.path.split("?")[0].rstrip("/") == "/api/groupsearch/ping":
+            self.send_json(200, {"ok": True, "enabled": GSL.enabled()})
+            return
         if self.path.split("?")[0].rstrip("/") == "/api/manual/ping":
             idx = MC.load_index()
             try:
@@ -170,8 +174,37 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         except Exception as exc:
             self.send_json(500, {"ok": False, "error": "server error: %s" % exc})
 
+    # POST /api/groupsearch/log {q, t: search|open, groups, cards}: what was typed in the main search box, for curating aliases. See src/group_search_log.py. 404 when GROUP_SEARCH is off.
+    def do_groupsearch_log(self):
+        try:
+            if not GSL.enabled():
+                raise MC.ApiError(404, "the group search is off")
+            if not self.local_host():
+                raise MC.ApiError(403, "local requests only")
+            if self.headers.get("X-Manual-Edit") != "1" or "application/json" not in (self.headers.get("Content-Type") or ""):
+                raise MC.ApiError(400, "need Content-Type: application/json and X-Manual-Edit: 1")
+            try:
+                n = int(self.headers.get("Content-Length") or 0)
+            except ValueError:
+                raise MC.ApiError(400, "bad Content-Length")
+            if n > GSL.MAX_BODY:
+                self.rfile.read(min(n, 1 << 20))
+                raise MC.ApiError(413, "body is %d bytes; the limit is %d" % (n, GSL.MAX_BODY))
+            try:
+                body = json.loads(self.rfile.read(n) or b"{}")
+            except Exception as exc:
+                raise MC.ApiError(400, "bad JSON: %s" % exc)
+            self.send_json(200, GSL.record(body))
+        except MC.ApiError as exc:
+            self.send_json(exc.status, {"ok": False, "error": exc.msg})
+        except Exception as exc:
+            self.send_json(500, {"ok": False, "error": "server error: %s" % exc})
+
     def do_POST(self):
         route = self.path.rstrip("/")
+        if route == "/api/groupsearch/log":
+            self.do_groupsearch_log()
+            return
         if route == "/api/manual":
             self.do_manual()
             return

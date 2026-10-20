@@ -66,6 +66,12 @@ def main():
     check("the note's hand-placement line matches the page (switch, badge, own line)", "placed by hand" in note and "Show hand edits" in note and all(x in page for x in ("showhand", "Show hand edits", "b-hand", "placed by hand")))
     check("the note's keyword-facet, hand-group and sibling lines match the page (filter wording, badges, switch)", all(x in note for x in ("By keyword", "narrower than Scryfall", "hand group", "Show sibling placements")) and all(x in page for x in ("cf-kw", "By keyword", "filter, not a placement", "b-hg", "showsib", "Show sibling placements")))
     check("the note's batch-actions line matches the page (switch, batch view, review, undo, all or nothing)", all(x in note for x in ("Batch view", "Batch review", "Undo this batch", "Show batch actions", "all or nothing")) and all(x in page for x in ("showbatch", "Show batch actions", "Batch view", "breview", "Undo this batch", "Nothing is placed until you press Accept")))
+    sg = io.open(os.path.join(HERE, "src", "build_suggested_cards.py"), encoding="utf-8").read()
+    check("the note's possible-matches line matches the page (tab, count, wording, floor, tick) and the build script (flag, label)", all(x in note for x in ("Possible matches", "counted in no figure", "never appear on the group's own tab", "0.70", "already-placed"))
+          and all(x in page for x in ("sctabs", "Possible matches (", "include already-placed cards", "b-sugg", "groupTab")) and "SUGGESTED_CARDS_VIEW = True" in sg and "Suggested cards. Not members. Not counted in any figure." in sg)
+    gs = io.open(os.path.join(HERE, "src", "build_group_search.py"), encoding="utf-8").read()
+    check("the note's group-search line matches the page (label, sections, labels, log line) and the build script (flag, no card text)", all(x in note for x in ("Find a card or group", "Cards and then Groups", "alias", "matched: description", "matched: family", "did you mean", "never the text of cards", "logged on this computer"))
+          and all(x in page for x in ("Find a card or group", "matched: description", "matched: family", "did you mean", "Searches in this box are logged", "gs-jump", "groupsearch.js")) and "GROUP_SEARCH = True" in gs)
     print("NOTE  the note says 'constructed-legal'; the build's denominator is the card set after leaving out non-cards and cards not meant for constructed play (%s cards). It is not a legality test: "
           "it still holds, for example, cards of sets that have not released yet." % format(t["in_scope"], ","))
     sys.exit(0 if all(out) else 1)

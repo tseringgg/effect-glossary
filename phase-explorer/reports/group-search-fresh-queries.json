@@ -1,0 +1,43 @@
+{
+ "fixed": "2026-10-19, before any group-search code was written",
+ "seed": 20262901,
+ "method": "12 'drawn': random.Random(20262901).sample(sorted in-scope placed cards by oracle_id, 12); for each I wrote, from the card's rules text, the term a player would type to find cards like it. 4 near-collisions and 4 typos are deliberate, not drawn. No real-typing log exists (the page has never logged searches); the 30 baseline-A items are the closest thing.",
+ "drawn_terms": {
+  "The Mystical Archive": "draft from spellbook",
+  "High Ground": "extra blockers",
+  "Advocate of the Beast": "+1/+1 counters",
+  "Blor the Impervious": "hexproof indestructible",
+  "Deep Gnome Terramancer": "search for plains",
+  "Caparocti Sunborn": "discover",
+  "Leonin Lightscribe": "magecraft",
+  "Court of Garenbrig": "monarch",
+  "Dire Fleet Warmonger": "sacrifice a creature to pump",
+  "Supportive Parents": "tap creatures for mana",
+  "Fireshrieker": "give double strike",
+  "Galvanic Giant": "stun counter"
+ },
+ "near_collisions": [
+  "wrath",
+  "wraith",
+  "ramp",
+  "rump"
+ ],
+ "near_collision_expect": {
+  "wrath": "board wipe / destroy all creatures",
+  "wraith": "no wipe group: literal; cards named Wraith, groups with 'wraith' only if any",
+  "ramp": "land/mana ramp groups",
+  "rump": "literal; no ramp groups"
+ },
+ "typos": [
+  "reanimtae",
+  "counterspel",
+  "lifelnik",
+  "mana dorc"
+ ],
+ "descriptions_spot_check": {
+  "seed": 20262950,
+  "n": 30,
+  "method": "random.Random(20262950).sample(sorted offered group ids, 30)"
+ },
+ "terms_written": "2026-10-19, AFTER the index was built but BEFORE any of these 20 queries was run; the cards were drawn by the seed fixed earlier, and each term was written from the card's rules text only"
+}

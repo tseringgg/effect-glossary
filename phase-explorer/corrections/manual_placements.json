@@ -1,7 +1,7 @@
 {
  "_comment": "Hand placements, written by src/serve.py (POST /api/manual); hand-editable. Keyed by oracle_id, then group id (layer:id). action is add | remove | nofit (nofit = 'nothing fits', group id none:fits). source_at_edit is what the card's placement was when it was edited (filled by the server). 'clear' deletes an entry (undo); history keeps the trace. Read by src/build_manual_layer.py; the page reads this file directly.",
  "version": 1,
- "revision": 75,
+ "revision": 98,
  "edits": {
   "002965be-a36f-4a09-9ce0-c6535bca1703": {
    "name": "Veil of Summer",
@@ -1930,6 +1930,75 @@
     }
    }
   },
+  "17975a20-2c13-4325-be1e-0bcda5063a2d": {
+   "name": "Terastodon",
+   "groups": {
+    "leaf:a59e6e5f55": {
+     "action": "add",
+     "date": "2026-10-17T14:34:03",
+     "note": "",
+     "group_name": "Create Elephant tokens",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "loose:g4be24b67"
+      ],
+      "reason": {
+       "code": 4,
+       "text": "only in a catch-all: its abilities fit only a catch-all or 'less common effects' group"
+      }
+     }
+    },
+    "leaf:a33da2d048": {
+     "action": "add",
+     "date": "2026-10-17T14:34:05",
+     "note": "",
+     "group_name": "Destroy a creature, then create a token",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "loose:g4be24b67"
+      ],
+      "reason": {
+       "code": 4,
+       "text": "only in a catch-all: its abilities fit only a catch-all or 'less common effects' group"
+      }
+     }
+    },
+    "leaf:aac8b841c1": {
+     "action": "add",
+     "date": "2026-10-17T14:34:13",
+     "note": "",
+     "group_name": "Destroy a noncreature permanent",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "loose:g4be24b67"
+      ],
+      "reason": {
+       "code": 4,
+       "text": "only in a catch-all: its abilities fit only a catch-all or 'less common effects' group"
+      }
+     }
+    },
+    "tag:568637db-e729-4474-b860-3bb28fca02a7": {
+     "action": "add",
+     "date": "2026-10-17T14:34:22",
+     "note": "",
+     "group_name": "Creates tokens under an opponent's control",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "loose:g4be24b67"
+      ],
+      "reason": {
+       "code": 4,
+       "text": "only in a catch-all: its abilities fit only a catch-all or 'less common effects' group"
+      }
+     }
+    }
+   }
+  },
   "17abf8c6-70b6-4877-a0f2-a87b22fb2828": {
    "name": "Wormfang Manta",
    "groups": {
@@ -2773,6 +2842,25 @@
       "threshold": 0.76,
       "score": 0.767,
       "source": "sig+tag"
+     }
+    }
+   }
+  },
+  "2296370c-fe34-4df6-92a5-260f1634bede": {
+   "name": "Crawlspace",
+   "groups": {
+    "hand:limits-attackers-or-blockers": {
+     "action": "add",
+     "date": "2026-10-17T14:33:44",
+     "note": "",
+     "group_name": "Limits how many creatures can attack or block",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [],
+      "reason": {
+       "code": 1,
+       "text": "no readable ability: the parser produced nothing the tool can group it on"
+      }
      }
     }
    }
@@ -7798,6 +7886,75 @@
     }
    }
   },
+  "64df560a-905f-45d1-bc70-14d99e3112d3": {
+   "name": "Windcrag Siege",
+   "groups": {
+    "leaf:aed416cf14": {
+     "action": "add",
+     "date": "2026-10-17T14:32:27",
+     "note": "",
+     "group_name": "Create Goblin tokens",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "loose:g4a20ed47"
+      ],
+      "reason": {
+       "code": 5,
+       "text": "only in a held group: its abilities fit only a loose group that was not promoted"
+      }
+     }
+    },
+    "hand:chooses-a-side-as-it-enters": {
+     "action": "add",
+     "date": "2026-10-17T14:32:29",
+     "note": "",
+     "group_name": "Chooses between two named options as it enters",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "loose:g4a20ed47"
+      ],
+      "reason": {
+       "code": 5,
+       "text": "only in a held group: its abilities fit only a loose group that was not promoted"
+      }
+     }
+    },
+    "leaf:a14cc0bb05": {
+     "action": "add",
+     "date": "2026-10-17T14:32:32",
+     "note": "",
+     "group_name": "Make a choice as it enters",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "loose:g4a20ed47"
+      ],
+      "reason": {
+       "code": 5,
+       "text": "only in a held group: its abilities fit only a loose group that was not promoted"
+      }
+     }
+    },
+    "loose:g930e7985": {
+     "action": "add",
+     "date": "2026-10-17T14:32:35",
+     "note": "",
+     "group_name": "Static: other rule › Triggers an extra time",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "loose:g4a20ed47"
+      ],
+      "reason": {
+       "code": 5,
+       "text": "only in a held group: its abilities fit only a loose group that was not promoted"
+      }
+     }
+    }
+   }
+  },
   "65259ba4-956d-46a3-abd9-791d02015b41": {
    "name": "Mists of Lórien",
    "groups": {
@@ -11072,6 +11229,27 @@
     }
    }
   },
+  "94fac5fe-97d5-4c12-a80c-8efff9d853ae": {
+   "name": "Blood Moon",
+   "groups": {
+    "hand:nonbasic-lands-change-type": {
+     "action": "add",
+     "date": "2026-10-17T14:37:08",
+     "note": "",
+     "group_name": "Makes nonbasic lands another land type",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "loose:g2bae0e35"
+      ],
+      "reason": {
+       "code": 4,
+       "text": "only in a catch-all: its abilities fit only a catch-all or 'less common effects' group"
+      }
+     }
+    }
+   }
+  },
   "95ce305f-34bc-4d6d-b7ba-ffd4b2a25336": {
    "name": "Maelstrom Pulse",
    "groups": {
@@ -12128,6 +12306,59 @@
       "threshold": 0.9,
       "score": 1.0,
       "source": "sig"
+     }
+    }
+   }
+  },
+  "a37387f0-9d57-49ff-aa38-2c6b359e8916": {
+   "name": "Grab the Prize",
+   "groups": {
+    "rp:cost:additional": {
+     "action": "add",
+     "date": "2026-10-17T14:34:41",
+     "note": "",
+     "group_name": "Additional cost to cast",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "tent:g6edf26de"
+      ],
+      "reason": {
+       "code": 2,
+       "text": "dropped-condition hold: an ability may be missing a condition, so it is held back"
+      }
+     }
+    },
+    "leaf:ab2d4667c5": {
+     "action": "add",
+     "date": "2026-10-17T14:35:08",
+     "note": "",
+     "group_name": "Draw cards — who draws isn't recorded",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "tent:g6edf26de"
+      ],
+      "reason": {
+       "code": 2,
+       "text": "dropped-condition hold: an ability may be missing a condition, so it is held back"
+      }
+     }
+    },
+    "leaf:a45bd56d8d": {
+     "action": "add",
+     "date": "2026-10-17T14:36:16",
+     "note": "",
+     "group_name": "Draw cards, then you discard — who draws isn't recorded",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "tent:g6edf26de"
+      ],
+      "reason": {
+       "code": 2,
+       "text": "dropped-condition hold: an ability may be missing a condition, so it is held back"
+      }
      }
     }
    }
@@ -14444,6 +14675,27 @@
     }
    }
   },
+  "c066f921-e349-45d1-8ec3-0955d10bbf19": {
+   "name": "Lae'zel, Vlaakith's Champion",
+   "groups": {
+    "rp:fam:counters": {
+     "action": "add",
+     "date": "2026-10-17T14:37:02",
+     "note": "",
+     "group_name": "Counter-adding replacement",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "tent:g0d78cf06"
+      ],
+      "reason": {
+       "code": 3,
+       "text": "gap-test hold: part of the card was not read, so its abilities are held back"
+      }
+     }
+    }
+   }
+  },
   "c0cbb347-b060-43ce-a9c5-8c835be3cf1b": {
    "name": "Azor's Gateway",
    "groups": {
@@ -16469,6 +16721,67 @@
     }
    }
   },
+  "d9517c5d-66d0-4178-96fb-a8c04f311ad8": {
+   "name": "Aven Mindcensor",
+   "groups": {
+    "hand:stops-library-searches": {
+     "action": "add",
+     "date": "2026-10-17T14:31:51",
+     "note": "",
+     "group_name": "Stops or limits library searches",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [],
+      "reason": {
+       "code": 1,
+       "text": "no readable ability: the parser produced nothing the tool can group it on"
+      }
+     }
+    },
+    "kw:Flash+Flying": {
+     "action": "add",
+     "date": "2026-10-17T14:32:03",
+     "note": "",
+     "group_name": "Flash + Flying",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [],
+      "reason": {
+       "code": 1,
+       "text": "no readable ability: the parser produced nothing the tool can group it on"
+      }
+     }
+    },
+    "kw:Flash": {
+     "action": "add",
+     "date": "2026-10-17T14:32:07",
+     "note": "",
+     "group_name": "Flash",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [],
+      "reason": {
+       "code": 1,
+       "text": "no readable ability: the parser produced nothing the tool can group it on"
+      }
+     }
+    },
+    "kw:Flying": {
+     "action": "add",
+     "date": "2026-10-17T14:32:08",
+     "note": "",
+     "group_name": "Flying",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [],
+      "reason": {
+       "code": 1,
+       "text": "no readable ability: the parser produced nothing the tool can group it on"
+      }
+     }
+    }
+   }
+  },
   "d9590455-974f-4b7c-a1ec-fd52e3ba0618": {
    "name": "Centaur of Attention",
    "groups": {
@@ -17276,6 +17589,91 @@
       "threshold": 0.8,
       "score": 0.857,
       "source": "sig"
+     }
+    }
+   }
+  },
+  "e2487868-f386-438e-a73f-b494f6d35fac": {
+   "name": "Genesis Wave",
+   "groups": {
+    "leaf:acd7760f8a": {
+     "action": "add",
+     "date": "2026-10-17T14:33:10",
+     "note": "",
+     "group_name": "Look at the top cards and put one onto the battlefield",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "loose:g0ae8d0e1"
+      ],
+      "reason": {
+       "code": 5,
+       "text": "only in a held group: its abilities fit only a loose group that was not promoted"
+      }
+     }
+    },
+    "leaf:a67bcbb37d": {
+     "action": "add",
+     "date": "2026-10-17T14:33:18",
+     "note": "",
+     "group_name": "Look at the top cards and put a land onto the battlefield",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "loose:g0ae8d0e1"
+      ],
+      "reason": {
+       "code": 5,
+       "text": "only in a held group: its abilities fit only a loose group that was not promoted"
+      }
+     }
+    },
+    "leaf:a6dfb79943": {
+     "action": "add",
+     "date": "2026-10-17T14:33:25",
+     "note": "",
+     "group_name": "Look at the top cards and put a creature onto the battlefield",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "loose:g0ae8d0e1"
+      ],
+      "reason": {
+       "code": 5,
+       "text": "only in a held group: its abilities fit only a loose group that was not promoted"
+      }
+     }
+    },
+    "leaf:af83987d10": {
+     "action": "add",
+     "date": "2026-10-17T14:33:26",
+     "note": "",
+     "group_name": "Look at the top cards and put a permanent into hand",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "loose:g0ae8d0e1"
+      ],
+      "reason": {
+       "code": 5,
+       "text": "only in a held group: its abilities fit only a loose group that was not promoted"
+      }
+     }
+    },
+    "leaf:ac7532a09c": {
+     "action": "add",
+     "date": "2026-10-17T14:33:31",
+     "note": "",
+     "group_name": "Look at the top cards and put a card onto the battlefield (any target) — what it applies to isn't recorded",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "loose:g0ae8d0e1"
+      ],
+      "reason": {
+       "code": 5,
+       "text": "only in a held group: its abilities fit only a loose group that was not promoted"
+      }
      }
     }
    }
@@ -20881,6 +21279,190 @@
    "op": "add",
    "oid": "1cdf30de-d88c-421a-80df-4917bbd2f09e",
    "group": "rp:sig:fog-limited",
+   "note": ""
+  },
+  {
+   "seq": 76,
+   "date": "2026-10-17T14:31:51",
+   "op": "add",
+   "oid": "d9517c5d-66d0-4178-96fb-a8c04f311ad8",
+   "group": "hand:stops-library-searches",
+   "note": ""
+  },
+  {
+   "seq": 77,
+   "date": "2026-10-17T14:32:03",
+   "op": "add",
+   "oid": "d9517c5d-66d0-4178-96fb-a8c04f311ad8",
+   "group": "kw:Flash+Flying",
+   "note": ""
+  },
+  {
+   "seq": 78,
+   "date": "2026-10-17T14:32:07",
+   "op": "add",
+   "oid": "d9517c5d-66d0-4178-96fb-a8c04f311ad8",
+   "group": "kw:Flash",
+   "note": ""
+  },
+  {
+   "seq": 79,
+   "date": "2026-10-17T14:32:08",
+   "op": "add",
+   "oid": "d9517c5d-66d0-4178-96fb-a8c04f311ad8",
+   "group": "kw:Flying",
+   "note": ""
+  },
+  {
+   "seq": 80,
+   "date": "2026-10-17T14:32:27",
+   "op": "add",
+   "oid": "64df560a-905f-45d1-bc70-14d99e3112d3",
+   "group": "leaf:aed416cf14",
+   "note": ""
+  },
+  {
+   "seq": 81,
+   "date": "2026-10-17T14:32:29",
+   "op": "add",
+   "oid": "64df560a-905f-45d1-bc70-14d99e3112d3",
+   "group": "hand:chooses-a-side-as-it-enters",
+   "note": ""
+  },
+  {
+   "seq": 82,
+   "date": "2026-10-17T14:32:32",
+   "op": "add",
+   "oid": "64df560a-905f-45d1-bc70-14d99e3112d3",
+   "group": "leaf:a14cc0bb05",
+   "note": ""
+  },
+  {
+   "seq": 83,
+   "date": "2026-10-17T14:32:35",
+   "op": "add",
+   "oid": "64df560a-905f-45d1-bc70-14d99e3112d3",
+   "group": "loose:g930e7985",
+   "note": ""
+  },
+  {
+   "seq": 84,
+   "date": "2026-10-17T14:33:10",
+   "op": "add",
+   "oid": "e2487868-f386-438e-a73f-b494f6d35fac",
+   "group": "leaf:acd7760f8a",
+   "note": ""
+  },
+  {
+   "seq": 85,
+   "date": "2026-10-17T14:33:18",
+   "op": "add",
+   "oid": "e2487868-f386-438e-a73f-b494f6d35fac",
+   "group": "leaf:a67bcbb37d",
+   "note": ""
+  },
+  {
+   "seq": 86,
+   "date": "2026-10-17T14:33:25",
+   "op": "add",
+   "oid": "e2487868-f386-438e-a73f-b494f6d35fac",
+   "group": "leaf:a6dfb79943",
+   "note": ""
+  },
+  {
+   "seq": 87,
+   "date": "2026-10-17T14:33:26",
+   "op": "add",
+   "oid": "e2487868-f386-438e-a73f-b494f6d35fac",
+   "group": "leaf:af83987d10",
+   "note": ""
+  },
+  {
+   "seq": 88,
+   "date": "2026-10-17T14:33:31",
+   "op": "add",
+   "oid": "e2487868-f386-438e-a73f-b494f6d35fac",
+   "group": "leaf:ac7532a09c",
+   "note": ""
+  },
+  {
+   "seq": 89,
+   "date": "2026-10-17T14:33:44",
+   "op": "add",
+   "oid": "2296370c-fe34-4df6-92a5-260f1634bede",
+   "group": "hand:limits-attackers-or-blockers",
+   "note": ""
+  },
+  {
+   "seq": 90,
+   "date": "2026-10-17T14:34:03",
+   "op": "add",
+   "oid": "17975a20-2c13-4325-be1e-0bcda5063a2d",
+   "group": "leaf:a59e6e5f55",
+   "note": ""
+  },
+  {
+   "seq": 91,
+   "date": "2026-10-17T14:34:05",
+   "op": "add",
+   "oid": "17975a20-2c13-4325-be1e-0bcda5063a2d",
+   "group": "leaf:a33da2d048",
+   "note": ""
+  },
+  {
+   "seq": 92,
+   "date": "2026-10-17T14:34:13",
+   "op": "add",
+   "oid": "17975a20-2c13-4325-be1e-0bcda5063a2d",
+   "group": "leaf:aac8b841c1",
+   "note": ""
+  },
+  {
+   "seq": 93,
+   "date": "2026-10-17T14:34:22",
+   "op": "add",
+   "oid": "17975a20-2c13-4325-be1e-0bcda5063a2d",
+   "group": "tag:568637db-e729-4474-b860-3bb28fca02a7",
+   "note": ""
+  },
+  {
+   "seq": 94,
+   "date": "2026-10-17T14:34:41",
+   "op": "add",
+   "oid": "a37387f0-9d57-49ff-aa38-2c6b359e8916",
+   "group": "rp:cost:additional",
+   "note": ""
+  },
+  {
+   "seq": 95,
+   "date": "2026-10-17T14:35:08",
+   "op": "add",
+   "oid": "a37387f0-9d57-49ff-aa38-2c6b359e8916",
+   "group": "leaf:ab2d4667c5",
+   "note": ""
+  },
+  {
+   "seq": 96,
+   "date": "2026-10-17T14:36:16",
+   "op": "add",
+   "oid": "a37387f0-9d57-49ff-aa38-2c6b359e8916",
+   "group": "leaf:a45bd56d8d",
+   "note": ""
+  },
+  {
+   "seq": 97,
+   "date": "2026-10-17T14:37:02",
+   "op": "add",
+   "oid": "c066f921-e349-45d1-8ec3-0955d10bbf19",
+   "group": "rp:fam:counters",
+   "note": ""
+  },
+  {
+   "seq": 98,
+   "date": "2026-10-17T14:37:08",
+   "op": "add",
+   "oid": "94fac5fe-97d5-4c12-a80c-8efff9d853ae",
+   "group": "hand:nonbasic-lands-change-type",
    "note": ""
   }
  ],
