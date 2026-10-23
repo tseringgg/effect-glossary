@@ -2,8 +2,8 @@
 """The group-search log: what was typed in the main search box, how many results it had, and whether a result was opened. Written by src/serve.py (POST /api/groupsearch/log), read by nobody but you.
 
 One file, build/group_search_log.json (build/ is gitignored, so it is never committed), keyed by the folded query so it stays small:
-    {"v": 1, "queries": {"board wipe": {"q": "board wipe", "searches": 4, "zero": 0, "groups": 6, "cards": 3, "opened": 2, "first": "...", "last": "..."}}}
-`zero` counts the searches that had no group and no card. Only the folded words are stored: no card, no identity, no address.
+    {"v": 1, "queries": {"board wipe": {"q": "board wipe", "searches": 4, "zero": 0, "groups": 6, "cards": 3, "opened": 2, "missed": 1, "first": "...", "last": "..."}}}
+`zero` counts the searches that had no group and no card; `missed` counts the clicks on "Didn't find it?" for that query (its own field: a person said the results did not hold what they wanted). Only the folded words are stored: no card, no identity, no address.
 Size-limited and rotated: at 2,000 distinct queries or 400 KB the file is moved to group_search_log.1.json (replacing the previous one) and a new one starts. Every write goes to a temp file in the same folder, is flushed
 and fsynced, then renamed over the file; a corrupt file is refused and never overwritten. The endpoint answers 404 when the group search is off (build/group_search/meta.json is absent).
 """
@@ -48,8 +48,8 @@ def validate(body):
     q = fold(q)[:MAX_Q].strip()
     if len(q) < 2:
         raise M.ApiError(422, "q is empty after folding")
-    if kind not in ("search", "open"):
-        raise M.ApiError(400, "t must be search or open")
+    if kind not in ("search", "open", "miss"):
+        raise M.ApiError(400, "t must be search, open or miss")
     g, c = body.get("groups", 0), body.get("cards", 0)
     for v in (g, c):
         if isinstance(v, bool) or not isinstance(v, int) or not 0 <= v <= 100000:
@@ -97,14 +97,17 @@ def record(body, now=None, path=None):
         qs = doc["queries"]
         r = qs.get(q)
         if r is None:
-            r = qs[q] = {"q": q, "searches": 0, "zero": 0, "groups": 0, "cards": 0, "opened": 0, "first": now, "last": now}
+            r = qs[q] = {"q": q, "searches": 0, "zero": 0, "groups": 0, "cards": 0, "opened": 0, "missed": 0, "first": now, "last": now}
+        r.setdefault("missed", 0)                              # a record written before the button existed
         if kind == "search":
             r["searches"] += 1
             r["groups"], r["cards"] = g, c
             if g == 0 and c == 0:
                 r["zero"] += 1
-        else:
+        elif kind == "open":
             r["opened"] += 1
+        else:
+            r["missed"] += 1
         r["last"] = now
         text_len = len(json.dumps(doc, ensure_ascii=False))
         if len(qs) > MAX_QUERIES or text_len > MAX_BYTES:

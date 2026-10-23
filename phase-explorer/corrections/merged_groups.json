@@ -1,0 +1,184 @@
+{
+ "_about": "Display-only merged group pages, edited by hand (src/propose_merged_groups.py only proposes). A page shows 2 to 8 groups together as sections ordered by trust (precise, tentative, tag, loose, 'also here'); the FIRST member listed is the page's key and must be the highest in trust order (then the largest); the other members' keys redirect to the page. No group id, placement, count or figure changes: every group keeps its own id, its own count and its own placements, and the number a page shows (the union) is a display figure, a card in two groups counted once. 'aliases' are extra search terms for the page (the members' names are searched anyway). 'member_notes' (optional) maps a member id to a note shown in that section's heading. A page's slug is chosen once and never reused: to stop merging a page set 'retired': true (the entry stays; deleting it is an error on the next build). Version 1 supports leaf and community-tag (tag:) members only; any other layer fails the build. Append new pages; do not reorder or edit old ones except to retire them.",
+ "v": 1,
+ "pages": {
+  "draw-cards": {
+   "name": "Draw cards",
+   "description": "Cards that draw cards. Kept as three groups because the parser could not always record who draws; each section below says how it differs.",
+   "members": [
+    "leaf:ab2d4667c5",
+    "leaf:a49909b911",
+    "leaf:ac62240d34"
+   ],
+   "aliases": [
+    "draw a card",
+    "draw cards"
+   ],
+   "basis": "name-twins: the same name once the qualifiers are removed (qualifiers are parser limits only)",
+   "created": "2026-10-22",
+   "retired": false
+  },
+  "gain-life": {
+   "name": "Gain life",
+   "description": "Cards that gain life. The second group is only the cases where the parser could not tell who gains it.",
+   "members": [
+    "leaf:a9a2ffd15d",
+    "leaf:aec50f6132"
+   ],
+   "aliases": [],
+   "basis": "name-twins (parser limit only)",
+   "created": "2026-10-22",
+   "retired": false
+  },
+  "counter-a-spell": {
+   "name": "Counter a spell",
+   "description": "Counterspells. The second group is the ones that counter only some spells (a restriction the parser records as 'object varies').",
+   "members": [
+    "leaf:a34ba37fca",
+    "leaf:a4de15e309"
+   ],
+   "aliases": [
+    "counterspell"
+   ],
+   "basis": "name-twins (parser limit only)",
+   "created": "2026-10-22",
+   "retired": false
+  },
+  "damage-to-a-creature": {
+   "name": "Deal damage to a creature",
+   "description": "Cards that deal damage to a creature. The second group adds a 'this turn' condition (a creature that blocked, or was dealt damage, this turn).",
+   "members": [
+    "leaf:ad9e5c28f9",
+    "leaf:aef44d9d4b"
+   ],
+   "aliases": [],
+   "basis": "name-twins (parser limit only)",
+   "created": "2026-10-22",
+   "retired": false
+  },
+  "counters-on-this-permanent": {
+   "name": "Put +1/+1 counters on this permanent",
+   "description": "Cards that put +1/+1 counters on themselves. The second group counts something 'this turn'.",
+   "members": [
+    "leaf:a1abfc84b8",
+    "leaf:aa3e8ce261"
+   ],
+   "aliases": [],
+   "basis": "name-twins (parser limit only)",
+   "created": "2026-10-22",
+   "retired": false
+  },
+  "creature-gets-plus-until-eot": {
+   "name": "A creature gets +N/+N until end of turn",
+   "description": "Pump effects on a creature for the turn. The smaller group is the ones where the parser could not say what the target is.",
+   "members": [
+    "leaf:a3a21c4de3",
+    "leaf:a117b4c7f5"
+   ],
+   "aliases": [
+    "pump",
+    "combat trick"
+   ],
+   "basis": "name-twins (parser limit only)",
+   "created": "2026-10-22",
+   "retired": false
+  },
+  "create-creature-tokens": {
+   "name": "Create creature tokens",
+   "description": "Cards that create creature tokens. The smaller groups are 'for each ...' counts and 'this turn' conditions, not temporary tokens.",
+   "members": [
+    "leaf:a41e991480",
+    "leaf:af9b0f603d",
+    "leaf:a5cdea60ab"
+   ],
+   "aliases": [],
+   "basis": "name-twins (parser limit only)",
+   "created": "2026-10-22",
+   "retired": false
+  },
+  "set-power-and-toughness": {
+   "name": "This permanent has set power and toughness",
+   "description": "Characteristic-defining abilities: power and toughness (or power alone) set by a count. Two groups with the same name, one of which also holds power-only cards.",
+   "members": [
+    "leaf:a039d3eeec",
+    "leaf:a3b9975737"
+   ],
+   "aliases": [
+    "cda"
+   ],
+   "basis": "name-twins (identical names)",
+   "created": "2026-10-22",
+   "retired": false
+  },
+  "creature-gets-minus-until-eot": {
+   "name": "A creature gets −N/−N until end of turn",
+   "description": "Shrink effects on a creature for the turn. The smaller group is the ones where the parser could not say what the target is.",
+   "members": [
+    "leaf:a2c1953ec5",
+    "leaf:a39b028786"
+   ],
+   "aliases": [
+    "shrink"
+   ],
+   "basis": "name-twins (parser limit only)",
+   "created": "2026-10-22",
+   "retired": false
+  },
+  "destroy-a-creature": {
+   "name": "Destroy a creature",
+   "description": "Cards that destroy a creature. The smaller groups are 'excluding some kind' and 'that was dealt damage this turn'.",
+   "members": [
+    "leaf:a618b877c2",
+    "leaf:a99162a56a",
+    "leaf:a237be105b"
+   ],
+   "aliases": [
+    "removal",
+    "murder"
+   ],
+   "basis": "name-twins (parser limit only)",
+   "created": "2026-10-22",
+   "retired": false
+  },
+  "copies-instants-and-sorceries": {
+   "name": "Copies an instant or a sorcery",
+   "description": "Cards that copy an instant spell or a sorcery spell. The community tags \"Copies sorcery\" and \"Copies instant\" hold the same 11 cards.",
+   "members": [
+    "tag:300f5a3d-01c5-43a7-b1f4-847afe5bf961",
+    "tag:3fd34377-67d3-44fc-9db2-2de7fe13edd6"
+   ],
+   "aliases": [
+    "copy spell"
+   ],
+   "basis": "hand-confirmed near-duplicate (11 of 11 cards in common)",
+   "created": "2026-10-22",
+   "retired": false
+  },
+  "draw-engines": {
+   "name": "Draw engine: draws a card again and again",
+   "description": "Cards that draw more cards over and over. \"Draws a card again and again with no other cost\" is all of its 31 cards inside \"Draw engine\" (36).",
+   "members": [
+    "tag:0e87cf9c-591e-4f2a-b4fd-675021f120ae",
+    "tag:524845ed-ea82-4a60-8b54-8a38ab06a503"
+   ],
+   "aliases": [],
+   "basis": "hand-confirmed near-duplicate (31 of 31 inside 36)",
+   "created": "2026-10-22",
+   "retired": false
+  },
+  "raises-power-of-your-creatures": {
+   "name": "Raises the power of your creatures",
+   "description": "Cards that raise the power of all your creatures, or of a type. \"Gives your whole team +N/+N\" is 10 cards, all inside \"Raises the power of your creatures\" (13).",
+   "members": [
+    "tag:e7f7559f-5ddd-4262-90ad-04f2ea2a735b",
+    "tag:0454fcef-0118-4f10-b9d7-c071845bfbd4"
+   ],
+   "aliases": [
+    "anthem"
+   ],
+   "basis": "hand-confirmed sub-group (10 of 10 inside 13)",
+   "created": "2026-10-22",
+   "retired": false
+  }
+ }
+}

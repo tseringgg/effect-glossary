@@ -1,0 +1,11 @@
+{
+ "fixed": "2026-10-20, after the index was last built but before any of these 20 queries was run",
+ "seed": 20263101,
+ "method": "12 drawn: random.Random(20263101).sample(sorted placed cards by oracle_id, 12); each term written from the card's rules text only. 4 near-collisions (real words that must NOT be corrected into the new aliases) and 4 typos of the new aliases are deliberate.",
+ "drawn_terms": {"Zhur-Taa Goblin": "riot", "Displacer Kitten": "flicker", "Crown of Fury": "give first strike", "Kiss of the Amesha": "lifegain and draw", "Skull Storm": "edict", "Thornwood Falls": "gainland",
+   "Leafdrake Roost": "create drake tokens", "Biogenic Ooze": "ooze tokens", "Ring of Xathrid": "regeneration", "Battlewing Mystic": "wheel", "Summon: Anima": "opponent sacrifices a creature", "Extended Absence": "exile removal"},
+ "near_collisions": ["blind", "stack", "cantor", "rack"],
+ "near_collision_expect": "not corrected to blink / stax / cantrip / rock; any group they return must contain the typed word",
+ "typos": ["blnik", "cantrpi", "mana rokc", "thoughtsiez"],
+ "alias_spot_check": {"seed": 20263150, "n": 30, "pool": "every typed phrase of the new hand aliases plus every drafted alias, sorted"}
+}

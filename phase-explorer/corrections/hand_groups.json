@@ -419,6 +419,43 @@
      "any": ["each opponent and each creature and planeswalker they control", "each opponent and each creature they control", "each opponent and each other creature they control"],
      "not": []}
    ]
+  },
+  "blinks-or-flickers-a-permanent": {
+   "name": "Exiles a permanent and returns it to the battlefield (blink, flicker)",
+   "note": "Read on 2026-10-20 against all 147 text matches in the 33,183-card scope: 146 are also tagged flicker by the community and 1 is doubtful (Sudden Salvation). Cards that exile a permanent and return it to the battlefield now or at the next end step or upkeep (blink and flicker are the same effect). The 'not' entries leave out Saga chapters that exile themselves and return transformed, cards that return to hand, returns from a graveyard, returns under an opponent's control, and the Oblivion Ring kind that return when a permanent leaves the battlefield. The text rule misses 46 cards whose wording spans two sentences; the five tag rules (confidence 0.5) cover 45 of them, about half of which are loose. Phase 2: the parser records the exile and the later move to the battlefield as two separate steps, not as one return effect.",
+   "created": "2026-10-20",
+   "retired": false,
+   "rules": [
+    {"id": "r1", "type": "text", "confidence": 0.7,
+     "any": ["then return it to the battlefield", "then return that card to the battlefield", "then return those cards to the battlefield", "then return them to the battlefield", "return it to the battlefield under its owner's control at the beginning of", "return that card to the battlefield under its owner's control at the beginning of", "return those cards to the battlefield under their owner's control at the beginning of", "return those cards to the battlefield under their owners' control at the beginning of", "return the exiled card to the battlefield under its owner's control at the beginning of", "return the exiled cards to the battlefield under their owner's control at the beginning of", "return the exiled cards to the battlefield under their owners' control at the beginning of", "return it to the battlefield under your control at the beginning of the next end step", "return that card to the battlefield under your control at the beginning of the next end step", "at the beginning of the next end step, return that card to the battlefield", "at the beginning of the next end step, return those cards to the battlefield", "at the beginning of the next end step, return it to the battlefield", "at the beginning of the next end step, return them to the battlefield", "at the beginning of the next end step, return the exiled card", "at the beginning of the next end step, return the exiled cards", "return the exiled cards to the battlefield tapped", "return the exiled card to the battlefield tapped", "return those cards to the battlefield tapped under their owner", "return those cards to the battlefield tapped under their owners", "return it to the battlefield tapped under its owner's control at the beginning", "return that card to the battlefield tapped under its owner's control at the beginning", "return them to the battlefield tapped under their owner", "return them to the battlefield tapped under their owners", "at the beginning of your next upkeep, return that card to the battlefield", "at the beginning of your next end step, return that card to the battlefield", "at the beginning of the next upkeep, return that card to the battlefield"],
+     "not": ["leaves the battlefield", "from your graveyard", "from a graveyard", "from the graveyard", "from their graveyard", "dies", "is put into a graveyard", "transformed", "front face up", "return it to your hand", "to its owner's hand", "to their owner's hand", "perpetually", "under an opponent's control", "sacrifice it and return"]},
+    {"id": "r2", "type": "tag", "confidence": 0.5, "tag": "flicker"},
+    {"id": "r3", "type": "tag", "confidence": 0.5, "tag": "flicker-creature"},
+    {"id": "r4", "type": "tag", "confidence": 0.5, "tag": "flicker-self"},
+    {"id": "r5", "type": "tag", "confidence": 0.5, "tag": "flicker-slow"},
+    {"id": "r6", "type": "tag", "confidence": 0.5, "tag": "flicker-permanent"}
+   ]
+  },
+  "mana-rocks": {
+   "name": "Mana rocks: artifacts that tap for mana",
+   "note": "Read on 2026-10-20 against all 370 tag matches in the 33,183-card scope: 37 (10%) are not noncreature artifacts, mostly cards that create Powerstone or Heartwood tokens (they have their own group) and 6 artifact creatures. Noncreature artifacts that add mana, by the community's tags. About 70 untagged rocks (Black Lotus, Arcane Signet) are missed. Phase 2: the parser does not see a card's type, so an artifact that taps for mana is not told from a land or a creature that does.",
+   "created": "2026-10-20",
+   "retired": false,
+   "rules": [
+    {"id": "r1", "type": "tag", "confidence": 0.6, "tag": "mana-rock"},
+    {"id": "r2", "type": "tag", "confidence": 0.5, "tag": "utility-mana-rock"},
+    {"id": "r3", "type": "tag", "confidence": 0.5, "tag": "mana-rock-with-set-s-mechanic"}
+   ]
+  },
+  "cantrips": {
+   "name": "Cantrips: draws a card as it resolves or enters",
+   "note": "Read on 2026-10-20: 40 of the 710 tag matches (seed 20263001) were read and about 4 were loose (a conjured Ponder, a conditional draw); a text rule on 'draw a card.' was tried and dropped, 137 of its 584 hits were not tagged and nearly all of those were death triggers, sacrifice-for-a-card artifacts and planeswalker abilities. Spells and permanents that draw a card as part of resolving or entering, by the community's tags. Phase 2: whether the draw replaces the spell is not a field.",
+   "created": "2026-10-20",
+   "retired": false,
+   "rules": [
+    {"id": "r1", "type": "tag", "confidence": 0.6, "tag": "cantrip"},
+    {"id": "r2", "type": "tag", "confidence": 0.5, "tag": "delayed-cantrip"}
+   ]
   }
  }
 }

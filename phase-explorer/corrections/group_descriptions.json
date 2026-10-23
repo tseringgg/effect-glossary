@@ -7,11 +7,23 @@
    "name": "Adds extra damage to your sources",
    "text": "Replacement effects that add a number to damage dealt by your sources (doubling has its own replacement group)."
   },
+  "hand:blinks-or-flickers-a-permanent": {
+   "auto_described": true,
+   "basis": "hand note",
+   "name": "Exiles a permanent and returns it to the battlefield (blink, flicker)",
+   "text": "Cards that exile a permanent and return it to the battlefield now or at the next end step or upkeep (blink and flicker are the same effect)."
+  },
   "hand:cant-have-counters-put-on-it": {
    "auto_described": true,
    "basis": "hand note",
    "name": "Can't have counters put on it",
    "text": "Cards that cannot have counters put on them."
+  },
+  "hand:cantrips": {
+   "auto_described": true,
+   "basis": "hand note",
+   "name": "Cantrips: draws a card as it resolves or enters",
+   "text": "Spells and permanents that draw a card as part of resolving or entering, by the community's tags."
   },
   "hand:cares-about-face-down-creatures": {
    "auto_described": true,
@@ -132,6 +144,12 @@
    "basis": "hand note",
    "name": "Limits how many creatures can attack or block",
    "text": "Cards that cap how many creatures can attack or block."
+  },
+  "hand:mana-rocks": {
+   "auto_described": true,
+   "basis": "hand note",
+   "name": "Mana rocks: artifacts that tap for mana",
+   "text": "Noncreature artifacts that add mana, by the community's tags."
   },
   "hand:nonbasic-lands-change-type": {
    "auto_described": true,

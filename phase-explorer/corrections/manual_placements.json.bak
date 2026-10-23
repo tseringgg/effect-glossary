@@ -1,7 +1,7 @@
 {
  "_comment": "Hand placements, written by src/serve.py (POST /api/manual); hand-editable. Keyed by oracle_id, then group id (layer:id). action is add | remove | nofit (nofit = 'nothing fits', group id none:fits). source_at_edit is what the card's placement was when it was edited (filled by the server). 'clear' deletes an entry (undo); history keeps the trace. Read by src/build_manual_layer.py; the page reads this file directly.",
  "version": 1,
- "revision": 97,
+ "revision": 98,
  "edits": {
   "002965be-a36f-4a09-9ce0-c6535bca1703": {
    "name": "Veil of Summer",
@@ -11229,6 +11229,27 @@
     }
    }
   },
+  "94fac5fe-97d5-4c12-a80c-8efff9d853ae": {
+   "name": "Blood Moon",
+   "groups": {
+    "hand:nonbasic-lands-change-type": {
+     "action": "add",
+     "date": "2026-10-17T14:37:08",
+     "note": "",
+     "group_name": "Makes nonbasic lands another land type",
+     "source_at_edit": {
+      "status": "unorganized",
+      "groups": [
+       "loose:g2bae0e35"
+      ],
+      "reason": {
+       "code": 4,
+       "text": "only in a catch-all: its abilities fit only a catch-all or 'less common effects' group"
+      }
+     }
+    }
+   }
+  },
   "95ce305f-34bc-4d6d-b7ba-ffd4b2a25336": {
    "name": "Maelstrom Pulse",
    "groups": {
@@ -21434,6 +21455,14 @@
    "op": "add",
    "oid": "c066f921-e349-45d1-8ec3-0955d10bbf19",
    "group": "rp:fam:counters",
+   "note": ""
+  },
+  {
+   "seq": 98,
+   "date": "2026-10-17T14:37:08",
+   "op": "add",
+   "oid": "94fac5fe-97d5-4c12-a80c-8efff9d853ae",
+   "group": "hand:nonbasic-lands-change-type",
    "note": ""
   }
  ],

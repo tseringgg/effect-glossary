@@ -28,7 +28,7 @@ import manual_common as MC
 import group_search_log as GSL
 
 HERE = MC.HERE
-PROTECTED = [os.path.join(HERE, "corrections", n) for n in ("manual_placements.json", "manual_placements.json.bak", "hand_groups.json", "hand_groups.json.bak", "group_aliases.json", "group_descriptions.json")]
+PROTECTED = [os.path.join(HERE, "corrections", n) for n in ("manual_placements.json", "manual_placements.json.bak", "hand_groups.json", "hand_groups.json.bak", "group_aliases.json", "group_descriptions.json", "group_aliases_drafted.json")]
 REAL_LOG = os.path.join(HERE, "build", "group_search_log.json")
 TMPLOG = os.path.join(tempfile.mkdtemp(prefix="gs_browser_"), "group_search_log.json")
 GSL.LOG = TMPLOG
@@ -39,14 +39,30 @@ def sha(p):
     return hashlib.sha256(open(p, "rb").read()).hexdigest() if os.path.exists(p) else None
 
 
-class On(TB.Real):                                             # flag on: the real build/group_search, a temporary log and corrections
-    pass
+class On(TB.Real):                                             # flag on: the real build/group_search, a temporary log and corrections; the card pin is off here (it has its own test, src/test_card_pin_browser.py)
+    def do_GET(self):
+        if self.path.split("?")[0].startswith("/build/card_pin/"):
+            self.send_error(404)
+            return
+        super().do_GET()
 
 
 class Off(TB.Real):                                            # flag off: the feature's files do not exist
     def do_GET(self):
         p = self.path.split("?")[0]
-        if p.startswith("/build/group_search/") or p.startswith("/api/groupsearch/"):
+        if p.startswith("/build/group_search/") or p.startswith("/api/groupsearch/") or p.startswith("/build/card_pin/"):
+            self.send_error(404)
+            return
+        super().do_GET()
+
+
+class NoLog(TB.Real):                                          # the flag on, but the log endpoint does not answer
+    def do_GET(self):
+        if self.path.split("?")[0].rstrip("/") == "/api/groupsearch/ping":
+            self.send_response(404)
+            self.end_headers()
+            return
+        if self.path.split("?")[0].startswith("/build/card_pin/"):
             self.send_error(404)
             return
         super().do_GET()
@@ -71,7 +87,8 @@ def main():
         results.append((name, bool(ok)))
         print(("PASS " if ok else "FAIL ") + name + ((" - " + str(detail)[:300]) if detail else ""))
     port_c = TB.free_port()
-    srvs = [TB.Quiet(("127.0.0.1", TB.PORT_A), On), TB.Quiet(("127.0.0.1", TB.PORT_B), Off)]
+    TB.PORT_D = TB.free_port()
+    srvs = [TB.Quiet(("127.0.0.1", TB.PORT_A), On), TB.Quiet(("127.0.0.1", TB.PORT_B), Off), TB.Quiet(("127.0.0.1", TB.PORT_D), NoLog)]
     if BEFORE_HTML:
         srvs.append(TB.Quiet(("127.0.0.1", port_c), Old))
     for s_ in srvs:
@@ -239,7 +256,83 @@ def main():
         time.sleep(1.0)
         lg = json.load(open(TMPLOG, encoding="utf-8"))["queries"]
         check("6 log: opening a result is logged against the query (opened %s, searches %s)" % (lg.get("board wipe", {}).get("opened"), lg.get("board wipe", {}).get("searches")), lg.get("board wipe", {}).get("opened") == 1 and lg["board wipe"]["searches"] == 1)
-        check("6 log: only folded words, counts and dates are stored", all(set(v) == {"q", "searches", "zero", "groups", "cards", "opened", "first", "last"} for v in lg.values()))
+        check("6 log: only folded words, counts and dates are stored", all(set(v) == {"q", "searches", "zero", "groups", "cards", "opened", "missed", "first", "last"} for v in lg.values()))
+        # ---------------------------------------------------------------- new aliases, spellings, drafted aliases, most words, a new hand group
+        search("duress")
+        v = vis()
+        check("13 a spelling of a hand alias: 'duress' reaches the thoughtseize groups, labelled via alias “duress”", v and all("via alias “duress”" in r["why"] for r in v[:2]), [r["why"] for r in v[:2]])
+        search("blink")
+        v = vis()
+        check("13 a new hand group: 'blink' offers 'Exiles a permanent and returns it to the battlefield (blink, flicker)' first, via alias “blink”", v and v[0]["go"] == "hg:blinks-or-flickers-a-permanent" and "via alias “blink”" in v[0]["why"], v[:1])
+        search("flicker")
+        check("13 ... and 'flicker' (a spelling of the same entry) reaches it", any(r["go"] == "hg:blinks-or-flickers-a-permanent" for r in vis()))
+        c.js("document.querySelector('#findres .gr[data-go=\"hg:blinks-or-flickers-a-permanent\"]').click()")
+        c.wait("selected === 'hg:blinks-or-flickers-a-permanent'", 60)
+        time.sleep(1.2)
+        pg = c.js("({h2: document.querySelector('#panel h2').innerText, n: document.querySelectorAll('#panel .card').length, text: document.getElementById('panel').innerText, badge: !!document.querySelector('#panel h2 .b-hg')})")
+        check("13 its page opens: the hand-group badge, the 'Phase 2' note, and rule matches with the card's own sentence as the reason (%d rows listed so far)" % pg["n"], pg["badge"] and "Phase 2" in pg["text"] and "Rule matches" in pg["text"] and pg["n"] > 0 and "Suggested because" in pg["text"], pg["h2"])
+        check("13 ... nothing on it is ticked, and opening it placed nothing", c.js("document.querySelectorAll('#panel input[type=checkbox]:checked').length") == 0)
+        for q_, want in (("mana rock", "hand:mana-rocks"), ("cantrip", "hand:cantrips")):
+            search(q_)
+            v = vis()
+            check("13 new hand group: '%s' offers %s first" % (q_, want), v and v[0]["go"] == "hg:" + want[5:], v[:1])
+        search("stax")
+        v = vis()
+        check("13 stax: five effect groups, each row carrying the note that stax is a strategy, not an effect", len(v) >= 5 and all("strategy" in r["note"] for r in v[:5]), [r["name"][:24] for r in v[:5]])
+        search("wipe")
+        v = vis()
+        check("13 a drafted alias never shows above a name: 'wipe' is already a word of the sweeper tag's name, so that group is listed by name, not as a suggested alias", v and all("suggested alias" not in r["why"] for r in v[:5]) and v[0]["name"].startswith("Destroys everything"), [(r["name"][:22], r["why"][:30]) for r in v[:3]])
+        search("mass removal")
+        v = vis()
+        dr = [i for i, r in enumerate(v) if "suggested alias" in r["why"]]
+        check("13 drafted alias: 'mass removal' (a Scryfall spelling of the sweeper tag) answers, labelled “suggested alias”, and every drafted row sits below every row that is not drafted", bool(dr) and all(i > j for i in dr for j in range(len(v)) if "suggested alias" not in v[j]["why"]), [(r["name"][:22], r["why"][:30]) for r in v[:4]])
+        search("counterspell")
+        check("13 a drafted alias answers only to its exact words: 'counterspell' lists no drafted row", all("suggested alias" not in r["why"] for r in vis()))
+        search("sacrifice a creature to pump")
+        v = vis()
+        check("13 most words: 'sacrifice a creature to pump' answers, every row labelled “matched: most of your words”", v and all(r["why"] == "matched: most of your words" for r in v), [(r["name"][:24], r["why"]) for r in v[:2]])
+        search("destory")
+        check("13 'did you mean' still works next to the new aliases", "Did you mean “destroy”" in c.js("(document.querySelector('#findres .gs-dym') || {}).innerText || ''"))
+        search("blnik")
+        v = vis()
+        check("13 a typo of a new alias is corrected to it: 'blnik' leads to the blink group, labelled did you mean “blink”", v and any(r["go"] == "hg:blinks-or-flickers-a-permanent" and "did you mean “blink”" in r["why"] for r in v), [(r["name"][:20], r["why"]) for r in v[:2]])
+        for w_ in ("blind", "stack", "cantor", "rack"):
+            search(w_)
+            check("13 near-collision '%s' is not corrected" % w_, "Did you mean" not in c.js("document.getElementById('findres').innerText"))
+        # ---------------------------------------------------------------- the "Didn't find it?" button
+        search("zzmagecraftx")
+        b = c.js("(() => { const x = document.querySelector('#findres .gs-miss button'); return x ? {t: x.innerText, nav: x.hasAttribute('data-nav'), h: Math.round(x.getBoundingClientRect().height)} : null })()")
+        check("14 button: offered in the empty-result message when the log answers (%s)" % (b and b["t"]), b and b["t"] == "Didn’t find it?" and b["nav"])
+        c.js("document.querySelector('#findres .gs-miss button').click()")
+        time.sleep(1.0)
+        b2 = c.js("(() => { const x = document.querySelector('#findres .gs-miss button'); return {t: x.innerText, d: x.getAttribute('aria-disabled'), live: x.nextElementSibling.innerText} })()")
+        lg = json.load(open(TMPLOG, encoding="utf-8"))["queries"]
+        check("14 button: one click records the query in its own field (missed %s), says so, and is then inert" % lg.get("zzmagecraftx", {}).get("missed"), b2["t"] == "Noted, thanks" and b2["d"] == "true" and lg["zzmagecraftx"]["missed"] == 1 and "We will look at" in b2["live"], b2)
+        c.js("document.querySelector('#findres .gs-miss button').click()")
+        time.sleep(0.6)
+        check("14 button: a second click records nothing more", json.load(open(TMPLOG, encoding="utf-8"))["queries"]["zzmagecraftx"]["missed"] == 1)
+        search("wrath")
+        b3 = c.js("(() => { const x = document.querySelector('#findres #gs-groups .gs-miss button'); return x ? x.innerText : null })()")
+        check("14 button: also below a result list (a search that found something, but not the right thing)", b3 == "Didn’t find it?")
+        c.js("document.querySelector('#findres .gs-miss button').click()")
+        time.sleep(0.8)
+        lg = json.load(open(TMPLOG, encoding="utf-8"))["queries"]
+        check("14 button: from a list with results the miss is recorded with the result counts (groups %s)" % lg["wrath"]["groups"], lg["wrath"]["missed"] == 1 and lg["wrath"]["groups"] >= 3 and lg["wrath"]["searches"] >= 1)
+        load(TB.PORT_A, clear=False)
+        search("zzmagecraftx")
+        b4 = c.js("document.querySelector('#findres .gs-miss button').innerText + '|' + document.querySelector('#findres .gs-miss button').getAttribute('aria-disabled')")
+        check("14 button: remembered across a reload in this browser (%s), so it does not offer itself again" % b4, b4 == "Noted, thanks|true")
+        search("zzqmissy")
+        c.js("document.getElementById('q').focus()")
+        key("ArrowDown", 40)
+        check("14 button: reachable with the keyboard (Down arrow from the box)", c.js("document.activeElement.hasAttribute('data-gsmiss')") is True)
+        key("Enter", 13, "\r")
+        time.sleep(0.8)
+        check("14 button: Enter on it records the miss too", json.load(open(TMPLOG, encoding="utf-8"))["queries"]["zzqmissy"]["missed"] == 1)
+        ok = load(TB.PORT_D)
+        search("zzmagecraftx")
+        check("14 button: hidden when the log endpoint does not answer, and the page says searches are not logged", c.js("!document.querySelector('#findres .gs-miss')") is True and "not logged" in c.js("document.getElementById('gsnote').textContent"), c.js("document.getElementById('gsnote').textContent")[:80])
+        load(TB.PORT_A, clear=False)
         # the switches
         search("regenerate")
         has_t = any(r["go"].startswith("tg:") for r in rows())
@@ -276,8 +369,8 @@ def main():
         for a in range(0, n, 250):
             bad += c.js("%s(%d, %d)" % (OPEN, a, min(n, a + 250)))
         n_t_only = sum(1 for r in idx["groups"] if r[4] == "t" and not r[9])
-        n_tag = sum(1 for r in idx["groups"] if r[4] == "c")
-        check("8 with tentative and tag groups switched off: %d are not offered (%d tag + %d tentative with no loose twin) and every other group still opens (%d bad)" % (len(off_keys), n_tag, n_t_only, len(bad)),
+        n_tag = sum(1 for r in idx["groups"] if r[4] == "c") + sum(1 for r in idx["groups"] if r[4] == "m" and all(g.startswith("tag:") for g in r[12]))     # a merged page whose members are all community tags is a tag group too
+        check("8 with tentative and tag groups switched off: %d are not offered (%d tag, counting merged pages made only of tags, + %d tentative with no loose twin) and every other group still opens (%d bad)" % (len(off_keys), n_tag, n_t_only, len(bad)),
               not bad and len(off_keys) == n_tag + n_t_only, bad[:3])
         load(TB.PORT_A)
         c.js("gsLoad()")

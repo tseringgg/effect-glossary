@@ -66,3 +66,35 @@ Both sets were fixed before the reads (`group-search-baseline-queries.json`, `gr
 
 **15 of 20 sensible in the top 5; 14 of 20 at rank 1 (14 if the M calls are dropped).**
 
+
+# 2026-10-20: the alias round (hand aliases with spellings, drafted aliases, "most words", three new hand groups)
+
+Re-run of the 50 fixed searches above: no search that was sensible before is now wrong. Four top-5 lists changed: "stax" (none, now five effect groups, partial alias), "sacrifice a creature to pump" (none, now "Sacrifice a creature": a fresh-set miss became a hit), "give double strike" (same top 3, two keyword groups added below) and "tap creatures for mana" (none before; now "Mana rocks: artifacts that tap for mana" first, which is **not** what was meant: a wrong result where there was none). Baseline set 29 of 30 (top 5) and 28 at rank 1, unchanged; first fresh set 15 to **16** of 20 (top 5) and 14 to **15** at rank 1; 50 searches together 44 to **45** (top 5) and 42 to **43** (rank 1).
+
+Fresh set 2, seed 20263101 (`group-search-fresh2-queries.json`; 12 cards drawn, the term written from the card text after the index was built and before any of these queries was run; 4 near-collisions that must not be corrected into the new aliases; 4 typos of new aliases). My reads, not independent of the generator; 20 queries cannot show a rate.
+
+| query | rank 1 | top 5 | rank 1 |
+|---|---|---|---|
+| riot | Riot | yes | yes |
+| flicker | Exiles a permanent and returns it to the battlefield (blink, flicker) | yes | yes |
+| give first strike | Gives first strike | yes | yes |
+| lifegain and draw | (no group) | no | no |
+| edict | Removal: sacrifice | yes | yes |
+| gainland | (no group) | no | no |
+| create drake tokens | Create Drake tokens with flying | yes | yes |
+| ooze tokens | Create Ooze tokens | yes | yes |
+| regeneration | (no group) | no | no |
+| wheel | Each player discards, then draw | yes | yes |
+| opponent sacrifices a creature | Each opponent sacrifices a creature | yes | yes |
+| exile removal | Exile a creature | yes | yes |
+| blind | (no group) | yes | yes |
+| stack | Ends the turn or takes a spell off the stack | yes | yes |
+| cantor | Conjure a card (to the graveyard) | yes | yes |
+| rack | (no group) | yes | yes |
+| blnik | Exiles a permanent and returns it to the battlefield (blink, flicker)  | yes | yes |
+| cantrpi | Cantrips: draws a card as it resolves or enters [did you mean cantrip] | yes | yes |
+| mana rokc | Mana rocks: artifacts that tap for mana [did you mean mana rock] | yes | yes |
+| thoughtsiez | An opponent reveals their hand, then target player discards [did you m | yes | yes |
+
+**17 of 20 sensible in the top 5 (85%) and 17 of 20 at rank 1 (85%).** Counting the four near-collisions as misses (they pass by not being corrected and returning only groups that contain the typed word, as set beforehand) it is 13 of 20 (65%). Misses: "lifegain and draw" (a hand alias and a name word in one phrase: every word must match one kind), "gainland" (no group), "regeneration" (no stem rule joins -ion to -e: "regenerate" groups are not found).
+

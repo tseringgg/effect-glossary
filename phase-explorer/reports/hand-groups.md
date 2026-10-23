@@ -12,6 +12,21 @@ Read on 2026-10-16 against all 24 matches in the 33,183-card scope; no false hit
 
 Cards matched by at least one rule: **24**.
 
+## hand:blinks-or-flickers-a-permanent — Exiles a permanent and returns it to the battlefield (blink, flicker)
+
+Read on 2026-10-20 against all 147 text matches in the 33,183-card scope: 146 are also tagged flicker by the community and 1 is doubtful (Sudden Salvation). Cards that exile a permanent and return it to the battlefield now or at the next end step or upkeep (blink and flicker are the same effect). The 'not' entries leave out Saga chapters that exile themselves and return transformed, cards that return to hand, returns from a graveyard, returns under an opponent's control, and the Oblivion Ring kind that return when a permanent leaves the battlefield. The text rule misses 46 cards whose wording spans two sentences; the five tag rules (confidence 0.5) cover 45 of them, about half of which are loose. Phase 2: the parser records the exile and the later move to the battlefield as two separate steps, not as one return effect.
+
+| rule | what it matches | cards |
+|---|---|---:|
+| r1 | the card text has a sentence with “then return it to the battlefield” or “then return that card to the battlefield” or “then return those cards to the battlefield” or “then return them to the battlefield” or “return it to the battlefield under its owner's control at the beginning of” or “return that card to the battlefield under its owner's control at the beginning of” or “return those cards to the battlefield under their owner's control at the beginning of” or “return those cards to the battlefield under their owners' control at the beginning of” or “return the exiled card to the battlefield under its owner's control at the beginning of” or “return the exiled cards to the battlefield under their owner's control at the beginning of” or “return the exiled cards to the battlefield under their owners' control at the beginning of” or “return it to the battlefield under your control at the beginning of the next end step” or “return that card to the battlefield under your control at the beginning of the next end step” or “at the beginning of the next end step, return that card to the battlefield” or “at the beginning of the next end step, return those cards to the battlefield” or “at the beginning of the next end step, return it to the battlefield” or “at the beginning of the next end step, return them to the battlefield” or “at the beginning of the next end step, return the exiled card” or “at the beginning of the next end step, return the exiled cards” or “return the exiled cards to the battlefield tapped” or “return the exiled card to the battlefield tapped” or “return those cards to the battlefield tapped under their owner” or “return those cards to the battlefield tapped under their owners” or “return it to the battlefield tapped under its owner's control at the beginning” or “return that card to the battlefield tapped under its owner's control at the beginning” or “return them to the battlefield tapped under their owner” or “return them to the battlefield tapped under their owners” or “at the beginning of your next upkeep, return that card to the battlefield” or “at the beginning of your next end step, return that card to the battlefield” or “at the beginning of the next upkeep, return that card to the battlefield”, unless that sentence also has “leaves the battlefield” or “from your graveyard” or “from a graveyard” or “from the graveyard” or “from their graveyard” or “dies” or “is put into a graveyard” or “transformed” or “front face up” or “return it to your hand” or “to its owner's hand” or “to their owner's hand” or “perpetually” or “under an opponent's control” or “sacrifice it and return” | 147 |
+| r2 | the card carries the community tag flicker | 1 |
+| r3 | the card carries the community tag flicker-creature | 123 |
+| r4 | the card carries the community tag flicker-self | 43 |
+| r5 | the card carries the community tag flicker-slow | 102 |
+| r6 | the card carries the community tag flicker-permanent | 15 |
+
+Cards matched by at least one rule: **192**.
+
 ## hand:cant-have-counters-put-on-it — Can't have counters put on it
 
 Read on 2026-10-16 against every match in the 33,183-card scope; no false hit found. Cards that cannot have counters put on them (4 matches). Phase 2: counter prevention is not a field.
@@ -21,6 +36,17 @@ Read on 2026-10-16 against every match in the 33,183-card scope; no false hit fo
 | r1 | the card text has a sentence with “can't have counters put on” or “can't have counters” | 4 |
 
 Cards matched by at least one rule: **4**.
+
+## hand:cantrips — Cantrips: draws a card as it resolves or enters
+
+Read on 2026-10-20: 40 of the 710 tag matches (seed 20263001) were read and about 4 were loose (a conjured Ponder, a conditional draw); a text rule on 'draw a card.' was tried and dropped, 137 of its 584 hits were not tagged and nearly all of those were death triggers, sacrifice-for-a-card artifacts and planeswalker abilities. Spells and permanents that draw a card as part of resolving or entering, by the community's tags. Phase 2: whether the draw replaces the spell is not a field.
+
+| rule | what it matches | cards |
+|---|---|---:|
+| r1 | the card carries the community tag cantrip | 653 |
+| r2 | the card carries the community tag delayed-cantrip | 58 |
+
+Cards matched by at least one rule: **710**.
 
 ## hand:cares-about-face-down-creatures — Cares about face-down creatures
 
@@ -221,6 +247,18 @@ Read on 2026-10-16 against all 8 matches in the 33,183-card scope; no false hit 
 | r1 | the card text has a sentence with “no more than one creature can attack” or “no more than two creatures can attack” or “no more than one creature can block” or “no more than two creatures can block” or “creature can attack each combat” or “creature can block each combat” or “creatures can attack you each combat” | 8 |
 
 Cards matched by at least one rule: **8**.
+
+## hand:mana-rocks — Mana rocks: artifacts that tap for mana
+
+Read on 2026-10-20 against all 370 tag matches in the 33,183-card scope: 37 (10%) are not noncreature artifacts, mostly cards that create Powerstone or Heartwood tokens (they have their own group) and 6 artifact creatures. Noncreature artifacts that add mana, by the community's tags. About 70 untagged rocks (Black Lotus, Arcane Signet) are missed. Phase 2: the parser does not see a card's type, so an artifact that taps for mana is not told from a land or a creature that does.
+
+| rule | what it matches | cards |
+|---|---|---:|
+| r1 | the card carries the community tag mana-rock | 98 |
+| r2 | the card carries the community tag utility-mana-rock | 240 |
+| r3 | the card carries the community tag mana-rock-with-set-s-mechanic | 100 |
+
+Cards matched by at least one rule: **370**.
 
 ## hand:nonbasic-lands-change-type — Makes nonbasic lands another land type
 

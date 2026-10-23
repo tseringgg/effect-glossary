@@ -179,6 +179,24 @@ body.dev .devonly { display:inline; }
 .gr .gl { display:block; font-size:12px; color:var(--broad); }
 .gs-btn { margin:4px 0; padding:6px 10px; border:1px solid var(--line); border-radius:4px; background:var(--chip); color:var(--fg); font:inherit; cursor:pointer; }
 .gs-famlist { margin-top:4px; }
+.gs-miss { margin-top:8px; }
+.gs-btn[aria-disabled="true"] { opacity:.7; cursor:default; }
+/* merged group pages (reports/mergepage.js): sections, the "merged" badge, the group picker */
+.b-merged { color:var(--accent); border:1px solid var(--accent); background:transparent; font-weight:600; }
+.msec { margin-top:14px; padding:6px 0 2px; border-top:2px solid var(--line); }
+.msec .mname { font-weight:700; font-size:14px; overflow-wrap:anywhere; }
+.mchips { margin:6px 0; font-size:13px; }
+.gap.also { font-style:italic; }
+.sgpick { margin:6px 0; }
+.sgpick select { max-width:100%; min-height:32px; }
+@media (max-width: 800px) { .mchips .chip { min-height:44px; display:inline-flex; align-items:center; } .msec .lnk { display:inline-block; min-height:44px; line-height:44px; } .sgpick select { min-height:44px; width:100%; } }
+/* card pin (reports/cardpin.js): the searched-for card pinned at the top of its group, and highlighted in the list */
+.pinwrap { margin:10px 0; padding:8px 10px; border:2px solid var(--accent); border-radius:6px; background:var(--sel); }
+.pinlabel { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--accent); }
+.pinalso { margin-top:4px; font-size:13px; }
+.pinhit { outline:3px solid var(--accent); outline-offset:-2px; background:var(--sel); }
+.fr[data-go^="pin:"] { cursor:pointer; }
+@media (max-width: 800px) { .pinalso .chip { min-height:44px; display:inline-flex; align-items:center; } }
 .sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
 @media (max-width: 800px) { .gr, .gs-btn, .fr[tabindex] { min-height:44px; } .gs-jump a { display:inline-block; min-height:44px; line-height:44px; } .gr .gd { white-space:normal; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; } }
 </style>
@@ -254,6 +272,8 @@ body.dev .devonly { display:inline; }
 <script src="manualedit.js"></script>
 <script src="suggested.js"></script>
 <script src="groupsearch.js"></script>
+<script src="cardpin.js"></script>
+<script src="mergepage.js"></script>
 <script>
 "use strict";
 const DEV = new URLSearchParams(location.search).get("dev") === "1";
@@ -527,8 +547,8 @@ function scWhy(r) {                                     // r = [oid, score, sour
   return w;
 }
 const scBlank = gid => ({ gid: gid, q: [], p: [], lq: [], lp: [], keep: {}, nS: SC.per_view, nL: SC.per_view, msg: "", loaded: {}, tab: "members" });
-const SCHIDE = ["#panel .viewbar", "#list", "#morewrap"];                  // the group's own tab: left exactly as it was, only hidden while the other tab is open
-const scTabLabel = () => `Possible matches (${fmt(Suggested.count(SC, SCCUR.gid, SCFLOOR, SCINC))})`;
+const SCHIDE = ["#panel .viewbar", "#list", "#morewrap", "#pinwrap"];                  // the group's own tab: left exactly as it was, only hidden while the other tab is open
+const scTabLabel = () => `Possible matches (${fmt(SCCUR.members ? SCCUR.members.reduce((a, g) => a + Suggested.count(SC, g, SCFLOOR, SCINC), 0) : Suggested.count(SC, SCCUR.gid, SCFLOOR, SCINC))})`;
 async function scAfter(k) {                              // called after every group page is drawn: a tab bar when the group has possible matches, nothing otherwise
   for (const id of ["sctabs", "suggsec"]) { const o = document.getElementById(id); if (o) o.remove(); }
   for (const sel of SCHIDE) for (const el of document.querySelectorAll(sel)) el.classList.remove("sc-off");
@@ -553,7 +573,7 @@ async function scAfter(k) {                              // called after every g
 function scUrl() {                                       // the address carries the tab, so the link can be pasted; replaceState: no history entry and no hashchange
   const S = SCCUR;
   if (!S || selected !== S.k) return;
-  try { history.replaceState(null, "", "#" + encodeURIComponent(S.k) + (S.tab === "matches" ? "&tab=matches" : "")); } catch (e) { /* ignore */ }
+  try { history.replaceState(null, "", "#" + encodeURIComponent(S.k) + (PINCUR ? "&card=" + PINCUR : "") + (S.tab === "matches" ? "&tab=matches" : "")); } catch (e) { /* ignore */ }
 }
 async function scSetTab(tab) {
   const S = SCCUR, gen = SCGEN;
@@ -594,7 +614,7 @@ function scRender() {
   const S = SCCUR, el = document.getElementById("suggsec");
   if (!S || !el || !MRESV) return;
   const e = SC.groups[S.gid], l = SC.lens[S.gid], plain = {};
-  let h = "", shownRows = [];
+  let h = scPickerHTML(), shownRows = [];
   const ctl = `<div class="sgctl"><label>Floor <input type="range" min="0.5" max="0.9" step="0.1" value="${SCFLOOR}" data-sctl="floor"> <b id="sgfloorv">${SCFLOOR.toFixed(2)}</b></label>` +
     `<label><input type="checkbox" data-sctl="inc" ${SCINC ? "checked" : ""}> include already-placed cards</label></div>`;
   if (e) {
@@ -662,6 +682,7 @@ document.getElementById("panel").addEventListener("input", e => { if (e.target.d
 document.getElementById("panel").addEventListener("change", async e => {
   const t = e.target.dataset && e.target.dataset.sctl;
   if (!t || !SCCUR) return;
+  if (t === "member") { const S0 = SCCUR; SCCUR = Object.assign(scBlank(e.target.value), { k: S0.k, members: S0.members, tab: S0.tab }); await scEnsure(); scRender(); return; }
   if (t === "floor") { SCFLOOR = Math.round(+e.target.value * 10) / 10; try { localStorage.setItem("suggFloor", String(SCFLOOR)); } catch (err) { /* ignore */ } SCCUR.nS = SC.per_view; }
   if (t === "inc") { SCINC = e.target.checked; try { localStorage.setItem("suggPlaced", SCINC ? "1" : "0"); } catch (err) { /* ignore */ } SCCUR.nS = SC.per_view; SCCUR.nL = SC.per_view; await scEnsure(); }
   scRender();
@@ -1196,13 +1217,13 @@ function header() {
 // ---------------------------------------------------------------- tree
 function row(cls, key, label, n, extra) {
   const isOpen = open.has(key), hasKids = extra && extra.kids;
-  return `<div class="row ${cls}${selected === key ? " sel" : ""}" data-k="${esc(key)}">` +
+  return `<div class="row ${cls}${isSel(key) ? " sel" : ""}" data-k="${esc(key)}">` +
     `<span>${hasKids ? `<span class="tw">${isOpen ? "▾" : "▸"}</span>` : `<span class="tw"></span>`}${label}</span>` +
     `<span class="n">${n == null ? "" : fmt(n)}</span></div>`;
 }
 function leafLabel(l, id) {
   return esc(l.name) + (l.flags.length ? ` <span class="badge b-broad" title="${esc(l.notes.join(" "))}">broad</span>` : "") +
-    (l.auto_named ? ` <span class="badge b-auto devonly">auto name</span>` : "") +
+    (l.auto_named ? ` <span class="badge b-auto devonly">auto name</span>` : "") + mergedBadgeFor("leaf:" + id) +
     (DEV ? ` <span class="b-dev">${esc(id)} L${l.level}</span>` : "");
 }
 function renderTree() {
@@ -1283,7 +1304,7 @@ function renderTree() {
     if (UNREAD) h.push(row("l1", "UR:", "Cards we couldn't read yet", unreadN()));
     if (UNREAD && tagOn()) {
       h.push(row("l1", "CT:", `Grouped by community tag <span class="badge b-tag">${esc(TAGS.meta.badge)}</span>`, ctAllN(), { kids: true }));
-      if (open.has("CT:")) for (const gid of TAGS.order) h.push(row("l2", "ct:" + gid, esc(TAGS.groups[gid].name), tgcN(TAGS.groups[gid])));
+      if (open.has("CT:")) for (const gid of TAGS.order) h.push(row("l2", "ct:" + gid, esc(TAGS.groups[gid].name) + mergedBadgeFor("tag:" + gid), tgcN(TAGS.groups[gid])));
     }
   }
   if (FLAGS) {
@@ -1305,6 +1326,7 @@ document.getElementById("tree").addEventListener("click", e => {
     if (!wasOpen && (k.startsWith("f:") || k.startsWith("n:") || k.startsWith("B:") || k.startsWith("LG:") || k.startsWith("lf:") || k.startsWith("tf:") || k === "Y:")) show(k);
     return;
   }
+  PINCUR = null;
   show(k);
 });
 
@@ -1343,8 +1365,10 @@ function detailHTML(oid) {
 document.getElementById("panel").addEventListener("click", e => {
   const act = e.target.closest("button[data-act]");
   if (act) { if (!act.disabled) handleAct(act); return; }
+  const sc0 = e.target.closest("[data-sec]");
+  if (sc0) { gotoSection(+sc0.dataset.sec); return; }
   const go = e.target.closest("[data-go]");
-  if (go) { show(go.dataset.go); return; }
+  if (go) { if (go.dataset.alone) ALONEKEY = go.dataset.go; if (PINON && go.dataset.pin) { PINNEXT = go.dataset.pin; SCWANT = { k: go.dataset.go, tab: "members" }; } show(go.dataset.go); return; }
   if (e.target.closest("button.morebtn")) { renderList(); return; }
   const vb = e.target.closest("button[data-view]");
   if (vb) { setView(vb.dataset.view); return; }
@@ -1465,7 +1489,191 @@ function toggleTile(tile) {
 }
 function leafItems(lid) { const base = (MEM[lid] || []).map(m => [m[0], m[1], lid]); return handRows("leaf:" + lid, new Set(base.map(x => x[0]))).concat(sibRows(lid), base); }
 
-async function show(k) { await show0(k); scAfter(k); }
+// ---------------------------------------------------------------- card pin (reports/cardpin.js; build/card_pin/meta.json, switched by CARD_PIN in src/build_card_pin.py; absent when it is off, and then a card result opens the card page as it always did)
+// A card result opens the card IN ITS BEST GROUP: the card pinned at the top as "You searched for this card" with "Also in" chips for its other groups, and highlighted (and scrolled to) in the group's list, paged in far enough
+// to hold it. A pile card (and a card with no group the page can open) still opens the card page. The pin is in the address as "&card=<oid>" so a link carries it. Nothing here places or changes anything.
+let PINON = false, PINNEXT = null, PINCUR = null;
+async function pinBoot() { try { const m = await J("card_pin/meta.json"); PINON = !!(m && m.enabled); } catch (e) { PINON = false; } }
+const splitPin = h => { const m = /&card=([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(?=&tab=|$)/.exec(h); return m ? [h.slice(0, m.index) + h.slice(m.index + m[0].length), m[1]] : [h, ""]; };
+function pinEnv(oid) {
+  const on = handOn();
+  return { tentOk: id => tentOn() && !!TENT.groups[id], tagOk: id => tagOn() && !!TAGS.groups[id], looseHas: id => !!LOOSE && !!LOOSE.groups[id], looseName: id => LOOSE && LOOSE.groups[id] ? LOOSE.groups[id].short : "",
+    adds: on ? (MRESV.adds[oid] || {}) : null, removes: on ? (MRESV.removes[oid] || {}) : null };
+}
+async function openPin(oid) {
+  await needCardList(); await needManual(); await needLoose();
+  if (!MI || !MI.cards[oid]) { await show("c:" + oid); return; }
+  const p = CardPin.plan(MI, oid, pinEnv(oid));
+  if (p.open !== "group") { await show("c:" + oid); return; }
+  PINNEXT = oid; SCWANT = { k: p.best.key, tab: "members" };
+  await show(p.best.key);
+}
+async function pinAfter(k, oid) {
+  const old = document.getElementById("pinwrap");
+  if (old) old.remove();
+  if (selected !== k || !CARDS || !CARDS[oid] || !MI || !MI.cards[oid]) { PINCUR = null; return; }
+  const P = document.getElementById("panel"), first = P.querySelector(".viewbar") || document.getElementById("list");
+  if (!first) { PINCUR = null; return; }
+  PINCUR = oid;
+  const pgm = MERGED && MERGED.redirects[k] ? MERGED.pageBy[MERGED.redirects[k]] : null, mset = pgm ? new Set(pgm.members.map(m => m.gid)) : null;
+  const plan = CardPin.plan(MI, oid, pinEnv(oid));
+  const here = pgm ? (plan.groups.find(g => g.gid === (MSEC && MSEC[oid])) || plan.groups.find(g => mset.has(g.gid))) : plan.groups.find(g => g.key === k);
+  const others = pgm ? plan.groups.filter(g => !mset.has(g.gid)) : plan.groups.filter(g => g.key !== k);
+  const onPage = pgm ? plan.groups.filter(g => mset.has(g.gid) && (!here || g.gid !== here.gid)) : [];
+  const hk = here ? here.key : k;
+  let ctx = null, ab = null, gid = here ? here.gid : "";
+  if (hk.startsWith("l:")) { const row = (MEM[hk.slice(2)] || []).find(m => m[0] === oid); if (row) { ab = row[1]; ctx = hk.slice(2); } }
+  if (hk.startsWith("lg:") && TENT && TENT.groups[hk.slice(3)]) gid = "tent:" + hk.slice(3);
+  const idx = LIST.findIndex(x => itemOid(x) === oid);
+  const chips = others.slice(0, 8).map(g => `<span class="lnk chip" data-go="${esc(g.key)}" data-pin="${esc(oid)}" title="${esc(g.name)}">${esc(g.name.length > 48 ? g.name.slice(0, 47) + "…" : g.name)}</span>`).join(" ");
+  const more = others.length > 8 ? ` <span class="sub">+${others.length - 8} more on the card page</span>` : "";
+  const note = idx >= 0 ? "" : `<div class="sub pinnote">${hidden(oid) ? "This card is hidden from the list below by the “hide cards with no picture” switch." : "This card is not listed in this group any more (it may have been removed or moved)."}</div>`;
+  first.insertAdjacentHTML("beforebegin", `<div id="pinwrap" class="pinwrap"><div class="pinlabel">You searched for this card</div>${cardHTML(oid, ab, ctx, gid)}` +
+    `<div class="pinalso">${onPage.length ? "Also on this page: " + onPage.map(g => esc(g.name)).join("; ") + ". " : ""}${others.length ? "Also in: " + chips + more : "Not in any other group."} <span class="lnk chip" data-go="c:${esc(oid)}">card page</span></div>${note}</div>`);
+  const wrap = document.getElementById("pinwrap"), matches = !!(SCCUR && SCCUR.tab === "matches");
+  if (matches) wrap.classList.add("sc-off");
+  try { history.replaceState(null, "", "#" + encodeURIComponent(k) + "&card=" + oid + (matches ? "&tab=matches" : "")); } catch (e) { /* ignore */ }
+  if (idx >= 0) {
+    let guard = 0;
+    while (LISTN <= idx && LISTN < LIST.length && guard++ < 400) renderList();             // page in far enough that the card is in the list
+    const el = [...document.querySelectorAll("#list [data-oid]")].find(e => e.dataset.oid === oid);
+    if (el) {
+      el.classList.add("pinhit");
+      if (!matches) { if (window.innerWidth <= 800) P.scrollIntoView(); el.scrollIntoView({ block: "center" }); }
+    }
+  }
+}
+// ---------------------------------------------------------------- merged group pages (reports/mergepage.js; build/merged_groups/index.json, switched by MERGED_GROUPS in src/build_merged_groups.py; absent when it is off, and then every group opens as it always did)
+// DISPLAY ONLY: a page shows 2 to 8 groups together, one section per group, ordered by trust. Every group keeps its own id, its own count and its own placements; the number a page shows is a display figure (a card in two of its
+// groups is counted once). A card is shown once, in the highest-trust section that holds it, with an "also in" mark. The first member's key is the page's key; the other members' keys open the same page, scrolled to their section,
+// and keep &card= and &tab=. "Open on its own" shows one member by itself (the page as it was, batch review included). Add and Possible matches stay per member group (a group picker in the tab).
+let MERGED = null, MERGEDP = null, ALONEKEY = null, MSEC = null;
+function mergeBoot() {
+  return MERGEDP || (MERGEDP = (async () => {
+    try { const d = await J("merged_groups/index.json"); d.pageBy = {}; for (const p of d.pages) d.pageBy[p.slug] = p; MERGED = d; } catch (e) { MERGED = null; }
+  })());
+}
+const isSel = key => selected === key || (!!MERGED && !!selected && !!MERGED.redirects[key] && MERGED.redirects[key] === MERGED.redirects[selected]);
+function mergedBadgeFor(gid) {
+  if (!MERGED || !MERGED.by_gid[gid]) return "";
+  const p = MERGED.pageBy[MERGED.by_gid[gid]];
+  return ` <span class="badge b-merged" title="${esc("Shown with " + (p.members.length - 1) + " other group" + (p.members.length > 2 ? "s" : "") + " on the page “" + p.name + "”")}">merged</span>`;
+}
+const memberId = m => m.gid.slice(m.gid.indexOf(":") + 1);
+const memberAvail = m => m.layer === "tag" ? tagOn() && !!TAGS.groups[memberId(m)] : !!TAX.leaves[memberId(m)];
+const memberName = m => m.layer === "tag" ? TAGS.groups[memberId(m)].name : TAX.leaves[memberId(m)].name;
+const memberOidsOf = m => m.layer === "tag" ? TAGS.groups[memberId(m)].m : memOids(memberId(m));
+const memberCount = m => m.layer === "tag" ? tgcN(TAGS.groups[memberId(m)]) : leafN(memberId(m));
+function mergedUnion(pg) { const s = new Set(); for (const m of pg.members.filter(memberAvail)) for (const o of memberOidsOf(m)) s.add(o); return counting() ? nvis([...s]) : s.size; }
+function tagItems(id) {                                  // the list of a community-tag group, exactly as its own page builds it
+  const g = TAGS.groups[id];
+  const items = g.m.map(o => {
+    const others = (TAGS.by_card[o] || []).filter(t => t !== id).map(t => `<span class="lnk chip" data-go="ct:${esc(t)}">${esc(TAGS.groups[t].name)}</span>`).join(" ");
+    const extra = `<div class="tagnote"><span class="badge b-tag">${esc(TAGS.meta.badge)}</span> ${esc(TAGS.meta.label)} Tag: <b>${esc(g.slug)}</b>. ${tagSnap()}${others ? " Also in: " + others : ""}</div>`;
+    return { oid: o, extra: extra, html: cardHTML(o, null, null, "tag:" + id).replace(`<div class="det" hidden>`, extra + `<div class="det" hidden>`) };
+  });
+  items.unshift(...handRows("tag:" + id, new Set(g.m)));
+  return items;
+}
+const memberItems = m => m.layer === "tag" ? tagItems(memberId(m)) : leafItems(memberId(m));
+function alsoMark(x, names) {
+  const html = Array.isArray(x) ? cardHTML(x[0], x[1], x[2], x[3]) : x.html;
+  return { oid: itemOid(x), extra: x.extra || "", html: html.replace(`<div class="det" hidden>`, `<div class="gap also">also in: ${names.map(esc).join("; ")}</div><div class="det" hidden>`) };
+}
+function sectionHead(m, si, own, above) {
+  const tag = m.layer === "tag", l = tag ? null : TAX.leaves[memberId(m)];
+  return `<div class="subhead msec" id="msec-${si}" data-gid="${esc(m.gid)}"><span class="mname">${esc(memberName(m))}</span> ` +
+    (tag ? `<span class="badge b-tag">community tag · not checked</span>` : (l.flags.length ? `<span class="badge b-broad" title="${esc(l.notes.join(" "))}">broad</span>` : "")) +
+    ` <span class="sub">${tag ? "community tag" : esc(leafPath(memberId(m)))} · ${fmt(own)} card${own === 1 ? "" : "s"} in this group${above ? ` · ${fmt(above)} also shown above` : ""}</span> ` +
+    `<span class="lnk" data-go="${esc(m.key)}" data-alone="1">open on its own</span>` +
+    (m.note ? `<div class="note">${esc(m.note)}</div>` : "") + (l ? l.notes.map(n => `<div class="note">${esc(n)}</div>`).join("") : "") + `</div>`;
+}
+function gotoSection(i) {
+  const idx = LIST.findIndex(x => typeof x === "string" && x.includes(`id="msec-${i}"`));
+  if (idx < 0) return;
+  let guard = 0;
+  while (LISTN <= idx && LISTN < LIST.length && guard++ < 400) renderList();
+  const el = document.getElementById("msec-" + i);
+  if (el) el.scrollIntoView();
+}
+async function showMerged0(pg, reqKey, hasPin) {
+  selected = pg.key; CURCARD = null;
+  location.hash = encodeURIComponent(pg.key);
+  const P = document.getElementById("panel");
+  P.innerHTML = `<p class="explain">Loading…</p>`;
+  await needCards(); await needLoose(); await needManual();
+  const mems = pg.members.filter(memberAvail);
+  for (const m of mems) if (m.layer === "leaf") { const l = TAX.leaves[memberId(m)], nd = NODES[l.node]; if (nd) { open.add("f:" + nd.fam); open.add("n:" + l.node); } }
+  renderTree();
+  if (!mems.length) { P.innerHTML = `<p class="explain">Every group of this page is switched off (tick “Show community-tag groups” at the top).</p>`; return; }
+  const raw = mems.map(m => ({ m: m, items: memberItems(m) }));
+  const secs = raw.map(r => {
+    const oids = r.items.map(itemOid).filter(o => o), removed = {};
+    if (handOn()) for (const o of oids) if ((MRESV.removes[o] || {})[r.m.gid]) removed[o] = 1;
+    return { gid: r.m.gid, oids: oids, removed: removed };
+  });
+  const lay = MergePage.layout(secs);
+  MSEC = lay.where;
+  const nameOf = gid => memberName(mems.find(x => x.gid === gid));
+  const items = [];
+  raw.forEach((r, si) => {
+    const sec = lay.sections[si], keep = new Set(sec.show);
+    items.push(sectionHead(r.m, si, memberCount(r.m), sec.hidden));
+    for (const x of r.items) {
+      const o = itemOid(x);
+      if (o && !keep.has(o)) continue;                                           // shown in a section above
+      items.push(o && lay.also[o] && lay.where[o] === r.m.gid ? alsoMark(x, lay.also[o].map(nameOf)) : x);
+    }
+  });
+  const nU = counting() ? nvis(Object.keys(lay.where)) : lay.union;
+  const head = `<h2>${esc(pg.name)} <span class="badge b-merged">merged page</span></h2><p class="sub">${fmt(nU)} cards shown · ${mems.length} group${mems.length === 1 ? "" : "s"} together</p>` +
+    `<div class="note">${esc(pg.description)} <b>Display only.</b> The number above counts a card once even when it is in two of these groups, so it is a display figure: each group keeps its own id, its own count (in its section) and its own placements.</div>` +
+    `<div class="mchips">Groups on this page: ${mems.map((m, i) => `<span class="lnk chip" data-sec="${i}">${esc(memberName(m))}</span>`).join(" ")}</div>`;
+  setList(head, items);
+  if (!hasPin) { const i = mems.findIndex(m => m.key === reqKey); if (i > 0) gotoSection(i); }
+}
+async function showMergedPage(slug, reqKey) {
+  const pg = MERGED.pageBy[slug];
+  const pin = PINNEXT || (PINCUR && selected === pg.key ? PINCUR : null);
+  PINNEXT = null;
+  if (!pin) PINCUR = null;
+  await showMerged0(pg, reqKey, !!(PINON && pin));
+  scAfterMerged(pg);
+  if (PINON && pin) await pinAfter(pg.key, pin);
+}
+async function scAfterMerged(pg) {                       // the tab bar of a merged page: one "Possible matches" tab for the page, with a group picker inside it (Add and the floor stay per member group)
+  for (const id of ["sctabs", "suggsec"]) { const o = document.getElementById(id); if (o) o.remove(); }
+  for (const sel of SCHIDE) for (const el of document.querySelectorAll(sel)) el.classList.remove("sc-off");
+  SCCUR = null;
+  const gen = ++SCGEN;
+  if (!SC || !MI || !SHOWH || !MRES) return;
+  const mem = pg.members.filter(memberAvail).map(m => m.gid).filter(gid => MI.groups[gid] && MI.groups[gid][4] && (Suggested.count(SC, gid, SCFLOOR, SCINC) || (SC.lens[gid] && SC.lens[gid][1] + SC.lens[gid][2] > 0)));
+  if (!mem.length) return;
+  const want = SCWANT && pg.members.find(m => m.key === SCWANT.k);                 // an old link to a member's key starts the picker on that member
+  const S = scBlank(want && mem.includes(want.gid) ? want.gid : mem[0]);
+  S.k = pg.key; S.members = mem; SCCUR = S;
+  const first = document.querySelector("#panel .viewbar") || document.getElementById("list");
+  if (!first) { SCCUR = null; return; }
+  first.insertAdjacentHTML("beforebegin", `<div id="sctabs" class="sctabs" role="tablist"><button role="tab" data-sctab="members">Cards on this page</button><button role="tab" data-sctab="matches">${esc(scTabLabel())}</button></div>`);
+  let tab = SCTAB;
+  if (SCWANT && pg.members.some(m => m.key === SCWANT.k)) tab = SCWANT.tab;
+  SCWANT = null;
+  scSetTab(tab);
+}
+function scPickerHTML() {
+  const S = SCCUR;
+  if (!S || !S.members || S.members.length < 2) return "";
+  return `<div class="sgpick"><label>Possible matches for the group <select data-sctl="member">${S.members.map(g => `<option value="${esc(g)}"${g === S.gid ? " selected" : ""}>${esc(MI.groups[g][0])} (${fmt(Suggested.count(SC, g, SCFLOOR, SCINC))})</option>`).join("")}</select></label></div>`;
+}
+async function show(k) {
+  if (ALONEKEY && k !== ALONEKEY) ALONEKEY = null;
+  if (MERGED && k !== ALONEKEY && MERGED.redirects[k]) { await showMergedPage(MERGED.redirects[k], k); return; }
+  const pin = PINNEXT || (PINCUR && k === selected ? PINCUR : null);              // a re-draw of the same page (an edit, a switch) keeps the pin; a click in the tree does not (it clears PINCUR first)
+  PINNEXT = null;
+  if (!pin) PINCUR = null;
+  await show0(k); scAfter(k);
+  if (PINON && pin) await pinAfter(k, pin);
+}
 async function show0(k) {
   selected = k; CURCARD = null; renderTree();
   location.hash = encodeURIComponent(k);
@@ -1968,11 +2176,13 @@ async function gsWords() {
 function gsAllow(e) {
   if (e.layer === "t") return tentOn() ? e.key : (e.twin || "");
   if (e.layer === "c") return tagOn() ? e.key : "";
+  if (e.layer === "m") return e.members.some(g => g.startsWith("leaf:") || (g.startsWith("tag:") && tagOn())) ? e.key : "";
   return e.key;
 }
 function gsCount(r) {
   const e = r.e, id = e.gid.slice(e.gid.indexOf(":") + 1);
   try {
+    if (e.layer === "m") return mergedUnion(MERGED.pageBy[id]);
     if (r.key.startsWith("lg:")) return lgN(LOOSE.groups[r.key.slice(3)]);
     if (e.layer === "l" && MEM && CARDS) return leafN(id);
     if (e.layer === "k" && TAX) return blkLeafN(TAX.blocks.keyword, e.gid);
@@ -1988,13 +2198,13 @@ function gsCount(r) {
 function gsBadge(r) {
   const e = r.e;
   if (r.key.startsWith("lg:") && e.layer === "t") return `<span class="badge b-broad">loose · not checked</span>`;
-  return { l: "", k: `<span class="badge b-auto">keyword block</span>`, r: `<span class="badge b-auto">replacement group</span>`, t: `<span class="badge b-tent">tentative</span>`,
+  return { m: `<span class="badge b-merged">merged page</span>`, l: "", k: `<span class="badge b-auto">keyword block</span>`, r: `<span class="badge b-auto">replacement group</span>`, t: `<span class="badge b-tent">tentative</span>`,
     o: `<span class="badge b-broad">loose · not checked</span>`, c: `<span class="badge b-tag">community tag · not checked</span>`, h: hgBadge(),
     y: `<span class="badge b-auto">keyword filter, not a placement</span>` }[e.layer];
 }
 function gsRow(r) {
   const e = r.e, n = gsCount(r);
-  const why = r.dym ? `did you mean “${esc(r.dym)}”` : r.why === "alias" ? `via alias “${esc(r.via)}”` : r.why === "slug" ? "matched: tag name" : r.why === "description" ? "matched: description" : r.why === "family" ? "matched: family" : "";
+  const why = r.dym ? `did you mean “${esc(r.dym)}”` : r.why === "alias" ? (r.drafted ? `suggested alias “${esc(r.via)}” (drafted from Scryfall’s tags)` : `via alias “${esc(r.via)}”`) : r.why === "most" ? "matched: most of your words" : r.why === "slug" ? "matched: tag name" : r.why === "description" ? "matched: description" : r.why === "family" ? "matched: family" : "";
   const noun = e.layer === "h" ? "rule matches" : "cards";
   return `<a class="gr" data-nav data-go="${esc(r.key)}" href="#${esc(encodeURIComponent(r.key))}"${r.note && r.why === "alias" ? ` title="${esc(r.note)}"` : ""}>` +
     `<span class="gn">${esc(e.name)}</span>${gsBadge(r)}<span class="sub">${fmt(n)} ${noun}</span>` +
@@ -2008,6 +2218,16 @@ function gsMore(rows, first, kind) {
   return rows.slice(0, first).join("") + hid.map(h => h.replace(/^<(a|div) /, "<$1 hidden data-gsx=\"" + kind + "\" ")).join("") +
     (hid.length ? `<button class="gs-btn" data-nav data-gsmore="${kind}">Show ${hid.length} more</button>` : "");
 }
+// "Didn't find it?": one click records the query in its own field of the log (t "miss"); only offered when the log endpoint answered, so it never promises something that is not kept
+let gsMissed = [];
+try { gsMissed = JSON.parse(localStorage.getItem("gsMissed") || "[]"); } catch (e) { gsMissed = []; }
+function gsMissHTML(q, g, c) {
+  if (!GSLOGOK) return "";
+  const k = LIDX.norm(q), done = gsMissed.includes(k);
+  if (k.length < 2) return "";
+  return `<div class="gs-miss"><button class="gs-btn" data-nav data-gsmiss="${esc(q)}" data-g="${g}" data-c="${c}"${done ? ' aria-disabled="true"' : ""}>${done ? "Noted, thanks" : "Didn’t find it?"}</button> ` +
+    `<span class="sub" aria-live="polite">${done ? "We will look at “" + esc(q) + "”." : "One click tells us what you were looking for."}</span></div>`;
+}
 function gsSection(q, cardRows, cardTotal, res) {
   const gr = res.groups.slice(0, GSCAP).map(gsRow), fam = res.family.slice(0, GSCAP).map(gsRow);
   const nG = res.groups.length;
@@ -2018,7 +2238,7 @@ function gsSection(q, cardRows, cardTotal, res) {
   if (nG) h += gsMore(gr, GSFIRST, "groups") + (nG > GSCAP ? `<div class="sub">${fmt(nG)} groups match; showing ${GSCAP}.</div>` : "");
   else h += `<div class="sub gs-none">No group matches “${esc(q)}”.</div>`;
   if (res.family.length) h += `<div class="gs-fam"><button class="gs-btn gs-famb" data-nav data-gsfam aria-expanded="false">${fmt(res.family.length)} more group${res.family.length === 1 ? "" : "s"} matched only by family or kind ▸</button><div class="gs-famlist" hidden>${fam.join("")}${res.family.length > GSCAP ? `<div class="sub">showing ${GSCAP} of ${fmt(res.family.length)}</div>` : ""}</div></div>`;
-  return h + `</div><div class="sr-only" aria-live="polite" id="gs-live">${nG} group${nG === 1 ? "" : "s"}, ${cardTotal} card${cardTotal === 1 ? "" : "s"}</div>`;
+  return h + gsMissHTML(q, nG, cardTotal) + `</div><div class="sr-only" aria-live="polite" id="gs-live">${nG} group${nG === 1 ? "" : "s"}, ${cardTotal} card${cardTotal === 1 ? "" : "s"}</div>`;
 }
 // the search log: one "search" event once the query has stood for a moment, one "open" event per result opened. The page says so beside the box.
 let gsLogTimer = null, gsPending = null, gsLogged = "";
@@ -2054,7 +2274,7 @@ async function find(q) {
     const a = AbilityFind.describe(LIDX, en, ctx);
     let links = answerLinks(a);
     if (en[3] !== "o") links += ` <span class="lnk chip" data-go="c:${esc(en[0])}">card page</span>`;
-    return `<div class="fr"${GSON && en[3] !== "o" ? ` tabindex="0" data-nav data-go="c:${esc(en[0])}"` : ""}><span class="nm">${esc(a.name)}</span>${a.others.length ? ` <span class="sub">(${a.others.map(esc).join(" / ")})</span>` : ""}: ${esc(a.text)}${links}${a.hand && a.hand.fresh ? ` <span class="badge b-hand">placed by hand</span>` : ""}${en[3] === "u" && !(a.hand && a.hand.fresh) ? looseChips(en[0]) : ""}</div>`;
+    return `<div class="fr"${PINON && en[3] !== "o" ? ` tabindex="0"${GSON ? " data-nav" : ""} data-go="pin:${esc(en[0])}"` : (GSON && en[3] !== "o" ? ` tabindex="0" data-nav data-go="c:${esc(en[0])}"` : "")}><span class="nm">${esc(a.name)}</span>${a.others.length ? ` <span class="sub">(${a.others.map(esc).join(" / ")})</span>` : ""}: ${esc(a.text)}${links}${a.hand && a.hand.fresh ? ` <span class="badge b-hand">placed by hand</span>` : ""}${en[3] === "u" && !(a.hand && a.hand.fresh) ? looseChips(en[0]) : ""}</div>`;
   });
   if (!GSON) {
     out.innerHTML = (r.total ? "" : `<div class="sub">No card or catalogue entry matches.</div>`) + rows.join("") + (r.total > 12 ? `<div class="sub">${fmt(r.total)} matches; showing 12.</div>` : "");
@@ -2065,7 +2285,7 @@ async function find(q) {
     let res = GroupSearch.search(GSIDX, q, { allow: gsAllow, words: GSWORDS });
     if (res.needWords) { await gsWords(); res = GroupSearch.search(GSIDX, q, { allow: gsAllow, words: GSWORDS }); }
     if (seq !== FINDSEQ) return;                      // a newer query has started
-    if (!r.total && !res.groups.length && !res.family.length) out.innerHTML = `<div class="sub">No card or group matches “${esc(q)}”. Try a card name, or a common term such as “board wipe”.</div>`;
+    if (!r.total && !res.groups.length && !res.family.length) out.innerHTML = `<div class="sub">No card or group matches “${esc(q)}”. Try a card name, or a common term such as “board wipe”.</div>` + gsMissHTML(q, 0, 0);
     else out.innerHTML = gsSection(q, rows, r.total, res);
     gsLogSearch(q, res.groups.length, r.total);
   } catch (err) {                                     // the group files are missing or broken: the card search, as it always was
@@ -2075,6 +2295,18 @@ async function find(q) {
 function gsRefresh() { if (GSON) { const q = document.getElementById("q").value; if (q.trim()) find(q); } }
 document.getElementById("findres").addEventListener("click", e => {
   if (GSON) {
+    const ms = e.target.closest("[data-gsmiss]");
+    if (ms) {
+      if (ms.getAttribute("aria-disabled") !== "true") {
+        const k = LIDX.norm(ms.dataset.gsmiss);
+        gsPost({ q: ms.dataset.gsmiss, t: "miss", groups: +ms.dataset.g, cards: +ms.dataset.c });
+        gsMissed = gsMissed.filter(x => x !== k).concat(k).slice(-50);
+        try { localStorage.setItem("gsMissed", JSON.stringify(gsMissed)); } catch (err) { /* storage unavailable: the button just offers itself again */ }
+        ms.setAttribute("aria-disabled", "true"); ms.textContent = "Noted, thanks";
+        ms.nextElementSibling.textContent = "We will look at “" + ms.dataset.gsmiss + "”.";
+      }
+      return;
+    }
     const mb = e.target.closest("[data-gsmore]");
     if (mb) { for (const el of document.querySelectorAll("#findres [data-gsx=" + mb.dataset.gsmore + "]")) { el.hidden = false; } mb.remove(); return; }
     const fb = e.target.closest("[data-gsfam]");
@@ -2085,7 +2317,7 @@ document.getElementById("findres").addEventListener("click", e => {
   const go = e.target.closest("[data-go]");
   if (go) {
     if (GSON) { e.preventDefault(); gsFlush(); if (gsPending) gsPost({ q: gsPending.q, t: "open", groups: gsPending.g, cards: gsPending.c }); }
-    show(go.dataset.go).then(() => { if (GSON && window.innerWidth <= 800) document.getElementById("panel").scrollIntoView(); });
+    (go.dataset.go.startsWith("pin:") ? openPin(go.dataset.go.slice(4)) : show(go.dataset.go)).then(() => { if (GSON && window.innerWidth <= 800) document.getElementById("panel").scrollIntoView(); });
   }
 });
 // keyboard: ArrowDown (or Enter) in the box goes to the first result; Up/Down move through the results; Enter opens; Escape returns to the box, and in the box clears it
@@ -2111,12 +2343,13 @@ document.getElementById("findres").addEventListener("keydown", e => {
 
 // back / forward and pasted links: follow the hash when something other than show() changed it
 window.addEventListener("hashchange", () => {
-  const [h, tab] = splitTab(decodeURIComponent(location.hash.slice(1)));
+  const [h1, tab] = splitTab(decodeURIComponent(location.hash.slice(1))), [h, card] = splitPin(h1);
   if (tab) SCWANT = { k: h, tab: tab };
   if (TAX && h && h === selected) { if (tab && SCCUR && SCCUR.k === h) { SCWANT = null; scSetTab(tab); } return; }
   if (!TAX || !h) return;
   if (h.startsWith("C:")) setMode("cards", true);
   if (h.startsWith("Q:") || h.startsWith("QB:")) setMode("queue", true);
+  if (PINON && card) { PINNEXT = card; if (!tab) SCWANT = { k: h, tab: "members" }; }
   show(h);
 });
 
@@ -2129,15 +2362,17 @@ window.addEventListener("hashchange", () => {
     return;
   }
   for (const f of TAX.families) for (const nd of f.nodes) { NODES[nd.id] = Object.assign({ fam: f.key }, nd); NODE_FAM[nd.id] = f.name; }
-  header(); renderTree(); gsBoot();
+  header(); renderTree(); gsBoot(); mergeBoot().then(() => renderTree());
   needCards().then(needUnorg).then(needLoose).then(needManual).then(needKFac).then(needHG).then(needSib).then(() => { hideNote(); header(); renderTree(); if (selected && !SCCUR) scAfter(selected); });
   document.getElementById("foot").innerHTML =
     `Data: ${esc(TAX.meta.rules.snapshot)}. Method: ${esc(TAX.meta.rules.backoff)}, minimum ${TAX.meta.rules.minimum}; ` +
     `names are generated (edits: corrections/ability_taxonomy_names.json); no tag data is used to place anything. ` +
     `"Tentative groups" are loose groups promoted by hand-read rules; they are not fully checked and are never part of the precise or the broad figure (switch them off at the top). The "Loosely grouped" browse layer is a finding aid: it is not checked and is never counted as organized. The coverage figure here and the archived view's 74.8% are measured on different bases. ` +
     `<a href="ability-taxonomy-report.md">Results and limits</a> · <a href="ability-taxonomy-design.md">Design</a> · <a href="../KNOWN_LIMITATIONS.md">Known limitations §12</a>.`;
-  const [h, tab] = splitTab(decodeURIComponent(location.hash.slice(1)));
-  if (h && tab) { await needManual(); SCWANT = { k: h, tab: tab }; }              // a link to a tab needs the hand layer and the meta file before the page is drawn
+  await pinBoot(); await mergeBoot();
+  const [h1, tab] = splitTab(decodeURIComponent(location.hash.slice(1))), [h, card] = splitPin(h1);
+  if (h && (tab || card)) { await needManual(); if (tab) SCWANT = { k: h, tab: tab }; }
+  if (PINON && card && h) { await needManual(); await needLoose(); PINNEXT = card; if (!tab) SCWANT = { k: h, tab: "members" }; }              // a link to a tab needs the hand layer and the meta file before the page is drawn
   if (h) { if (h.startsWith("C:")) setMode("cards", true); if (h.startsWith("Q:") || h.startsWith("QB:")) { await needManual(); setMode("queue", true); } show(h); }
 })();
 </script>

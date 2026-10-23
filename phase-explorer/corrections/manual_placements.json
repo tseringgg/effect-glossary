@@ -1,7 +1,7 @@
 {
  "_comment": "Hand placements, written by src/serve.py (POST /api/manual); hand-editable. Keyed by oracle_id, then group id (layer:id). action is add | remove | nofit (nofit = 'nothing fits', group id none:fits). source_at_edit is what the card's placement was when it was edited (filled by the server). 'clear' deletes an entry (undo); history keeps the trace. Read by src/build_manual_layer.py; the page reads this file directly.",
  "version": 1,
- "revision": 98,
+ "revision": 99,
  "edits": {
   "002965be-a36f-4a09-9ce0-c6535bca1703": {
    "name": "Veil of Summer",
@@ -8210,6 +8210,27 @@
       "threshold": 0.9,
       "score": 0.975,
       "source": "sig+tag"
+     }
+    }
+   }
+  },
+  "6894345f-52a6-46e4-b278-0783087daee1": {
+   "name": "Hapatra, the Desert Fang",
+   "groups": {
+    "leaf:aa22258ed3": {
+     "action": "add",
+     "date": "2026-10-21T23:12:51",
+     "note": "",
+     "group_name": "Put −1/−1 counters on a creature",
+     "source_at_edit": {
+      "status": "tentative",
+      "groups": [
+       "tent:gd055f7fe"
+      ],
+      "reason": {
+       "code": 0,
+       "text": "not yet organized in the build; shown only as tentative"
+      }
      }
     }
    }
@@ -21463,6 +21484,14 @@
    "op": "add",
    "oid": "94fac5fe-97d5-4c12-a80c-8efff9d853ae",
    "group": "hand:nonbasic-lands-change-type",
+   "note": ""
+  },
+  {
+   "seq": 99,
+   "date": "2026-10-21T23:12:51",
+   "op": "add",
+   "oid": "6894345f-52a6-46e4-b278-0783087daee1",
+   "group": "leaf:aa22258ed3",
    "note": ""
   }
  ],

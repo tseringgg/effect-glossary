@@ -1,0 +1,287 @@
+{
+ "a creature gets +n/+n": {
+  "mark": "merge",
+  "why": "one effect; the split is only 'object varies' (what the target is)"
+ },
+ "a creature gets +n/+n until end of turn": {
+  "mark": "merge",
+  "why": "one effect; 'object varies' only"
+ },
+ "a creature gets −n/−n until end of turn": {
+  "mark": "merge",
+  "why": "one effect; 'object varies' only"
+ },
+ "a permanent gains a card type until end of turn": {
+  "mark": "merge",
+  "why": "both make a permanent a type for the turn (the whole team of Vehicles, or one target); the section labels keep 'number varies' and 'targeted'"
+ },
+ "a permanent gains a keyword until end of turn": {
+  "mark": "merge",
+  "why": "one effect; the labels '(you control)', '(targeted)', '(number varies)' stay on the sections and none is the opposite of another"
+ },
+ "a permanent gains a keyword, gains a creature type, gains a card type, has set base power and toughness until end of turn": {
+  "mark": "merge",
+  "why": "both are 'animate a land or artifact'; only '(you control)' differs"
+ },
+ "a permanent has a keyword": {
+  "mark": "don't merge",
+  "why": "same name, different thing: one grants a keyword to an enchanted permanent, the other to CARDS IN A GRAVEYARD (escape, unearth, sneak)"
+ },
+ "a permanent has a keyword and has an extra ability": {
+  "mark": "merge",
+  "why": "both are a static grant of a keyword plus a quoted ability; samples are the same effect with different objects"
+ },
+ "a permanent has set base power and toughness until end of turn": {
+  "decision": "left out (2026-10-22)",
+  "mark": "needs your decision",
+  "why": "identical names; the samples mix one target (Nogi, Genemorph Imago) with the whole team (Biomass Mutation, Mirror Entity), so the sections could not be told apart by their labels"
+ },
+ "all creatures get −n/−n until end of turn": {
+  "mark": "merge",
+  "why": "one effect; 'excluding some kind' and 'restriction varies' only"
+ },
+ "card spells cost more": {
+  "mark": "don't merge",
+  "why": "opposite sides: '(an opponent controls)' taxes your opponents' spells, '(you control)' is the Leeches that make YOUR spells cost more"
+ },
+ "cast a card": {
+  "mark": "don't merge",
+  "why": "'(ability duration: until end of turn)' is a permission for the turn (play an extra land, cast Dinosaurs this turn), the other is a one-shot cast"
+ },
+ "conjure a card": {
+  "mark": "don't merge",
+  "why": "the qualifier is the zone (hand, graveyard, battlefield), and the zone is the effect"
+ },
+ "copies-instants-and-sorceries": {
+  "mark": "merge",
+  "why": "hand-confirmed: the same 11 cards in both tags"
+ },
+ "counter a spell": {
+  "mark": "merge",
+  "why": "both counter a spell; '(object varies)' only means a restriction on which spells (Extinguish: sorceries)"
+ },
+ "counter something": {
+  "mark": "merge",
+  "why": "identical names; both counter an ability or a restricted spell"
+ },
+ "create creature tokens": {
+  "mark": "merge",
+  "why": "one effect; '(each)' and 'until end of turn' are 'for each ...' and 'this turn' counts in the trigger (Saint Elenda, Caller of the Claw), not temporary tokens"
+ },
+ "create soldier tokens": {
+  "mark": "merge",
+  "why": "both create Soldier tokens; one set is artifact creatures"
+ },
+ "create treasure tokens": {
+  "mark": "merge",
+  "why": "one effect; the 'until end of turn' ones count 'this turn' (a Treasure for each creature that crewed it this turn)"
+ },
+ "create warrior tokens": {
+  "mark": "don't merge",
+  "why": "'(ability duration: until end of combat)' is Mobilize: tokens that are tapped, attacking and sacrificed at end of combat"
+ },
+ "creatures have an extra ability": {
+  "mark": "merge",
+  "why": "identical names; both give creatures a quoted ability"
+ },
+ "creatures you control have an extra ability": {
+  "mark": "merge",
+  "why": "identical names; both give your creatures a quoted ability"
+ },
+ "deal damage to a creature": {
+  "mark": "merge",
+  "why": "one effect; the 8 are 'a creature that blocked / was dealt damage this turn'"
+ },
+ "deal damage to all creatures": {
+  "mark": "merge",
+  "why": "one effect; 'excluding some kind' only"
+ },
+ "deal damage to everything it names": {
+  "mark": "merge",
+  "why": "both deal damage to the named targets; '(another)' only says another one"
+ },
+ "destroy a creature": {
+  "mark": "merge",
+  "why": "one effect; the qualifiers are 'excluding some kind', 'restriction varies' and 'that was dealt damage this turn'"
+ },
+ "destroy a creature an opponent controls": {
+  "mark": "merge",
+  "why": "one effect; the 7 add a 'this turn' condition"
+ },
+ "discard cards": {
+  "mark": "don't merge",
+  "why": "who discards: '(an opponent controls)' makes an opponent discard, the plain group is you discarding"
+ },
+ "draw cards": {
+  "mark": "merge",
+  "why": "one effect; the three differ only in what the parser could not record about WHO draws (your own example)"
+ },
+ "draw-engines": {
+  "mark": "merge",
+  "why": "hand-confirmed: the 31 are all inside the 36"
+ },
+ "each opponent loses life": {
+  "mark": "merge",
+  "why": "one effect; the 5 count 'this turn'"
+ },
+ "each opponent sacrifices a permanent": {
+  "mark": "merge",
+  "why": "one effect; 'object varies' only"
+ },
+ "exchange control": {
+  "mark": "merge",
+  "why": "a leaf and a community tag with the same name and the same idea: sections precise, then tag"
+ },
+ "exile a creature": {
+  "mark": "don't merge",
+  "why": "'(for as long as the source stays)' is the O-Ring kind that gives the creature back; the plain group exiles for good"
+ },
+ "exile a creature an opponent controls": {
+  "mark": "don't merge",
+  "why": "same: one exiles for good, the other only while the source stays"
+ },
+ "exile cards": {
+  "decision": "approved for a later batch, subset only: plain group (33) with '(several)' (12)",
+  "mark": "needs your decision",
+  "why": "five members that mix 'an opponent controls', 'you control', 'for as long as the source stays' and 'several'; the plain group (33) with '(several)' (12) would be safe, the rest are not"
+ },
+ "exile cards, then move it": {
+  "mark": "merge",
+  "why": "the blink effect; '(you control)' is a narrower case of the same thing"
+ },
+ "exile cards, then set up a later effect": {
+  "mark": "merge",
+  "why": "the delayed-return (flicker) effect; '(you control)' is a narrower case"
+ },
+ "gain life": {
+  "mark": "merge",
+  "why": "one effect; the 8 are the cases where the parser could not tell who gains it (your example)"
+ },
+ "investigate": {
+  "mark": "merge",
+  "why": "one effect; '(each)' is investigating twice or three times"
+ },
+ "look at the top cards and put a card into hand": {
+  "mark": "merge",
+  "why": "one effect; 'any target' / 'what it applies to isn't recorded' only"
+ },
+ "lose life": {
+  "mark": "don't merge",
+  "why": "who loses it: '(an opponent controls)' hits an opponent, the plain group is you, and 'who loses isn't recorded' holds life PAYMENTS (shock lands)"
+ },
+ "mill cards": {
+  "mark": "don't merge",
+  "why": "'(an opponent controls)' mills an opponent, the plain group mills you: different strategies"
+ },
+ "permanents you control have a keyword": {
+  "mark": "don't merge",
+  "why": "identical names, one of them is CARDS IN A GRAVEYARD gaining escape, retrace or unearth"
+ },
+ "put +1/+1 counters on permanents": {
+  "decision": "left out (2026-10-22)",
+  "mark": "needs your decision",
+  "why": "mass ('each Myr you control', '(all)') against one target ('target land you control'); the labels would show it but the groups are small (6, 11, 15)"
+ },
+ "put +1/+1 counters on this permanent": {
+  "mark": "merge",
+  "why": "one effect; the 6 count 'this turn'"
+ },
+ "put a card from your graveyard on top or bottom of a library": {
+  "mark": "merge",
+  "why": "one effect; 'object varies' only"
+ },
+ "put a card on top or bottom of a library": {
+  "mark": "merge",
+  "why": "one effect; 'any target / what it applies to isn't recorded' only"
+ },
+ "raises-power-of-your-creatures": {
+  "mark": "merge",
+  "why": "hand-confirmed: the 10 are all inside the 13"
+ },
+ "return a creature to its owner's hand": {
+  "mark": "merge",
+  "why": "one effect; 'excluding some kind' and 'restriction varies' only"
+ },
+ "return a target to its owner's hand": {
+  "decision": "left out (2026-10-22)",
+  "mark": "needs your decision",
+  "why": "the object is 'not recorded' in both and the samples mix returns from a graveyard (Garna, Storrev) with returns from the battlefield (Living Twister); I cannot say what either group is"
+ },
+ "return cards from your graveyard onto the battlefield": {
+  "mark": "merge",
+  "why": "one effect; '(with mana value N or less)' is a restriction"
+ },
+ "return permanents from your graveyard to its owner's hand": {
+  "mark": "merge",
+  "why": "one effect; '(several)' only"
+ },
+ "return permanents to its owner's hand": {
+  "decision": "approved for a later batch, subset only: plain group (34) with '(several)' (6)",
+  "mark": "needs your decision",
+  "why": "five members that mix '(you control)' and '(an opponent controls)' (opposite sides) with '(several)' and '(targeted)'; the plain group (34) with '(several)' (6) would be safe"
+ },
+ "reveal cards until one matches": {
+  "mark": "don't merge",
+  "why": "the qualifier is what is revealed for (a creature, a land): a different mechanic"
+ },
+ "sacrifice something": {
+  "mark": "merge",
+  "why": "one effect; 'excluding some kind' and 'restriction varies' only"
+ },
+ "search your library for a basic land and put it into your hand": {
+  "mark": "merge",
+  "why": "one tutor; the qualifiers are the parser's 'follow-up' detail"
+ },
+ "search your library for a basic land and put it onto the battlefield": {
+  "mark": "merge",
+  "why": "one ramp effect; 'follow-up' detail only"
+ },
+ "search your library for a card and put it into a graveyard": {
+  "mark": "merge",
+  "why": "one effect; 'follow-up' detail only"
+ },
+ "search your library for a card and put it into your hand": {
+  "mark": "merge",
+  "why": "the tutor; seven members, all 'follow-up' or 'object' detail. Caution: three hold Extract-style cards (search an opponent's library and exile) under the same name"
+ },
+ "search your library for a card and put it onto the battlefield": {
+  "mark": "merge",
+  "why": "one effect; four members, detail only (Whisper Squad's 'named' searches are in it too)"
+ },
+ "search your library for a land and put it into your hand": {
+  "mark": "merge",
+  "why": "one effect; 'follow-up' detail only"
+ },
+ "search your library for a land and put it onto the battlefield": {
+  "mark": "merge",
+  "why": "one effect; 'follow-up' detail only"
+ },
+ "search your library for an artifact and put it onto the battlefield": {
+  "mark": "merge",
+  "why": "one effect; 'follow-up' detail only"
+ },
+ "spells cost less": {
+  "mark": "don't merge",
+  "why": "the plain group is a spell making ITSELF cheaper ('this spell costs less'), '(you control)' makes your OTHER spells cheaper"
+ },
+ "surveil": {
+  "mark": "merge",
+  "why": "a leaf and a community tag with the same name: sections precise, then tag"
+ },
+ "that player loses life": {
+  "mark": "merge",
+  "why": "identical names; both are 'that player loses life' triggers"
+ },
+ "this permanent gets +n/+n and has an extra ability, while a condition holds": {
+  "mark": "merge",
+  "why": "identical names; the same Threshold-style effect"
+ },
+ "this permanent gets ±n/±n": {
+  "mark": "merge",
+  "why": "identical names; both are 'gets +X/+X for each ...' (the sign is not recorded)"
+ },
+ "this permanent has set power and toughness": {
+  "mark": "merge",
+  "why": "identical names; both are characteristic-defining abilities (the second set also holds power-only ones: 'power is equal to ...')"
+ }
+}

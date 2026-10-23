@@ -32,7 +32,7 @@ import group_search_log as GSL
 HERE = M.HERE
 BUILD = os.path.join(HERE, "build")
 CORR = os.path.join(HERE, "corrections")
-PROTECTED = [os.path.join(CORR, n) for n in ("manual_placements.json", "manual_placements.json.bak", "hand_groups.json", "hand_groups.json.bak", "group_aliases.json", "group_descriptions.json")]
+PROTECTED = [os.path.join(CORR, n) for n in ("manual_placements.json", "manual_placements.json.bak", "hand_groups.json", "hand_groups.json.bak", "group_aliases.json", "group_descriptions.json", "group_aliases_drafted.json")]
 RESULTS = []
 
 
@@ -120,7 +120,7 @@ def osa(a, b):
     return d[len(a)][len(b)]
 
 
-LAYER = {"l": 0, "k": 1, "r": 1, "t": 2, "o": 3, "c": 4, "h": 5, "y": 6}
+LAYER = {"l": 0, "k": 1, "r": 1, "m": 1, "t": 2, "o": 3, "c": 4, "h": 5, "y": 6}
 
 
 class Ref(object):
@@ -154,32 +154,35 @@ class Ref(object):
         qkey = " ".join(qst)
         best, fam = {}, {}
 
-        def offer(r, tier, why, via="", order=0, fit="", note=""):
+        def offer(r, tier, why, via="", order=0, fit="", note="", drafted=False):
             c = best.get(r[0])
             if c is None or tier < c["tier"] or (tier == c["tier"] == 1 and order < c["order"]):
-                best[r[0]] = dict(r=r, tier=tier, why=why, via=via, order=order, fit=fit, note=note)
+                best[r[0]] = dict(r=r, tier=tier, why=why, via=via, order=order, fit=fit, note=note, drafted=drafted)
         byg = {r[0]: r for r in self.g}
         if qkey in {" ".join(pstem(w) for w in fold(a["p"]).split()) for a in self.al.values()}:
             for a in self.al.values():
                 if " ".join(pstem(w) for w in fold(a["p"]).split()) == qkey:
                     for n, gid in enumerate(a["g"]):
                         if gid in byg:
-                            offer(byg[gid], 1, "alias", a["p"], n, a["fit"], a["note"])
+                            offer(byg[gid], 4.5 if a["s"] == "drafted" else 1, "alias", a["p"], n, a["fit"], a["note"], a["s"] == "drafted")
         for r in self.g:
-            ns = [pstem(w) for w in fold(r[2]).split()]
-            core_name = re.sub(r" \([^)]*\)", "", re.sub(r" — .*$", "", r[2]))
-            ck = " ".join(pstem(w) for w in fold(core_name).split())
+            vs = []                                                                  # the names an entry answers to: its own and (a merged page) its members' names and aliases
+            for nm in [r[2]] + (list(r[11]) if len(r) > 11 else []):
+                cn = re.sub(r" \([^)]*\)", "", re.sub(r" — .*$", "", nm))
+                vs.append(([pstem(w) for w in fold(nm).split()], " ".join(pstem(w) for w in fold(cn).split())))
             alts = [pstem(w) for w in fold(r[10]).split()] if r[10] else []
             ps = [pstem(w) for w in fold(r[3]).split()]
             ds = [pstem(w) for w in fold(r[7]).split() if pstem(w) not in STOP and len(pstem(w)) >= 2]
-            if " ".join(ns) == qkey or ck == qkey:
+            if any(" ".join(ns) == qkey or ck == qkey for ns, ck in vs):
                 offer(r, 0, "name")
             elif alts and " ".join(alts) == qkey:
                 offer(r, 1, "slug", "", 50)
-            elif starts(ns, qall):
+            elif any(starts(ns, qall) for ns, ck in vs):
                 offer(r, 2, "name")
-            elif all_match(ns, qcore):
+            elif any(all_match(ns, qcore) for ns, ck in vs):
                 offer(r, 3, "name")
+            elif len(core) >= 3 and any(sum(1 for v in qcore if any(tmatch(v, w, True) for w in ns)) >= len(core) - 1 for ns, ck in vs):
+                offer(r, 3.5, "most")
             elif alts and all_match(alts, qcore):
                 offer(r, 4, "slug")
             elif ds and all_match(ds, qcore, True) and max(len(t) for t in core) >= 3:
@@ -188,7 +191,7 @@ class Ref(object):
                 fam[r[0]] = dict(r=r, tier=6, why="family", via="", order=0, fit="", note="")
         for a in self.al.values():
             ast = [pstem(w) for w in fold(a["p"]).split()]
-            if " ".join(ast) != qkey and all_match(ast, qcore):
+            if a["s"] != "drafted" and " ".join(ast) != qkey and all_match(ast, qcore):
                 for gid in a["g"]:
                     if gid in byg:
                         offer(byg[gid], 4, "alias", a["p"], 0, a["fit"], a["note"])
@@ -211,7 +214,7 @@ class Ref(object):
             return [], [], None
         toks = q.split()
         g, f = self.lit(toks, allow)
-        if sum(1 for c in g if c["tier"] <= 4) >= 3:
+        if sum(1 for c in g if c["tier"] <= 4.5) >= 3:
             return g, f, None
         corr, changed = list(toks), False
         for i, t in enumerate(toks):
@@ -237,12 +240,13 @@ class Ref(object):
             return g, f, None
         g2, _ = self.lit(corr, allow)
         seen = {c["r"][0] for c in g}
-        extra = [c for c in g2 if c["tier"] <= 4 and c["r"][0] not in seen]
+        extra = [c for c in g2 if c["tier"] <= 4.5 and c["r"][0] not in seen]
         return (g + extra, f, " ".join(corr)) if extra else (g, f, None)
 
 
 def main():
     before = [sha(p) for p in PROTECTED]
+    real_log_before = sha(os.path.join(BUILD, "group_search_log.json"))
     if not os.path.exists(os.path.join(BUILD, "group_search", "index.json")):
         print("build the group search first: python src/build_group_search.py")
         return 1
@@ -262,7 +266,7 @@ def main():
     check("1 and equal to the build the page reads", all(sha(os.path.join(t1, n)) == sha(os.path.join(BUILD, "group_search", n)) for n in ("index.json", "meta.json", "words.txt")))
 
     # ---------------------------------------------------------------- 2. the flag off: every other file byte-identical, the feature's own outputs removed, then rebuilt
-    own = ("build/group_search/", "reports/group-search.md", "corrections/group_aliases.json", "corrections/group_descriptions.json", "build/group_search_log")
+    own = ("build/group_search/", "reports/group-search.md", "corrections/group_aliases.json", "corrections/group_descriptions.json", "corrections/group_aliases_drafted.json", "build/group_search_log")
     h0 = tree_hashes(own)
     r = subprocess.run([sys.executable, "-c", "import sys; sys.path.insert(0, 'src'); import build_group_search as B; B.main(force=False)"], cwd=HERE, capture_output=True, text=True, encoding="utf-8")
     h1 = tree_hashes(own)
@@ -281,14 +285,20 @@ def main():
     loose = jl(os.path.join(BUILD, "loose_groups.json"))["groups"]
     tag = jl(os.path.join(BUILD, "tag_placements.json"))["groups"]
     offered = {g for g, v in mi["groups"].items() if v[4] and not (g.startswith("hand:") and hg[g[5:]].get("retired"))}
-    expect = offered | {"yk:" + k for k in kf}
-    check("3 the index holds exactly the offered groups (%d) plus the keyword filters (%d) = %d" % (len(offered), len(kf), len(expect)), {r[0] for r in G} == expect and len(G) == len(expect), len(G))
+    _mp = os.path.join(BUILD, "merged_groups", "index.json")
+    _mg = jl(_mp) if os.path.exists(_mp) else {"pages": [], "by_gid": {}}
+    expect = (offered - set(_mg["by_gid"])) | {"yk:" + k for k in kf} | {"page:" + p["slug"] for p in _mg["pages"]}      # merged pages replace their members (src/test_merged_groups.py checks the pages themselves)
+    check("3 the index holds exactly the offered groups (%d, minus %d now shown in %d merged pages) plus the keyword filters (%d) = %d" % (len(offered), len(_mg["by_gid"]), len(_mg["pages"]), len(kf), len(expect)), {r[0] for r in G} == expect and len(G) == len(expect), len(G))
     notoffered = {g for g, v in mi["groups"].items() if not v[4]}
     check("3 none of the %d not-offered groups (catch-alls, buckets) is in it; no annotation view; no wide tag" % len(notoffered), not ({r[0] for r in G} & notoffered) and not any(r[1].startswith("ag:") for r in G))
     bad = []
     for r in G:
         gid, key, layer = r[0], r[1], r[4]
         pre, rest = gid.split(":", 1)
+        if layer == "m":
+            if key != next(p["key"] for p in _mg["pages"] if "page:" + p["slug"] == gid):
+                bad.append(gid)
+            continue
         ok = {"l": key == "l:" + rest and rest in tax["leaves"], "k": key == "kl:" + gid and gid in tax["blocks"]["keyword"]["leaves"], "r": key == "gl:" + rest and rest in tax["blocks"]["replacement"]["leaves"],
               "t": key == "tg:" + rest and rest in tent, "o": key == "lg:" + rest and rest in loose, "c": key == "ct:" + rest and rest in tag, "h": key == "hg:" + rest and rest in hg,
               "y": key == "yk:" + rest and rest in kf}[layer]
@@ -299,7 +309,7 @@ def main():
     check("3 every key is the page's key for that group and the group exists in its source file (twins too)", not bad, bad[:3])
     js = dukpy.JSInterpreter()
     js.evaljs(io.open(os.path.join(HERE, "reports", "manualedit.js"), encoding="utf-8").read())
-    mism = [r[0] for r in G if r[4] != "y" and js.evaljs("Manual.goKey(%s)" % json.dumps(r[0])) != r[1]]
+    mism = [r[0] for r in G if r[4] not in ("y", "m") and js.evaljs("Manual.goKey(%s)" % json.dumps(r[0])) != r[1]]
     check("3 and equals reports/manualedit.js Manual.goKey for all %d non-filter groups" % sum(1 for r in G if r[4] != "y"), not mism, mism[:3])
     sizes_ok = all(r[5] == mi["groups"][r[0]][1] for r in G if r[0] in mi["groups"]) and all(r[5] == kf[r[0][3:]]["n"] for r in G if r[4] == "y")
     check("3 sizes equal the source files' sizes", sizes_ok)
@@ -351,7 +361,7 @@ def main():
     rep = io.open(os.path.join(out, "group-search.md"), encoding="utf-8").read() if os.path.exists(os.path.join(out, "group-search.md")) else ""
     check("5 an orphaned description is reported on the build (console and report) and the build still succeeds", r.returncode == 0 and "orphaned edits 1" in r.stdout and "leaf:gone" in rep, r.stdout[-200:])
     rep_real = io.open(os.path.join(HERE, "reports", "group-search.md"), encoding="utf-8").read()
-    check("5 the real report lists the hashed-id alias references and the candidate groups (blink)", "hashed id" in rep_real and "blink" in rep_real)
+    check("5 the real report lists the hashed-id alias references and the candidate groups (bite)", "hashed id" in rep_real and "bite" in rep_real)
 
     # ---------------------------------------------------------------- 6. the ranking: reports/groupsearch.js against the independent Python version
     words = {w: 1 for w in io.open(os.path.join(BUILD, "group_search", "words.txt"), encoding="utf-8").read().split()}
@@ -492,7 +502,78 @@ def main():
     pr = json.loads(c.getresponse().read())
     check("8 GET /api/groupsearch/ping says enabled when the meta file exists", pr == {"ok": True, "enabled": True})
     srv.shutdown()
-    check("8 the real log file was not created by any test", not os.path.exists(os.path.join(BUILD, "group_search_log.json")))
+    check("8 the real log file was not touched by any test", sha(os.path.join(BUILD, "group_search_log.json")) == real_log_before)
+
+
+    # ---------------------------------------------------------------- 8b. the button's field in the log, spellings, drafted aliases, the new hand groups
+    GSL.LOG, GSL.META = os.path.join(tdir, "build", "log2.json"), mp
+    srv2 = Q(("127.0.0.1", 0), H)
+    port = srv2.server_address[1]
+    threading.Thread(target=srv2.serve_forever, daemon=True).start()
+    s, _ = post({"q": "mana dork", "t": "search", "groups": 1, "cards": 0})
+    s2, _ = post({"q": "mana dork", "t": "miss", "groups": 1, "cards": 0})
+    s3, _ = post({"q": "mana dork", "t": "miss", "groups": 1, "cards": 0})
+    d = json.load(open(GSL.LOG, encoding="utf-8"))["queries"]["mana dork"]
+    check("8b 'Didn't find it?': a miss event counts in its own field (missed %d), apart from searches (%d) and opened (%d)" % (d["missed"], d["searches"], d["opened"]), (s, s2, s3) == (200, 200, 200) and d["missed"] == 2 and d["searches"] == 1 and d["opened"] == 0)
+    json.dump({"v": 1, "queries": {"old query": {"q": "old query", "searches": 3, "zero": 0, "groups": 2, "cards": 1, "opened": 1, "first": "2026-10-20T12:00:00", "last": "2026-10-20T12:00:00"}}}, open(GSL.LOG, "w", encoding="utf-8"))
+    post({"q": "old query", "t": "miss"})
+    d = json.load(open(GSL.LOG, encoding="utf-8"))["queries"]["old query"]
+    check("8b a record written before the button existed gains the field without losing anything", d["missed"] == 1 and d["searches"] == 3 and d["opened"] == 1)
+    check("8b a miss with a bad body is refused like any other event", post({"q": "ok", "t": "miss", "groups": -1})[0] == 400 and post({"q": "x", "t": "miss"})[0] == 422)
+    srv2.shutdown()
+
+    sp_ok = {"aliases": {"alpha beta": {"groups": [{"id": tagid}], "fit": "good", "spellings": ["alpha-b", "abx"]}}}
+    a_, e_, w_, st_ = B.check_aliases(groups, sp_ok)
+    check("8b spellings: every spelling gets its own key, same groups; the entry counts once (%d keys, %d entries)" % (len(a_), st_["entries"]), not e_ and set(a_) == {"alpha beta", "alpha b", "abx"} and st_["entries"] == 1 and all(v["canon"] == "alpha beta" for v in a_.values()))
+    for nm, d in {"a spelling repeats another entry": {"aliases": {"one": {"groups": [{"id": tagid}], "fit": "good", "spellings": ["two"]}, "two": {"groups": [{"id": tagid}], "fit": "good"}}},
+                  "a spelling repeats its own entry": {"aliases": {"one": {"groups": [{"id": tagid}], "fit": "good", "spellings": ["One!"]}}},
+                  "spellings is not a list": {"aliases": {"one": {"groups": [{"id": tagid}], "fit": "good", "spellings": "two"}}},
+                  "13 spellings": {"aliases": {"one": {"groups": [{"id": tagid}], "fit": "good", "spellings": ["s%d" % i for i in range(13)]}}},
+                  "a spelling that is empty after folding": {"aliases": {"one": {"groups": [{"id": tagid}], "fit": "good", "spellings": ["!!"]}}}}.items():
+        check("8b spellings error: %s" % nm, bool(B.check_aliases(groups, d)[1]))
+    hand_k = {"wrath"}
+    dr = {"aliases": {"wrath": {"groups": [{"id": tagid}]}, "wipe": {"groups": [{"id": tagid}, {"id": "leaf:gone"}]}, "tim": {"groups": [{"id": tagid}]}, "x y": {"groups": [{"id": "leaf:gone"}]}}}
+    r_, w_, st_ = B.check_drafted(groups, dr, hand_k)
+    check("8b drafted aliases: a hand alias with the same words wins, an unknown group is dropped with a warning (not an error), a denied phrase is left out, flagged drafted",
+          set(r_) == {"wipe"} and r_["wipe"]["g"] == [tagid] and r_["wipe"]["s"] == "drafted" and r_["wipe"]["fit"] == "drafted" and st_["dropped_hand"] == 1 and st_["orphan"] == 2 and len(w_) == 2, (r_, st_, w_))
+    dfile = jl(os.path.join(CORR, "group_aliases_drafted.json"))["aliases"]
+    hand_all = set(k for k, v in doc["aliases"].items() if v["s"] == "hand")
+    check("8b the drafted file: %d aliases, every one flagged drafted with a basis, none in the deny list, none equal to a hand alias or a group name" % len(dfile),
+          all(v["fit"] == "drafted" and v["basis"] for v in dfile.values()) and not ({B.norm(k) for k in dfile} & (B.DENY | hand_all | {B.norm(r[2]) for r in G})), "")
+    check("8b the index holds %d hand and %d drafted alias keys" % (sum(1 for v in doc["aliases"].values() if v["s"] == "hand"), sum(1 for v in doc["aliases"].values() if v["s"] == "drafted")),
+          meta["alias_keys"] == sum(1 for v in doc["aliases"].values() if v["s"] == "hand") and meta["drafted_aliases"] == sum(1 for v in doc["aliases"].values() if v["s"] == "drafted"))
+
+    # a drafted alias ranks below every name match and every hand alias, and answers only to its exact words
+    itp.evaljs("var D = {groups: [['leaf:a1', 'l:a1', 'Zebra mushroom', 'P', 'l', 50, 1, '', 0, '', ''], ['leaf:a2', 'l:a2', 'Quokka feast', 'P', 'l', 900, 1, '', 0, '', ''], ['leaf:a3', 'l:a3', 'Wipe the board', 'P', 'l', 5, 1, '', 0, '', '']],"
+               " aliases: {wipe: {p: 'wipe', canon: 'wipe', g: ['leaf:a2'], fit: 'good', note: '', s: 'hand'}, 'wipe out': {p: 'wipe out', canon: 'wipe out', g: ['leaf:a1'], fit: 'drafted', note: '', s: 'drafted'},"
+               " 'hate counterspell': {p: 'hate counterspell', canon: 'hate counterspell', g: ['leaf:a1'], fit: 'drafted', note: '', s: 'drafted'}}}; var DI = GroupSearch.build(D);")
+    r1 = json.loads(itp.evaljs("JSON.stringify(GroupSearch.search(DI, 'wipe', {allow: ALLOW, words: WORDS}).groups.map(function(x){return [x.e.gid, x.tier, !!x.drafted]}))"))
+    r2 = json.loads(itp.evaljs("JSON.stringify(GroupSearch.search(DI, 'wipe out', {allow: ALLOW, words: WORDS}).groups.map(function(x){return [x.e.gid, x.tier, !!x.drafted]}))"))
+    r3 = json.loads(itp.evaljs("JSON.stringify(GroupSearch.search(DI, 'counterspell', {allow: ALLOW, words: WORDS}).groups.map(function(x){return [x.e.gid, x.tier, !!x.drafted]}))"))
+    r4 = json.loads(itp.evaljs("JSON.stringify(GroupSearch.search(DI, 'hate counterspell', {allow: ALLOW, words: WORDS}).groups.map(function(x){return [x.e.gid, x.tier, !!x.drafted]}))"))
+    check("8b ranking: a hand alias is tier 1, a name match comes before a drafted alias (tier 4.5), a drafted alias answers only to its exact words", r1 == [["leaf:a2", 1, False], ["leaf:a3", 2, False]] and r2 == [["leaf:a1", 4.5, True]] and r3 == [] and r4 == [["leaf:a1", 4.5, True]], (r1, r2, r3, r4))
+    r5 = json.loads(itp.evaljs("JSON.stringify(GroupSearch.search(IDX, 'sacrifice a creature to pump', {allow: ALLOW, words: WORDS}).groups.slice(0, 3).map(function(x){return [x.e.name, x.tier, x.why]}))"))
+    check("8b most words: 'sacrifice a creature to pump' is answered by 'Sacrifice a creature' (tier 3.5, labelled 'most'), below every every-word match", r5 and r5[0][0] == "Sacrifice a creature" and r5[0][1] == 3.5 and r5[0][2] == "most", r5)
+
+    hg_doc = jl(os.path.join(BUILD, "hand_group_hits.json"))["groups"]
+    allc = jl(os.path.join(BUILD, "ability_taxonomy_cards.json"))["cards"]
+    tags_all = json.load(io.open(os.path.join(HERE, "data", "oracle-tags-20261014.json"), encoding="utf-8"))
+    TS = {t["slug"]: {g["oracle_id"] for g in t["taggings"] if g["oracle_id"] in allc} for t in tags_all}
+    rock = TS["mana-rock"] | TS["utility-mana-rock"] | TS["mana-rock-with-set-s-mechanic"]
+    cant = TS["cantrip"] | TS["delayed-cantrip"]
+    check("8b hand group Mana rocks: its %d rule matches equal the union of the three community tags re-derived from the tag file (%d)" % (hg_doc["mana-rocks"]["cards"], len(rock)), set(hg_doc["mana-rocks"]["hits"]) == rock)
+    check("8b hand group Cantrips: its %d rule matches equal the union of cantrip and delayed-cantrip (%d)" % (hg_doc["cantrips"]["cards"], len(cant)), set(hg_doc["cantrips"]["hits"]) == cant)
+    bl = hg_doc["blinks-or-flickers-a-permanent"]
+    byname = {c["n"]: o for o, c in allc.items()}
+    fl = set().union(*[v for k, v in TS.items() if k.startswith("flicker")])
+    fl_rules = set().union(*[TS[t] for t in ("flicker", "flicker-creature", "flicker-self", "flicker-slow", "flicker-permanent")])
+    must = ["Ephemerate", "Cloudshift", "Flickerwisp", "Restoration Angel", "Displace", "Ghostly Flicker", "Teferi's Time Twist", "Conjurer's Closet"]
+    never = ["Sol'Kanar the Tainted", "Apple of Eden, Isu Relic", "Fable of the Mirror-Breaker", "Avatar Kyoshi", "Elesh Norn", "Diminished Returner"]
+    text_only = [o for o, v in bl["hits"].items() if any(r[0] == "r1" for r in v)]
+    check("8b hand group Blink: %d rule matches = the text rule plus the five tag rules; it holds Ephemerate, Cloudshift, Flickerwisp, Restoration Angel, Displace, Ghostly Flicker, Teferi's Time Twist, Conjurer's Closet; the text rule does not fire on any of the 6 known false hits (Sol'Kanar, Apple of Eden, the transforming Sagas, Elesh Norn, Diminished Returner)" % bl["cards"],
+          all(byname[n] in bl["hits"] for n in must) and not any(byname[n] in text_only for n in never) and fl_rules <= set(bl["hits"]) and len(bl["hits"]) == len(fl_rules | set(text_only)), [n for n in never if byname[n] in text_only])
+    check("8b ... the text rule (r1) fires on %d cards, %d of them also tagged flicker by the community" % (len(text_only), len(set(text_only) & fl)), 140 <= len(text_only) <= 150 and len(set(text_only) & fl) >= len(text_only) - 2)
+    print("INFO 8b rule-led rows are never ticked: covered by src/test_hand_groups.py and src/test_hand_group_browser.py (run separately)")
 
     # ---------------------------------------------------------------- 9. nothing protected moved
     after = [sha(p) for p in PROTECTED]

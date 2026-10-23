@@ -9,14 +9,16 @@
  *     r.dym      null, or {from, to}: the query was corrected ("did you mean")
  *     r.needWords true when a typed word could not be judged without the real-word list: load words.txt, then search again with {words: ...}
  *
- * Ranking. Tiers (lower is better): 0 exact name . 1 exact alias (in the alias file's order) . 2 name starts with the query . 3 every query word is a word of the name . 4 partial alias, or a tag's own slug
+ * Ranking. Tiers (lower is better): 0 exact name . 1 exact HAND alias (in the alias file's order) . 2 name starts with the query . 3 every query word is a word of the name . 3.5 all but one of 3 or more query
+ * words are words of the name ("most words") . 4 partial hand alias, or a tag's own slug . 4.5 a DRAFTED alias, only when its exact words are typed (flagged "suggested alias", below every name match and every hand alias)
  * . 5 description. Family/kind matches are listed apart (tier 6). Inside a tier: log10(size + 1) minus 0.3 for an auto-generated name, then checked layers before unchecked ones, then name.
  * A typed word that is a real word (the word list), or a word/prefix of our own group vocabulary, is taken literally and never corrected. Only a word in neither, with fewer than 3 name/alias matches, is corrected.
  *
- * An entry is [gid, key, name, path, layer, size, auto, description, description_is_draft, twin_key, slug]; layer: l leaf, k keyword block, r replacement block, t tentative, o loose, c community tag, h hand group, y keyword filter.
+ * An entry is [gid, key, name, path, layer, size, auto, description, description_is_draft, twin_key, slug]; layer: l leaf, k keyword block, r replacement block, t tentative, o loose, c community tag, h hand group, y keyword filter,
+ * m a MERGED PAGE (src/build_merged_groups.py: display-only; its row has two more columns: the other names the page answers to, i.e. its members' names and its aliases, and its members' ids; its key is its first member's key).
  */
 var GroupSearch = (function () {
-  var STOP = {}, LAYER_RANK = { l: 0, k: 1, r: 1, t: 2, o: 3, c: 4, h: 5, y: 6 }, i;
+  var STOP = {}, LAYER_RANK = { l: 0, k: 1, r: 1, m: 1, t: 2, o: 3, c: 4, h: 5, y: 6 }, i;
   var stops = "a an the of to and or for in on at by with from your you it its that this is are be as".split(" ");
   for (i = 0; i < stops.length; i++) STOP[stops[i]] = 1;
   function has(o, k) { return Object.prototype.hasOwnProperty.call(o, k); }
@@ -110,7 +112,14 @@ var GroupSearch = (function () {
       g = doc.groups[k];
       e = { i: k, gid: g[0], key: g[1], name: g[2], path: g[3], layer: g[4], size: g[5], auto: g[6], desc: g[7], descDraft: g[8], twin: g[9], slug: g[10] };
       e.ns = stems(e.name); e.nkey = e.ns.join(" ");
+      e.extras = g[11] || []; e.members = g[12] || [];
+      e.vars = [{ ns: e.ns, nkey: e.nkey, ckey: "" }];                            // the names the entry answers to: its own and (a merged page) its members' names and aliases
       e.ckey = stems(e.name.replace(/ \u2014 .*$/, "").replace(/ \([^)]*\)/g, "")).join(" ");          // the name without its qualifiers ("— who draws isn't recorded", "(restriction varies)")
+      e.vars[0].ckey = e.ckey;
+      for (p = 0; p < e.extras.length; p++) {
+        words = stems(e.extras[p]);
+        e.vars.push({ ns: words, nkey: words.join(" "), ckey: stems(e.extras[p].replace(/ — .*$/, "").replace(/ \([^)]*\)/g, "")).join(" ") });
+      }
       e.alts = e.slug ? stems(e.slug) : []; e.altkey = e.alts.join(" ");
       e.ps = stems(e.path);
       words = stems(e.desc); e.ds = [];
@@ -123,7 +132,7 @@ var GroupSearch = (function () {
     for (ph in doc.aliases) {
       if (!has(doc.aliases, ph)) continue;
       a = doc.aliases[ph];
-      a = { k: ph, p: a.p, stems: stems(a.p), gids: a.g, fit: a.fit, note: a.note };
+      a = { k: ph, p: a.p, stems: stems(a.p), gids: a.g, fit: a.fit, note: a.note, s: a.s || "hand" };
       a.key = a.stems.join(" ");
       idx.aliases.push(a);
       idx.aliasByKey[a.key] = a;
@@ -148,28 +157,29 @@ var GroupSearch = (function () {
     for (k = 0; k < toks.length; k++) { qstems.push(stem(toks[k])); qall.push(variants(toks[k])); if (!STOP[toks[k]]) { core.push(toks[k]); qcore.push(variants(toks[k])); } }
     if (!core.length) { core = toks; qcore = qall; }
     var qkey = qstems.join(" ");
-    function offer(en, tier, why, via, order, fit, note) {
+    function offer(en, tier, why, via, order, fit, note, drafted) {
       var cur = best[en.gid];
-      if (!cur || tier < cur.tier || (tier === cur.tier && tier === 1 && order < cur.order)) best[en.gid] = { e: en, tier: tier, why: why, via: via || "", order: order || 0, fit: fit || "", note: note || "" };
+      if (!cur || tier < cur.tier || (tier === cur.tier && tier === 1 && order < cur.order)) best[en.gid] = { e: en, tier: tier, why: why, via: via || "", order: order || 0, fit: fit || "", note: note || "", drafted: !!drafted };
     }
     if (has(idx.aliasByKey, qkey)) {
       a = idx.aliasByKey[qkey];
-      for (n = 0; n < a.gids.length; n++) if (has(idx.byGid, a.gids[n])) offer(idx.byGid[a.gids[n]], 1, "alias", a.p, n, a.fit, a.note);
+      for (n = 0; n < a.gids.length; n++) if (has(idx.byGid, a.gids[n])) offer(idx.byGid[a.gids[n]], a.s === "drafted" ? 4.5 : 1, "alias", a.p, n, a.fit, a.note, a.s === "drafted");
     }
     for (k = 0; k < idx.entries.length; k++) {
       e = idx.entries[k];
-      if (e.nkey === qkey || e.ckey === qkey) offer(e, 0, "name");
+      if (anyVar(e, function (v) { return v.nkey === qkey || v.ckey === qkey; })) offer(e, 0, "name");
       else if (e.altkey && e.altkey === qkey) offer(e, 1, "slug", "", 50);
-      else if (startsWith(e.ns, qall)) offer(e, 2, "name");
-      else if (allMatch(e.ns, qcore)) offer(e, 3, "name");
+      else if (anyVar(e, function (v) { return startsWith(v.ns, qall); })) offer(e, 2, "name");
+      else if (anyVar(e, function (v) { return allMatch(v.ns, qcore); })) offer(e, 3, "name");
+      else if (core.length >= 3 && anyVar(e, function (v) { return countMatch(v.ns, qcore) >= core.length - 1; })) offer(e, 3.5, "most");
       else if (e.alts.length && allMatch(e.alts, qcore)) offer(e, 4, "slug");
       else if (e.ds.length && allMatch(e.ds, qcore, true) && maxLen(core) >= 3) offer(e, 5, "description");
       else if (allMatch(e.ps, qcore)) fam[e.gid] = { e: e, tier: 6, why: "family", via: "", order: 0, fit: "", note: "" };
     }
     for (k = 0; k < idx.aliases.length; k++) {
       a = idx.aliases[k];
-      if (a.key !== qkey && allMatch(a.stems, qcore)) {
-        for (n = 0; n < a.gids.length; n++) if (has(idx.byGid, a.gids[n])) offer(idx.byGid[a.gids[n]], 4, "alias", a.p, 0, a.fit, a.note);
+      if (a.key !== qkey && a.s !== "drafted" && allMatch(a.stems, qcore)) {          // a drafted alias answers only to its exact words ("hate counterspell" must not answer "counterspell")
+        for (n = 0; n < a.gids.length; n++) if (has(idx.byGid, a.gids[n])) offer(idx.byGid[a.gids[n]], 4, "alias", a.p, 0, a.fit, a.note, false);
       }
     }
     for (gid in best) if (has(best, gid)) {
@@ -185,6 +195,14 @@ var GroupSearch = (function () {
     out.sort(cmp); famOut.sort(cmp);
     return { groups: out, family: famOut };
   }
+  function countMatch(ws, qv) {
+    var a, b, n = 0;
+    for (a = 0; a < qv.length; a++) {
+      for (b = 0; b < ws.length; b++) if (tokMatch(qv[a], ws[b], true)) { n++; break; }
+    }
+    return n;
+  }
+  function anyVar(e, fn) { var i; for (i = 0; i < e.vars.length; i++) if (fn(e.vars[i])) return true; return false; }
   function maxLen(a) { var m = 0, k; for (k = 0; k < a.length; k++) if (a[k].length > m) m = a[k].length; return m; }
 
   // is the word one of ours (a stem of a group word) or the start of one?
@@ -220,7 +238,7 @@ var GroupSearch = (function () {
     if (q.length < 2) return out;
     toks = q.split(" ");
     r = literal(idx, toks, opts.allow);
-    for (k = 0; k < r.groups.length; k++) if (r.groups[k].tier <= 4) nName++;
+    for (k = 0; k < r.groups.length; k++) if (r.groups[k].tier <= 4.5) nName++;
     out.groups = r.groups; out.family = r.family; out.nameCount = nName;
     if (nName < 3) {
       corrected = toks.slice();
@@ -237,7 +255,7 @@ var GroupSearch = (function () {
         r2 = literal(idx, corrected, opts.allow);
         for (k = 0; k < r.groups.length; k++) seen[r.groups[k].e.gid] = 1;
         for (k = 0; k < r2.groups.length; k++) {
-          if (r2.groups[k].tier <= 4 && !has(seen, r2.groups[k].e.gid)) { r2.groups[k].dym = corrected.join(" "); extra.push(r2.groups[k]); }
+          if (r2.groups[k].tier <= 4.5 && !has(seen, r2.groups[k].e.gid)) { r2.groups[k].dym = corrected.join(" "); extra.push(r2.groups[k]); }
         }
         if (extra.length) {
           out.groups = r.groups.concat(extra);
