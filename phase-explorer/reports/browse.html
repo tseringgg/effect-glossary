@@ -278,6 +278,11 @@ body.dev .devonly { display:inline; }
 "use strict";
 const DEV = new URLSearchParams(location.search).get("dev") === "1";
 if (DEV) document.body.classList.add("dev");
+// Tester mode (the default; ?dev=1 is this page exactly as it always was): a presentation layer over the same data. reports/tester.js is written in only when DEV is off, and the boot below waits for it.
+const TESTER = !DEV;
+const SCNAME = DEV ? "Possible matches" : "Might also fit";
+let TESTERREADY = null;
+if (TESTER) { TESTERREADY = new Promise(r => { window.__testerGo = r; }); document.write('<link rel="stylesheet" href="tester.css"><script src="tester.js" onerror="window.__testerGo()"><\/script>'); }
 const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const fmt = n => Number(n).toLocaleString("en-US");
 const PAGE = 150;
@@ -548,7 +553,7 @@ function scWhy(r) {                                     // r = [oid, score, sour
 }
 const scBlank = gid => ({ gid: gid, q: [], p: [], lq: [], lp: [], keep: {}, nS: SC.per_view, nL: SC.per_view, msg: "", loaded: {}, tab: "members" });
 const SCHIDE = ["#panel .viewbar", "#list", "#morewrap", "#pinwrap"];                  // the group's own tab: left exactly as it was, only hidden while the other tab is open
-const scTabLabel = () => `Possible matches (${fmt(SCCUR.members ? SCCUR.members.reduce((a, g) => a + Suggested.count(SC, g, SCFLOOR, SCINC), 0) : Suggested.count(SC, SCCUR.gid, SCFLOOR, SCINC))})`;
+const scTabLabel = () => `${SCNAME} (${fmt(SCCUR.members ? SCCUR.members.reduce((a, g) => a + Suggested.count(SC, g, SCFLOOR, SCINC), 0) : Suggested.count(SC, SCCUR.gid, SCFLOOR, SCINC))})`;
 async function scAfter(k) {                              // called after every group page is drawn: a tab bar when the group has possible matches, nothing otherwise
   for (const id of ["sctabs", "suggsec"]) { const o = document.getElementById(id); if (o) o.remove(); }
   for (const sel of SCHIDE) for (const el of document.querySelectorAll(sel)) el.classList.remove("sc-off");
@@ -1663,7 +1668,7 @@ async function scAfterMerged(pg) {                       // the tab bar of a mer
 function scPickerHTML() {
   const S = SCCUR;
   if (!S || !S.members || S.members.length < 2) return "";
-  return `<div class="sgpick"><label>Possible matches for the group <select data-sctl="member">${S.members.map(g => `<option value="${esc(g)}"${g === S.gid ? " selected" : ""}>${esc(MI.groups[g][0])} (${fmt(Suggested.count(SC, g, SCFLOOR, SCINC))})</option>`).join("")}</select></label></div>`;
+  return `<div class="sgpick"><label>${SCNAME} for the group <select data-sctl="member">${S.members.map(g => `<option value="${esc(g)}"${g === S.gid ? " selected" : ""}>${esc(MI.groups[g][0])} (${fmt(Suggested.count(SC, g, SCFLOOR, SCINC))})</option>`).join("")}</select></label></div>`;
 }
 async function show(k) {
   if (ALONEKEY && k !== ALONEKEY) ALONEKEY = null;
@@ -2355,6 +2360,7 @@ window.addEventListener("hashchange", () => {
 
 // ---------------------------------------------------------------- boot
 (async () => {
+  if (TESTER) await TESTERREADY;
   try {
     TAX = await J("ability_taxonomy.json");
   } catch (err) {

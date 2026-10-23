@@ -11,3 +11,6 @@ __pycache__/
 data/scryfall-oracle-cards.jsonl.gz
 data/scryfall-sets.json
 data/scryfall-default-cards.jsonl.gz
+
+# Static export of the tester view (src/export_static.py)
+dist/

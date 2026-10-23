@@ -1,0 +1,104 @@
+/* Tester mode for reports/browse.html (loaded only when ?dev=1 is absent; see reports/tester.js). Presentation only: every rule is scoped to body.tester.
+   Layout: a slim top bar; a left column (search, results, tree) and the main area that scroll separately; at 800px and below the left column is a slide-over drawer. System fonts only. */
+body.tester { display: flex; flex-direction: column; height: 100vh; height: 100dvh; overflow: hidden; }
+body.tester > header, body.tester #foot, body.tester #tabs, body.tester #queuef, body.tester #cardf { display: none !important; }
+body.tester .devonly, body.tester .b-dev { display: none !important; }
+body.tester .badge { display: none !important; }
+body.tester .tentnote, body.tester .annnote, body.tester .tagnote, body.tester .loosenote, body.tester .sibline, body.tester .handline, body.tester .savebanner, body.tester .batchbar { display: none !important; }
+body.tester .b-hand, body.tester .b-nofit, body.tester .b-unsaved { display: none !important; }
+
+/* top bar */
+.tbar { display: flex; align-items: center; gap: 12px; flex: none; height: 52px; padding: 0 14px; border-bottom: 1px solid var(--line); background: var(--panel); }
+.tbar .brand { font-weight: 700; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.tbar .sp { flex: 1; }
+.tbar a, .tbar button.tlink { color: var(--accent); font: inherit; font-size: 13px; background: none; border: 0; padding: 6px 4px; cursor: pointer; text-decoration: none; white-space: nowrap; }
+.tbar a:hover, .tbar button.tlink:hover { text-decoration: underline; }
+.tbar .menu { display: none; align-items: center; gap: 6px; min-height: 44px; min-width: 44px; padding: 0 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--chip); color: var(--fg); font-size: 14px; cursor: pointer; }
+
+/* two columns, scrolling separately */
+body.tester main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(300px, 360px) 1fr; }
+body.tester nav { display: flex; flex-direction: column; min-height: 0; max-height: none; overflow-y: auto; padding: 0; border-right: 1px solid var(--line); background: var(--panel); }
+body.tester section#panel { max-height: none; min-height: 0; height: 100%; overflow-y: auto; padding: 16px 22px; }
+.sbox { position: sticky; top: 0; z-index: 3; display: flex; gap: 6px; align-items: center; padding: 10px 12px; background: var(--panel); border-bottom: 1px solid var(--line); }
+.sbox input#q { flex: 1; min-width: 0; min-height: 40px; padding: 6px 10px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); border-radius: 6px; font: inherit; }
+.sbox .sclr { min-height: 40px; min-width: 40px; border: 1px solid var(--line); background: var(--chip); color: var(--fg); border-radius: 6px; font-size: 18px; cursor: pointer; }
+.sbox .sclr[hidden] { display: none; }
+body.tester nav > * { flex: none; }
+body.tester #findres { margin: 0; padding: 0 8px 10px; display: flow-root; }
+body.tester #findres:empty { display: none; }
+body.tester .fr { margin: 4px 0; }
+body.tester .fr .sub { display: block; margin: 2px 0 0; }
+body.tester .gr .gc { float: right; color: var(--muted); font-size: 12.5px; font-variant-numeric: tabular-nums; margin-left: 8px; }
+body.tester .gr .tl { display: block; font-size: 11.5px; color: var(--broad); }
+.treebar { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 10px 12px; border: 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--panel); color: var(--fg); font: inherit; font-weight: 600; font-size: 13px; cursor: pointer; text-align: left; }
+#treewrap.folded #tree { display: none; }
+#treewrap .treebar { position: static; }
+body.tester .blk.sub2 { padding-top: 8px; font-weight: 600; text-transform: none; letter-spacing: 0; font-size: 12px; }
+
+/* landing, group header, loose note */
+.landing h1 { font-size: 24px; margin: 4px 0 8px; text-wrap: balance; }
+.landing p { max-width: 62ch; }
+.landing .exs { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.landing .ex, .tbtn { min-height: 40px; padding: 4px 14px; border: 1px solid var(--line); border-radius: 6px; background: var(--chip); color: var(--accent); font: inherit; cursor: pointer; }
+.thead .crumb { font-size: 12px; color: var(--muted); }
+.thead h1 { font-size: 22px; line-height: 1.25; margin: 2px 0 2px; overflow-wrap: anywhere; text-wrap: balance; }
+.thead .tdesc { color: var(--muted); margin: 0 0 4px; }
+.thead .tcnt { font-weight: 600; font-variant-numeric: tabular-nums; }
+.tloosenote { margin: 8px 0 2px; padding: 8px 10px; border-radius: 6px; background: var(--broadbg); border: 1px solid var(--broad); font-size: 13px; }
+body.tester .viewbar { margin: 4px 0 10px; }
+body.tester .sctabs { margin-top: 12px; }
+#panel.tpend > *:not(#sctabs):not(#pinwrap):not(.viewbar):not(#list):not(#morewrap):not(#suggsec):not(.mchips) { display: none; }
+
+/* card grid */
+body.tester #list.grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+body.tester .tile { outline-offset: 2px; }
+body.tester .tile:focus-visible img, body.tester .tile:focus-visible .noimg { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* modal / dialogs */
+.tmodal { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; padding: 18px; background: rgba(15, 22, 30, .55); }
+.tmodal[hidden] { display: none; }
+.tbox { position: relative; display: flex; gap: 18px; width: 100%; max-width: 760px; max-height: 100%; overflow: auto; padding: 16px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); color: var(--fg); }
+.tbox.narrow { max-width: 620px; flex-direction: column; gap: 10px; }
+.tbox .tbig { flex: none; width: 300px; }
+.tbox .tbig img, .tbox .tbig .noimg { width: 100%; display: block; border-radius: 4.75% / 3.4%; aspect-ratio: 488/680; background: var(--chip); }
+.tbox .tinfo { min-width: 0; flex: 1; }
+.tbox h2 { margin: 0 0 2px; font-size: 20px; overflow-wrap: anywhere; }
+.tbox h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 12px 0 4px; }
+.tbox .toracle { white-space: pre-wrap; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; margin: 8px 0; font-size: 13.5px; }
+.tbox .tclose { position: absolute; top: 8px; right: 8px; min-height: 40px; min-width: 40px; border: 1px solid var(--line); border-radius: 6px; background: var(--chip); color: var(--fg); cursor: pointer; font-size: 15px; }
+.tbox .tinfo h2 { padding-right: 44px; }
+.tbox .chip.lo { border: 1px dashed var(--broad); }
+.tbox textarea { width: 100%; min-height: 150px; font: 12.5px/1.45 ui-monospace, Consolas, monospace; background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 6px; padding: 8px; }
+.tbox .fig { width: 100%; border-collapse: collapse; font-size: 13px; }
+.tbox .fig td { padding: 3px 8px 3px 0; vertical-align: top; border-bottom: 1px solid var(--line); }
+.ttoast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 60; max-width: 90vw; padding: 8px 14px; border-radius: 6px; background: var(--fg); color: var(--bg); font-size: 13px; }
+.ttoast[hidden] { display: none; }
+.tfoot { flex: none; padding: 7px 14px; border-top: 1px solid var(--line); background: var(--panel); color: var(--muted); font-size: 11.5px; line-height: 1.4; }
+.tfoot a, .tfoot button.tlink { color: var(--accent); background: none; border: 0; padding: 0; font: inherit; cursor: pointer; text-decoration: underline; }
+.tscrim { display: none; }
+.tsrc { color: var(--muted); font-size: 12px; }
+
+@media (max-width: 800px) {
+  .tbar { padding: 0 8px; gap: 8px; }
+  .tbar .menu { display: inline-flex; }
+  .tbar .hide-m { display: none; }
+  body.tester main { grid-template-columns: 1fr; }
+  body.tester nav { position: fixed; z-index: 30; top: 52px; bottom: 0; left: 0; width: min(88vw, 360px); transform: translateX(-105%); box-shadow: 8px 0 24px rgba(0, 0, 0, .25); }
+  body.tester.drawer-open nav { transform: none; }
+  body.tester.drawer-open .tscrim { display: block; position: fixed; z-index: 29; inset: 52px 0 0 0; background: rgba(15, 22, 30, .5); }
+  body.tester section#panel { padding: 14px 16px; }
+  body.tester #list.grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sbox input#q, .sbox .sclr { min-height: 44px; }
+  .tfoot { padding: 6px 12px; font-size: 11px; }
+  .tmodal { padding: 0; align-items: flex-end; }
+  .tbox { flex-direction: column; gap: 10px; max-height: 94%; border-radius: 12px 12px 0 0; }
+  .tbox .tbig { width: 168px; align-self: center; }
+  .tbox .tclose { min-height: 44px; min-width: 44px; }
+  body.tester .row, .treebar { min-height: 40px; align-items: center; }
+  body.tester .sctabs button { min-height: 44px; }
+  body.tester .chip, .landing .ex { min-height: 36px; display: inline-flex; align-items: center; }
+  body.tester .gr, body.tester .gs-btn, body.tester .fr[tabindex] { min-height: 44px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  @media (max-width: 800px) { body.tester nav { transition: transform .15s ease-out; } }
+}
