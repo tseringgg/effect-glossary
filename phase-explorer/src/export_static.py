@@ -162,9 +162,9 @@ def plan():
 
 
 def index_html():
-    return ('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Card abilities, grouped</title>'
+    return ('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>LogicVoid’s Deck Doctor</title>'
             '<link rel="icon" href="data:,"><meta http-equiv="refresh" content="0; url=reports/browse.html"></head>'
-            '<body><p><a href="reports/browse.html">Card abilities, grouped</a></p></body></html>\n').encode("utf-8")
+            '<body><p><a href="reports/browse.html">LogicVoid’s Deck Doctor</a></p></body></html>\n').encode("utf-8")
 
 
 def allowed_paths():
@@ -181,12 +181,28 @@ def allowed_paths():
     return which
 
 
+def clean_out(out):
+    """Empty a previous export. A top-level .git (dist/ may be a repository that is published from) is never touched."""
+    def onerr(fn, path, exc):
+        os.chmod(path, 0o700); fn(path)
+    for n in os.listdir(out):
+        if n == ".git":
+            continue
+        p = os.path.join(out, n)
+        if os.path.isdir(p):
+            shutil.rmtree(p, onerror=onerr)
+        else:
+            os.remove(p)
+
+
 def verify(out, strict_manifest=True):
     """Every file in dist/ is on the whitelist; nothing private; hand_view.json is ids only; the page is byte-identical to the source."""
     which = allowed_paths()
     found, counts, bad = [], {}, []
     for root, dirs, fs in os.walk(out):
         dirs.sort()
+        if root == out and ".git" in dirs:
+            dirs.remove(".git")                       # a repository around the export is not part of it
         for f in sorted(fs):
             rel = os.path.relpath(os.path.join(root, f), out).replace(os.sep, "/")
             found.append(rel)
@@ -260,10 +276,10 @@ def main():
     if os.path.commonpath([out, HERE]) != HERE or out in (HERE, BUILD, REPORTS, os.path.join(HERE, "src"), os.path.join(HERE, "corrections"), os.path.join(HERE, "archive"), os.path.join(HERE, "data")):
         die("refusing to write to %s" % out)
     if os.path.exists(out):
-        if os.listdir(out) and not os.path.exists(os.path.join(out, "manifest.json")):
+        if [n for n in os.listdir(out) if n != ".git"] and not os.path.exists(os.path.join(out, "manifest.json")):
             die("%s exists, is not empty and is not a previous export (no manifest.json); not touching it" % out)
-        shutil.rmtree(out)
-    os.makedirs(out)
+        clean_out(out)
+    os.makedirs(out, exist_ok=True)
 
     hv = hand_view()
     hv_bytes = hand_view_bytes(hv)

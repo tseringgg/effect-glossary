@@ -59,6 +59,8 @@ def walk(root):
     out = []
     for r, ds, fs in os.walk(root):
         ds.sort()
+        if r == root and ".git" in ds:
+            ds.remove(".git")                         # dist/ may be a repository that is published from; it is not part of the export
         for f in sorted(fs):
             out.append(os.path.join(r, f))
     return out
@@ -402,10 +404,12 @@ def test_dev_identity():
             i = next((i for i in range(min(len(x), len(y))) if x[i] != y[i]), min(len(x), len(y)))
             d = "first difference at %d: %r vs %r" % (i, x[i - 40:i + 80], y[i - 40:i + 80])
         check("?dev=1 DOM identical to today's page after '%s' (%d chars)" % (k, len(a["snaps"][k])), same, d)
-    ra = [(m, u.replace("/reports/browse_orig.html", "/reports/browse.html")) for m, u in a["reqs"]]
-    check("?dev=1 makes the same requests as today's page (%d)" % len(ra), ra == b["reqs"], [x for x in set(ra) ^ set(b["reqs"])][:4])
+    noise = lambda u: u.startswith("edge://") or u.endswith("/favicon.ico")          # the browser's own requests, and a favicon fetch that races the page load
+    ra = [(m, u.replace("/reports/browse_orig.html", "/reports/browse.html")) for m, u in a["reqs"] if not noise(u)]
+    rb = [(m, u) for m, u in b["reqs"] if not noise(u)]
+    check("?dev=1 makes the same requests as today's page (%d)" % len(ra), ra == rb, [x for x in set(ra) ^ set(rb)][:4])
     check("?dev=1 hand counts identical to today's page", a["hand"] == b["hand"], b["hand"][:200])
-    norm = lambda L: [re.sub(r"127\.0\.0\.1:\d+", "HOST", x) for x in L]
+    norm = lambda L: [re.sub(r"127\.0\.0\.1:\d+", "HOST", x) for x in L if "favicon.ico" not in x]
     check("?dev=1 console identical to today's page", norm(a["console"]) == norm(b["console"]), norm(b["console"])[:3])
     return json.loads(b["hand"])
 
@@ -480,6 +484,10 @@ def test_tester(dev_hand):
         check("checked group: name, count, no 'grouped loosely' note (%s, %s)" % (g["h1"], g["cnt"]), g["h1"] == info["okname"] and re.match(r"[\d,]+ cards", g["cnt"]) and not g["note"], g)
         check("group page: the old header, badges and notes are gone", g["oldhead"] == 0 and not c.js("!![...document.querySelectorAll('#panel .badge')].find(b=>b.getClientRects().length)"), g["oldhead"])
         check("group page: cards show as an image grid by default (%d tiles)" % g["tiles"], g["grid"] == "grid" and g["tiles"] > 0)
+        gw = json.loads(c.js("""(()=>{const l=document.getElementById('list'),t=[...l.querySelectorAll('.tile')].slice(0,8).map(e=>e.getBoundingClientRect());return JSON.stringify({w:l.getBoundingClientRect().width,lefts:[...new Set(t.map(r=>Math.round(r.left)))].length,tw:t[0].width})})()"""))
+        want = (gw["w"] - 30) / 4 * 0.75
+        check("grid: four cards per row, each 75%% of a quarter, as on the developer page (%.1f px wide)" % gw["tw"], gw["lefts"] == 4 and abs(gw["tw"] - want) <= 1, (gw, want))
+        check("page is named LogicVoid's Deck Doctor", c.js("document.title") == "LogicVoid’s Deck Doctor" and "Deck Doctor" in c.js("document.querySelector('.tbar .brand').textContent"))
         if g["tabs"]:
             check("tab is called 'Might also fit', never 'Possible matches'", g["tabs"][1].startswith("Might also fit (") and "Possible matches" not in c.js("document.getElementById('panel').innerText"), g["tabs"])
         c.js("show('l:%s')" % info["br"]); c.wait("document.querySelector('.thead h1') && document.querySelector('.thead h1').textContent===%s" % json.dumps(info["brname"]), 60); c.pump(1)
@@ -590,7 +598,7 @@ def test_phone():
         check("Report, clipboard refused at 390 px: a copy box opens with the report selected", r["sel"][0] == 0 and r["sel"][1] == r["sel"][2] > 0 and r["focus"], r["sel"])
         check("Report text names the card, the group and the page", ("Card: " + card) in r["text"] and ("Group: " + grp) in r["text"] and "Page: http://127.0.0.1" in r["text"], r["text"])
         check("Report copy box fits 390 px, no sideways scroll", r["l"] >= 0 and r["r"] <= 390 and r["sw"] <= 390, r)
-        check("Report link goes to the feedback URL from config.js", r["href"] == "https://discord.gg/REPLACE-ME", r["href"])
+        check("Report link goes to the feedback URL from config.js", r["href"] == re.search(r'feedbackUrl:\s*"([^"]+)"', open(os.path.join(HERE, "reports", "config.js"), encoding="utf-8").read()).group(1), r["href"])
         c.key("Escape"); c.pump(0.4)
         c.js(stub % "ok")
         c.js("document.querySelector('.tfoot a[data-report]').click()"); c.pump(1)

@@ -11,6 +11,7 @@
   const mobile = () => window.matchMedia("(max-width: 800px)").matches;
   const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
   document.body.classList.add("tester");
+  document.title = "LogicVoid’s Deck Doctor";
   try { const l = document.createElement("link"); l.rel = "icon"; l.href = "data:,"; document.head.appendChild(l); } catch (e) { /* ignore */ }
 
   // ---------------------------------------------------------------- defaults: every switch at today's default (on); nothing remembered from an earlier dev session
@@ -24,7 +25,7 @@
   const nav = document.querySelector("nav"), Q = $("q"), FR = $("findres"), TREE = $("tree"), PANEL = $("panel");
   const tbar = el("div", "tbar",
     `<button class="menu" id="tmenu" type="button" aria-label="Find and browse" aria-expanded="false" aria-controls="tnav">☰ <span>Find</span></button>` +
-    `<span class="brand">Card abilities, grouped</span><span class="sp"></span>` +
+    `<span class="brand">LogicVoid’s Deck Doctor</span><span class="sp"></span>` +
     `<button class="tlink hide-m" id="thow" type="button">How this works</button><a id="trep" data-report="page" target="_blank" rel="noopener noreferrer" href="#">Report a problem</a>`);
   document.body.insertBefore(tbar, document.body.firstChild);
   const sbox = el("div", "sbox", `<label for="q" class="sr-only">Search cards and groups</label>`);

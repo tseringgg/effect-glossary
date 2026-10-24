@@ -50,7 +50,8 @@ body.tester .sctabs { margin-top: 12px; }
 #panel.tpend > *:not(#sctabs):not(#pinwrap):not(.viewbar):not(#list):not(#morewrap):not(#suggsec):not(.mchips) { display: none; }
 
 /* card grid */
-body.tester #list.grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+/* same as the developer page: four across, each 75% of an equal quarter; two across on a phone */
+body.tester #list.grid { gap: 10px; grid-template-columns: repeat(4, calc((100% - 30px) / 4 * 0.75)); }
 body.tester .tile { outline-offset: 2px; }
 body.tester .tile:focus-visible img, body.tester .tile:focus-visible .noimg { outline: 2px solid var(--accent); outline-offset: 2px; }
 

@@ -6,7 +6,7 @@
  *   titleParam, bodyParam   the names used by "query".
  */
 window.APP_CONFIG = {
-  feedbackUrl: "https://discord.gg/REPLACE-ME",
+  feedbackUrl: "https://discord.gg/DUwMhDCcMg",
   prefill: "clipboard",
   titleParam: "title",
   bodyParam: "body"
