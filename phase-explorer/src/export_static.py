@@ -26,14 +26,47 @@ BUILD = os.path.join(HERE, "build")
 REPORTS = os.path.join(HERE, "reports")
 CORR_PLACEMENTS = os.path.join(HERE, "corrections", "manual_placements.json")
 
-PAGE_FILES = ["browse.html", "tester.js", "tester.css", "config.js", "abilityfind.js", "manualedit.js", "suggested.js", "groupsearch.js", "cardpin.js", "mergepage.js"]
-CORE_BUILD = [
+BASE_PAGE_FILES = ["browse.html", "tester.js", "tester.css", "config.js", "abilityfind.js", "manualedit.js", "suggested.js", "groupsearch.js", "cardpin.js", "mergepage.js"]
+FILTER_FILES = ["testerfilters.js", "testerfilters.css"]          # feature TESTER_FILTERS (reports/config.js): exported only while the flag is on
+TYPE_FILES = ["typegroups.js", "typegroups.css"]                  # feature TYPE_GROUPS: type and subtype pages
+TYPE_BUILD = ["type_groups/index.json", "type_groups/members.json"]   # the index is read at the first search / when the "Card types" folder opens, the members when a type page opens
+FLIP_FILES = ["flipfaces.js", "flipfaces.css"]                    # feature FLIP_FACES: the flip control, either face searchable
+FLIP_BUILD = ["faces/faces.json"]
+# NARROW_NO_CUT and COLOUR_MODES change only reports/testerfilters.js (and need TESTER_FILTERS): they add no file
+CONFIG_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "reports", "config.js")
+
+
+def flag_on(path=None, name="TESTER_FILTERS"):
+    m = re.search(r"\b" + name + r"\s*:\s*(true|false)", open(path or CONFIG_PATH, encoding="utf-8").read())
+    return bool(m) and m.group(1) == "true"
+
+
+def pages_for(path=None):
+    """The page files, and the extra build files, that the flags in this config.js ask for (none of the new ones while every new flag is off)."""
+    files, build = list(BASE_PAGE_FILES), []
+    if flag_on(path):
+        files += FILTER_FILES
+    if flag_on(path, "TYPE_GROUPS"):
+        files += TYPE_FILES; build += TYPE_BUILD
+    if flag_on(path, "FLIP_FACES"):
+        files += FLIP_FILES; build += FLIP_BUILD
+    return files, build
+
+
+PAGE_FILES, EXTRA_BUILD = pages_for()
+SRC_OVERRIDE = {}                                  # --config: another file stands in for reports/config.js (tests)
+
+
+def page_src(n):
+    return SRC_OVERRIDE.get(n) or os.path.join(REPORTS, n)
+CORE_BUILD_BASE = [
     "ability_taxonomy.json", "ability_taxonomy_cards.json", "ability_taxonomy_members.json", "ability_taxonomy_unorganized.json", "ability_taxonomy_lookup.json",
     "loose_groups.json", "loose_unread.json", "tentative_placements.json", "tag_placements.json", "annotation_placements.json",
     "keyword_facet.json", "hand_group_hits.json", "sibling_placements.json", "card_images.json", "manual_index.json",
     "suggested_cards/meta.json", "merged_groups/index.json", "card_pin/meta.json", "text_sug/meta.json",
     "group_search/meta.json", "group_search/index.json", "group_search/words.txt",
 ]
+CORE_BUILD = CORE_BUILD_BASE + EXTRA_BUILD
 LAZY_RULES = [                                   # (directory under build/, regex on the file name): read on demand by the tester page
     ("suggested_cards/g", r"^\d+q\.json$"), ("suggested_cards/t", r"^\d+q\.json$"), ("text_sug/l", r"^\d+\.json$"),
 ]
@@ -139,7 +172,7 @@ def classify_page_references():
 def plan():
     files = {}                                   # dist path -> (source path or None, kind)
     for n in PAGE_FILES:
-        p = os.path.join(REPORTS, n)
+        p = page_src(n)
         if not os.path.exists(p):
             die("missing %s" % p)
         files["reports/" + n] = (p, "page")
@@ -218,7 +251,7 @@ def verify(out, strict_manifest=True):
         if rel not in found:
             bad.append("whitelisted file missing: " + rel)
     for n in PAGE_FILES:
-        a, b = os.path.join(out, "reports", n), os.path.join(REPORTS, n)
+        a, b = os.path.join(out, "reports", n), page_src(n)
         if os.path.exists(a) and sha(a) != sha(b):
             bad.append("reports/%s differs from its source" % n)
     hv = os.path.join(out, "build", "hand_view.json")
@@ -251,8 +284,14 @@ def main():
     ap.add_argument("--out", default="dist")
     ap.add_argument("--require-feedback", action="store_true", help="fail while config.js still holds the placeholder feedback link")
     ap.add_argument("--hand-view-only", action="store_true")
+    ap.add_argument("--config", help="use this file as reports/config.js (tests: the flags off without editing the real file)")
     ap.add_argument("--check", action="store_true")
     a = ap.parse_args()
+    global PAGE_FILES, EXTRA_BUILD, CORE_BUILD
+    if a.config:
+        SRC_OVERRIDE["config.js"] = os.path.abspath(a.config)
+        PAGE_FILES, EXTRA_BUILD = pages_for(a.config)
+        CORE_BUILD = CORE_BUILD_BASE + EXTRA_BUILD
     out = a.out if os.path.isabs(a.out) else os.path.join(HERE, a.out)
     out = os.path.normpath(out)
 
@@ -268,8 +307,12 @@ def main():
         return
 
     classify_page_references()
+    if EXTRA_BUILD and not a.check:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import build_type_groups                     # deterministic: the same MTGJSON file and card list give the same bytes; an unchanged file is not rewritten
+        build_type_groups.write()
     files = plan()
-    cfg = open(os.path.join(REPORTS, "config.js"), encoding="utf-8").read()
+    cfg = open(page_src("config.js"), encoding="utf-8").read()
     placeholder = "REPLACE-ME" in cfg
     if placeholder and a.require_feedback:
         die("reports/config.js still holds the placeholder feedback link")

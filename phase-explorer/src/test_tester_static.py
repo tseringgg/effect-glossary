@@ -81,6 +81,7 @@ def free_port():
 
 class Srv(socketserver.ThreadingTCPServer):
     allow_reuse_address = True
+    request_queue_size = 256
     daemon_threads = True
 
     def handle_error(self, *a):
@@ -252,8 +253,32 @@ class Session:
         shutil.rmtree(self.prof, ignore_errors=True)
 
 
-def export(out):
-    r = subprocess.run([sys.executable, "-I", os.path.join(HERE, "src", "export_static.py"), "--out", os.path.relpath(out, HERE)], capture_output=True, text=True, encoding="utf-8", cwd=HERE)
+FEATURE_FLAGS = ("TYPE_GROUPS", "NARROW_NO_CUT", "COLOUR_MODES", "FLIP_FACES")          # the four newer features (src/test_tester_features.py tests them on); this file tests the page as it was
+
+
+def flags_off_text(extra_off=()):
+    """reports/config.js with the four newer flags (and any extra named flag) switched off."""
+    txt = open(os.path.join(HERE, "reports", "config.js"), encoding="utf-8").read()
+    for f in FEATURE_FLAGS + tuple(extra_off):
+        txt = re.sub(r"\b%s\s*:\s*true" % f, "%s: false" % f, txt)
+    return txt
+
+
+_CFG = []
+
+
+def flags_off_config():
+    if not _CFG:
+        f = tempfile.NamedTemporaryFile("w", suffix=".js", delete=False, encoding="utf-8")
+        f.write(flags_off_text()); f.close()
+        _CFG.append(f.name)
+    return _CFG[0]
+
+
+def export(out, features=False):
+    """Export the page. By default with the four newer features OFF (the page this file tests); features=True uses reports/config.js as it is."""
+    cmd = [sys.executable, "-I", os.path.join(HERE, "src", "export_static.py"), "--out", os.path.relpath(out, HERE)] + ([] if features else ["--config", flags_off_config()])
+    r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", cwd=HERE)
     return r.returncode, r.stdout + r.stderr
 
 
@@ -277,7 +302,7 @@ def test_export():
     rel = sorted(os.path.relpath(p, DIST).replace("\\", "/") for p in walk(DIST))
     check("manifest lists every file but itself", sorted([f["path"] for f in man["files"]] + ["manifest.json"]) == rel)
     check("manifest hashes match the files", all(sha(os.path.join(DIST, *f["path"].split("/"))) == f["sha256"] for f in man["files"]))
-    r = subprocess.run([sys.executable, "-I", os.path.join(HERE, "src", "export_static.py"), "--check", "--out", "dist"], capture_output=True, text=True, cwd=HERE)
+    r = subprocess.run([sys.executable, "-I", os.path.join(HERE, "src", "export_static.py"), "--check", "--out", "dist", "--config", flags_off_config()], capture_output=True, text=True, cwd=HERE)
     check("export_static.py --check passes on dist/", r.returncode == 0, r.stdout + r.stderr)
     bad = [p for p in rel if any(x in p.lower().split("/")[:-1] for x in ("corrections", "backups", "archive", "data", "src", "logs")) or re.search(r"(\.bak|\.log|\.md|manual_placements|group_search_log|branch_review|hand_groups|group_aliases)", p)]
     check("dist/ has no corrections, backups, logs, archive, data, source or .md path", not bad, bad[:5])
@@ -326,7 +351,7 @@ def test_hand_view():
         base = os.path.join(tmp, "d")
         for rel, body in (("corrections/manual_placements.json", "{}"), ("build/group_search_log.json", "{}"), ("archive/x.html", "x"), ("build/ability_taxonomy.json.bak", "x"), ("reports/notes.md", "x")):
             p = os.path.join(base, *rel.split("/")); os.makedirs(os.path.dirname(p), exist_ok=True); open(p, "w").write(body)
-        r = subprocess.run([sys.executable, "-I", os.path.join(HERE, "src", "export_static.py"), "--check", "--out", base], capture_output=True, text=True, cwd=HERE)
+        r = subprocess.run([sys.executable, "-I", os.path.join(HERE, "src", "export_static.py"), "--check", "--out", base, "--config", flags_off_config()], capture_output=True, text=True, cwd=HERE)
         msg = r.stderr
         check("whitelist check refuses planted corrections/, log, archive, .bak and .md files", r.returncode != 0 and all(x in msg for x in ("corrections/manual_placements.json", "group_search_log.json", "archive/x.html", ".json.bak", "notes.md")), msg[:300])
     finally:

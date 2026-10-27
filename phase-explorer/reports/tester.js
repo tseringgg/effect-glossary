@@ -6,7 +6,7 @@
  */
 "use strict";
 (function () {
-  const CFG = { feedbackUrl: "", prefill: "clipboard", titleParam: "title", bodyParam: "body" };
+  const CFG = { feedbackUrl: "", prefill: "clipboard", titleParam: "title", bodyParam: "body", TESTER_FILTERS: false, TYPE_GROUPS: false, FLIP_FACES: false };
   const $ = id => document.getElementById(id);
   const mobile = () => window.matchMedia("(max-width: 800px)").matches;
   const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
@@ -143,11 +143,12 @@
     const p1 = v => Number(v).toFixed(1) + "%";
     let a = t ? p1(t.headline.pct) : "", b = "", rows = "";
     if (t) {
-      rows += `<tr><td><b>${p1(t.headline.pct)}</b></td><td>${esc(t.headline.cards.toLocaleString("en-US"))} of ${t.in_scope.toLocaleString("en-US")} cards: ${esc(t.headline.basis)}.</td></tr>`;
-      rows += `<tr><td><b>${p1(t.with_broad.pct)}</b></td><td>${esc(t.with_broad.basis)}.</td></tr>`;
-      if (TENT && TENT.meta.headline) rows += `<tr><td><b>${p1(TENT.meta.headline.with_tentative[1])}</b></td><td>${esc(TENT.meta.headline.with_tentative[2])}.</td></tr>`;
-      if (ANN && ANN.meta.headline) { rows += `<tr><td><b>${p1(ANN.meta.headline.with_annotation[1])}</b></td><td>${esc(ANN.meta.headline.with_annotation[2])}.</td></tr>`; rows += `<tr><td><b>${p1(ANN.meta.headline.with_gap_stratum[1])}</b></td><td>${esc(ANN.meta.headline.with_gap_stratum[2])}.</td></tr>`; }
-      if (TAGS && TAGS.meta.headline) { b = p1(TAGS.meta.headline.with_tag[1]); rows += `<tr><td><b>${b}</b></td><td>${esc(TAGS.meta.headline.with_tag[2])}.</td></tr>`; }
+      const fig = (v, why) => `<tr><td><b>${p1(v)}</b></td><td>${why}</td></tr>`;
+      rows += fig(t.headline.pct, `of ${t.in_scope.toLocaleString("en-US")} cards are in a group the tool has checked.`);
+      rows += fig(t.with_broad.pct, "also counting groups broader than their names say.");
+      if (TENT && TENT.meta.headline) rows += fig(TENT.meta.headline.with_tentative[1], "also counting best-guess groups.");
+      if (ANN && ANN.meta.headline) { rows += fig(ANN.meta.headline.with_annotation[1], "also counting cards with a part of their text we could not read."); rows += fig(ANN.meta.headline.with_gap_stratum[1], "also counting cards where another part of the card was not read."); }
+      if (TAGS && TAGS.meta.headline) { b = p1(TAGS.meta.headline.with_tag[1]); rows += fig(TAGS.meta.headline.with_tag[1], "also counting cards grouped only by a Scryfall tag (not checked against the card text)."); }
     }
     openModal(`<div class="tinfo"><h2>How this works</h2>` +
       `<p>Cards are grouped by what their abilities do. An open-source rules parser (phase.rs) that is still being built reads the card text. Most cards are read correctly. Some are not, and this site shows where.</p>` +
@@ -155,7 +156,7 @@
       `<p>A group marked “grouped loosely” is a best guess from what the card does, not checked card by card. Group names can be imprecise: the cards inside a group are right more often than its label. The card’s own text is always the source of truth.</p>` +
       `<p>“Might also fit” lists cards the tool suggests for a group but has not put in it.</p>` +
       (rows ? `<h3>The exact figures</h3><table class="fig"><tbody>${rows}</tbody></table>` : "") +
-      `<h3>Credits</h3><p>Card data, community tags and images: <a href="https://scryfall.com" target="_blank" rel="noopener noreferrer">Scryfall</a>. Rules parsing: phase.rs. Magic: The Gathering card names, text and art are property of Wizards of the Coast. This site is unofficial Fan Content permitted under the Fan Content Policy. Not approved/endorsed by Wizards. Portions of the materials used are property of Wizards of the Coast. ©Wizards of the Coast LLC.</p>` +
+      `<h3>Credits</h3><p>Card data, tags and images: <a href="https://scryfall.com" target="_blank" rel="noopener noreferrer">Scryfall</a>. Rules parsing: phase.rs. Magic: The Gathering card names, text and art are property of Wizards of the Coast. This site is unofficial Fan Content permitted under the Fan Content Policy. Not approved/endorsed by Wizards. Portions of the materials used are property of Wizards of the Coast. ©Wizards of the Coast LLC.</p>` +
       `<p>Something wrong? <a data-report="page" target="_blank" rel="noopener noreferrer" href="#">Report a problem</a>. This site does not record what you search for.</p></div>`);
   }
 
@@ -167,7 +168,25 @@
   }
   const loadConfig = () => new Promise(res => {
     const s = document.createElement("script"); s.src = "config.js";
-    s.onload = () => { try { Object.assign(CFG, window.APP_CONFIG || {}); } catch (e) { /* defaults */ } applyConfig(); res(); };
+    s.onload = () => {
+      try { Object.assign(CFG, window.APP_CONFIG || {}); } catch (e) { /* defaults */ }
+      applyConfig();
+      // feature TESTER_FILTERS: the filter and sort bar and "Narrow by group" (reports/testerfilters.js, .css); off: nothing is requested
+      // features TYPE_GROUPS (typegroups.js, .css) and FLIP_FACES (flipfaces.js, .css) load after it, one after the other; each off: nothing is requested. NARROW_NO_CUT and COLOUR_MODES live in testerfilters.js.
+      const extras = () => {
+        const chain = ["TYPE_GROUPS", "FLIP_FACES"].filter(n => CFG[n] === true).map(n => n === "TYPE_GROUPS" ? "typegroups" : "flipfaces");
+        const next = () => {
+          const n = chain.shift();
+          if (!n) { res(); return; }
+          const l = document.createElement("link"); l.rel = "stylesheet"; l.href = n + ".css"; document.head.appendChild(l);
+          const f = document.createElement("script"); f.src = n + ".js"; f.onload = next; f.onerror = next; document.head.appendChild(f);
+        };
+        next();
+      };
+      if (!CFG.TESTER_FILTERS) { extras(); return; }
+      const l = document.createElement("link"); l.rel = "stylesheet"; l.href = "testerfilters.css"; document.head.appendChild(l);
+      const f = document.createElement("script"); f.src = "testerfilters.js"; f.onload = () => extras(); f.onerror = () => extras(); document.head.appendChild(f);
+    };
     s.onerror = () => res();
     document.head.appendChild(s);
   });
@@ -239,6 +258,7 @@
         if (/^(tf|tg|af|ag|lf|lg|ct|CT|LG):/.test(selected)) open.add("GL:");
         if (/^(u|UR):/.test(selected)) open.add("NG:");
         if (/^(Y|yk):/.test(selected)) open.add("Y:");
+        if (window.TG && TG.owns(selected)) TG.reveal(selected, open);                    // feature TYPE_GROUPS
       }
     }
     const h = [], t = TAX.totals;
@@ -274,17 +294,18 @@
     if (tentOn() || annOn() || LOOSE || tagOn()) {
       h.push(row("l1", "GL:", "Grouped loosely", null, { kids: true }));
       if (open.has("GL:")) {
-        if (tentOn()) { h.push(`<div class="blk sub2">Tentative groups</div>`); for (const f of TAX.families) { const tf = TENT.families.find(x => x.key === f.key); if (!tf) continue; const tk = "tf:" + f.key; h.push(row("l2", tk, esc(f.name), tfN(tf), { kids: true })); if (open.has(tk)) for (const gid of tf.groups) h.push(row("l3", "tg:" + gid, esc(TENT.groups[gid].short), tgN(TENT.groups[gid]))); } }
-        if (annOn()) { h.push(`<div class="blk sub2">Held for a condition the tool did not read</div>`); for (const f of TAX.families) { const af = ANN.families.find(x => x.key === f.key); if (!af) continue; const ak = "af:" + f.key; h.push(row("l2", ak, esc(f.name), afN(af), { kids: true })); if (open.has(ak)) for (const k of af.groups) h.push(row("l3", "ag:" + k, esc(ANN.groups[k].name), agN(ANN.groups[k]))); } }
-        if (LOOSE) { h.push(`<div class="blk sub2">By effect, not checked</div>`); for (const f of LOOSE.families) { const fk = "lf:" + f.key; h.push(row("l2", fk, esc(f.name), lfN(f), { kids: true })); if (open.has(fk)) for (const gid of f.groups) h.push(row("l3", "lg:" + gid, esc(LOOSE.groups[gid].short), lgN(LOOSE.groups[gid]))); } }
-        if (UNREAD && tagOn()) { h.push(`<div class="blk sub2">By Scryfall community tag</div>`); h.push(row("l2", "CT:", "Community-tag groups", ctAllN(), { kids: true })); if (open.has("CT:")) for (const gid of TAGS.order) h.push(row("l3", "ct:" + gid, esc(TAGS.groups[gid].name), tgcN(TAGS.groups[gid]))); }
+        if (tentOn()) { h.push(`<div class="blk sub2">Best-guess groups</div>`); for (const f of TAX.families) { const tf = TENT.families.find(x => x.key === f.key); if (!tf) continue; const tk = "tf:" + f.key; h.push(row("l2", tk, esc(f.name), tfN(tf), { kids: true })); if (open.has(tk)) for (const gid of tf.groups) h.push(row("l3", "tg:" + gid, esc(TENT.groups[gid].short), tgN(TENT.groups[gid]))); } }
+        if (annOn()) { h.push(`<div class="blk sub2">Cards with a part we could not read</div>`); for (const f of TAX.families) { const af = ANN.families.find(x => x.key === f.key); if (!af) continue; const ak = "af:" + f.key; h.push(row("l2", ak, esc(f.name), afN(af), { kids: true })); if (open.has(ak)) for (const k of af.groups) h.push(row("l3", "ag:" + k, esc(ANN.groups[k].name), agN(ANN.groups[k]))); } }
+        if (LOOSE) { h.push(`<div class="blk sub2">By effect (unchecked)</div>`); for (const f of LOOSE.families) { const fk = "lf:" + f.key; h.push(row("l2", fk, esc(f.name), lfN(f), { kids: true })); if (open.has(fk)) for (const gid of f.groups) h.push(row("l3", "lg:" + gid, esc(LOOSE.groups[gid].short), lgN(LOOSE.groups[gid]))); } }
+        if (UNREAD && tagOn()) { h.push(`<div class="blk sub2">By Scryfall tag</div>`); h.push(row("l2", "CT:", "Scryfall tag groups", ctAllN(), { kids: true })); if (open.has("CT:")) for (const gid of TAGS.order) h.push(row("l3", "ct:" + gid, esc(TAGS.groups[gid].name), tgcN(TAGS.groups[gid]))); }
       }
     }
     h.push(`<div class="blk">By keyword</div>`);
     h.push(row("l1", "Y:", "Cards with a keyword", KFAC ? KFAC.meta.cards_with_a_keyword : null, { kids: true }));
     if (KFAC && open.has("Y:")) for (const n of kwOrder()) h.push(row("l2", "yk:" + n, esc(KFAC.keywords[n].d), KFAC.keywords[n].n));
-    if (HG && Object.keys(HG.groups).length) {
-      h.push(`<div class="blk">Hand-defined groups</div>`);
+    if (window.TG && TG.enabled) for (const x of TG.treeRows(row, open, renderTree)) h.push(x);        // feature TYPE_GROUPS: "Card types"
+    if (HG &&Object.keys(HG.groups).length) {
+      h.push(`<div class="blk">Extra groups</div>`);
       for (const slug of Object.keys(HG.groups)) { const g = HG.groups[slug]; if (g.retired) continue; h.push(row("l1", "hg:" + slug, esc(g.name), g.cards)); }
     }
     const nOrg = t.not_yet_organized - (tentOn() ? TENT.meta.cards : 0) - (annOn() ? annCounts().c + annCounts().g : 0) - (tagOn() ? TAGS.meta.cards : 0) - handPileN();
@@ -298,7 +319,7 @@
   TREE.addEventListener("click", e => {                      // the two folders that are not pages
     const r = e.target.closest(".row"); if (!r) return;
     const k = r.dataset.k;
-    if (k === "GL:" || k === "NG:") { e.stopImmediatePropagation(); if (open.has(k)) open.delete(k); else open.add(k); renderTree(); }
+    if (k === "GL:" || k === "NG:" || (window.TG && TG.isFolder(k))) { e.stopImmediatePropagation(); if (open.has(k)) open.delete(k); else open.add(k); renderTree(); }
   }, true);
 
   // ---------------------------------------------------------------- group headers: name, one line, card count; one plain note for every group that is not a checked one
@@ -311,6 +332,7 @@
     } catch (err) { return ""; }
   }
   async function headFor(k) {
+    if (window.TG && TG.owns(k)) return TG.head(k);                                      // feature TYPE_GROUPS
     const i = k.indexOf(":"), kind = k.slice(0, i), id = k.slice(i + 1);
     let name = "", count = null, noun = "cards", path = "", desc = "", loose = false;
     const famName = key => { const f = TAX.families.find(x => x.key === key); return f ? f.name : ""; };
@@ -322,11 +344,11 @@
     if (kind === "l") { const l = TAX.leaves[id]; name = l.name; count = leafN(id); path = leafPath(id); loose = !!(l.flags.length || (l.notes && l.notes.length)); desc = await descOf(k); }
     else if (kind === "tg" && TENT && TENT.groups[id]) { const g = TENT.groups[id], fam = TENT.families.find(x => x.groups.includes(id)); name = g.name; count = tgN(g); path = fam ? fam.name : ""; loose = true; desc = await descOf(k); }
     else if (kind === "lg" && LOOSE && LOOSE.groups[id]) { const g = LOOSE.groups[id], fam = LOOSE.families.find(x => x.groups.includes(id)); name = g.name; count = lgN(g); path = fam ? fam.name : ""; loose = true; desc = await descOf(k); }
-    else if (kind === "ct" && TAGS && TAGS.groups[id]) { const g = TAGS.groups[id]; name = g.name; count = tgcN(g); path = "Scryfall community tag"; loose = true; desc = await descOf(k); }
+    else if (kind === "ct" && TAGS && TAGS.groups[id]) { const g = TAGS.groups[id]; name = g.name; count = tgcN(g); path = "Scryfall tag"; loose = true; desc = await descOf(k); }
     else if (kind === "ag" && ANN && ANN.groups[id]) { const g = ANN.groups[id]; name = g.name; count = agN(g); path = famName(g.fam); loose = true; desc = "Cards with a condition the tool did not read, shown in the group they would belong in if the condition were ignored."; }
     else if (kind === "kl") { const l = TAX.blocks.keyword.leaves[id]; name = l.name; count = blkLeafN(TAX.blocks.keyword, id); path = "Keyword abilities"; desc = await descOf(k); }
     else if (kind === "gl") { const l = TAX.blocks.replacement.leaves[id]; name = l.name; count = blkLeafN(TAX.blocks.replacement, id); path = TAX.blocks.replacement.name; desc = await descOf(k); }
-    else if (kind === "hg" && HG && HG.groups[id]) { const g = HG.groups[id]; name = g.name; count = g.cards; noun = "rule matches"; path = "Defined by hand"; loose = true; desc = await descOf(k); }
+    else if (kind === "hg" && HG && HG.groups[id]) { const g = HG.groups[id]; name = g.name; count = g.cards; noun = "possible cards"; path = "Made by hand"; loose = true; desc = await descOf(k); }
     else if (kind === "V") { name = "No abilities"; count = counting() ? nvis(TAX.blocks.no_abilities.cards) : TAX.blocks.no_abilities.cards.length; desc = "Cards with no rules text."; }
     else if (kind === "u" && UNORG) { const g = UNORG.find(x => String(x.id) === id); if (!g) return null; name = "Not grouped yet: " + g.name; count = unorgN(g); desc = g.explain || ""; }
     else if (kind === "yk" && KFAC && KFAC.keywords[id]) { const kw = KFAC.keywords[id]; name = "Keyword: " + kw.d; count = kw.n; desc = "Cards that carry this keyword, wherever they are grouped."; }
@@ -337,7 +359,7 @@
   function headHTML(name, count, noun, path, desc, loose) {
     return `<div class="thead">${path ? `<div class="crumb">${esc(path)}</div>` : ""}<h1>${esc(name)}</h1>${desc ? `<p class="tdesc">${esc(desc)}</p>` : ""}${count != null ? `<div class="tcnt">${fmt(count)} ${esc(noun)}</div>` : ""}${loose ? `<div class="tloosenote">${LOOSE_NOTE}</div>` : ""}</div>`;
   }
-  const LISTKINDS = /^(l|tg|lg|ct|ag|kl|gl|hg|V|u|yk|r):/;
+  const LISTKINDS = /^(l|tg|lg|ct|ag|kl|gl|hg|V|u|yk|r|ty):/;
   const _show = show;
   let KEEPDRAWER = false;
   show = async function (k) {
@@ -347,7 +369,7 @@
     if (k.startsWith("c:")) { await openCard(k.slice(2)); return; }
     if (/^(Y|yk):/.test(k)) KFWANT = true;
     PANEL.classList.add("tpend");
-    try { await _show(k); } finally { PANEL.classList.remove("tpend"); }
+    try { await (window.TG && TG.owns(k) ? TG.show(k) : _show(k)); } finally { PANEL.classList.remove("tpend"); }
     if (selected !== k && !(MERGED && MERGED.redirects[k])) return;
     let meta = null;
     if (LISTKINDS.test(k) || (MERGED && MERGED.redirects[k])) { try { meta = await headFor(k); } catch (e) { meta = null; } }
@@ -389,6 +411,7 @@
     openModal(`<div class="tbig">${img}</div><div class="tinfo"><h2>${esc(c.n)}</h2><div class="tsrc">${costHTML(c)} ${esc(c.ty)}</div><div class="toracle">${esc(c.t)}</div>` +
       `<h3>In these groups</h3><div>${chips}</div><p style="margin-top:12px"><a data-report="card" data-oid="${esc(oid)}" target="_blank" rel="noopener noreferrer" href="${esc(CFG.feedbackUrl || "#")}">Report a problem with this card</a></p></div>`);
     MODALFOR = oid;
+    if (window.FL) FL.attach(oid, modal);                       // feature FLIP_FACES
   }
   showCardPage = function (oid) { return openCard(oid); };
   PANEL.addEventListener("click", e => {                      // a tile or a card row opens the modal; its chips and links still do what they did
@@ -408,25 +431,33 @@
     const S = SCCUR, box = $("suggsec");
     if (!S || !box || !MRESV) return;
     const e = SC.groups[S.gid], l = SC.lens[S.gid], plain = {};
-    let h = scPickerHTML(), shownRows = [];
+    let h = scPickerHTML(), shownRows = [], rowsA = [], rowsB = [];
     if (e) {
       const vis = Suggested.visible(MI, MRESV, S.gid, S.q, S.p, { floor: SCFLOOR, includePlaced: SCINC, keep: S.keep });
-      vis.rows = vis.rows.filter(r => visible(r.oid));
-      const shown = vis.rows.slice(0, S.nS);
+      rowsA = vis.rows.filter(r => visible(r.oid));
+      for (const r of rowsA) plain[r.oid] = 1;
+    }
+    if (l) {
+      S.lensWhy = `the card has the Scryfall tag “${l[3]}”, which this group is built from; a tag is a hint, not a check`;
+      rowsB = Suggested.lens(MI, MRESV, S.lq, S.lp, { includePlaced: SCINC, keep: S.keep, skip: plain }).rows.filter(r => visible(r.oid));
+    }
+    // feature TESTER_FILTERS: the filter and sort bar and the narrowing row act on these rows as well
+    const TFX = window.TF && TF.enabled ? TF.sugg(rowsA, rowsB) : null;
+    if (TFX) { rowsA = TFX.A; rowsB = TFX.B; h += TFX.bar; }
+    if (e) {
+      const shown = rowsA.slice(0, S.nS);
       shownRows = shown.map(r => r.row);
-      for (const r of vis.rows) plain[r.oid] = 1;
       h += `<h3>Cards that might also fit</h3><div class="sub">The tool suggests these for this group but has not put them in it. Suggested, not checked.</div>` +
-        `<div class="sub">${fmt(vis.rows.length)} card${vis.rows.length === 1 ? "" : "s"}${vis.rows.length > shown.length ? `, showing the first ${fmt(shown.length)}` : ""}.</div>`;
-      h += shown.length ? shown.map(r => scRowHTML(r.oid, r.row, r.placed, false)).join("") : `<div class="sub">No suggested card for this group.</div>`;
-      if (vis.rows.length > shown.length) h += `<div class="more"><button data-sact="more" data-w="S">Show ${Math.min(SC.per_view, vis.rows.length - shown.length)} more (${fmt(vis.rows.length - shown.length)} left)</button></div>`;
+        `<div class="sub">${fmt(rowsA.length)} card${rowsA.length === 1 ? "" : "s"}${rowsA.length > shown.length ? `, showing the first ${fmt(shown.length)}` : ""}.</div>`;
+      h += shown.length ? shown.map(r => scRowHTML(r.oid, r.row, r.placed, false)).join("") : `<div class="sub">No suggested card for this group${TFX && TF.state().k ? " with these filters" : ""}.</div>`;
+      if (rowsA.length > shown.length) h += `<div class="more"><button data-sact="more" data-w="S">Show ${Math.min(SC.per_view, rowsA.length - shown.length)} more (${fmt(rowsA.length - shown.length)} left)</button></div>`;
     } else if (!l) h += `<div class="sub">No suggested card for this group.</div>`;
     if (l) {
-      S.lensWhy = `the card carries the community tag “${l[3]}”, which this group is built from; a tag is a hint, not a placement`;
-      const lv = Suggested.lens(MI, MRESV, S.lq, S.lp, { includePlaced: SCINC, keep: S.keep, skip: plain }), lrows = lv.rows.filter(r => visible(r.oid)), lshown = lrows.slice(0, S.nL);
-      h += `<h3 class="sgsub">Cards with the community tag “${esc(l[3])}”</h3><div class="sub">${esc(SC.lens_label)}</div>` +
-        `<div class="sub">${fmt(lrows.length)} card${lrows.length === 1 ? "" : "s"}${lrows.length > lshown.length ? `, showing the first ${fmt(lshown.length)}` : ""}, most popular first.</div>`;
+      const lshown = rowsB.slice(0, S.nL);
+      h += `<h3 class="sgsub">Cards with the Scryfall tag “${esc(l[3])}”</h3><div class="sub">Cards with this tag that are not in the group. A tag is a hint, not a check.</div>` +
+        `<div class="sub">${fmt(rowsB.length)} card${rowsB.length === 1 ? "" : "s"}${rowsB.length > lshown.length ? `, showing the first ${fmt(lshown.length)}` : ""}, most popular first.</div>`;
       h += lshown.length ? lshown.map(r => scRowHTML(r.oid, null, r.placed, true)).join("") : `<div class="sub">No other card carries this tag.</div>`;
-      if (lrows.length > lshown.length) h += `<div class="more"><button data-sact="more" data-w="L">Show ${Math.min(SC.per_view, lrows.length - lshown.length)} more (${fmt(lrows.length - lshown.length)} left)</button></div>`;
+      if (rowsB.length > lshown.length) h += `<div class="more"><button data-sact="more" data-w="L">Show ${Math.min(SC.per_view, rowsB.length - lshown.length)} more (${fmt(rowsB.length - lshown.length)} left)</button></div>`;
     }
     box.innerHTML = h;
     const tb = document.querySelector('#sctabs button[data-sctab="matches"]');
@@ -437,7 +468,7 @@
   // ---------------------------------------------------------------- search results: a card shows the groups it is in, a group shows name, count, one line and why it matched; no logging, no "Didn't find it?" POST
   const looseGroup = e => e.layer === "t" || e.layer === "o" || e.layer === "c" || e.layer === "h" || (e.layer === "l" && !!TAX.leaves[e.gid.slice(5)] && TAX.leaves[e.gid.slice(5)].flags.length > 0);
   gsRow = function (r) {
-    const e = r.e, n = gsCount(r), noun = e.layer === "h" ? "rule matches" : "cards";
+    const e = r.e, n = gsCount(r), noun = e.layer === "h" ? "possible cards" : "cards";
     const why = r.dym ? `did you mean “${esc(r.dym)}”` : r.why === "alias" ? (r.drafted ? `suggested alias “${esc(r.via)}”` : `via “${esc(r.via)}”`) : r.why === "most" ? "matched: most of your words" : r.why === "slug" ? "matched: tag name" : r.why === "description" ? "matched: description" : r.why === "family" ? "matched: family" : "";
     return `<a class="gr" data-nav data-go="${esc(r.key)}" href="#${esc(encodeURIComponent(r.key))}"${r.note && r.why === "alias" ? ` title="${esc(r.note)}"` : ""}>` +
       `<span class="gc">${fmt(n)} ${noun}</span><span class="gn">${esc(e.name)}</span>` +

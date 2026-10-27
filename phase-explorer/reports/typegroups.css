@@ -1,0 +1,5 @@
+/* Tester mode, feature TYPE_GROUPS: the type and subtype pages (reports/typegroups.js). Loaded only when the flag in reports/config.js is on. */
+.thead .tgnote { font-size: 12.5px; color: var(--muted); margin: 6px 0 0; max-width: 70ch; }
+.tgvia, .tvia { font-size: 11.5px; color: var(--muted); }
+.tile .tvia, .tile .noimg .tvia { display: inline-block; margin: 2px 0; padding: 1px 6px; border: 1px solid var(--line); border-radius: 4px; background: var(--chip); }
+.card .tgvia { margin: 2px 0 0; }

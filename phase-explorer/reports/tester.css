@@ -47,7 +47,7 @@ body.tester .blk.sub2 { padding-top: 8px; font-weight: 600; text-transform: none
 .tloosenote { margin: 8px 0 2px; padding: 8px 10px; border-radius: 6px; background: var(--broadbg); border: 1px solid var(--broad); font-size: 13px; }
 body.tester .viewbar { margin: 4px 0 10px; }
 body.tester .sctabs { margin-top: 12px; }
-#panel.tpend > *:not(#sctabs):not(#pinwrap):not(.viewbar):not(#list):not(#morewrap):not(#suggsec):not(.mchips) { display: none; }
+#panel.tpend > *:not(#sctabs):not(#pinwrap):not(.viewbar):not(#list):not(#morewrap):not(#suggsec):not(.mchips):not(#fwrap) { display: none; }
 
 /* card grid */
 /* same as the developer page: four across, each 75% of an equal quarter; two across on a phone */
