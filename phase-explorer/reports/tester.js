@@ -6,7 +6,7 @@
  */
 "use strict";
 (function () {
-  const CFG = { feedbackUrl: "", prefill: "clipboard", titleParam: "title", bodyParam: "body", TESTER_FILTERS: false, TYPE_GROUPS: false, FLIP_FACES: false };
+  const CFG = { feedbackUrl: "", prefill: "clipboard", titleParam: "title", bodyParam: "body", TESTER_FILTERS: false, TYPE_GROUPS: false, FLIP_FACES: false, DEFAULT_POPULARITY: false, ACTIVE_GROUP_HIGHLIGHT: false, QUERY_MATCH_BLOCK: false };
   const $ = id => document.getElementById(id);
   const mobile = () => window.matchMedia("(max-width: 800px)").matches;
   const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
@@ -525,5 +525,173 @@
   });
 
   applyTree();
-  loadConfig().then(() => window.__testerGo());
+  // ---------------------------------------------------------------- features ACTIVE_GROUP_HIGHLIGHT, DEFAULT_POPULARITY (the rank wait; the sort itself is in testerfilters.js) and QUERY_MATCH_BLOCK (reports/config.js)
+  // Presentation only: no group, id, placement, suggestion, count or figure changes, nothing is fetched that was not fetched before, and each flag off means none of this code runs.
+  // ACTIVE_GROUP_HIGHLIGHT: the open group is marked (class "cur", aria-current) in the search results and the tree, tied to the open group's id (a merged page's id for any of its groups), never to focus or hover.
+  // QUERY_MATCH_BLOCK: a group opened from a search row that matched by its DESCRIPTION shows, above its list, the cards whose own ability line (the line the page shows under the card) has the query's words, most popular first.
+  //   The query lives in memory only: the address never carries it, so a deep link, a reload or another way of opening the group shows no block. Matching: stop words dropped, each word by stem, in order, within the number of typed words + 3.
+  function initDeckFlags() {
+    const HL = CFG.ACTIVE_GROUP_HIGHLIGHT === true, POPF = CFG.DEFAULT_POPULARITY === true && CFG.TESTER_FILTERS === true, QMF = CFG.QUERY_MATCH_BLOCK === true;
+    if (!HL && !POPF && !QMF) return;
+    const st = document.createElement("style");
+    st.textContent =
+      (HL ? ".gr.cur{box-shadow:inset 4px 0 0 var(--accent);border-color:var(--accent);background:var(--sel)}.gr.cur .gn::after,#tree .row.cur>span:first-child::after{content:\" \\25CF open\";font-size:11px;font-weight:600;color:var(--accent)}" +
+        "#tree .row.cur{box-shadow:inset 4px 0 0 var(--accent);background:var(--sel);font-weight:600}" : "") +
+      (QMF ? ".qm{border:1px solid var(--accent);border-radius:8px;background:var(--panel);padding:8px 10px;margin:10px 0}.qm .qt{font-weight:700}.qm .qt b{color:var(--accent)}.qm .qs{color:var(--muted);font-size:12.5px;margin:2px 0 6px}" +
+        ".qr{display:flex;gap:10px;padding:5px 0;border-top:1px solid var(--line);align-items:baseline}.qr .nm{font-weight:600;min-width:150px}.qr .ln{flex:1;min-width:0;overflow-wrap:anywhere}" +
+        ".qm mark{background:#fff0a8;color:#1d1d1b;border-radius:2px;padding:0 1px}.qr .src{font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:9px;padding:0 6px;white-space:nowrap}" +
+        ".qm .qb{font:inherit;border:1px solid var(--line);background:var(--chip);color:var(--fg);border-radius:6px;padding:5px 10px;cursor:pointer;margin-top:4px}.qnone{color:var(--muted);font-size:13px;margin:8px 0}" +
+        "@media (max-width:800px){.qr{flex-wrap:wrap}.qr .nm{min-width:0;width:100%}.qm .qb{min-height:44px}}" : "");
+    document.head.appendChild(st);
+    const canon = k => (k && MERGED && MERGED.redirects && MERGED.redirects[k] && k !== ALONEKEY) ? "P:" + MERGED.redirects[k] : k;
+    function mark() {
+      const cur = selected ? canon(selected) : null;
+      for (const e of document.querySelectorAll("#findres .gr[data-go], #tree .row[data-k]")) {
+        const on = !!cur && canon(e.dataset.go || e.dataset.k) === cur;
+        e.classList.toggle("cur", on);
+        if (on) e.setAttribute("aria-current", "true"); else e.removeAttribute("aria-current");
+      }
+    }
+    if (HL) {
+      const mo = new MutationObserver(mark);
+      mo.observe(TREE, { childList: true }); mo.observe(FR, { childList: true });
+      mark();
+    }
+    let QM = null, PEND = null, QSEQ = 0;
+    if (QMF) {
+      const _row = gsRow;
+      gsRow = function (r) { return _row(r).replace('<a class="gr"', `<a class="gr" data-why="${esc(r.why)}" data-gid="${esc(r.e.gid)}" data-layer="${esc(r.e.layer)}"`); };
+      const _sec = gsSection;
+      let RESQ = "";                                              // the query the results on screen were made for (gsSection is called with it)
+      gsSection = function (q, ...rest) { RESQ = String(q).trim(); return _sec(q, ...rest); };
+      FR.addEventListener("click", e => {
+        const g = e.target.closest(".gr[data-go]");
+        PEND = g && g.dataset.why === "description" && RESQ ? { q: RESQ, key: g.dataset.go, gid: g.dataset.gid, layer: g.dataset.layer, n: 10 } : null;
+      }, true);
+      SCHIDE.push("#qmwrap");
+    }
+    const _show = show;
+    show = async function (k) {
+      if (POPF) await needManual();                                                      // the rank is in manual_index.json: the first sort waits for the file the page loads anyway
+      if (QMF) {
+        if (PEND) { QM = canon(k) === canon(PEND.key) ? PEND : null; PEND = null; }
+        else if (QM && canon(k) !== canon(QM.key)) QM = null;
+        if (PINNEXT) QM = null;
+      }
+      const r = await _show(k);
+      if (HL) mark();
+      if (QMF) renderQM().catch(() => { /* the block is a convenience */ });
+      return r;
+    };
+    // ---- the block
+    const STOP = new Set("a an the of to and or for in on at by with from your you it its that this is are be as".split(" "));
+    const norm = x => String(x).toLowerCase().replace(/['’]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+    function stem(w) {
+      const n = w.length;
+      if (n > 4 && /ies$/.test(w)) return w.slice(0, -3) + "y";
+      if (n > 4 && /(ss|x|z|ch|sh)es$/.test(w)) return w.slice(0, -2);
+      if (n > 3 && /s$/.test(w) && !/(ss|us|is)$/.test(w)) return w.slice(0, -1);
+      return w;
+    }
+    function variants(w) { const s = stem(w), v = [s]; if (s.length > 5 && /ing$/.test(s)) v.push(s.slice(0, -3)); else if (s.length > 4 && /ed$/.test(s)) v.push(s.slice(0, -2)); return v; }
+    function parse(q) {
+      const words = norm(q).split(" ").filter(Boolean);
+      let core = words.filter(w => !STOP.has(w)); if (!core.length) core = words;
+      return { k: words.length, terms: core.map(w => ({ w: w, v: variants(w) })) };
+    }
+    // the ranges of the words of the best (shortest) in-order match of the query's words in a line, or null
+    function matchLine(line, qp) {
+      if (!line || !qp.terms.length) return null;
+      const toks = [], re = /[A-Za-z0-9’']+/g;
+      let m;
+      while ((m = re.exec(line))) { const w = m[0].toLowerCase().replace(/['’]/g, "").replace(/[^a-z0-9]/g, ""); if (w) toks.push({ w: w, st: stem(w), s: m.index, e: m.index + m[0].length }); }
+      const hit = (t, term) => t.w === term.w || term.v.indexOf(t.st) >= 0;
+      let best = null;
+      for (let i = 0; i < toks.length; i++) {
+        if (!hit(toks[i], qp.terms[0])) continue;
+        const pos = [i];
+        let at = i;
+        for (let j = 1; j < qp.terms.length; j++) {
+          let f = -1;
+          for (let x = at + 1; x < toks.length; x++) if (hit(toks[x], qp.terms[j])) { f = x; break; }
+          if (f < 0) { pos.length = 0; break; }
+          pos.push(f); at = f;
+        }
+        if (!pos.length) continue;
+        const span = pos[pos.length - 1] - i + 1;
+        if (span <= qp.k + 3 && (!best || span < best.span)) best = { span: span, pos: pos };
+      }
+      return best ? best.pos.map(x => [toks[x].s, toks[x].e]) : null;
+    }
+    const unesc = x => x.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&amp;/g, "&");
+    function lineOf(it) {                                       // the line the page shows under the card, or ""
+      if (typeof it === "string") return "";
+      if (Array.isArray(it)) { const c = CARDS[it[0]], a = it[1] != null && c && c.ab[it[1]]; return a ? a[0] || "" : ""; }
+      const m = /<span class="why">([\s\S]*?)<\/span>/.exec(it.html || "");
+      return m ? unesc(m[1]) : "";
+    }
+    function collect(items, qm) {                               // [{oid, line}] one per card, in list order; supported = some card had a line
+      const seen = new Set(), out = [], member = qm.layer !== "m" && MERGED && MERGED.by_gid && MERGED.by_gid[qm.gid] ? qm.gid : "";
+      let sec = "", supported = false;
+      for (const it of items) {
+        if (typeof it === "string") { const g = /data-gid="([^"]*)"/.exec(it); if (g && it.indexOf('id="msec-') >= 0) sec = unesc(g[1]); continue; }
+        if (member && sec !== member) continue;
+        const o = itemOid(it);
+        if (!o || seen.has(o)) continue;
+        seen.add(o);
+        const line = lineOf(it);
+        if (line) { supported = true; out.push({ oid: o, line: line }); }
+      }
+      return { rows: out, supported: supported };
+    }
+    const rankOf = o => { const m = MI && MI.cards && MI.cards[o]; return m && m[4] != null ? m[4] : null; };
+    const nameOf = o => CARDS[o].n.toLowerCase();
+    function snippet(line, rg) {
+      let a = 0, b = line.length;
+      if (line.length > 220) { a = Math.max(0, rg[0][0] - 60); b = Math.min(line.length, Math.max(a + 220, rg[rg.length - 1][1])); }
+      let h = a > 0 ? "…" : "", at = a;
+      for (const [s, e] of rg) { h += esc(line.slice(at, s)) + "<mark>" + esc(line.slice(s, e)) + "</mark>"; at = e; }
+      return h + esc(line.slice(at, b)) + (b < line.length ? "…" : "");
+    }
+    async function renderQM() {
+      const old = $("qmwrap"); if (old) old.remove();
+      if (!QM || PINCUR || !selected || canon(selected) !== canon(QM.key)) return;
+      const my = ++QSEQ;
+      await needManual();
+      const again = $("qmwrap"); if (again) again.remove();
+      if (my !== QSEQ || !QM || PINCUR || canon(selected) !== canon(QM.key) || !CARDS || !MI) return;
+      const vb = $("panel").querySelector(".viewbar"); if (!vb) return;
+      const qp = parse(QM.q), tf = window.TF && TF.enabled;
+      const all = collect(tf ? TF.items() : LIST, QM);
+      if (!all.supported) return;                              // this page shows no ability line under its cards: nothing to match, and nothing to claim
+      const full = all.rows.map(x => { const rg = matchLine(x.line, qp); return rg ? { oid: x.oid, line: x.line, rg: rg } : null; }).filter(Boolean);
+      const shownSet = new Set((tf ? TF.shownItems() : LIST).map(it => (typeof it === "string" ? null : itemOid(it))).filter(Boolean));
+      const rows = full.filter(x => shownSet.has(x.oid));
+      rows.sort((x, y) => { const a = rankOf(x.oid), b = rankOf(y.oid); return (a == null) - (b == null) || (a || 0) - (b || 0) || (nameOf(x.oid) < nameOf(y.oid) ? -1 : nameOf(x.oid) > nameOf(y.oid) ? 1 : 0) || (x.oid < y.oid ? -1 : 1); });
+      const box = el("div", "qm");
+      box.id = "qmwrap";
+      const q = esc(QM.q), n = rows.length, plural = (c, w) => c + " " + w + (c === 1 ? "" : "s");
+      if (!full.length) {
+        box.className = "qnone";
+        box.textContent = "Your words (“" + QM.q + "”) are in this group’s description, but no card’s own text has them together.";
+      } else if (!n) {
+        box.innerHTML = `<div class="qt">These cards matched your query: <b>${q}</b></div><div class="qs">None of the ${plural(full.length, "matching card")} is left after your filters.</div>`;
+      } else {
+        const cap = Math.min(QM.n, 20, n), shown = rows.slice(0, cap);
+        let h = `<div class="qt">These cards matched your query: <b>${q}</b></div><div class="qs">Cards in this group whose own text has your words, most popular first. ${plural(n, "card")} match${n === 1 ? "es" : ""}${n !== full.length ? ` with your filters (${full.length} without)` : ""}.</div>`;
+        for (const x of shown) h += `<div class="qr"><span class="nm lnk" data-go="c:${esc(x.oid)}">${esc(CARDS[x.oid].n)}</span><span class="ln">${snippet(x.line, x.rg)}</span><span class="src">ability line</span></div>`;
+        if (cap < n && cap < 20) h += `<button type="button" class="qb" data-qm="more">Show more (${plural(Math.min(20, n) - cap, "more card")})</button>`;
+        else if (n > cap) h += `<div class="qs">${plural(n - cap, "more card")} match; they are in the list below.</div>`;
+        box.innerHTML = h;
+        const b = box.querySelector("[data-qm=more]");
+        if (b) b.addEventListener("click", () => { QM.n = Math.min(20, QM.n + 10); renderQM(); });
+      }
+      const tabs = $("sctabs");
+      vb.parentNode.insertBefore(box, tabs && tabs.parentNode === vb.parentNode ? tabs : vb);
+      if (SCCUR && SCCUR.tab === "matches") box.classList.add("sc-off");
+    }
+    window.QMB_REFRESH = () => { if (QM) renderQM().catch(() => { /* the block is a convenience */ }); };
+    window.QMB = { state: () => (QM ? { q: QM.q, key: QM.key, n: QM.n } : null), match: (line, q) => matchLine(line, parse(q)) };
+  }
+  loadConfig().then(() => { try { initDeckFlags(); } catch (e) { if (window.console) console.error("deck flags", e); } window.__testerGo(); });
 })();

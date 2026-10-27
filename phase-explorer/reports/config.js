@@ -13,6 +13,11 @@
  *   COLOUR_MODES    true: colour match is Any of these (default) / Includes all / Only these / Not these. Needs TESTER_FILTERS.
  *   FLIP_FACES      true: a Flip control on the large card view; name search finds a card by either face; colour and type filters read both faces. Files: flipfaces.js/.css, build/faces/faces.json.
  *                   Each of these four: absent or false means the page behaves, requests and exports exactly as before the flag existed.
+ *   DEFAULT_POPULARITY      true: the sort on group pages has "Most popular first" (the default for the card list; the EDHREC rank already in build/manual_index.json, unranked last), "Default order" (what was "Best match"),
+ *                           "Mana value" and "Name"; the choice is remembered. Needs TESTER_FILTERS. "Might also fit" stays on its score order until a sort is chosen.
+ *   ACTIVE_GROUP_HIGHLIGHT  true: the open group stays marked in the search results and the tree until another group opens.
+ *   QUERY_MATCH_BLOCK       true: a group opened from a search row that matched by its description shows the cards whose own ability line has the query's words, above its list.
+ *                           Each of these three adds no file and no request: absent or false means the page behaves, requests and exports exactly as before the flag existed.
  */
 window.APP_CONFIG = {
   feedbackUrl: "https://discord.gg/DUwMhDCcMg",
@@ -23,5 +28,8 @@ window.APP_CONFIG = {
   TYPE_GROUPS: true,
   NARROW_NO_CUT: true,
   COLOUR_MODES: true,
-  FLIP_FACES: true
+  FLIP_FACES: true,
+  DEFAULT_POPULARITY: true,
+  ACTIVE_GROUP_HIGHLIGHT: true,
+  QUERY_MATCH_BLOCK: true
 };

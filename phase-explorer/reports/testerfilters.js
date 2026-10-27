@@ -10,6 +10,8 @@
  *   COLOUR_MODES   colour match: "Any of these" (default, today's rule), "Includes all", "Only these", "Not these". The colourless and multicolour chips are extra conditions in the last three.
  *   TYPE_GROUPS    (typegroups.js) adds a "Subtype" row: a card passes if any face has the chosen type, supertype or subtype (OR inside the row). Type pages themselves are never offered as chips.
  *   FLIP_FACES     (flipfaces.js) colour and type read both faces of a two-faced card (the union); a card shown only because of its other face says so.
+ *   DEFAULT_POPULARITY  the sort has a fourth choice, "Most popular first" (Scryfall's EDHREC rank, read from MI.cards[oid][4] in manual_index.json: lower is more popular; unranked last; ties by name, then id), which is the
+ *                  default for the cards on a group page; "Best match" is relabelled "Default order". "Might also fit" keeps its own score order unless a sort was chosen. A chosen sort is remembered (localStorage "sortPref").
  *
  * Rules (src/test_tester_static.py re-derives them in Python and compares):
  *   filter: AND across kinds (colour, type, mana value), OR inside a kind. Colour is the card's colour, not its colour identity. Facts are those of the face the page lists (a split card: its first half).
@@ -31,6 +33,7 @@
   const cmp = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
   const FLG = window.APP_CONFIG || {};
   const NNC = FLG.NARROW_NO_CUT === true, CMODES = FLG.COLOUR_MODES === true, TGON = FLG.TYPE_GROUPS === true;
+  const POP = FLG.DEFAULT_POPULARITY === true;
   if (CMODES) {                                                                              // the match-mode rules live here, so testerfilters.css is the file it always was
     const st = document.createElement("style");
     st.textContent = ".cmsel{display:none}.fpip[aria-disabled=true]{cursor:not-allowed}@media (max-width:800px){.cmseg{display:none}.cmsel{display:block}}";
@@ -116,7 +119,13 @@
   }
 
   // ---------------------------------------------------------------- state: one per page (reset when another page opens)
-  const fresh = () => ({ k: null, cols: new Set(), cmode: "any", types: new Set(), subs: new Set(), mvs: new Set(), sort: "best", nar: [], nshow: 12, single: false, open: false, nopen: false });
+  // DEFAULT_POPULARITY: ST.sort is null until the viewer chooses one (then it is remembered); the cards list then defaults to "pop", the suggestion list to "best" (its score order)
+  const PREFS = ["pop", "best", "mv", "name"];
+  function prefSort() { try { const v = localStorage.getItem("sortPref"); return PREFS.indexOf(v) >= 0 ? v : null; } catch (e) { return null; } }
+  const sortMode = ctx => (POP ? ST.sort || (ctx === "sugg" ? "best" : "pop") : ST.sort);
+  const rankOf = oid => { const m = typeof MI !== "undefined" && MI && MI.cards && MI.cards[oid]; return m && m[4] != null ? m[4] : null; };
+  const popCmp = (x, y) => { const a = rankOf(x), b = rankOf(y); return (a == null) - (b == null) || (a || 0) - (b || 0) || cmp(factsOf(x).nm, factsOf(y).nm) || cmp(x, y); };
+  const fresh = () => ({ k: null, cols: new Set(), cmode: "any", types: new Set(), subs: new Set(), mvs: new Set(), sort: POP ? prefSort() : "best", nar: [], nshow: 12, single: false, open: false, nopen: false });
   let ST = fresh();
   const active = () => ST.cols.size || ST.types.size || ST.subs.size || ST.mvs.size || ST.nar.length;
   const subOk = (oid, subs) => { for (const k of subs) if (TG.has(k, oid)) return true; return false; };
@@ -196,7 +205,8 @@
     const flush = () => {
       if (sec.length) {
         for (const h of head) { out.push(h); subEmitted = isMsec(h) ? false : true; }
-        const s = ST.sort === "best" ? sec : sec.slice().sort((x, y) => { const p = factsOf(oidOf(x)), q = factsOf(oidOf(y)); return ST.sort === "name" ? cmp(p.nm, q.nm) || cmp(oidOf(x), oidOf(y)) : (p.mv == null) - (q.mv == null) || (p.mv || 0) - (q.mv || 0) || cmp(p.nm, q.nm) || cmp(oidOf(x), oidOf(y)); });
+        const sm = sortMode("list");
+        const s = sm === "best" ? sec : sm === "pop" ? sec.slice().sort((x, y) => popCmp(oidOf(x), oidOf(y))) : sec.slice().sort((x, y) => { const p = factsOf(oidOf(x)), q = factsOf(oidOf(y)); return sm === "name" ? cmp(p.nm, q.nm) || cmp(oidOf(x), oidOf(y)) : (p.mv == null) - (q.mv == null) || (p.mv || 0) - (q.mv || 0) || cmp(p.nm, q.nm) || cmp(oidOf(x), oidOf(y)); });
         for (const x of s) out.push(order(x));
         head = []; sec = [];
       }
@@ -249,6 +259,11 @@
     return `<div class="frow"><span class="flab">Subtype</span><div class="fgrp">${chips}<select class="fsel" data-f="sub" aria-label="Add a subtype or supertype"><option value="">Add a subtype or supertype…</option>${TG.options(ST.subs)}</select></div></div>` +
       `<div class="fnote">Any of the chosen. A card counts if either face has it.</div>`;
   }
+  function popSortHTML(ctx) {
+    const cur = sortMode(ctx && ctx.sugg ? "sugg" : "list"), o = [["pop", "Most popular first"], ["best", "Default order"], ["mv", "Mana value"], ["name", "Name"]];
+    return `<select class="fsel" data-f="sort" aria-label="Sort">${o.map(([v, n]) => `<option value="${v}"${cur === v ? " selected" : ""}>${n}</option>`).join("")}</select>` +
+      `<div class="fnote" data-pop-note="1">Popularity is each card’s EDHREC rank (how often it is played in Commander decks, from Scryfall). Cards with no rank come last.</div>`;
+  }
   function barHTML(fullOids, shown, ctx) {
     const idx = buildIndex(), fc = facetCounts(fullOids, idx);
     const mOff = CMODES && ST.cmode === "only";
@@ -262,7 +277,7 @@
       `</div><select class="fsel cmsel" data-f="cmodesel" aria-label="Colour match">${modeOptions()}</select></div>` : "";
     const typeHTML = TYPES.filter(t => fullOids.some(o => factsOf(o).ts.indexOf(t) >= 0) || ST.types.has(t)).map(t => `<button type="button" class="fch${ST.types.has(t) ? " on" : ""}${!fc.tc[t] && !ST.types.has(t) ? " dim" : ""}" data-f="type" data-v="${t}" aria-pressed="${ST.types.has(t)}">${t} <b>${fmt(fc.tc[t])}</b></button>`).join("");
     const mvHTML = MVS.map(([m, n]) => `<button type="button" class="fch${ST.mvs.has(m) ? " on" : ""}${!fc.mc[m] && !ST.mvs.has(m) ? " dim" : ""}" data-f="mv" data-v="${m}" aria-pressed="${ST.mvs.has(m)}">${n} <b>${fmt(fc.mc[m])}</b></button>`).join("");
-    const sortHTML = `<select class="fsel" data-f="sort" aria-label="Sort"><option value="best"${ST.sort === "best" ? " selected" : ""}>Best match</option><option value="mv"${ST.sort === "mv" ? " selected" : ""}>Mana value</option><option value="name"${ST.sort === "name" ? " selected" : ""}>Name</option></select>`;
+    const sortHTML = POP ? popSortHTML(ctx) : `<select class="fsel" data-f="sort" aria-label="Sort"><option value="best"${ST.sort === "best" ? " selected" : ""}>Best match</option><option value="mv"${ST.sort === "mv" ? " selected" : ""}>Mana value</option><option value="name"${ST.sort === "name" ? " selected" : ""}>Name</option></select>`;
     const status = `Showing <b>${fmt(shown)}</b> of ${fmt(fullOids.length)}`;
     const sm = summary(idx);
     const nr = narrowHTML(ctx.list, fullOids, ctx.key, idx);
@@ -315,6 +330,7 @@
     if (el) { el.innerHTML = ""; renderList(); }
     renderBarInto(host, fullOids, list.length, list, LISTKEY);
     pinNote(list);
+    if (typeof window.QMB_REFRESH === "function") window.QMB_REFRESH();                       // feature QUERY_MATCH_BLOCK: the block follows the filters
     void P; void idx;
   }
   function pinNote(list) {
@@ -344,10 +360,11 @@
     if (ST.k !== key) { ST = fresh(); ST.k = key; }
     const idx = buildIndex(), all = uniq(rowsA.map(r => r.oid).concat(rowsB.map(r => r.oid)));
     const keepA = rowsA.filter(r => pass(factsOf(r.oid), null) && inAllNarrow(r.oid, idx)), keepB = rowsB.filter(r => pass(factsOf(r.oid), null) && inAllNarrow(r.oid, idx));
-    const ord = rows => ST.sort === "best" ? rows : rows.slice().sort((x, y) => { const p = factsOf(x.oid), q = factsOf(y.oid); return ST.sort === "name" ? cmp(p.nm, q.nm) || cmp(x.oid, y.oid) : (p.mv == null) - (q.mv == null) || (p.mv || 0) - (q.mv || 0) || cmp(p.nm, q.nm) || cmp(x.oid, y.oid); });
+    const sm = sortMode("sugg");
+    const ord = rows => sm === "best" ? rows : sm === "pop" ? rows.slice().sort((x, y) => popCmp(x.oid, y.oid)) : rows.slice().sort((x, y) => { const p = factsOf(x.oid), q = factsOf(y.oid); return sm === "name" ? cmp(p.nm, q.nm) || cmp(x.oid, y.oid) : (p.mv == null) - (q.mv == null) || (p.mv || 0) - (q.mv || 0) || cmp(p.nm, q.nm) || cmp(x.oid, y.oid); });
     const A = ord(keepA), B = ord(keepB), shownList = uniq(A.map(r => r.oid).concat(B.map(r => r.oid)));
     SUGLIST = all;
-    return { A: A, B: B, bar: `<div id="fwrap2">` + barHTML(all, shownList.length, { list: shownList, key: key }) + `</div>` };
+    return { A: A, B: B, bar: `<div id="fwrap2">` + barHTML(all, shownList.length, { list: shownList, key: key, sugg: true }) + `</div>` };
   }
 
   // ---------------------------------------------------------------- events
@@ -378,14 +395,14 @@
   document.addEventListener("change", e => {
     const s = e.target.closest && e.target.closest("select[data-f]");
     if (!s || !$("panel").contains(s)) return;
-    if (s.dataset.f === "sort") { ST.sort = s.value; refresh(); }
+    if (s.dataset.f === "sort") { ST.sort = s.value; if (POP) { try { localStorage.setItem("sortPref", s.value); } catch (err) { /* storage unavailable: the choice lasts for this page only */ } } refresh(); }
     else if (s.dataset.f === "cmodesel") { ST.cmode = s.value; if (s.value === "only") ST.cols.delete("M"); refresh(); }
     else if (s.dataset.f === "sub") { const v = s.value; if (v) TG.loadMembers().then(() => { ST.subs.add(v); refresh(); }); }
   }, true);
   const _scSetTab = scSetTab;
   scSetTab = async function (tab) { await _scSetTab(tab); if (tab === "members") { try { applyList(); } catch (e) { /* no bar on this page */ } } };
 
-  window.TF = { enabled: true, sugg: sugg, refresh: refresh, state: () => ST, full: () => uniq(FULL.map(oidOf).filter(o => o != null)), shown: () => uniq(LIST.map(oidOf).filter(o => o != null)),
+  window.TF = { enabled: true, sugg: sugg, items: () => FULL.slice(), shownItems: () => LIST.slice(), refresh: refresh, state: () => ST, full: () => uniq(FULL.map(oidOf).filter(o => o != null)), shown: () => uniq(LIST.map(oidOf).filter(o => o != null)),
     chips: () => { const idx = buildIndex(), full = uniq(FULL.map(oidOf).filter(o => o != null)); return chipSet(uniq(LIST.map(oidOf).filter(o => o != null)), full, LISTKEY).vis.map(c => ({ key: c.key, label: c.label, n: c.n, name: idx.name.get(c.key), loose: c.loose })); },
     chipsAll: () => { const idx = buildIndex(), full = uniq(FULL.map(oidOf).filter(o => o != null)); return chipsFor(uniq(LIST.map(oidOf).filter(o => o != null)), full, LISTKEY).map(c => ({ key: c.key, label: c.label, n: c.n, size: c.size, name: idx.name.get(c.key) })); },
     members: key => buildIndex().mem.get(key) || new Set(), reset: () => { ST = fresh(); ST.k = selected; },

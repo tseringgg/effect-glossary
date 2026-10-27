@@ -352,11 +352,14 @@ const open = new Set();
 let selected = null, MODE = "abilities";
 
 async function J(name) { const r = await fetch("../build/" + name); if (!r.ok) throw new Error(name + " " + r.status); return r.json(); }
-async function needCards() {
+let CPROMISE = null;
+async function loadCards() {
   if (!MEM) MEM = (await J("ability_taxonomy_members.json")).leaves;
   if (!CARDS) CARDS = (await J("ability_taxonomy_cards.json")).cards;
   await needImages(); await needFlags();
 }
+// one shared load: a second caller waits for the first instead of fetching both files again; a failed load can be retried
+function needCards() { return CPROMISE || (CPROMISE = loadCards().catch(e => { CPROMISE = null; throw e; })); }
 let FLAGS = null, FLAGTRIED = false;
 async function needFlags() {
   if (FLAGTRIED) return;
