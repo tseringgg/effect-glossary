@@ -22,6 +22,9 @@
  *                           Files: abilitypages.js/.css, build/ability_pages/index.json and one small file per page under build/ability_pages/p/. Filters and pages, never placements.
  *   ABILITY_TYPE_FILTERS    true: "Trigger", "Cost" and "Kind" rows in the filter bar (changes only testerfilters.js; needs TESTER_FILTERS and ABILITY_TYPE_PAGES).
  *                           Each of these two: absent or false means the page behaves, requests and exports exactly as before the flag existed.
+ *   BROAD_NARROWING         true: the first level of "Narrow by group" is 15 topics (Card draw, Counters, Tokens, ...), each with a dropdown of its specific groups; the flat chips are behind "Show all groups".
+ *                           Topics are filters, never placements. Needs TESTER_FILTERS and NARROW_NO_CUT. Adds one data file, build/buckets/map.json (src/build_buckets.py); changes only testerfilters.js.
+ *                           Absent or false means the page behaves, requests and exports exactly as before the flag existed.
  */
 window.APP_CONFIG = {
   feedbackUrl: "https://discord.gg/DUwMhDCcMg",
@@ -37,5 +40,6 @@ window.APP_CONFIG = {
   ACTIVE_GROUP_HIGHLIGHT: true,
   QUERY_MATCH_BLOCK: true,
   ABILITY_TYPE_PAGES: true,
-  ABILITY_TYPE_FILTERS: true
+  ABILITY_TYPE_FILTERS: true,
+  BROAD_NARROWING: true
 };

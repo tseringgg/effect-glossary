@@ -35,6 +35,7 @@ FLIP_BUILD = ["faces/faces.json"]
 AB_FILES = ["abilitypages.js", "abilitypages.css"]               # feature ABILITY_TYPE_PAGES: ability-type pages (ABILITY_TYPE_FILTERS changes only testerfilters.js and needs it)
 AB_BUILD = ["ability_pages/index.json"]                          # the index is read when the "Ability types" folder opens / at the first search; the pages (ability_pages/p/*.json) when one opens
 AB_LAZY = ("ability_pages/p", r"^[a-z0-9.\-]+\.json$")
+BK_BUILD = ["buckets/map.json"]                                  # feature BROAD_NARROWING: the group -> topic map (the page code is in testerfilters.js, so no page file is added)
 # NARROW_NO_CUT and COLOUR_MODES change only reports/testerfilters.js (and need TESTER_FILTERS): they add no file
 CONFIG_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "reports", "config.js")
 
@@ -55,6 +56,8 @@ def pages_for(path=None):
         files += FLIP_FILES; build += FLIP_BUILD
     if flag_on(path, "ABILITY_TYPE_PAGES"):
         files += AB_FILES; build += AB_BUILD
+    if flag_on(path, "BROAD_NARROWING"):
+        build += BK_BUILD
     return files, build
 
 
@@ -322,6 +325,9 @@ def main():
         if flag_on(None if not a.config else a.config, "ABILITY_TYPE_PAGES"):
             import build_ability_pages                 # deterministic as well; writes only build/ability_pages/
             build_ability_pages.write()
+        if flag_on(None if not a.config else a.config, "BROAD_NARROWING"):
+            import build_buckets                       # deterministic as well; writes only build/buckets/
+            build_buckets.write()
     files = plan()
     cfg = open(page_src("config.js"), encoding="utf-8").read()
     placeholder = "REPLACE-ME" in cfg

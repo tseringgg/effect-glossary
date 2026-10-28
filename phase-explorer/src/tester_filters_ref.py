@@ -235,4 +235,10 @@ def col_ok(col, cols, mode):
         if m and not S:
             return len(X) >= 2
         return X <= S and (not m or len(X) >= 2)
+    if mode == "exactly":
+        if c:
+            return not X and not S
+        if not S:
+            return len(X) >= 2
+        return X == S and (not m or len(X) >= 2)
     return not (X & S) and (not c or bool(X)) and (not m or len(X) < 2)

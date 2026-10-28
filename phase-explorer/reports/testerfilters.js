@@ -10,6 +10,9 @@
  *   COLOUR_MODES   colour match: "Any of these" (default, today's rule), "Includes all", "Only these", "Not these". The colourless and multicolour chips are extra conditions in the last three.
  *   TYPE_GROUPS    (typegroups.js) adds a "Subtype" row: a card passes if any face has the chosen type, supertype or subtype (OR inside the row). Type pages themselves are never offered as chips.
  *   FLIP_FACES     (flipfaces.js) colour and type read both faces of a two-faced card (the union); a card shown only because of its other face says so.
+ *   BROAD_NARROWING  (needs NARROW_NO_CUT; data: build/buckets/map.json, written by src/build_buckets.py) the first level of "Narrow by group" is 15 topics (Card draw, Counters, ...), each with a dropdown of its
+ *                  specific groups. A topic is a set of groups, a group may be in several; a card is in a topic if it is in any group of it (not the page's own group or a near-twin of it; groups of one card count).
+ *                  Topics are filters, never placements. Inside a topic: any of the chosen groups; across topics: all. Groups with no topic are reached with "Show all groups" (today's flat chips).
  *   DEFAULT_POPULARITY  the sort has a fourth choice, "Most popular first" (Scryfall's EDHREC rank, read from MI.cards[oid][4] in manual_index.json: lower is more popular; unranked last; ties by name, then id), which is the
  *                  default for the cards on a group page; "Best match" is relabelled "Default order". "Might also fit" keeps its own score order unless a sort was chosen. A chosen sort is remembered (localStorage "sortPref").
  *
@@ -34,12 +37,19 @@
   const FLG = window.APP_CONFIG || {};
   const NNC = FLG.NARROW_NO_CUT === true, CMODES = FLG.COLOUR_MODES === true, TGON = FLG.TYPE_GROUPS === true, ABON = FLG.ABILITY_TYPE_PAGES === true && FLG.ABILITY_TYPE_FILTERS === true;
   const POP = FLG.DEFAULT_POPULARITY === true;
+  const BKON = FLG.BROAD_NARROWING === true && NNC;
+  if (BKON) {
+    const st = document.createElement("style");
+    st.textContent = ".nsub{display:flex;flex-direction:column;gap:6px;padding:6px 8px;border-left:3px solid var(--accent);border-radius:0 6px 6px 0;background:var(--sel)}.fnote.nl{margin-left:0}@media (max-width:800px){.nsub .fsel{width:100%}}";
+    document.head.appendChild(st);
+  }
   if (CMODES) {                                                                              // the match-mode rules live here, so testerfilters.css is the file it always was
     const st = document.createElement("style");
     st.textContent = ".cmsel{display:none}.fpip[aria-disabled=true]{cursor:not-allowed}@media (max-width:800px){.cmseg{display:none}.cmsel{display:block}}";
     document.head.appendChild(st);
   }
-  const CMODE_NAMES = [["any", "Any of these"], ["all", "Includes all"], ["only", "Only these"], ["not", "Not these"]];
+  const CMODE_NAMES = [["any", "Any of these"], ["all", "Includes all"], ["only", "Only these"], ["exactly", "Exactly these"], ["not", "Not these"]];
+  const DEFMODE = CMODES ? "only" : "any";                                                    // COLOUR_MODES: "Only these" is the mode a page opens with
   const typesOf = ty => String(ty).split(" - ")[0].split(" ").filter(t => TYPES.indexOf(t) >= 0);
 
   // ---------------------------------------------------------------- facts (from CARDS, which the page already holds)
@@ -71,6 +81,11 @@
       if (m && !L.length) return n >= 2;
       for (const ch of col) if (L.indexOf(ch) < 0) return false;
       return !(m && n < 2);
+    }
+    if (mode === "exactly") {                                                                 // the card's colours are exactly the chosen letters (colourless: none, no letters)
+      if (c) return n === 0 && !L.length;
+      if (!L.length) return n >= 2;                                                           // only the multicolour chip is on
+      return n === L.length && L.every(l => col.indexOf(l) >= 0) && !(m && n < 2);
     }
     for (const l of L) if (col.indexOf(l) >= 0) return false;                                 // "not"
     return !(c && n === 0) && !(m && n >= 2);
@@ -125,10 +140,10 @@
   const sortMode = ctx => (POP ? ST.sort || (ctx === "sugg" ? "best" : "pop") : ST.sort);
   const rankOf = oid => { const m = typeof MI !== "undefined" && MI && MI.cards && MI.cards[oid]; return m && m[4] != null ? m[4] : null; };
   const popCmp = (x, y) => { const a = rankOf(x), b = rankOf(y); return (a == null) - (b == null) || (a || 0) - (b || 0) || cmp(factsOf(x).nm, factsOf(y).nm) || cmp(x, y); };
-  const fresh = () => ({ k: null, cols: new Set(), cmode: "any", types: new Set(), subs: new Set(), ab: { trig: new Set(), cost: new Set(), kind: new Set() }, mvs: new Set(), sort: POP ? prefSort() : "best", nar: [], nshow: 12, single: false, open: false, nopen: false });
+  const fresh = () => ({ k: null, cols: new Set(), cmode: DEFMODE, types: new Set(), subs: new Set(), ab: { trig: new Set(), cost: new Set(), kind: new Set() }, mvs: new Set(), sort: POP ? prefSort() : "best", nar: [], bk: new Map(), bshow: false, nshow: 12, single: false, open: false, nopen: false });
   let ST = fresh();
   const abN = () => ST.ab.trig.size + ST.ab.cost.size + ST.ab.kind.size;
-  const active = () => ST.cols.size || ST.types.size || ST.subs.size || abN() || ST.mvs.size || ST.nar.length;
+  const active = () => ST.cols.size || ST.types.size || ST.subs.size || abN() || ST.mvs.size || ST.nar.length || ST.bk.size;
   const abOk = oid => { for (const r of ["trig", "cost", "kind"]) if (ST.ab[r].size) { let ok = false; for (const k of ST.ab[r]) if (AP.has(k, oid)) { ok = true; break; } if (!ok) return false; } return true; };
   const subOk = (oid, subs) => { for (const k of subs) if (TG.has(k, oid)) return true; return false; };
   function pass(f, skip) {
@@ -139,7 +154,63 @@
     if (skip !== "mv" && ST.mvs.size && !ST.mvs.has(f.mvb)) return false;
     return true;
   }
-  function inAllNarrow(oid, idx) { for (const k of ST.nar) { const m = idx.mem.get(k); if (!m || !m.has(oid)) return false; } return true; }
+  function inAllNarrow(oid, idx, skipTopic) {
+    for (const k of ST.nar) { const m = idx.mem.get(k); if (!m || !m.has(oid)) return false; }
+    if (BKON && ST.bk.size) for (const [b, specs] of ST.bk) {
+      if (b === skipTopic) continue;
+      if (specs.length) { let ok = false; for (const k of specs) { const m = idx.mem.get(k); if (m && m.has(oid)) { ok = true; break; } } if (!ok) return false; }
+      else if (!bkSet(b).has(oid)) return false;
+    }
+    return true;
+  }
+
+  // ---------------------------------------------------------------- BROAD_NARROWING: topics (build/buckets/map.json, src/build_buckets.py)
+  let BKDOC = null, BKP = null, BKFAIL = false, BKMASK = null, BKCTX = { full: [], key: "" };
+  const BKM2 = new Map(), BKC = { sig: "", sets: null };
+  function fnv(items) {                                                                         // the same checksum as src/build_buckets.py
+    let h = 2166136261;
+    for (let i = 0; i < items.length; i++) {
+      if (i) { h ^= 10; h = Math.imul(h, 16777619) >>> 0; }
+      const s = items[i];
+      for (let j = 0; j < s.length; j++) { h ^= s.charCodeAt(j); h = Math.imul(h, 16777619) >>> 0; }
+    }
+    return ("00000000" + h.toString(16)).slice(-8);
+  }
+  function bkLoad() {
+    if (!BKON || BKP || BKFAIL || typeof MI === "undefined" || !MI) return;
+    BKP = J("buckets/map.json").then(d => {
+      const keys = Object.keys(MI.groups);
+      if (d.v !== 1 || d.sig !== fnv(keys) || d.m.length !== keys.length) throw new Error("buckets: built for another group list");
+      BKMASK = new Map(); keys.forEach((k, i) => { if (d.m[i]) BKMASK.set(k, d.m[i]); });
+      BKDOC = d;
+      try { barOnly(); } catch (e) { /* page changed */ }                                       // no topic is on yet, so the card list stays as it is: only the bar is drawn again
+    }).catch(e => { BKFAIL = true; BKP = null; if (window.console) console.error("buckets", e); });
+  }
+  function bkMask(k) {
+    if (!BKMASK) return 0;
+    let m = BKM2.get(k);
+    if (m != null) return m;
+    m = 0;
+    if (k.startsWith("P:")) { const pg = MERGED && MERGED.pageBy[k.slice(2)]; if (pg) for (const x of pg.members) m |= BKMASK.get(x.gid) || 0; }
+    else m = BKMASK.get(k) || 0;
+    BKM2.set(k, m);
+    return m;
+  }
+  // the cards of every topic: those in any group of it, not the page's own groups and not near-twins of the page (a group with one card counts)
+  function bkSet(b) {
+    const tag = IDXSIG + "|" + BKCTX.key + "|" + BKCTX.full.length + "|" + (BKDOC ? 1 : 0);          // IDXSIG is the signature of the index built last; buildIndex() itself is not called per card
+    if (BKC.sig !== tag || !BKC.sets) {
+      const idx = buildIndex(), own = ownKeys(BKCTX.key).own, tw = twinKeys(BKCTX.full, BKCTX.key, idx), sets = [];
+      for (let i = 0; i < 15; i++) sets.push(new Set());
+      if (BKDOC) for (const [k, mem] of idx.mem) {
+        if (own.has(k) || tw.has(k)) continue;
+        const m = bkMask(k); if (!m) continue;
+        for (let i = 0; i < 15; i++) if (m >> i & 1) for (const o of mem) sets[i].add(o);
+      }
+      BKC.sig = IDXSIG + "|" + BKCTX.key + "|" + BKCTX.full.length + "|" + (BKDOC ? 1 : 0); BKC.sets = sets;
+    }
+    return BKC.sets[b];
+  }
   const uniq = oids => { const s = new Set(), out = []; for (const o of oids) if (!s.has(o)) { s.add(o); out.push(o); } return out; };
 
   // ---------------------------------------------------------------- narrowing chips for a list of cards
@@ -247,11 +318,12 @@
   function summary(idx) {
     const p = [];
     for (const c of ST.cols) p.push(colName(c));
-    if (CMODES && ST.cols.size && ST.cmode !== "any") p.push(CMODE_NAMES.find(x => x[0] === ST.cmode)[1]);
+    if (CMODES && ST.cols.size && ST.cmode !== DEFMODE) p.push(CMODE_NAMES.find(x => x[0] === ST.cmode)[1]);
     for (const t of ST.types) p.push(t);
     for (const k of ST.subs) p.push(TG.name(k));
     if (ABON && window.AP) for (const r of ["trig", "cost", "kind"]) for (const k of ST.ab[r]) p.push(AP.name(k));
     for (const m of ST.mvs) p.push(m === "none" ? "No cost" : "MV " + m);
+    if (BKON && BKDOC) for (const [b, specs] of ST.bk) p.push(BKDOC.b[b][1] + (specs.length ? " (" + specs.length + ")" : ""));
     if (ST.nar.length) p.push(ST.nar.length + " group" + (ST.nar.length > 1 ? "s" : ""));
     return p.join(" · ");
   }
@@ -294,7 +366,8 @@
     const status = `Showing <b>${fmt(shown)}</b> of ${fmt(fullOids.length)}`;
     const sm = summary(idx);
     const nr = narrowHTML(ctx.list, fullOids, ctx.key, idx);
-    const nline = NNC ? `${nr.count} group${nr.count === 1 ? "" : "s"}${ST.nar.length ? " · " + ST.nar.length + " on" : ""}` : (ST.nar.length ? ST.nar.length + " on" : "none on");
+    const nline = BKON && BKDOC ? `${nr.count} topic${nr.count === 1 ? "" : "s"}${ST.nar.length + ST.bk.size ? " · " + (ST.nar.length + ST.bk.size) + " on" : ""}` :
+      NNC ? `${nr.count} group${nr.count === 1 ? "" : "s"}${ST.nar.length ? " · " + ST.nar.length + " on" : ""}` : (ST.nar.length ? ST.nar.length + " on" : "none on");
     return `<div class="fwrap" data-open="${ST.open ? 1 : 0}" data-nopen="${ST.nopen ? 1 : 0}">` +
       `<button type="button" class="fsum" data-f="fold" aria-expanded="${ST.open}"><span>Filter and sort</span><span class="fpills">${esc2(sm) || "none on"}</span><span>${status}</span><span aria-hidden="true">${ST.open ? "▾" : "▸"}</span></button>` +
       `<div class="fbar"><div class="frow"><span class="flab">Colour</span><div class="fgrp">${pipHTML}</div></div>${modeHTML}<div class="fnote">Card colour, not colour identity</div>` +
@@ -311,7 +384,52 @@
     const main = all.filter(c => c.n >= 2);
     return { all: all, vis: (ST.single ? all : main).slice(0, 60), total: (ST.single ? all : main).length, singles: all.length - main.length };
   }
+  // BROAD_NARROWING: the topic chips, a dropdown of specific groups under each chosen topic, and "Show all groups" for the flat chips
+  function topicsHTML(list, pageOids, key, idx) {
+    const cs = chipSet(list, pageOids, key), N = list.length, names = BKDOC.b;
+    const rows = [];
+    for (let b = 0; b < names.length; b++) {
+      const on = ST.bk.has(b);
+      let n = 0;
+      if (on) n = N; else { const set = bkSet(b); for (const o of list) if (set.has(o)) n++; }
+      if (!on && (n === 0 || n * 10 >= N * 9)) continue;
+      rows.push({ b: b, n: n, on: on });
+    }
+    rows.sort((x, y) => y.n - x.n || x.b - y.b);
+    const chH = rows.map(r => `<button type="button" class="fch${r.on ? " on x" : ""}" data-f="bk" data-v="${r.b}" aria-pressed="${r.on}" title="${esc2(names[r.b][2])} ${fmt(r.n)} cards are in any group of this topic, including groups with one card; this is not the sum of the groups listed.">${esc2(names[r.b][1])} <b>${fmt(r.n)}</b></button>`).join("");
+    let subs = "";
+    for (const [b, specs] of ST.bk) {
+      const skipList = pageOids.filter(o => pass(factsOf(o), null) && inAllNarrow(o, idx, b));
+      const any = skipList.filter(o => bkSet(b).has(o)).length;
+      const cand = chipsFor(skipList, pageOids, key).filter(c => (bkMask(c.key) >> b & 1) && specs.indexOf(c.key) < 0);
+      const main = cand.filter(c => c.n >= 2), singles = cand.length - main.length, vis = ST.single ? cand : main;
+      const opt = c => `<option value="${esc2(c.key)}">${c.loose ? "\u25cc " : ""}${esc2(c.label)} (${fmt(c.n)})</option>`;
+      const chk = vis.filter(c => !c.loose).map(opt).join(""), lo = vis.filter(c => c.loose).map(opt).join("");
+      const chosen = specs.map(k => `<button type="button" class="fch on x${idx.loose.get(k) ? " lo" : ""}" data-f="bksx" data-b="${b}" data-v="${esc2(k)}" title="Remove: ${esc2(idx.name.get(k))}">${esc2(clean(idx.name.get(k)))}</button>`).join("");
+      subs += `<div class="nsub" data-topic="${b}"><div class="frow"><span class="flab">${esc2(names[b][1])}</span>${chosen}</div>` +
+        `<div class="fnote nl">${specs.length ? "Any of the chosen groups." : `Any group in it: ${fmt(any)} cards, counting groups with one card.`}</div>` +
+        `<div class="fgrp"><select class="fsel" data-f="bks" data-b="${b}" aria-label="Add a specific group in ${esc2(names[b][1])}"><option value="">Add a specific group…</option>` +
+        (chk ? `<optgroup label="Checked groups">${chk}</optgroup>` : "") + (lo ? `<optgroup label="Grouped loosely (not checked)">${lo}</optgroup>` : "") + `</select>` +
+        (singles || ST.single ? `<button type="button" class="flink" data-f="single">${ST.single ? "Hide single-card groups" : `Show single-card groups (${fmt(singles)})`}</button>` : "") + `</div></div>`;
+    }
+    const none2 = cs.all.filter(c => !bkMask(c.key) && c.n >= 2).length, none1 = cs.all.filter(c => !bkMask(c.key) && c.n < 2).length;
+    const noneT = none2 || none1 ? `${fmt(none2)} group${none2 === 1 ? "" : "s"} here fit${none2 === 1 ? "s" : ""} no topic${none1 ? ` (${fmt(none1)} more with one card)` : ""}.` : "";
+    const selH = ST.nar.map(k => `<button type="button" class="fch on x${idx.loose.get(k) ? " lo" : ""}" data-f="narx" data-v="${esc2(k)}" title="Remove: ${esc2(idx.name.get(k))}">${esc2(clean(idx.name.get(k)))}</button>`).join("");
+    let flat = "";
+    if (ST.bshow) {
+      const chips = cs.vis, shown = chips.slice(0, ST.nshow);
+      const fh = shown.map(c => `<button type="button" class="fch${c.loose ? " lo" : ""}" data-f="nar" data-v="${esc2(c.key)}" title="${esc2(idx.name.get(c.key))}">${esc2(c.label)} <b>${fmt(c.n)}</b></button>`).join("");
+      const more = chips.length > shown.length ? `<button type="button" class="flink" data-f="nmore">Show more (${shown.length} of ${chips.length} shown)</button>` : "";
+      const single = cs.singles || ST.single ? `<button type="button" class="flink" data-f="single">${ST.single ? "Hide single-card groups" : `Show single-card groups (${fmt(cs.singles)})`}</button>` : "";
+      flat = `<div class="frow"><span class="flab">All groups</span></div><div class="fgrp">${fh}${more}${single}</div><div class="fnote nl">Every group, as before. Picking several here keeps only cards that are in all of them. Counts are for the cards showing now. Dashed means grouped loosely.</div>`;
+    }
+    return { count: rows.length, html: `<div class="nrow"><div class="frow"><span class="flab">Narrow by group</span>${selH}${ST.nar.length || ST.bk.size ? `<button type="button" class="flink" data-f="nclear">Clear</button>` : ""}</div>` +
+      `<div class="fgrp">${chH}</div>${subs}` +
+      `<div class="fnote nl">A topic is a set of groups, and a group can be in several. The number is how many of these cards are in any group of it. Topics together: a card must be in all of them. Groups inside one topic: any of them.</div>` +
+      `<div class="fstat"><span class="fnote nl">${noneT}</span><button type="button" class="flink" data-f="bkall">${ST.bshow ? "Hide all groups" : "Show all groups"}</button></div>${flat}</div>` };
+  }
   function narrowHTML(list, pageOids, key, idx) {
+    if (BKON) { bkLoad(); if (BKDOC) return topicsHTML(list, pageOids, key, idx); }
     const cs = chipSet(list, pageOids, key), chips = cs.vis;
     if (!chips.length && !ST.nar.length && !(NNC && cs.singles)) { if (!NNC) return { html: "", count: 0 }; }
     const selH = ST.nar.map(k => `<button type="button" class="fch on x${idx.loose.get(k) ? " lo" : ""}" data-f="narx" data-v="${esc2(k)}" title="Remove: ${esc2(idx.name.get(k))}">${esc2(clean(idx.name.get(k)))}</button>`).join("");
@@ -336,6 +454,7 @@
     if (!host) return;
     const fullOids = uniq(FULL.map(oidOf).filter(o => o != null));
     const idx = buildIndex();
+    BKCTX = { full: fullOids, key: LISTKEY };
     const items = filterItems(FULL);
     const list = uniq(items.map(oidOf).filter(o => o != null));
     LIST = items; LISTN = 0;
@@ -346,6 +465,14 @@
     if (typeof window.QMB_REFRESH === "function") window.QMB_REFRESH();                       // feature QUERY_MATCH_BLOCK: the block follows the filters
     void P; void idx;
   }
+  function barOnly() {
+    if (SCCUR && SCCUR.tab === "matches") { scRender(); return; }
+    const host = $("fwrap");
+    if (!host) return;
+    const fullOids = uniq(FULL.map(oidOf).filter(o => o != null)), list = uniq(LIST.map(oidOf).filter(o => o != null));
+    BKCTX = { full: fullOids, key: LISTKEY };
+    renderBarInto(host, fullOids, list.length, list, LISTKEY);
+  }
   function pinNote(list) {
     const w = $("pinwrap"); if (!w) return;
     const old = w.querySelector(".pinfilt"); if (old) old.remove();
@@ -353,6 +480,7 @@
   }
   const _setList = setList;
   setList = function (head, items, opts) {
+    if (BKON) bkLoad();                                                                        // ask for the topic map before the card pictures start to download
     _setList(head, items, opts);
     try {
       const P = $("panel"), vb = P.querySelector(".viewbar"), old = $("fwrap");
@@ -372,6 +500,7 @@
     const key = selected;
     if (ST.k !== key) { ST = fresh(); ST.k = key; }
     const idx = buildIndex(), all = uniq(rowsA.map(r => r.oid).concat(rowsB.map(r => r.oid)));
+    BKCTX = { full: all, key: key };
     const keepA = rowsA.filter(r => pass(factsOf(r.oid), null) && inAllNarrow(r.oid, idx)), keepB = rowsB.filter(r => pass(factsOf(r.oid), null) && inAllNarrow(r.oid, idx));
     const sm = sortMode("sugg");
     const ord = rows => sm === "best" ? rows : sm === "pop" ? rows.slice().sort((x, y) => popCmp(x.oid, y.oid)) : rows.slice().sort((x, y) => { const p = factsOf(x.oid), q = factsOf(y.oid); return sm === "name" ? cmp(p.nm, q.nm) || cmp(x.oid, y.oid) : (p.mv == null) - (q.mv == null) || (p.mv || 0) - (q.mv || 0) || cmp(p.nm, q.nm) || cmp(x.oid, y.oid); });
@@ -397,9 +526,12 @@
     else if (f === "single") { ST.single = !ST.single; }
     else if (f === "nar") { if (!ST.nar.includes(v)) ST.nar.push(v); }
     else if (f === "narx") ST.nar = ST.nar.filter(k => k !== v);
-    else if (f === "nclear") ST.nar = [];
+    else if (f === "nclear") { ST.nar = []; ST.bk.clear(); }
+    else if (f === "bk") { const t = Number(v); if (ST.bk.has(t)) ST.bk.delete(t); else ST.bk.set(t, []); }
+    else if (f === "bksx") { const t = Number(b.dataset.b), a = ST.bk.get(t); if (a) ST.bk.set(t, a.filter(k => k !== v)); }
+    else if (f === "bkall") ST.bshow = !ST.bshow;
     else if (f === "nmore") ST.nshow = Math.min(NNC ? 60 : 1e9, ST.nshow + 12);
-    else if (f === "clear") { ST.cols.clear(); ST.types.clear(); ST.subs.clear(); for (const r of ["trig", "cost", "kind"]) ST.ab[r].clear(); ST.mvs.clear(); ST.nar = []; ST.cmode = "any"; }
+    else if (f === "clear") { ST.cols.clear(); ST.types.clear(); ST.subs.clear(); for (const r of ["trig", "cost", "kind"]) ST.ab[r].clear(); ST.mvs.clear(); ST.nar = []; ST.bk.clear(); ST.cmode = DEFMODE; }
     else if (f === "fold") ST.open = !ST.open;
     else if (f === "nfold") ST.nopen = !ST.nopen;
     else return;
@@ -412,6 +544,7 @@
     if (s.dataset.f === "sort") { ST.sort = s.value; if (POP) { try { localStorage.setItem("sortPref", s.value); } catch (err) { /* storage unavailable: the choice lasts for this page only */ } } refresh(); }
     else if (s.dataset.f === "cmodesel") { ST.cmode = s.value; if (s.value === "only") ST.cols.delete("M"); refresh(); }
     else if (s.dataset.f === "ab" && ABON) { const v = s.value, r = s.dataset.r; if (v && ST.ab[r]) AP.loadPages([v]).then(() => { ST.ab[r].add(v); refresh(); }); }
+    else if (s.dataset.f === "bks" && BKON) { const v = s.value, t = Number(s.dataset.b), a = ST.bk.get(t); if (v && a && a.indexOf(v) < 0) { a.push(v); refresh(); } }
     else if (s.dataset.f === "sub") { const v = s.value; if (v) TG.loadMembers().then(() => { ST.subs.add(v); refresh(); }); }
   }, true);
   const _scSetTab = scSetTab;
@@ -420,6 +553,7 @@
   window.TF = { enabled: true, sugg: sugg, items: () => FULL.slice(), shownItems: () => LIST.slice(), refresh: refresh, state: () => ST, full: () => uniq(FULL.map(oidOf).filter(o => o != null)), shown: () => uniq(LIST.map(oidOf).filter(o => o != null)),
     chips: () => { const idx = buildIndex(), full = uniq(FULL.map(oidOf).filter(o => o != null)); return chipSet(uniq(LIST.map(oidOf).filter(o => o != null)), full, LISTKEY).vis.map(c => ({ key: c.key, label: c.label, n: c.n, name: idx.name.get(c.key), loose: c.loose })); },
     chipsAll: () => { const idx = buildIndex(), full = uniq(FULL.map(oidOf).filter(o => o != null)); return chipsFor(uniq(LIST.map(oidOf).filter(o => o != null)), full, LISTKEY).map(c => ({ key: c.key, label: c.label, n: c.n, size: c.size, name: idx.name.get(c.key) })); },
+    topics: () => (BKDOC ? { doc: BKDOC, mask: bkMask, set: bkSet, state: () => [...ST.bk].map(([b, a]) => [b, a.slice()]) } : null),
     members: key => buildIndex().mem.get(key) || new Set(), reset: () => { ST = fresh(); ST.k = selected; },
     colOk: colOk, facts: oid => { const f = factsOf(oid); return { col: f.col, ts: f.ts.slice(), mv: f.mv }; },
     invalidate: () => { FACTS.clear(); },                                              // FLIP_FACES: the faces arrived after the first facts were read
