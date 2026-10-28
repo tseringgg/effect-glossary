@@ -32,6 +32,9 @@ TYPE_FILES = ["typegroups.js", "typegroups.css"]                  # feature TYPE
 TYPE_BUILD = ["type_groups/index.json", "type_groups/members.json"]   # the index is read at the first search / when the "Card types" folder opens, the members when a type page opens
 FLIP_FILES = ["flipfaces.js", "flipfaces.css"]                    # feature FLIP_FACES: the flip control, either face searchable
 FLIP_BUILD = ["faces/faces.json"]
+AB_FILES = ["abilitypages.js", "abilitypages.css"]               # feature ABILITY_TYPE_PAGES: ability-type pages (ABILITY_TYPE_FILTERS changes only testerfilters.js and needs it)
+AB_BUILD = ["ability_pages/index.json"]                          # the index is read when the "Ability types" folder opens / at the first search; the pages (ability_pages/p/*.json) when one opens
+AB_LAZY = ("ability_pages/p", r"^[a-z0-9.\-]+\.json$")
 # NARROW_NO_CUT and COLOUR_MODES change only reports/testerfilters.js (and need TESTER_FILTERS): they add no file
 CONFIG_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "reports", "config.js")
 
@@ -50,6 +53,8 @@ def pages_for(path=None):
         files += TYPE_FILES; build += TYPE_BUILD
     if flag_on(path, "FLIP_FACES"):
         files += FLIP_FILES; build += FLIP_BUILD
+    if flag_on(path, "ABILITY_TYPE_PAGES"):
+        files += AB_FILES; build += AB_BUILD
     return files, build
 
 
@@ -67,9 +72,10 @@ CORE_BUILD_BASE = [
     "group_search/meta.json", "group_search/index.json", "group_search/words.txt",
 ]
 CORE_BUILD = CORE_BUILD_BASE + EXTRA_BUILD
-LAZY_RULES = [                                   # (directory under build/, regex on the file name): read on demand by the tester page
+LAZY_BASE = [                                    # (directory under build/, regex on the file name): read on demand by the tester page
     ("suggested_cards/g", r"^\d+q\.json$"), ("suggested_cards/t", r"^\d+q\.json$"), ("text_sug/l", r"^\d+\.json$"),
 ]
+LAZY_RULES = LAZY_BASE + ([AB_LAZY] if flag_on(None, "ABILITY_TYPE_PAGES") else [])
 GENERATED = ["build/hand_view.json", "index.html", "manifest.json"]
 # read by the dev page only (editing, batch, queue, parse audit, the "Left out" list): never exported
 DEV_ONLY_JSON = {"index.json", "manual_suggestions.json", "manual_fallback.json", "card_flags.json", "text_sug/queue.json"}
@@ -292,6 +298,7 @@ def main():
         SRC_OVERRIDE["config.js"] = os.path.abspath(a.config)
         PAGE_FILES, EXTRA_BUILD = pages_for(a.config)
         CORE_BUILD = CORE_BUILD_BASE + EXTRA_BUILD
+        LAZY_RULES[:] = LAZY_BASE + ([AB_LAZY] if flag_on(a.config, "ABILITY_TYPE_PAGES") else [])
     out = a.out if os.path.isabs(a.out) else os.path.join(HERE, a.out)
     out = os.path.normpath(out)
 
@@ -310,7 +317,11 @@ def main():
     if EXTRA_BUILD and not a.check:
         sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
         import build_type_groups                     # deterministic: the same MTGJSON file and card list give the same bytes; an unchanged file is not rewritten
-        build_type_groups.write()
+        if flag_on(None if not a.config else a.config, "TYPE_GROUPS") or flag_on(None if not a.config else a.config, "FLIP_FACES"):
+            build_type_groups.write()
+        if flag_on(None if not a.config else a.config, "ABILITY_TYPE_PAGES"):
+            import build_ability_pages                 # deterministic as well; writes only build/ability_pages/
+            build_ability_pages.write()
     files = plan()
     cfg = open(page_src("config.js"), encoding="utf-8").read()
     placeholder = "REPLACE-ME" in cfg

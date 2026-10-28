@@ -43,7 +43,7 @@ BEFORE = os.path.join(HERE, "src", "testdata", "before_features")
 READY = ("document.body.classList.contains('tester') && typeof HG !== 'undefined' && !!HG && !!SIB && !!SC && !!MI && !!CARDS && !!UNORG && !!LOOSE && !!TENT && !!TAGS && !!ANN && GSON === true && PINON === true && !!MERGED"
          " && typeof TF !== 'undefined'")
 NL = "String.fromCharCode(10)"
-DIRS = {k: os.path.join(HERE, "dist." + k) for k in ("feat", "feat2", "off", "old")}
+DIRS = {k: os.path.join(HERE, "dist." + k) for k in ("feat", "feat2", "off", "offp", "old")}
 ST_TWO = {"transform", "modal_dfc", "adventure", "split", "flip", "prepare"}
 # colour-mode counts over all 33,183 cards, worked out before the build by a separate script (Part 1 of the work): selection -> (any, all, only, not)
 COLOUR_TABLE = {"W+U": (13177, 704, 10218, 20006), "C": (4121, 4121, 4121, 29062), "M": (4575, 4575, 4575, 28608), "W": (7020, 7020, 5002, 26163), "W+M": (9577, 2018, 0, 23606),
@@ -80,6 +80,19 @@ def export_to(out, config=None, features=True):
     cmd = [sys.executable, "-I", os.path.join(HERE, "src", "export_static.py"), "--out", os.path.relpath(out, HERE)] + (["--config", config] if config else [])
     r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", cwd=HERE)
     return r.returncode, r.stdout + r.stderr
+
+
+ABILITY_FLAGS = ("ABILITY_TYPE_PAGES", "ABILITY_TYPE_FILTERS")      # the ability-type pages and filters (src/test_ability_pages.py tests them); this file tests the page without them, as it was
+
+
+def ability_off_config():
+    """reports/config.js as it is, with only the two ability-type flags switched off (the 'flags on' arm of this file: its own flags on, the later ones off)."""
+    import tempfile
+    txt = open(os.path.join(HERE, "reports", "config.js"), encoding="utf-8").read()
+    for f in ABILITY_FLAGS:
+        txt = re.sub(r"\b%s\s*:\s*true" % f, "%s: false" % f, txt)
+    t = tempfile.NamedTemporaryFile("w", suffix=".js", delete=False, encoding="utf-8"); t.write(txt); t.close()
+    return t.name
 
 
 def files_of(root):
@@ -168,9 +181,10 @@ def main():
     check("faces.json: 861 two-faced cards, two faces each, sig matches", len(fc["cards"]) == 861 and all(len(v["f"]) == 2 for v in fc["cards"].values()) and fc["sig"] == tg["sig"], len(fc["cards"]))
 
     # ------------------------------------------------------------ 2. exports
-    rc, out = export_to(DIRS["feat"])
+    ab_off = ability_off_config()
+    rc, out = export_to(DIRS["feat"], ab_off)
     check("export (flags on) succeeds", rc == 0, out[-300:])
-    rc2, out2 = export_to(DIRS["feat2"])
+    rc2, out2 = export_to(DIRS["feat2"], ab_off)
     check("export (flags on), again, succeeds", rc2 == 0, out2[-300:])
     a, b = files_of(DIRS["feat"]), files_of(DIRS["feat2"])
     check("two flags-on exports: every file byte-identical (%d files)" % len(a), a == b, [k for k in set(a) | set(b) if a.get(k) != b.get(k)][:4])
@@ -189,7 +203,7 @@ def main():
     check("flags on adds exactly the 7 whitelisted files %s" % new, new == exp_new, new)
     other = sorted(k for k in offf if k in a and offf[k] != a[k] and k != "manifest.json")
     check("flags on, against flags off, changes no existing file but config.js %s (the scripts are the same files)" % other, other == ["reports/config.js"], other)
-    rcc = subprocess.run([sys.executable, "-I", os.path.join(HERE, "src", "export_static.py"), "--check", "--out", os.path.relpath(DIRS["feat"], HERE)], capture_output=True, text=True, cwd=HERE)
+    rcc = subprocess.run([sys.executable, "-I", os.path.join(HERE, "src", "export_static.py"), "--check", "--config", ab_off, "--out", os.path.relpath(DIRS["feat"], HERE)], capture_output=True, text=True, cwd=HERE)
     check("export_static.py --check passes on the flags-on export", rcc.returncode == 0, rcc.stdout + rcc.stderr)
     blob = " ".join(open(os.path.join(DIRS["feat"], "reports", n), encoding="utf-8").read() for n in ("typegroups.js", "flipfaces.js"))
     check("the new page files name no private path (corrections, backups, archive, manual_placements, /api/)", not re.search(r"corrections|backups|archive|manual_placements|/api/", blob))
@@ -203,11 +217,16 @@ def main():
     check("the six figures are unchanged %s" % got, got == T.FIGURES)
 
     # ------------------------------------------------------------ 3. flags off: the page the same as before (current scripts vs the saved pre-feature scripts)
+    # the pre-feature scripts predate the three popularity flags too, so both pages in this comparison run with those off (same config.js in both: only tester.js and testerfilters.js differ)
     shutil.copytree(DIRS["off"], DIRS["old"])
+    shutil.copytree(DIRS["off"], DIRS["offp"])
     for n in ("tester.js", "testerfilters.js"):
         shutil.copyfile(os.path.join(BEFORE, n), os.path.join(DIRS["old"], "reports", n))
+    for root in (DIRS["old"], DIRS["offp"]):
+        with open(os.path.join(root, "reports", "config.js"), "w", encoding="utf-8", newline="") as fh:
+            fh.write(T.flags_off_text(extra_off=("DEFAULT_POPULARITY", "ACTIVE_GROUP_HIGHLIGHT", "QUERY_MATCH_BLOCK")))
     runs = {}
-    for label, root in (("now", DIRS["off"]), ("before", DIRS["old"])):
+    for label, root in (("now", DIRS["offp"]), ("before", DIRS["old"])):
         s, ok = boot(root)
         c = s.c
         try:

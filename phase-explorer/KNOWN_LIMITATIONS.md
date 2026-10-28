@@ -1220,6 +1220,25 @@ Four tester-site features, each behind a flag in `reports/config.js` (`TYPE_GROU
 
 **Flip.** The card view opens on the first face and flips picture and text for transform and modal cards (487), text only for adventure, split, aftermath, flip and prepare cards (one picture shows both halves). The card search finds a card by either face's name (39 face names could not be found before). With `FLIP_FACES` on the filters read both faces (colour and type: the union; mana value stays the page face's), so 56 cards the page called colourless are not. Not covered: meld cards (the melded result is its own card).
 
+## 34. Ability-type pages and filters: pages and filters, never placements (2026-10-27)
+
+Flags `ABILITY_TYPE_PAGES` (the "Ability types" folder and search entries) and `ABILITY_TYPE_FILTERS` (the Trigger, Cost and Kind rows of the filter bar), both in `reports/config.js`, tester mode only. 42 pages: 18 triggered, 9 activated, 11 static, 4 replacement. They are in no group, no leaf, no placement and no figure; the six figures do not move. Membership is by ability (a card is on a page once for each of its abilities the page's rule accepts) and each row shows the card's own rules line. Built by `src/build_ability_pages.py` into `build/ability_pages/` (one small file per page, loaded when it opens).
+
+**What the pages cannot see.**
+- **Ability-word activations.** Lines such as "Max speed —", "Grandeur —" and "Threshold —" are parsed as spells with no cost, so the activated (cost) pages miss them. (Some ability-word lines do parse with a cost, such as "Power-up —" and "Exhaust —", and are on the pages.)
+- **Partly read abilities.** 1,995 of the 30,915 page members (6.5%) hold an Unimplemented node somewhere: the part that puts them on the page is understood, something else in them was not. The page head says "only partly read" with the count. Across the 33,183 in-scope cards, 3,855 have an Unimplemented node somewhere in their parse and 690 have a trigger whose mode is Unknown.
+- **Text-only candidates left out on purpose.** About 53 cards have a "Whenever", "When" or "At the beginning" line, or a "cost:" line, with no parsed ability of that kind (a rough re-count gives 54). Putting them on a page by their text would make the pages a second, unchecked reading of the card, so they are left out.
+- **Keyword abilities** (Equip, cycling and the like) are not on the cost pages; a card appears there only through an ability with a cost and a description.
+- **Row lines.** The row shows the card's own line. 29,097 of 29,263 ability rows (99.4%) resolve to a line; of the 939 whose parser description uses "~" for the card's name, 914 (97.3%) do. The rest show the parser's wording instead.
+
+**Phase 2 list (parser gaps seen while reading the pages).**
+1. A triggered ability stored as a replacement effect.
+2. Boon cards (Alchemy) read as something else.
+3. A triggered ability read as an Unimplemented spell (for example Anrakyr the Traveller and Mortarion, Daemon Primarch).
+4. An activated ability read as an Unimplemented spell: the variable loyalty cost on Nahiri, Storm of Stone ("[−X]:") is on no Loyalty page for that reason.
+
+**Page names.** "Leaves for another place instead of the graveyard" (`repl.dies-exile`) covers Rest in Peace style exile and Progenitus style shuffle-away, so it no longer says "exiled".
+
 ## Reproducing these numbers
 
 ```

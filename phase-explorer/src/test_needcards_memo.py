@@ -3,7 +3,7 @@
 
     python src/test_needcards_memo.py
 
-Serves the project folder as it is (reports/ and build/), beside a temporary copy of the committed browse.html (reports/browse_old_tmp.html, removed at the end).
+Serves the project folder as it is (reports/ and build/), beside a temporary copy of browse.html as it was before the memoization commit (the parent of f5c40d9) (reports/browse_old_tmp.html, removed at the end).
 For ?dev=1 and the tester page, on a deep link and with no hash, the old and new page are compared: the DOM after the same steps, the distinct requests, the console, and how many
 times cards.json and members.json are requested (cache ON). Protected files are hashed before and after; nothing is written but the temporary copy.
 """
@@ -46,9 +46,13 @@ def run(old, query, hash_, ready):
         s.close()
 
 
+# the commit that made needCards() share one load (HEAD at the time of writing): the page before it is the "old" page, so the comparison stays the same once more commits follow
+MEMO_COMMIT = "f5c40d9"
+
+
 def main():
     before = T.protected()
-    r = subprocess.run("git show HEAD:./browse.html", cwd=os.path.join(HERE, "reports"), capture_output=True, shell=True)
+    r = subprocess.run("git show %s~1:./browse.html" % MEMO_COMMIT, cwd=os.path.join(HERE, "reports"), capture_output=True, shell=True)
     src = r.stdout
     if not src:
         raise SystemExit("could not read the committed browse.html: " + r.stderr.decode(errors="replace"))

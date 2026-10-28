@@ -72,9 +72,22 @@ def files_of(root):
     return {os.path.relpath(p, root).replace("\\", "/"): T.sha(p) for p in T.walk(root)}
 
 
+ABILITY_FLAGS = ("ABILITY_TYPE_PAGES", "ABILITY_TYPE_FILTERS")      # the ability-type pages and filters (src/test_ability_pages.py tests them); this file tests the page without them, as it was
+
+
+def ability_off_config():
+    """reports/config.js as it is, with only the two ability-type flags switched off (the 'flags on' arm of this file: its own flags on, the later ones off)."""
+    import tempfile
+    txt = open(os.path.join(HERE, "reports", "config.js"), encoding="utf-8").read()
+    for f in ABILITY_FLAGS:
+        txt = re.sub(r"\b%s\s*:\s*true" % f, "%s: false" % f, txt)
+    t = tempfile.NamedTemporaryFile("w", suffix=".js", delete=False, encoding="utf-8"); t.write(txt); t.close()
+    return t.name
+
+
 def flags_off_cfg():
     txt = open(os.path.join(HERE, "reports", "config.js"), encoding="utf-8").read()
-    for f in FLAGS:
+    for f in FLAGS + ABILITY_FLAGS:
         txt = re.sub(r"\b%s\s*:\s*true" % f, "%s: false" % f, txt)
     import tempfile
     t = tempfile.NamedTemporaryFile("w", suffix=".js", delete=False, encoding="utf-8"); t.write(txt); t.close()
@@ -182,8 +195,8 @@ def main():
     before = T.protected()
     cleanup()
     # ------------------------------------------------------------ 1. exports
-    rc, out = export_to(DIRS["pop"]); check("export (flags on) succeeds", rc == 0, out[-300:])
-    rc, out = export_to(DIRS["pop2"]); check("export (flags on), again, succeeds", rc == 0, out[-300:])
+    rc, out = export_to(DIRS["pop"], ability_off_config()); check("export (flags on) succeeds", rc == 0, out[-300:])
+    rc, out = export_to(DIRS["pop2"], ability_off_config()); check("export (flags on), again, succeeds", rc == 0, out[-300:])
     a, b = files_of(DIRS["pop"]), files_of(DIRS["pop2"])
     check("two flags-on exports: every file byte-identical (%d files)" % len(a), a == b, [k for k in set(a) | set(b) if a.get(k) != b.get(k)][:4])
     shutil.rmtree(DIRS["pop2"])
@@ -200,7 +213,7 @@ def main():
     check("flags on, against flags off, changes no file but config.js %s (the scripts are the same files)" % other, other == ["reports/config.js"], other)
     css = [k for k in a if k.endswith(".css") and a[k] != offf.get(k)]
     check("no stylesheet differs (the new rules are added by the script, only while a flag is on)", not css, css)
-    rcc = subprocess.run([sys.executable, "-I", os.path.join(HERE, "src", "export_static.py"), "--check", "--out", os.path.relpath(DIRS["pop"], HERE)], capture_output=True, text=True, cwd=HERE)
+    rcc = subprocess.run([sys.executable, "-I", os.path.join(HERE, "src", "export_static.py"), "--check", "--config", ability_off_config(), "--out", os.path.relpath(DIRS["pop"], HERE)], capture_output=True, text=True, cwd=HERE)
     check("export_static.py --check passes on the flags-on export", rcc.returncode == 0, rcc.stdout + rcc.stderr)
     blob = " ".join(open(os.path.join(DIRS["pop"], "reports", n), encoding="utf-8").read() for n in ("tester.js", "testerfilters.js"))
     old_blob = " ".join(open(os.path.join(BEFORE, n), encoding="utf-8").read() for n in ("tester.js", "testerfilters.js"))

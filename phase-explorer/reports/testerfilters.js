@@ -32,7 +32,7 @@
   const mobile = () => window.matchMedia("(max-width: 800px)").matches;
   const cmp = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
   const FLG = window.APP_CONFIG || {};
-  const NNC = FLG.NARROW_NO_CUT === true, CMODES = FLG.COLOUR_MODES === true, TGON = FLG.TYPE_GROUPS === true;
+  const NNC = FLG.NARROW_NO_CUT === true, CMODES = FLG.COLOUR_MODES === true, TGON = FLG.TYPE_GROUPS === true, ABON = FLG.ABILITY_TYPE_PAGES === true && FLG.ABILITY_TYPE_FILTERS === true;
   const POP = FLG.DEFAULT_POPULARITY === true;
   if (CMODES) {                                                                              // the match-mode rules live here, so testerfilters.css is the file it always was
     const st = document.createElement("style");
@@ -125,14 +125,17 @@
   const sortMode = ctx => (POP ? ST.sort || (ctx === "sugg" ? "best" : "pop") : ST.sort);
   const rankOf = oid => { const m = typeof MI !== "undefined" && MI && MI.cards && MI.cards[oid]; return m && m[4] != null ? m[4] : null; };
   const popCmp = (x, y) => { const a = rankOf(x), b = rankOf(y); return (a == null) - (b == null) || (a || 0) - (b || 0) || cmp(factsOf(x).nm, factsOf(y).nm) || cmp(x, y); };
-  const fresh = () => ({ k: null, cols: new Set(), cmode: "any", types: new Set(), subs: new Set(), mvs: new Set(), sort: POP ? prefSort() : "best", nar: [], nshow: 12, single: false, open: false, nopen: false });
+  const fresh = () => ({ k: null, cols: new Set(), cmode: "any", types: new Set(), subs: new Set(), ab: { trig: new Set(), cost: new Set(), kind: new Set() }, mvs: new Set(), sort: POP ? prefSort() : "best", nar: [], nshow: 12, single: false, open: false, nopen: false });
   let ST = fresh();
-  const active = () => ST.cols.size || ST.types.size || ST.subs.size || ST.mvs.size || ST.nar.length;
+  const abN = () => ST.ab.trig.size + ST.ab.cost.size + ST.ab.kind.size;
+  const active = () => ST.cols.size || ST.types.size || ST.subs.size || abN() || ST.mvs.size || ST.nar.length;
+  const abOk = oid => { for (const r of ["trig", "cost", "kind"]) if (ST.ab[r].size) { let ok = false; for (const k of ST.ab[r]) if (AP.has(k, oid)) { ok = true; break; } if (!ok) return false; } return true; };
   const subOk = (oid, subs) => { for (const k of subs) if (TG.has(k, oid)) return true; return false; };
   function pass(f, skip) {
     if (skip !== "col" && ST.cols.size && !colOk(f.col, ST.cols, ST.cmode)) return false;
     if (skip !== "type" && ST.types.size) { let ok = false; for (const t of ST.types) if (f.ts.indexOf(t) >= 0) { ok = true; break; } if (!ok) return false; }
     if (skip !== "sub" && ST.subs.size && !subOk(f.oid, ST.subs)) return false;
+    if (ABON && skip !== "ab" && abN() && !abOk(f.oid)) return false;
     if (skip !== "mv" && ST.mvs.size && !ST.mvs.has(f.mvb)) return false;
     return true;
   }
@@ -247,6 +250,7 @@
     if (CMODES && ST.cols.size && ST.cmode !== "any") p.push(CMODE_NAMES.find(x => x[0] === ST.cmode)[1]);
     for (const t of ST.types) p.push(t);
     for (const k of ST.subs) p.push(TG.name(k));
+    if (ABON && window.AP) for (const r of ["trig", "cost", "kind"]) for (const k of ST.ab[r]) p.push(AP.name(k));
     for (const m of ST.mvs) p.push(m === "none" ? "No cost" : "MV " + m);
     if (ST.nar.length) p.push(ST.nar.length + " group" + (ST.nar.length > 1 ? "s" : ""));
     return p.join(" · ");
@@ -258,6 +262,15 @@
     const chips = [...ST.subs].map(k => `<button type="button" class="fch on x" data-f="subx" data-v="${esc2(k)}" title="Remove: ${esc2(TG.name(k))}">${esc2(TG.name(k))}</button>`).join("");
     return `<div class="frow"><span class="flab">Subtype</span><div class="fgrp">${chips}<select class="fsel" data-f="sub" aria-label="Add a subtype or supertype"><option value="">Add a subtype or supertype…</option>${TG.options(ST.subs)}</select></div></div>` +
       `<div class="fnote">Any of the chosen. A card counts if either face has it.</div>`;
+  }
+  function abRows() {
+    if (!(ABON && window.AP && AP.enabled)) return "";
+    if (!AP.ready()) { AP.loadIndex().then(() => { try { refresh(); } catch (e) { /* page changed */ } }); return ""; }
+    const lab = { trig: "Add a trigger…", cost: "Add a cost…", kind: "Add a static or replacement kind…" };
+    return AP.rows.map(([r, label]) => {
+      const chips = [...ST.ab[r]].map(k => `<button type="button" class="fch on x" data-f="abx" data-r="${r}" data-v="${esc2(k)}" title="Remove: ${esc2(AP.name(k))}">${esc2(AP.name(k))}</button>`).join("");
+      return `<div class="frow"><span class="flab">${label}</span><div class="fgrp">${chips}<select class="fsel" data-f="ab" data-r="${r}" aria-label="${lab[r]}"><option value="">${lab[r]}</option>${AP.options(r, ST.ab[r])}</select></div></div>`;
+    }).join("") + `<div class="fnote">Trigger, Cost and Kind: any of the chosen inside a row, all rows together. Cards the parser couldn’t read aren’t included.</div>`;
   }
   function popSortHTML(ctx) {
     const cur = sortMode(ctx && ctx.sugg ? "sugg" : "list"), o = [["pop", "Most popular first"], ["best", "Default order"], ["mv", "Mana value"], ["name", "Name"]];
@@ -285,7 +298,7 @@
     return `<div class="fwrap" data-open="${ST.open ? 1 : 0}" data-nopen="${ST.nopen ? 1 : 0}">` +
       `<button type="button" class="fsum" data-f="fold" aria-expanded="${ST.open}"><span>Filter and sort</span><span class="fpills">${esc2(sm) || "none on"}</span><span>${status}</span><span aria-hidden="true">${ST.open ? "▾" : "▸"}</span></button>` +
       `<div class="fbar"><div class="frow"><span class="flab">Colour</span><div class="fgrp">${pipHTML}</div></div>${modeHTML}<div class="fnote">Card colour, not colour identity</div>` +
-      `<div class="frow"><span class="flab">Type</span><div class="fgrp">${typeHTML}</div></div>` + subRow() +
+      `<div class="frow"><span class="flab">Type</span><div class="fgrp">${typeHTML}</div></div>` + subRow() + abRows() +
       `<div class="frow"><span class="flab">Mana value</span><div class="fgrp">${mvHTML}</div></div>` +
       `<div class="frow"><span class="flab">Sort</span>${sortHTML}</div>` +
       `<div class="fstat"><span>${status}</span>${active() ? `<button type="button" class="flink" data-f="clear">Clear filters</button>` : ""}</div></div>` +
@@ -380,12 +393,13 @@
     if (f === "col" || f === "type" || f === "mv") { const s = f === "col" ? ST.cols : f === "type" ? ST.types : ST.mvs; if (s.has(v)) s.delete(v); else s.add(v); }
     else if (f === "cmode") { ST.cmode = v; if (v === "only") ST.cols.delete("M"); }
     else if (f === "subx") ST.subs.delete(v);
+    else if (f === "abx") { for (const r of ["trig", "cost", "kind"]) ST.ab[r].delete(v); }
     else if (f === "single") { ST.single = !ST.single; }
     else if (f === "nar") { if (!ST.nar.includes(v)) ST.nar.push(v); }
     else if (f === "narx") ST.nar = ST.nar.filter(k => k !== v);
     else if (f === "nclear") ST.nar = [];
     else if (f === "nmore") ST.nshow = Math.min(NNC ? 60 : 1e9, ST.nshow + 12);
-    else if (f === "clear") { ST.cols.clear(); ST.types.clear(); ST.subs.clear(); ST.mvs.clear(); ST.nar = []; ST.cmode = "any"; }
+    else if (f === "clear") { ST.cols.clear(); ST.types.clear(); ST.subs.clear(); for (const r of ["trig", "cost", "kind"]) ST.ab[r].clear(); ST.mvs.clear(); ST.nar = []; ST.cmode = "any"; }
     else if (f === "fold") ST.open = !ST.open;
     else if (f === "nfold") ST.nopen = !ST.nopen;
     else return;
@@ -397,6 +411,7 @@
     if (!s || !$("panel").contains(s)) return;
     if (s.dataset.f === "sort") { ST.sort = s.value; if (POP) { try { localStorage.setItem("sortPref", s.value); } catch (err) { /* storage unavailable: the choice lasts for this page only */ } } refresh(); }
     else if (s.dataset.f === "cmodesel") { ST.cmode = s.value; if (s.value === "only") ST.cols.delete("M"); refresh(); }
+    else if (s.dataset.f === "ab" && ABON) { const v = s.value, r = s.dataset.r; if (v && ST.ab[r]) AP.loadPages([v]).then(() => { ST.ab[r].add(v); refresh(); }); }
     else if (s.dataset.f === "sub") { const v = s.value; if (v) TG.loadMembers().then(() => { ST.subs.add(v); refresh(); }); }
   }, true);
   const _scSetTab = scSetTab;

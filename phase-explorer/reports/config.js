@@ -18,6 +18,10 @@
  *   ACTIVE_GROUP_HIGHLIGHT  true: the open group stays marked in the search results and the tree until another group opens.
  *   QUERY_MATCH_BLOCK       true: a group opened from a search row that matched by its description shows the cards whose own ability line has the query's words, above its list.
  *                           Each of these three adds no file and no request: absent or false means the page behaves, requests and exports exactly as before the flag existed.
+ *   ABILITY_TYPE_PAGES      true: an "Ability types" area beside "Card types" (triggered, activated, static, replacement abilities, by trigger, cost and kind), in the left column and in the search.
+ *                           Files: abilitypages.js/.css, build/ability_pages/index.json and one small file per page under build/ability_pages/p/. Filters and pages, never placements.
+ *   ABILITY_TYPE_FILTERS    true: "Trigger", "Cost" and "Kind" rows in the filter bar (changes only testerfilters.js; needs TESTER_FILTERS and ABILITY_TYPE_PAGES).
+ *                           Each of these two: absent or false means the page behaves, requests and exports exactly as before the flag existed.
  */
 window.APP_CONFIG = {
   feedbackUrl: "https://discord.gg/DUwMhDCcMg",
@@ -31,5 +35,7 @@ window.APP_CONFIG = {
   FLIP_FACES: true,
   DEFAULT_POPULARITY: true,
   ACTIVE_GROUP_HIGHLIGHT: true,
-  QUERY_MATCH_BLOCK: true
+  QUERY_MATCH_BLOCK: true,
+  ABILITY_TYPE_PAGES: true,
+  ABILITY_TYPE_FILTERS: true
 };
