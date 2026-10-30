@@ -25,6 +25,21 @@
  *   BROAD_NARROWING         true: the first level of "Narrow by group" is 15 topics (Card draw, Counters, Tokens, ...), each with a dropdown of its specific groups; the flat chips are behind "Show all groups".
  *                           Topics are filters, never placements. Needs TESTER_FILTERS and NARROW_NO_CUT. Adds one data file, build/buckets/map.json (src/build_buckets.py); changes only testerfilters.js.
  *                           Absent or false means the page behaves, requests and exports exactly as before the flag existed.
+ *   MODAL_ABILITIES         true: the large card view gets an "Abilities" block under "In these groups": the ability pages the card is on (triggered, activated, static, replacement) as chips, each with the card's own line,
+ *                           and its keyword abilities as chips to the keyword pages. Needs ABILITY_TYPE_PAGES; follows the Flip control when FLIP_FACES is on. Files: modalabilities.js/.css and
+ *                           build/ability_pages/cards.json (src/build_ability_cards.py), read the first time a card opens. Filters and links, never placements.
+ *                           Absent or false means the page behaves, requests and exports exactly as before the flag existed.
+ *   PERSIST_FILTERS         true: colour, colour match, type and mana value stay on when another group opens (this browser tab only; sort keeps its own memory). Narrowing, Subtype and Trigger/Cost/Kind start
+ *                           empty on each group. A line over the bar names the kept filters with "Clear all"; an empty list says so; a pinned card the filters hide says which. Needs TESTER_FILTERS; changes only
+ *                           testerfilters.js. Filters are views, never placements.
+ *   COLOUR_IDENTITY         true: a "Based on" switch under the colour pips, Card colour | Colour identity (default identity, remembered). Identity is Scryfall's colour identity; the four colour modes apply to it.
+ *                           Needs TESTER_FILTERS. One data file, build/colour_identity/cards.json (src/build_colour_identity.py), requested once when the filter code loads; changes only testerfilters.js.
+ *                           Each of these two: absent or false means the page behaves, requests and exports exactly as before the flag existed.
+ *   SEARCH_FIXES            true: the group search is ranked and laid out with six fixes (reports/groupsearch.js, reports/tester.js; no data file, no request): a hand-defined group's row says how many cards are placed
+ *                           in it by hand, and one with none ranks after every group that has members unless the query is its name or alias; a longer word that only begins with a typed whole word (flash ->
+ *                           Flashback) ranks after the whole-word matches, and a typed word that is itself a group-name word is not also tried as its stem ("cycling" no longer reaches Cyclops; "cycl" still reaches
+ *                           Cycling); groups whose only match is a description that is one member's quoted card line sit in one collapsed row; a list of more than 10 is two or three headed blocks of 10 with an
+ *                           honest count. Presentation and ranking only. Absent or false means the search behaves, requests and exports exactly as before the flag existed.
  */
 window.APP_CONFIG = {
   feedbackUrl: "https://discord.gg/DUwMhDCcMg",
@@ -41,5 +56,9 @@ window.APP_CONFIG = {
   QUERY_MATCH_BLOCK: true,
   ABILITY_TYPE_PAGES: true,
   ABILITY_TYPE_FILTERS: true,
-  BROAD_NARROWING: true
+  BROAD_NARROWING: true,
+  MODAL_ABILITIES: true,
+  PERSIST_FILTERS: true,
+  COLOUR_IDENTITY: true,
+  SEARCH_FIXES: true
 };

@@ -4,8 +4,12 @@
  *
  *   var idx = GroupSearch.build(doc);                                   // doc = build/group_search/index.json
  *   var r = GroupSearch.search(idx, "board wipe", {allow: fn, words: obj|null});
+ *   opts.fixes (feature SEARCH_FIXES, reports/config.js; absent or false = the ranking below exactly): a longer word that only begins with a whole typed word (flash -> Flashback) ranks after the whole-word
+ *   matches (tiers 3.1, 3.2); a typed word that is itself a group-name word is not also tried as its -ing/-ed stem; example-line description matches go to r.example; a hand group with no placed
+ *   member (opts.placed(e) === 0) at tier 2 or below ranks after every other name match (tier 4.9). An exact name or alias (tiers 0, 1) always wins.
  *     r.groups   [{e, key, tier, why, via, fit, note, dym}]            ranked; name and alias matches first, then description matches
  *     r.family   same shape, groups that matched only by their family/kind (the page collapses them under one row)
+ *     r.example  with opts.fixes only: groups whose only match is a description that is one member's quoted card line (the page collapses them under one row); [] otherwise
  *     r.dym      null, or {from, to}: the query was corrected ("did you mean")
  *     r.needWords true when a typed word could not be judged without the real-word list: load words.txt, then search again with {words: ...}
  *
@@ -72,6 +76,33 @@ var GroupSearch = (function () {
     var a;
     if (ws.length < qv.length) return false;
     for (a = 0; a < qv.length; a++) if (!tokMatch(qv[a], ws[a], a === qv.length - 1)) return false;
+    return true;
+  }
+  // SEARCH_FIXES: whole-word versions of startsWith / allMatch. A "whole" typed word matches a name word that is the word itself or an inflection of it (-s, -es, -ed, -d, -ing, -er, -ers,
+  // with a doubled last letter: equip -> equipped); a longer word that merely begins with it (flash -> flashback, ramp -> rampage) does not. A word that is not whole ("sacrific", "tok") still matches as a prefix.
+  function isInfl(base, w) {
+    var ext = w.slice(base.length), alt = ext.charAt(0) === base.charAt(base.length - 1) ? ext.slice(1) : ext, re = /^(s|es|ed|d|ing|er|ers|ings)$/;
+    return ext === "" || re.test(ext) || re.test(alt);
+  }
+  function tokWhole(vs, w) {
+    var k;
+    for (k = 0; k < vs.length; k++) if (w === vs[k] || (w.indexOf(vs[k]) === 0 && isInfl(vs[k], w))) return true;
+    return false;
+  }
+  function startsWithWhole(ws, qv, strict) {
+    var a;
+    if (ws.length < qv.length) return false;
+    for (a = 0; a < qv.length; a++) if (!(strict[a] ? tokWhole(qv[a], ws[a]) : tokMatch(qv[a], ws[a], a === qv.length - 1))) return false;
+    return true;
+  }
+  function allMatchWhole(ws, qv, strict) {
+    var a, b, ok;
+    if (!ws.length || !qv.length) return false;
+    for (a = 0; a < qv.length; a++) {
+      ok = false;
+      for (b = 0; b < ws.length; b++) if (strict[a] ? tokWhole(qv[a], ws[b]) : tokMatch(qv[a], ws[b], true)) { ok = true; break; }
+      if (!ok) return false;
+    }
     return true;
   }
   function dl(a, b, k) {                               // optimal string alignment distance (a transposition counts 1); k+1 when it exceeds k
@@ -152,10 +183,19 @@ var GroupSearch = (function () {
   }
 
   // the literal search for a list of folded tokens
-  function literal(idx, toks, allow) {
-    var qstems = [], qall = [], core = [], qcore = [], best = {}, fam = {}, k, e, a, g, n, t, key, gid, cand, out = [], famOut = [];
-    for (k = 0; k < toks.length; k++) { qstems.push(stem(toks[k])); qall.push(variants(toks[k])); if (!STOP[toks[k]]) { core.push(toks[k]); qcore.push(variants(toks[k])); } }
-    if (!core.length) { core = toks; qcore = qall; }
+  function literal(idx, toks, allow, o) {
+    var qstems = [], qall = [], core = [], qcore = [], best = {}, fam = {}, k, e, a, g, n, t, key, gid, cand, out = [], famOut = [], exOut = [], fx = !!(o && o.fixes), sAll = [], sCore = [], vs, wh;
+    for (k = 0; k < toks.length; k++) {
+      qstems.push(stem(toks[k])); vs = variants(toks[k]);
+      wh = false;
+      if (fx) {                                                                        // SEARCH_FIXES: a typed word that is itself a word of some group name (or a real word) is "whole"
+        wh = has(idx.gw, vs[0]) || (!!o.words && real(o.words, toks[k]));
+        if (has(idx.gw, vs[0])) vs = [vs[0]];                                           // ... and its stripped -ing/-ed form is not also tried as a prefix ("cycling" -> "cycl" -> Cyclops)
+      }
+      qall.push(vs); sAll.push(wh);
+      if (!STOP[toks[k]]) { core.push(toks[k]); qcore.push(vs); sCore.push(wh); }
+    }
+    if (!core.length) { core = toks; qcore = qall; sCore = sAll; }
     var qkey = qstems.join(" ");
     function offer(en, tier, why, via, order, fit, note, drafted) {
       var cur = best[en.gid];
@@ -169,8 +209,8 @@ var GroupSearch = (function () {
       e = idx.entries[k];
       if (anyVar(e, function (v) { return v.nkey === qkey || v.ckey === qkey; })) offer(e, 0, "name");
       else if (e.altkey && e.altkey === qkey) offer(e, 1, "slug", "", 50);
-      else if (anyVar(e, function (v) { return startsWith(v.ns, qall); })) offer(e, 2, "name");
-      else if (anyVar(e, function (v) { return allMatch(v.ns, qcore); })) offer(e, 3, "name");
+      else if (anyVar(e, function (v) { return startsWith(v.ns, qall); })) offer(e, fx && !anyVar(e, function (v) { return startsWithWhole(v.ns, qall, sAll); }) ? (anyVar(e, function (v) { return allMatchWhole(v.ns, qcore, sCore); }) ? 3 : 3.1) : 2, "name");
+      else if (anyVar(e, function (v) { return allMatch(v.ns, qcore); })) offer(e, fx && !anyVar(e, function (v) { return allMatchWhole(v.ns, qcore, sCore); }) ? 3.2 : 3, "name");
       else if (core.length >= 3 && anyVar(e, function (v) { return countMatch(v.ns, qcore) >= core.length - 1; })) offer(e, 3.5, "most");
       else if (e.alts.length && allMatch(e.alts, qcore)) offer(e, 4, "slug");
       else if (e.ds.length && allMatch(e.ds, qcore, true) && maxLen(core) >= 3) offer(e, 5, "description");
@@ -185,15 +225,21 @@ var GroupSearch = (function () {
     for (gid in best) if (has(best, gid)) {
       cand = best[gid];
       key = allow ? allow(cand.e) : cand.e.key;
-      if (key) { cand.key = key; out.push(cand); }
+      if (!key) continue;
+      cand.key = key;
+      if (fx) {
+        if (cand.why === "description" && cand.e.descDraft && /^Example/.test(cand.e.desc)) { exOut.push(cand); continue; }          // a description that is one member's quoted card line: its own collapsed row
+        if (cand.e.layer === "h" && cand.tier >= 2 && cand.tier < 4.9 && o.placed && o.placed(cand.e) === 0) cand.tier = 4.9;         // a hand group nobody has placed into: after every group that has members, unless the query IS its name or alias
+      }
+      out.push(cand);
     }
     for (gid in fam) if (has(fam, gid) && !has(best, gid)) {
       cand = fam[gid];
       key = allow ? allow(cand.e) : cand.e.key;
       if (key) { cand.key = key; famOut.push(cand); }
     }
-    out.sort(cmp); famOut.sort(cmp);
-    return { groups: out, family: famOut };
+    out.sort(cmp); famOut.sort(cmp); exOut.sort(cmp);
+    return { groups: out, family: famOut, example: exOut };
   }
   function countMatch(ws, qv) {
     var a, b, n = 0;
@@ -234,12 +280,12 @@ var GroupSearch = (function () {
   function search(idx, query, opts) {
     opts = opts || {};
     var q = norm(query), toks, r, out, nName = 0, k, t, need = false, changed = false, corrected, best, r2, seen = {}, extra = [];
-    out = { query: q, groups: [], family: [], dym: null, needWords: false, nameCount: 0 };
+    out = { query: q, groups: [], family: [], example: [], dym: null, needWords: false, nameCount: 0 };
     if (q.length < 2) return out;
     toks = q.split(" ");
-    r = literal(idx, toks, opts.allow);
-    for (k = 0; k < r.groups.length; k++) if (r.groups[k].tier <= 4.5) nName++;
-    out.groups = r.groups; out.family = r.family; out.nameCount = nName;
+    r = literal(idx, toks, opts.allow, opts);
+    for (k = 0; k < r.groups.length; k++) if (r.groups[k].tier <= 4.5 || r.groups[k].tier === 4.9) nName++;                // 4.9: a hand group with no placed member (SEARCH_FIXES) counts as before
+    out.groups = r.groups; out.family = r.family; out.example = r.example; out.nameCount = nName;
     if (nName < 3) {
       corrected = toks.slice();
       for (k = 0; k < toks.length; k++) {
@@ -252,10 +298,10 @@ var GroupSearch = (function () {
       }
       out.needWords = need && !opts.words;
       if (changed) {
-        r2 = literal(idx, corrected, opts.allow);
+        r2 = literal(idx, corrected, opts.allow, opts);
         for (k = 0; k < r.groups.length; k++) seen[r.groups[k].e.gid] = 1;
         for (k = 0; k < r2.groups.length; k++) {
-          if (r2.groups[k].tier <= 4.5 && !has(seen, r2.groups[k].e.gid)) { r2.groups[k].dym = corrected.join(" "); extra.push(r2.groups[k]); }
+          if ((r2.groups[k].tier <= 4.5 || r2.groups[k].tier === 4.9) && !has(seen, r2.groups[k].e.gid)) { r2.groups[k].dym = corrected.join(" "); extra.push(r2.groups[k]); }
         }
         if (extra.length) {
           out.groups = r.groups.concat(extra);

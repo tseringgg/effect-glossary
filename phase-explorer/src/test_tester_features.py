@@ -82,7 +82,7 @@ def export_to(out, config=None, features=True):
     return r.returncode, r.stdout + r.stderr
 
 
-ABILITY_FLAGS = ("ABILITY_TYPE_PAGES", "ABILITY_TYPE_FILTERS")      # the ability-type pages and filters (src/test_ability_pages.py tests them); this file tests the page without them, as it was
+ABILITY_FLAGS = ("ABILITY_TYPE_PAGES", "ABILITY_TYPE_FILTERS", "MODAL_ABILITIES", "BROAD_NARROWING", "PERSIST_FILTERS", "COLOUR_IDENTITY", "SEARCH_FIXES")      # the ability-type pages and filters (src/test_ability_pages.py tests them) and the card view's Abilities block (src/test_modal_abilities.py); this file tests the page without them, as it was
 
 
 def ability_off_config():
@@ -197,7 +197,7 @@ def main():
     base_all = dict(base); base_all["manifest.json"] = None
     check("flags off: the file list is exactly the one before the features (%d files)" % len(offf), set(offf) == set(base_all), sorted(set(offf) ^ set(base_all))[:5])
     differ = sorted(k for k in base if offf.get(k) != base[k])
-    check("flags off: every file is byte-identical to the pre-feature export except tester.js, testerfilters.js and config.js %s" % differ, differ == ["reports/config.js", "reports/tester.js", "reports/testerfilters.js"], differ)
+    check("flags off: every file is byte-identical to the pre-feature export except tester.js, testerfilters.js, config.js and groupsearch.js (SEARCH_FIXES; src/test_search_fixes.py proves its flag-off behaviour) %s" % differ, differ == ["reports/config.js", "reports/groupsearch.js", "reports/tester.js", "reports/testerfilters.js"], differ)
     new = sorted(set(a) - set(offf))
     exp_new = ["build/faces/faces.json", "build/type_groups/index.json", "build/type_groups/members.json", "reports/flipfaces.css", "reports/flipfaces.js", "reports/typegroups.css", "reports/typegroups.js"]
     check("flags on adds exactly the 7 whitelisted files %s" % new, new == exp_new, new)

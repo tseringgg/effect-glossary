@@ -36,6 +36,10 @@ AB_FILES = ["abilitypages.js", "abilitypages.css"]               # feature ABILI
 AB_BUILD = ["ability_pages/index.json"]                          # the index is read when the "Ability types" folder opens / at the first search; the pages (ability_pages/p/*.json) when one opens
 AB_LAZY = ("ability_pages/p", r"^[a-z0-9.\-]+\.json$")
 BK_BUILD = ["buckets/map.json"]                                  # feature BROAD_NARROWING: the group -> topic map (the page code is in testerfilters.js, so no page file is added)
+MA_FILES = ["modalabilities.js", "modalabilities.css"]           # feature MODAL_ABILITIES: the "Abilities" block in the card view (needs ABILITY_TYPE_PAGES)
+MA_BUILD = ["ability_pages/cards.json"]                          # read the first time a card opens; written by src/build_ability_cards.py
+CI_BUILD = ["colour_identity/cards.json"]                        # feature COLOUR_IDENTITY: card -> colour identity, requested once when the filter code loads (the page code is in testerfilters.js); written by src/build_colour_identity.py
+# PERSIST_FILTERS likewise changes only testerfilters.js and adds no file
 # NARROW_NO_CUT and COLOUR_MODES change only reports/testerfilters.js (and need TESTER_FILTERS): they add no file
 CONFIG_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "reports", "config.js")
 
@@ -58,6 +62,10 @@ def pages_for(path=None):
         files += AB_FILES; build += AB_BUILD
     if flag_on(path, "BROAD_NARROWING"):
         build += BK_BUILD
+    if flag_on(path, "MODAL_ABILITIES"):
+        files += MA_FILES; build += MA_BUILD
+    if flag_on(path, "COLOUR_IDENTITY"):
+        build += CI_BUILD
     return files, build
 
 
@@ -328,6 +336,12 @@ def main():
         if flag_on(None if not a.config else a.config, "BROAD_NARROWING"):
             import build_buckets                       # deterministic as well; writes only build/buckets/
             build_buckets.write()
+        if flag_on(None if not a.config else a.config, "MODAL_ABILITIES"):
+            import build_ability_cards                 # deterministic as well; reads the ability pages just written, writes only build/ability_pages/cards.json
+            build_ability_cards.write()
+        if flag_on(None if not a.config else a.config, "COLOUR_IDENTITY"):
+            import build_colour_identity               # deterministic as well; reads Scryfall's oracle file, writes only build/colour_identity/cards.json
+            build_colour_identity.write()
     files = plan()
     cfg = open(page_src("config.js"), encoding="utf-8").read()
     placeholder = "REPLACE-ME" in cfg

@@ -253,7 +253,7 @@ class Session:
         shutil.rmtree(self.prof, ignore_errors=True)
 
 
-FEATURE_FLAGS = ("TYPE_GROUPS", "NARROW_NO_CUT", "COLOUR_MODES", "FLIP_FACES", "ABILITY_TYPE_PAGES", "ABILITY_TYPE_FILTERS")          # the newer features (src/test_tester_features.py tests them on); this file tests the page as it was
+FEATURE_FLAGS = ("TYPE_GROUPS", "NARROW_NO_CUT", "COLOUR_MODES", "FLIP_FACES", "ABILITY_TYPE_PAGES", "ABILITY_TYPE_FILTERS", "MODAL_ABILITIES", "BROAD_NARROWING", "PERSIST_FILTERS", "COLOUR_IDENTITY", "SEARCH_FIXES")          # the newer features (src/test_tester_features.py tests them on); this file tests the page as it was
 
 
 def flags_off_text(extra_off=()):

@@ -155,19 +155,20 @@ def main():
         cmd = [sys.executable, "-I", os.path.join(HERE, "src", "export_static.py"), "--out", os.path.relpath(out, HERE)] + (["--config", cfg] if cfg else [])
         r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", cwd=HERE)
         return r.returncode, r.stdout + r.stderr
-    rc, out = export_to(DIRS["ab"])
-    rc2, out2 = export_to(DIRS["ab2"])
+    cfg_on = tmp_config(flags_text(SEARCH_FIXES=False, MODAL_ABILITIES=False, BROAD_NARROWING=False, PERSIST_FILTERS=False, COLOUR_IDENTITY=False))             # this file tests the ability pages and filters; the card view's Abilities block (src/test_modal_abilities.py) and the topics (src/test_broad_narrowing.py) are off here
+    rc, out = export_to(DIRS["ab"], cfg_on)
+    rc2, out2 = export_to(DIRS["ab2"], cfg_on)
     check("exports with the flags on succeed (twice)", rc == 0 and rc2 == 0, (out + out2)[-300:])
     f1, f2 = files_of(DIRS["ab"]), files_of(DIRS["ab2"])
     check("two flags-on exports: every file byte-identical (%d files)" % len(f1), f1 == f2)
     ab_files = sorted(k for k in f1 if "ability_pages" in k or "abilitypages" in k)
     check("flags on: the new files are exactly abilitypages.js/.css, the index and 42 page files (%d)" % len(ab_files), len(ab_files) == 2 + 1 + 42 and "reports/abilitypages.js" in ab_files and "build/ability_pages/index.json" in ab_files, ab_files[:4])
-    r = subprocess.run([sys.executable, "-I", os.path.join(HERE, "src", "export_static.py"), "--check", "--out", os.path.relpath(DIRS["ab"], HERE)], capture_output=True, text=True, encoding="utf-8", cwd=HERE)
+    r = subprocess.run([sys.executable, "-I", os.path.join(HERE, "src", "export_static.py"), "--check", "--config", cfg_on, "--out", os.path.relpath(DIRS["ab"], HERE)], capture_output=True, text=True, encoding="utf-8", cwd=HERE)
     check("whitelist check passes on the flags-on export", r.returncode == 0, r.stdout + r.stderr)
     for plant in ("build/ability_pages/p/extra.json.bak", "build/ability_pages/notes.txt", "build/ability_pages/p/UPPER.json", "corrections/group_aliases.json"):
         p = os.path.join(DIRS["ab"], *plant.split("/"))
         os.makedirs(os.path.dirname(p), exist_ok=True); open(p, "w").write("{}")
-        r = subprocess.run([sys.executable, "-I", os.path.join(HERE, "src", "export_static.py"), "--check", "--out", os.path.relpath(DIRS["ab"], HERE)], capture_output=True, text=True, encoding="utf-8", cwd=HERE)
+        r = subprocess.run([sys.executable, "-I", os.path.join(HERE, "src", "export_static.py"), "--check", "--config", cfg_on, "--out", os.path.relpath(DIRS["ab"], HERE)], capture_output=True, text=True, encoding="utf-8", cwd=HERE)
         check("planted %s is refused" % plant, r.returncode != 0)
         os.remove(p)
         if plant.startswith("corrections"):
@@ -175,13 +176,13 @@ def main():
     private = [k for k in ab_files if k.endswith((".js", ".css", ".json"))]
     leak = [k for k in private if re.search(rb"corrections|group_aliases|manual_placements|backups", open(os.path.join(DIRS["ab"], *k.split("/")), "rb").read())]
     check("nothing private in the new files (no corrections/, aliases or hand-placement names)", not leak, leak[:3])
-    cfg_off = tmp_config(flags_text(ABILITY_TYPE_PAGES=False, ABILITY_TYPE_FILTERS=False))
+    cfg_off = tmp_config(flags_text(SEARCH_FIXES=False, ABILITY_TYPE_PAGES=False, ABILITY_TYPE_FILTERS=False, MODAL_ABILITIES=False, BROAD_NARROWING=False, PERSIST_FILTERS=False, COLOUR_IDENTITY=False))
     rc, out = export_to(DIRS["off"], cfg_off)
     check("export with the two flags off succeeds", rc == 0, out[-300:])
     old = json.load(open(os.path.join(BEFORE, "manifest.json"), encoding="utf-8"))
     oldf = {f["path"]: f["sha256"] for f in old["files"]}
     offf = files_of(DIRS["off"])
-    skip = {"reports/tester.js", "reports/testerfilters.js", "reports/config.js", "manifest.json", "reports/browse.html"}
+    skip = {"reports/tester.js", "reports/testerfilters.js", "reports/config.js", "reports/groupsearch.js", "manifest.json", "reports/browse.html"}
     # browse.html is untouched by this work; the earlier export was made from a copy with other line endings, so compare it with git HEAD, ignoring line endings
     head = subprocess.run(["git", "show", "HEAD:phase-explorer/reports/browse.html"], capture_output=True, cwd=HERE).stdout
     cur = open(os.path.join(HERE, "reports", "browse.html"), "rb").read()
@@ -189,13 +190,17 @@ def main():
     check("browse.html is unchanged from git HEAD (line endings aside)", norm(head) == norm(cur) and open(os.path.join(DIRS["off"], "reports", "browse.html"), "rb").read() == open(os.path.join(HERE, "reports", "browse.html"), "rb").read())
     check("flags off: the same file list as the export made before this work (%d files)" % len(oldf), set(offf) - {"manifest.json"} == set(oldf), (sorted(set(offf) ^ set(oldf))[:4]))
     diff = [k for k in oldf if k not in skip and offf.get(k) != oldf[k]]
-    check("flags off: every file but tester.js, testerfilters.js, config.js is byte-identical to that export (data files included)", not diff, diff[:4])
+    check("flags off: every file but tester.js, testerfilters.js, config.js and groupsearch.js (SEARCH_FIXES; src/test_search_fixes.py proves its flag-off behaviour) is byte-identical to that export (data files included)", not diff, diff[:4])
     check("flags off: no ability file is exported or listed", not [k for k in offf if "ability_pages" in k or "abilitypages" in k])
 
     # ------------------------------------------------------------ 3. flags off against the old scripts: same DOM, same requests
     shutil.copytree(DIRS["off"], DIRS["old"])
     for n in ("tester.js", "testerfilters.js", "config.js"):
         shutil.copyfile(os.path.join(BEFORE, n), os.path.join(DIRS["old"], "reports", n))
+    oldjs = os.path.join(DIRS["old"], "reports", "testerfilters.js")           # the colour-match default changed later (COLOUR_MODES: "Only these", and "Exactly these" added); the saved script gets that one change
+    tx = open(oldjs, encoding="utf-8").read()
+    tx = tx.replace('["only", "Only these"], ["not", "Not these"]];', '["only", "Only these"], ["exactly", "Exactly these"], ["not", "Not these"]];').replace('cols: new Set(), cmode: "any",', 'cols: new Set(), cmode: "only",')
+    open(oldjs, "w", encoding="utf-8").write(tx)
 
     def drive(root):
         s, ok = TF.boot(root, 1280)

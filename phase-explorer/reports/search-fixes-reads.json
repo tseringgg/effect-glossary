@@ -1,0 +1,1389 @@
+{
+ "_about": "My reads of the 100 searches (50 clutter-probe, 30 baseline, 20 fresh) against the index the page builds at run time (group pages + type pages + ability-type pages), BEFORE any search fix. Y = sensible, M = partly, N = not, X = expected to return nothing. Judged by reading group names, as in reports/group-search-reads.md. Not independent of the person who will build the fixes. 'after' holds my reads, after SEARCH_FIXES, of every search among the 100 whose top 5 changed (19); the others are unchanged by construction (same top 5, same order).",
+ "marks": {
+  "1": {
+   "src": "probe",
+   "q": "dragon",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Dragon",
+    "Create Dragon tokens with flying",
+    "Search your library for a Dragon creature and put it into yo",
+    "Put +1/+1 counters on all other Dragon creatures you control",
+    "Add mana, of one specific color"
+   ]
+  },
+  "2": {
+   "src": "probe",
+   "q": "draw cards",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Draw cards",
+    "Draw cards",
+    "Draw cards, then you discard — who draws isn't recorded",
+    "Draw cards, on another kind of trigger",
+    "Draw cards, then you lose life — who draws isn't recorded"
+   ]
+  },
+  "3": {
+   "src": "probe",
+   "q": "board wipe",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Destroys everything of a kind (board wipe)",
+    "Destroy all creatures (restriction varies)",
+    "Board wipe that is, or can be, one-sided"
+   ]
+  },
+  "4": {
+   "src": "probe",
+   "q": "recursion",
+   "top1": "N",
+   "top5": "N",
+   "note": "no group, no alias",
+   "top5_names": []
+  },
+  "5": {
+   "src": "probe",
+   "q": "land denial",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Land denial: takes many lands away or keeps them tapped",
+    "Destroy a land",
+    "Destroy all lands (restriction varies)"
+   ]
+  },
+  "6": {
+   "src": "probe",
+   "q": "sacrifice",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Sacrifice as a cost",
+    "Sacrifice this permanent",
+    "Sacrifice it — what it applies to isn't recorded",
+    "Sacrifice a creature",
+    "Sacrifice, less common kinds"
+   ]
+  },
+  "7": {
+   "src": "probe",
+   "q": "tutor",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Search your library for a card and put it into your hand (th",
+    "Search your library for a card and put it into your hand (th",
+    "Searches for a card and puts it into your hand",
+    "Searches for a card and puts it onto the battlefield",
+    "Searches for a land and puts it onto the battlefield"
+   ]
+  },
+  "8": {
+   "src": "probe",
+   "q": "equipment",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Equipment",
+    "Attach to a creature you control",
+    "Equipped creature gets +N/+N",
+    "Equipment and Aura bonuses",
+    "Attach to an Equipment artifact you control"
+   ]
+  },
+  "9": {
+   "src": "probe",
+   "q": "counterspell",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Counter a spell",
+    "Counter a spell with targets"
+   ]
+  },
+  "10": {
+   "src": "probe",
+   "q": "extra turn",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Extra turn",
+    "Take an extra turn",
+    "Take an extra turn"
+   ]
+  },
+  "11": {
+   "src": "probe",
+   "q": "saga",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Saga",
+    "Put lore counters on this permanent",
+    "Create a token copy of a nontoken permanent you control"
+   ]
+  },
+  "12": {
+   "src": "probe",
+   "q": "flashback",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Flashback",
+    "An instant or sorcery card gains flashback until end of turn"
+   ]
+  },
+  "13": {
+   "src": "probe",
+   "q": "proliferate",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Proliferate",
+    "Adds counters like proliferate",
+    "Return a permanent card from your graveyard to its owner's h",
+    "Return this permanent to its owner's hand",
+    "Tap it — what it applies to isn't recorded"
+   ]
+  },
+  "14": {
+   "src": "probe",
+   "q": "discard",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Discard",
+    "Discard a card as a cost",
+    "Discard cards, then draw",
+    "Discard cards",
+    "Discard cards (an opponent controls)"
+   ]
+  },
+  "15": {
+   "src": "probe",
+   "q": "cost reduction",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Cost reduction",
+    "Makes spells cost less",
+    "Makes instants and sorceries cost less"
+   ]
+  },
+  "16": {
+   "src": "probe",
+   "q": "removal",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Destroy a creature",
+    "Spot removal",
+    "Removal: creature",
+    "Removal: destroy",
+    "Removal: sacrifice"
+   ]
+  },
+  "17": {
+   "src": "probe",
+   "q": "elf",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Elf",
+    "Create Elf Warrior tokens",
+    "Other Elf creatures you control get +N/+N",
+    "Create Elf tokens",
+    "Reveal cards from the top of a library, then put a card on a"
+   ]
+  },
+  "18": {
+   "src": "probe",
+   "q": "wrath",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Destroy all creatures (restriction varies)",
+    "Destroys everything of a kind (board wipe)",
+    "Destroy all nonland permanents (restriction varies)"
+   ]
+  },
+  "19": {
+   "src": "probe",
+   "q": "flash",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Flash",
+    "Flash",
+    "Flashback",
+    "Flash + Flying",
+    "Spells can be cast as though they had flash"
+   ]
+  },
+  "20": {
+   "src": "probe",
+   "q": "fetch land",
+   "top1": "N",
+   "top5": "N",
+   "note": "no group, no alias",
+   "top5_names": []
+  },
+  "21": {
+   "src": "probe",
+   "q": "kicker",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Kicker"
+   ]
+  },
+  "22": {
+   "src": "probe",
+   "q": "aura",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Aura",
+    "Equipment and Aura bonuses",
+    "Destroy an Aura enchantment",
+    "Create Wicked Role tokens (Aura Role Wicked Role)",
+    "Search your library for an Aura enchantment and put it into "
+   ]
+  },
+  "23": {
+   "src": "probe",
+   "q": "equip",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Equip",
+    "Equipment and Aura bonuses",
+    "Equipment",
+    "Equipped creature gets +N/+N",
+    "Equipped creature gets +N/+N and has a keyword"
+   ]
+  },
+  "24": {
+   "src": "probe",
+   "q": "vigilance",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Vigilance",
+    "Vigilance",
+    "Flying + Vigilance",
+    "Create Knight tokens with vigilance",
+    "Gains vigilance"
+   ]
+  },
+  "25": {
+   "src": "probe",
+   "q": "goblin",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Goblin",
+    "Create Goblin tokens",
+    "Other Goblin creatures you control get +N/+N",
+    "Create creature tokens, then grant an ability",
+    "Give things a gained ability"
+   ]
+  },
+  "26": {
+   "src": "probe",
+   "q": "pump",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "A creature gets +N/+N until end of turn",
+    "A creature gets +N/+N until end of turn, then pump creature",
+    "A creature gets −N/−N until end of turn, then pump all creat",
+    "Reveal cards from a hand, then pump creature — what it appli",
+    "Pay mana, no other cost"
+   ]
+  },
+  "27": {
+   "src": "probe",
+   "q": "surveil",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Surveil",
+    "Surveil",
+    "Surveil",
+    "Surveil, then draw",
+    "Exile a creature or planeswalker"
+   ]
+  },
+  "28": {
+   "src": "probe",
+   "q": "blink",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Exiles a permanent and returns it to the battlefield (blink,"
+   ]
+  },
+  "29": {
+   "src": "probe",
+   "q": "menace",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Menace",
+    "Menace",
+    "Menace: other combinations",
+    "A permanent gains menace until end of turn",
+    "Creatures you control have menace"
+   ]
+  },
+  "30": {
+   "src": "probe",
+   "q": "overrun",
+   "top1": "M",
+   "top5": "M",
+   "note": "reaches the Anthems page: overrun is a one-shot team pump with trample, not a static anthem",
+   "top5_names": [
+    "Anthems and lords (+N/+N to others)"
+   ]
+  },
+  "31": {
+   "src": "probe",
+   "q": "storm",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Storm"
+   ]
+  },
+  "32": {
+   "src": "probe",
+   "q": "cantrip",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Cantrips: draws a card as it resolves or enters"
+   ]
+  },
+  "33": {
+   "src": "probe",
+   "q": "hexproof",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Hexproof",
+    "Hexproof",
+    "Hexproof from",
+    "Hexproof: other combinations",
+    "A permanent gains hexproof until end of turn"
+   ]
+  },
+  "34": {
+   "src": "probe",
+   "q": "landfall",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Landfall (a land enters)",
+    "Landfall"
+   ]
+  },
+  "35": {
+   "src": "probe",
+   "q": "enchantment",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Enchantment",
+    "Enchantment spells cost less (card; you control)",
+    "Destroy an artifact or enchantment",
+    "Destroy an enchantment",
+    "Destroy all enchantments (restriction varies)"
+   ]
+  },
+  "36": {
+   "src": "probe",
+   "q": "ward",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Ward",
+    "Ward",
+    "Ward: other combinations",
+    "Enchanted creature gets +N/+N and has a keyword",
+    "Creatures you control get +N/+N and have a keyword"
+   ]
+  },
+  "37": {
+   "src": "probe",
+   "q": "looting",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Repeatable: loot",
+    "Draw cards, then you discard — who draws isn't recorded"
+   ]
+  },
+  "38": {
+   "src": "probe",
+   "q": "convoke",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Convoke",
+    "Convoke: other combinations"
+   ]
+  },
+  "39": {
+   "src": "probe",
+   "q": "zombie",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Zombie",
+    "Create Zombie tokens",
+    "Create Zombie tokens with decayed",
+    "Other Zombie creatures you control get +N/+N",
+    "Move cards from the graveyard to the battlefield, ones you c"
+   ]
+  },
+  "40": {
+   "src": "probe",
+   "q": "mana rock",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Mana rocks: artifacts that tap for mana",
+    "Add colorless mana",
+    "Mana abilities"
+   ]
+  },
+  "41": {
+   "src": "probe",
+   "q": "anthem",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Raises the power of your creatures",
+    "Anthems and lords (+N/+N to others)",
+    "Gives your whole team a keyword"
+   ]
+  },
+  "42": {
+   "src": "probe",
+   "q": "flicker",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Exiles a permanent and returns it to the battlefield (blink,"
+   ]
+  },
+  "43": {
+   "src": "probe",
+   "q": "indestructible",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Indestructible",
+    "Indestructible: other combinations",
+    "A permanent gains indestructible until end of turn",
+    "Continuous effect on things: gives indestructible, other kin",
+    "Give things indestructible"
+   ]
+  },
+  "44": {
+   "src": "probe",
+   "q": "clone",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Clone",
+    "A creature becomes a copy",
+    "Copies creature"
+   ]
+  },
+  "45": {
+   "src": "probe",
+   "q": "lifelink",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Lifelink",
+    "Lifelink",
+    "Lifelink: other combinations",
+    "A permanent gains lifelink until end of turn",
+    "Gain life, or give a creature lifelink, until end of turn"
+   ]
+  },
+  "46": {
+   "src": "probe",
+   "q": "bounce",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Return a creature to its owner's hand (restriction varies) —",
+    "Return a nonland permanent to its owner's hand — “all” vs “t",
+    "Removal: returns a permanent to its owner's hand",
+    "Land denial: takes many lands away or keeps them tapped"
+   ]
+  },
+  "47": {
+   "src": "probe",
+   "q": "artifact",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Artifact",
+    "Artifact spells cost less (card; you control)",
+    "Artifacts you control have a keyword",
+    "Mana rocks: artifacts that tap for mana",
+    "Destroy an artifact"
+   ]
+  },
+  "48": {
+   "src": "probe",
+   "q": "creature",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Creature",
+    "Creatures you control get +N/+N",
+    "Creatures you control have a keyword",
+    "Creature spells cost less (card; you control)",
+    "Creatures you control have haste"
+   ]
+  },
+  "49": {
+   "src": "probe",
+   "q": "wheel",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Each player discards, then draw"
+   ]
+  },
+  "50": {
+   "src": "probe",
+   "q": "fog",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Fog: prevent all combat damage",
+    "Protects you from a whole combat",
+    "Stops or redirects damage from some sources only"
+   ]
+  },
+  "51": {
+   "src": "baseline",
+   "q": "wrath",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Destroy all creatures (restriction varies)",
+    "Destroys everything of a kind (board wipe)",
+    "Destroy all nonland permanents (restriction varies)"
+   ]
+  },
+  "52": {
+   "src": "baseline",
+   "q": "counterspell",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Counter a spell",
+    "Counter a spell with targets"
+   ]
+  },
+  "53": {
+   "src": "baseline",
+   "q": "tutor",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Search your library for a card and put it into your hand (th",
+    "Search your library for a card and put it into your hand (th",
+    "Searches for a card and puts it into your hand",
+    "Searches for a card and puts it onto the battlefield",
+    "Searches for a land and puts it onto the battlefield"
+   ]
+  },
+  "54": {
+   "src": "baseline",
+   "q": "fog",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Fog: prevent all combat damage",
+    "Protects you from a whole combat",
+    "Stops or redirects damage from some sources only"
+   ]
+  },
+  "55": {
+   "src": "baseline",
+   "q": "stax",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Spells cost more (card)",
+    "Activated abilities can't be activated",
+    "Spells can't be cast",
+    "Creatures doesn't untap",
+    "Stasis"
+   ]
+  },
+  "56": {
+   "src": "baseline",
+   "q": "looting",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Repeatable: loot",
+    "Draw cards, then you discard — who draws isn't recorded"
+   ]
+  },
+  "57": {
+   "src": "baseline",
+   "q": "flying",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Flying",
+    "Flying",
+    "Flying + Protection",
+    "Flying + Vigilance",
+    "Flying + Haste"
+   ]
+  },
+  "58": {
+   "src": "baseline",
+   "q": "deathtouch",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Deathtouch",
+    "Deathtouch",
+    "Deathtouch: other combinations",
+    "Deathtouch + Flying",
+    "A permanent gains deathtouch until end of turn"
+   ]
+  },
+  "59": {
+   "src": "baseline",
+   "q": "cycling",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Cycling",
+    "Cyclops"
+   ]
+  },
+  "60": {
+   "src": "baseline",
+   "q": "landwalk",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Landwalk",
+    "Landwalk: other combinations",
+    "Landwalk: other land types",
+    "Gives landwalk",
+    "Ignores or removes landwalk"
+   ]
+  },
+  "61": {
+   "src": "baseline",
+   "q": "ward",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Ward",
+    "Ward",
+    "Ward: other combinations",
+    "Enchanted creature gets +N/+N and has a keyword",
+    "Creatures you control get +N/+N and have a keyword"
+   ]
+  },
+  "62": {
+   "src": "baseline",
+   "q": "first strike",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "First strike",
+    "First strike",
+    "First strike + Flying",
+    "First strike: other combinations",
+    "First strike + Protection"
+   ]
+  },
+  "63": {
+   "src": "baseline",
+   "q": "draw cards",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Draw cards",
+    "Draw cards",
+    "Draw cards, then you discard — who draws isn't recorded",
+    "Draw cards, on another kind of trigger",
+    "Draw cards, then you lose life — who draws isn't recorded"
+   ]
+  },
+  "64": {
+   "src": "baseline",
+   "q": "extra turn",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Extra turn",
+    "Take an extra turn",
+    "Take an extra turn"
+   ]
+  },
+  "65": {
+   "src": "baseline",
+   "q": "search library",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Search your library for a basic land and put it onto the bat",
+    "Search a library, put it in hand",
+    "Search your library for a land and put it onto the battlefie",
+    "Search a library, put it onto the battlefield",
+    "Search your library for a basic land and put it into your ha"
+   ]
+  },
+  "66": {
+   "src": "baseline",
+   "q": "copy spell",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Copies an instant or a sorcery",
+    "Copies spell",
+    "Copy a spell or ability (which one is not recorded), less co",
+    "Copy a spell or ability (which one is not recorded), chosen ",
+    "Copy it, then choose a target — what it applies to isn't rec"
+   ]
+  },
+  "67": {
+   "src": "baseline",
+   "q": "discard",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Discard",
+    "Discard a card as a cost",
+    "Discard cards, then draw",
+    "Discard cards",
+    "Discard cards (an opponent controls)"
+   ]
+  },
+  "68": {
+   "src": "baseline",
+   "q": "untap lands",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Untap a land",
+    "Gives mana or untapped lands back",
+    "Gives value without untapped lands",
+    "Untap several lands",
+    "Untap all lands you control"
+   ]
+  },
+  "69": {
+   "src": "baseline",
+   "q": "sacrific",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Sacrifice as a cost",
+    "Sacrifice this permanent",
+    "Sacrifice it — what it applies to isn't recorded",
+    "Sacrifice a creature",
+    "Sacrifice, less common kinds"
+   ]
+  },
+  "70": {
+   "src": "baseline",
+   "q": "regener",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Regenerate this permanent",
+    "Regenerate a creature",
+    "Regenerate, less common kinds",
+    "Regenerate enchanted creature",
+    "Works against regenerate"
+   ]
+  },
+  "71": {
+   "src": "baseline",
+   "q": "tok",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Create creature tokens",
+    "Create Treasure tokens",
+    "Create Food tokens",
+    "Create Soldier tokens (creature)",
+    "Create Zombie tokens"
+   ]
+  },
+  "72": {
+   "src": "baseline",
+   "q": "graveyard",
+   "top1": "M",
+   "top5": "Y",
+   "note": "first result is 'Exile from graveyard as a cost'; the graveyard-return groups follow",
+   "top5_names": [
+    "Exile from graveyard as a cost",
+    "Leaves for another place instead of the graveyard",
+    "Return a creature card from your graveyard to its owner's ha",
+    "Return a creature card from your graveyard onto the battlefi",
+    "Exile a card from a graveyard"
+   ]
+  },
+  "73": {
+   "src": "baseline",
+   "q": "indestruct",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Indestructible",
+    "Indestructible: other combinations",
+    "A permanent gains indestructible until end of turn",
+    "Continuous effect on things: gives indestructible, other kin",
+    "Give things indestructible"
+   ]
+  },
+  "74": {
+   "src": "baseline",
+   "q": "exil",
+   "top1": "M",
+   "top5": "Y",
+   "note": "first result is the blink hand group; 'Exile a creature' is fourth",
+   "top5_names": [
+    "Exiles a permanent and returns it to the battlefield (blink,",
+    "Exile from graveyard as a cost",
+    "Exile it — what it applies to isn't recorded",
+    "Exile a creature",
+    "Exile cards from the top of a library, then allow casting it"
+   ]
+  },
+  "75": {
+   "src": "baseline",
+   "q": "destory",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Destroy a creature",
+    "Destroy an artifact",
+    "Destroy all creatures (restriction varies)",
+    "Destroy an artifact or enchantment",
+    "Destroy a land"
+   ]
+  },
+  "76": {
+   "src": "baseline",
+   "q": "sacrifise",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Sacrifice as a cost",
+    "Sacrifice this permanent",
+    "Sacrifice it — what it applies to isn't recorded",
+    "Sacrifice a creature",
+    "Sacrifice, less common kinds"
+   ]
+  },
+  "77": {
+   "src": "baseline",
+   "q": "lifegian",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Gain life",
+    "Gains life",
+    "Gains life again and again",
+    "Gains life"
+   ]
+  },
+  "78": {
+   "src": "baseline",
+   "q": "tokns",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Create creature tokens",
+    "Create Treasure tokens",
+    "Create Food tokens",
+    "Create Soldier tokens (creature)",
+    "Create Zombie tokens"
+   ]
+  },
+  "79": {
+   "src": "baseline",
+   "q": "graveyrad",
+   "top1": "M",
+   "top5": "Y",
+   "note": "same as 'graveyard'",
+   "top5_names": [
+    "Exile from graveyard as a cost",
+    "Leaves for another place instead of the graveyard",
+    "Return a creature card from your graveyard to its owner's ha",
+    "Return a creature card from your graveyard onto the battlefi",
+    "Exile a card from a graveyard"
+   ]
+  },
+  "80": {
+   "src": "baseline",
+   "q": "deathtoch",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Deathtouch",
+    "Deathtouch",
+    "Deathtouch: other combinations",
+    "Deathtouch + Flying",
+    "A permanent gains deathtouch until end of turn"
+   ]
+  },
+  "81": {
+   "src": "fresh",
+   "q": "draft from spellbook",
+   "top1": "N",
+   "top5": "N",
+   "note": "'You spend mana as any color'; the Alchemy conjure/draft-from-spellbook groups are not reached",
+   "top5_names": [
+    "You spend mana as any color"
+   ]
+  },
+  "82": {
+   "src": "fresh",
+   "q": "extra blockers",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "This permanent extra blockers"
+   ]
+  },
+  "83": {
+   "src": "fresh",
+   "q": "+1/+1 counters",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Put +1/+1 counters on this permanent",
+    "Put +1/+1 counters on a creature",
+    "Put +1/+1 counters on a creature you control",
+    "Put +1/+1 counters on all creatures you control (restriction",
+    "Gains +1/+1 counters"
+   ]
+  },
+  "84": {
+   "src": "fresh",
+   "q": "hexproof indestructible",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "A permanent gains hexproof, indestructible until end of turn",
+    "A permanent loses a keyword until end of turn",
+    "Permanents you control have a keyword (another)",
+    "A permanent gains a keyword until end of turn (targeted)",
+    "A permanent you control gains a keyword until end of turn"
+   ]
+  },
+  "85": {
+   "src": "fresh",
+   "q": "search for plains",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Search your library for a Plains card",
+    "Search your library for a basic Plains land and put it into ",
+    "Search your library for a Plains land and put it onto the ba",
+    "Search your library for a land and put it onto the battlefie",
+    "Search your library for a land and put it into your hand (fo"
+   ]
+  },
+  "86": {
+   "src": "fresh",
+   "q": "discover",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Discover",
+    "Exiles cards until it finds one to cast (cascade, discover)"
+   ]
+  },
+  "87": {
+   "src": "fresh",
+   "q": "magecraft",
+   "top1": "M",
+   "top5": "M",
+   "note": "'Casts a spell' ability page; magecraft is cast-or-copy",
+   "top5_names": [
+    "Casts a spell"
+   ]
+  },
+  "88": {
+   "src": "fresh",
+   "q": "monarch",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Become the monarch"
+   ]
+  },
+  "89": {
+   "src": "fresh",
+   "q": "sacrifice a creature to pump",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Sacrifice a creature",
+    "Each opponent sacrifices a creature",
+    "Each player sacrifices a creature",
+    "Sacrifice another creature",
+    "Lets you sacrifice creatures"
+   ]
+  },
+  "90": {
+   "src": "fresh",
+   "q": "tap creatures for mana",
+   "top1": "N",
+   "top5": "N",
+   "note": "'Tap abilities, not mana' and a mana-rock hand group; the mana-creature group is not in the top 5",
+   "top5_names": [
+    "Tap abilities ({T}), not mana",
+    "Mana rocks: artifacts that tap for mana",
+    "Tap a creature",
+    "Tap enchanted creature",
+    "Return a creature card with mana value N or less from your g"
+   ]
+  },
+  "91": {
+   "src": "fresh",
+   "q": "give double strike",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Gives double strike",
+    "Give things double strike, other kinds of target",
+    "Continuous effect on other kinds of target: gives double str",
+    "Double strike",
+    "A permanent gains double strike until end of turn"
+   ]
+  },
+  "92": {
+   "src": "fresh",
+   "q": "stun counter",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Tap a creature, then put stun counters on it",
+    "Tap a creature an opponent controls, then put stun counters "
+   ]
+  },
+  "93": {
+   "src": "fresh",
+   "q": "wrath",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Destroy all creatures (restriction varies)",
+    "Destroys everything of a kind (board wipe)",
+    "Destroy all nonland permanents (restriction varies)"
+   ]
+  },
+  "94": {
+   "src": "fresh",
+   "q": "wraith",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Wraith"
+   ]
+  },
+  "95": {
+   "src": "fresh",
+   "q": "ramp",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Search your library for a basic land and put it onto the bat",
+    "Search your library for a land and put it onto the battlefie",
+    "Ramp: speeds up your resources",
+    "Rampage",
+    "Rampage"
+   ]
+  },
+  "96": {
+   "src": "fresh",
+   "q": "rump",
+   "top1": "X",
+   "top5": "X",
+   "note": "expected: a near-collision that must not be corrected to 'ramp'",
+   "top5_names": []
+  },
+  "97": {
+   "src": "fresh",
+   "q": "reanimtae",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Return a creature card from your graveyard onto the battlefi",
+    "Return a creature card from a graveyard onto the battlefield",
+    "Returns creature cards from the graveyard to the battlefield",
+    "Casts a permanent spell from a graveyard",
+    "Returns a card from any graveyard"
+   ]
+  },
+  "98": {
+   "src": "fresh",
+   "q": "counterspel",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Counter a spell",
+    "Counter a spell with targets"
+   ]
+  },
+  "99": {
+   "src": "fresh",
+   "q": "lifelnik",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Lifelink",
+    "Lifelink",
+    "Lifelink: other combinations",
+    "A permanent gains lifelink until end of turn",
+    "Gain life, or give a creature lifelink, until end of turn"
+   ]
+  },
+  "100": {
+   "src": "fresh",
+   "q": "mana dorc",
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "top5_names": [
+    "Creature that makes mana again and again",
+    "Mana abilities"
+   ]
+  }
+ },
+ "after": {
+  "1": {
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "q": "dragon"
+  },
+  "11": {
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "q": "saga"
+  },
+  "13": {
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "q": "proliferate"
+  },
+  "17": {
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "q": "elf"
+  },
+  "19": {
+   "top1": "Y",
+   "top5": "Y",
+   "note": "Flashback moved to last",
+   "q": "flash"
+  },
+  "23": {
+   "top1": "Y",
+   "top5": "Y",
+   "note": "Equip first; Equipment (type page) moved below the Equipped-creature groups",
+   "q": "equip"
+  },
+  "25": {
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "q": "goblin"
+  },
+  "27": {
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "q": "surveil"
+  },
+  "36": {
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "q": "ward"
+  },
+  "39": {
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "q": "zombie"
+  },
+  "47": {
+   "top1": "Y",
+   "top5": "Y",
+   "note": "the memberless 'Mana rocks' group moved down; the type page is still first",
+   "q": "artifact"
+  },
+  "59": {
+   "top1": "Y",
+   "top5": "Y",
+   "note": "Cyclops no longer returned",
+   "q": "cycling"
+  },
+  "61": {
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "q": "ward"
+  },
+  "66": {
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "q": "copy spell"
+  },
+  "74": {
+   "top1": "M",
+   "top5": "Y",
+   "note": "first result is now 'Exile from graveyard as a cost' (the blink hand group moved down); 'Exile a creature' is third",
+   "q": "exil"
+  },
+  "81": {
+   "top1": "N",
+   "top5": "N",
+   "note": "no group now; the page says so (before: one unrelated group)",
+   "q": "draft from spellbook"
+  },
+  "84": {
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "q": "hexproof indestructible"
+  },
+  "85": {
+   "top1": "Y",
+   "top5": "Y",
+   "note": "",
+   "q": "search for plains"
+  },
+  "90": {
+   "top1": "N",
+   "top5": "N",
+   "note": "",
+   "q": "tap creatures for mana"
+  }
+ }
+}

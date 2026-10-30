@@ -1,0 +1,54 @@
+{
+ "off": {
+  "first_search_answers_s": [
+   15.24,
+   12.83
+  ],
+  "tree_visible_s": [
+   10.0,
+   8.31
+  ],
+  "boot_requests": 44,
+  "boot_bytes": 33087124,
+  "typing_to_results_ms_median": 664,
+  "typing_to_results_ms_all": [
+   431,
+   673,
+   677,
+   698,
+   678,
+   376,
+   654,
+   670,
+   658,
+   437
+  ],
+  "search_call_ms_median": 33.0
+ },
+ "on": {
+  "first_search_answers_s": [
+   10.65,
+   11.15
+  ],
+  "tree_visible_s": [
+   6.55,
+   7.52
+  ],
+  "boot_requests": 44,
+  "boot_bytes": 33087123,
+  "typing_to_results_ms_median": 669,
+  "typing_to_results_ms_all": [
+   668,
+   677,
+   512,
+   673,
+   670,
+   686,
+   693,
+   667,
+   664,
+   488
+  ],
+  "search_call_ms_median": 25.8
+ }
+}

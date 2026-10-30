@@ -1,0 +1,2389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Card abilities, grouped</title>
+<style>
+:root { --bg:#fbfbf8; --fg:#1d1d1b; --muted:#6b6a64; --line:#deddd6; --panel:#ffffff; --accent:#2f5d8a;
+        --chip:#eef2f6; --broad:#9a5b00; --broadbg:#fff4e0; --held:#7a1f1f; --sel:#e3ecf5; --tent:#1f6b64; --tentbg:#dcefec; --ann:#6a3d9a; --annbg:#f1e9f7; --tag:#a4306f; --tagbg:#f8e6f0; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg:#17181a; --fg:#e8e6df; --muted:#a29f96; --line:#33343a; --panel:#1f2023;
+        --accent:#8db8e3; --chip:#2a2f36; --broad:#f0b453; --broadbg:#3a2e17; --held:#f0a0a0; --sel:#24323f; --tent:#7fd0c8; --tentbg:#1f3a37; --ann:#c9a7ee; --annbg:#2d2339; --tag:#e79ac4; --tagbg:#3a1f2f; }
+}
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg); color:var(--fg); font:14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+header { padding:12px 16px; border-bottom:1px solid var(--line); background:var(--panel); }
+h1 { font-size:18px; margin:0 0 4px; }
+.prov { color:var(--muted); font-size:12px; }
+.cov { margin-top:6px; font-size:13px; }
+.cov b { font-size:15px; }
+.cov .basis { color:var(--muted); font-size:12px; }
+.find { margin-top:8px; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.find input { padding:6px 8px; min-width:260px; border:1px solid var(--line); background:var(--bg); color:var(--fg); border-radius:4px; }
+.find input[type=checkbox] { min-width:0; padding:0; }
+#findres { margin-top:6px; }
+.fr { padding:6px 8px; border:1px solid var(--line); border-radius:4px; margin:4px 0; background:var(--bg); }
+.fr .nm { font-weight:600; }
+main { display:grid; grid-template-columns: minmax(280px, 420px) 1fr; min-height: calc(100vh - 140px); }
+@media (max-width: 800px) { main { grid-template-columns: 1fr; } }
+nav { border-right:1px solid var(--line); overflow:auto; max-height: calc(100vh - 140px); padding:8px 0; }
+section#panel { padding:12px 16px; overflow:auto; max-height: calc(100vh - 140px); }
+.blk { font-weight:700; text-transform:uppercase; font-size:11px; letter-spacing:.04em; color:var(--muted); padding:10px 12px 4px; }
+.row { padding:3px 12px; cursor:pointer; display:flex; justify-content:space-between; gap:8px; }
+.row:hover { background:var(--sel); }
+.row.sel { background:var(--sel); font-weight:600; }
+.row .n { color:var(--muted); font-variant-numeric: tabular-nums; white-space:nowrap; }
+.l1 { padding-left:12px; } .l2 { padding-left:28px; } .l3 { padding-left:44px; font-size:13px; }
+.tw { display:inline-block; width:12px; color:var(--muted); }
+.badge { font-size:10px; padding:0 5px; border-radius:8px; margin-left:4px; white-space:nowrap; }
+.b-broad { background:var(--broadbg); color:var(--broad); border:1px solid var(--broad); }
+.b-auto { color:var(--muted); border:1px dashed var(--line); }
+.b-lowc { color:var(--broad); border:1px solid var(--broad); background:var(--broadbg); }
+.sugc { border-left:3px solid var(--line); margin:4px 0; padding-left:6px; }
+.sugm > summary { cursor:pointer; color:var(--muted); font-size:90%; }
+.b-tent { color:var(--tent); font-style:italic; border:1px solid var(--tent); background:repeating-linear-gradient(135deg, var(--tentbg) 0 4px, transparent 4px 8px); }
+.b-ann { color:var(--ann); border:1px dotted var(--ann); background:transparent; }
+.b-ann::before { content:"? "; font-weight:700; }
+.b-tag { color:var(--tag); border:3px double var(--tag); background:transparent; }
+.tagnote { background:var(--tagbg); border-left:4px double var(--tag); padding:6px 10px; margin:8px 0; }
+.tagstale { color:var(--held); font-weight:700; }
+.annnote { background:var(--annbg); border-left:3px dotted var(--ann); padding:6px 10px; margin:8px 0; }
+.annnote .clause { font-style:italic; }
+.tentnote { background:var(--tentbg); border-left:3px solid var(--tent); padding:6px 10px; margin:8px 0; }
+.b-dev { color:var(--muted); font-family:ui-monospace, monospace; font-size:11px; }
+.note { background:var(--broadbg); color:var(--fg); border-left:3px solid var(--broad); padding:6px 10px; margin:8px 0; }
+.explain { color:var(--muted); margin:6px 0 10px; }
+.card { border-bottom:1px solid var(--line); padding:7px 2px; }
+.card .top { display:flex; gap:8px; align-items:baseline; cursor:pointer; flex-wrap:wrap; }
+.card .nm { font-weight:600; }
+.card .ty { color:var(--muted); font-size:12px; }
+.cost { font-family:ui-monospace, monospace; font-size:11px; color:var(--muted); }
+.ab { margin:3px 0 0 0; }
+.ab .why { font-weight:500; }
+.also { font-size:12px; color:var(--muted); margin-top:2px; }
+a, .lnk { color:var(--accent); cursor:pointer; text-decoration:none; }
+.lnk:hover, a:hover { text-decoration:underline; }
+.chip { display:inline-block; background:var(--chip); border-radius:3px; padding:0 5px; margin:1px 2px; font-size:12px; }
+.det { margin:6px 0 4px 10px; font-size:13px; }
+.det .rt { white-space:pre-wrap; background:var(--bg); border:1px solid var(--line); padding:6px 8px; border-radius:4px; }
+.det ul { margin:4px 0; padding-left:18px; }
+.st-u, .st-h { color:var(--muted); }
+.more { margin:10px 0; }
+button { background:var(--chip); color:var(--fg); border:1px solid var(--line); border-radius:4px; padding:4px 10px; cursor:pointer; }
+.sub { color:var(--muted); font-size:12px; margin:2px 0 8px; }
+.subhead { font-weight:600; margin-top:12px; }
+.gap { color:var(--muted); font-size:12px; }
+[hidden] { display:none !important; }
+.tabs { display:flex; gap:4px; padding:8px 12px; border-bottom:1px solid var(--line); position:sticky; top:0; background:var(--bg); }
+.tabs button.on { background:var(--sel); font-weight:600; border-color:var(--accent); }
+.cf { padding:4px 12px 12px; }
+.cf label.h { display:block; font-size:12px; color:var(--muted); margin-top:10px; }
+.cf input[type=search], .cf input[type=number], .cf select { width:100%; padding:5px 6px; border:1px solid var(--line); background:var(--bg); color:var(--fg); border-radius:4px; }
+.cf .two { display:flex; gap:6px; }
+.cf .cols label { margin-right:8px; white-space:nowrap; }
+.crow { display:flex; gap:8px; align-items:baseline; flex-wrap:wrap; cursor:pointer; }
+.crow:hover { background:var(--sel); }
+.cardpage pre { white-space:pre-wrap; background:var(--bg); border:1px solid var(--line); padding:6px 8px; border-radius:4px; max-height:420px; overflow:auto; font-size:12px; }
+.viewbar { display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin:6px 0 8px; }
+.viewbar .vbtn { font-size:12px; padding:2px 10px; }
+.viewbar .vbtn.on { background:var(--sel); font-weight:600; border-color:var(--accent); }
+/* same as the archived view: four cards across, each 75% of an equal quarter of the width; the 10px gap stays fixed */
+#list.grid { display:grid; gap:10px; grid-template-columns:repeat(4, calc((100% - 30px) / 4 * 0.75)); align-items:start; }
+#list.grid > .gridfull, #list.grid > .tiledet { grid-column:1 / -1; }
+.tile { cursor:pointer; }
+.tile img { width:100%; display:block; border-radius:4.75% / 3.5%; background:var(--chip); aspect-ratio:488/680; }
+.tile:hover img { outline:2px solid var(--accent); outline-offset:2px; }
+.tile.sel img, .tile.sel .noimg { outline:2px solid var(--accent); outline-offset:2px; }
+.tname { font-size:11px; color:var(--muted); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.noimg { aspect-ratio:488/680; border:1px dashed var(--line); border-radius:4.75% / 3.5%; padding:8px; font-size:11px; display:flex; flex-direction:column; justify-content:center; background:var(--panel); color:var(--muted); }
+.tiledet { background:var(--panel); border:1px solid var(--line); padding:8px 10px; border-radius:4px; }
+.devonly { display:none; }
+body.dev .devonly { display:inline; }
+.loosenote { margin-top: 4px; font-size: 12px; color: var(--muted, #666); }
+.loosehead { margin: 2px 0 8px; font-weight: 600; }
+/* hand placements (reports/manualedit.js): a solid badge so it is never mistaken for a tentative / annotation / tag one */
+:root { --hand:#0b5fa5; --handbg:#e3f0fb; --warn:#a31515; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --hand:#6db3ee; --handbg:#1b2c3b; --warn:#f0a0a0; } }
+.b-hand { background:var(--hand); color:#fff; border:1px solid var(--hand); font-weight:600; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .b-hand { color:#08121c; } }
+.b-sib { color:var(--tent); border:1px dashed var(--tent); background:repeating-linear-gradient(135deg, var(--tentbg) 0 4px, transparent 4px 8px); font-style:italic; }
+.sibline { margin-top:6px; padding:4px 8px; border-left:4px dashed var(--tent); background:var(--tentbg); font-size:13px; }
+.batchbar { margin-top:6px; padding:6px 10px; border:2px solid var(--hand); background:var(--handbg); }
+.batchbar button { margin-left:6px; } .batchbar ul { margin:4px 0; padding-left:18px; }
+.bctl { margin:8px 0; display:flex; gap:16px; flex-wrap:wrap; align-items:center; } .bctl input[type=range] { width:200px; vertical-align:middle; }
+.bbar { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin:8px 0; padding:6px 0; position:sticky; top:0; background:var(--bg); z-index:4; border-bottom:1px solid var(--line); }
+.bbar .bgrow { margin-left:auto; display:flex; gap:8px; }
+.brow { border-bottom:1px solid var(--line); padding:6px 0; display:grid; grid-template-columns:minmax(150px,230px) 1fr; gap:4px 12px; align-items:start; }
+.brow.review { background:repeating-linear-gradient(135deg, transparent 0 8px, var(--chip) 8px 9px); } .brow.handled { opacity:.9; }
+.bcard img { width:52px; float:left; margin-right:8px; border-radius:4%; } .bcard .nm { font-weight:600; }
+.bit { display:flex; flex-wrap:wrap; gap:2px 8px; align-items:baseline; padding:2px 0; } .bit .why { flex-basis:100%; color:var(--muted); font-size:12px; padding-left:24px; } .bit .score { font-weight:700; font-variant-numeric:tabular-nums; }
+.bsug details { margin-top:2px; } .breview { border:1px solid var(--hand); border-radius:6px; padding:8px 10px; margin:8px 0; background:var(--handbg); } .breview .bit { background:var(--panel); border-bottom:1px solid var(--line); padding:3px 4px; }
+@media (max-width: 800px) { .brow { grid-template-columns:1fr; } .bbar { top:0; } .bbar button, .bit input, .bctl input { min-height:44px; } .bit input[type=checkbox] { min-width:28px; } .bctl input[type=range] { width:100%; } }
+.b-hg { color:var(--hand); border:1px dashed var(--hand); background:transparent; font-weight:600; }
+.b-nofit { color:var(--muted); border:1px solid var(--muted); text-decoration:line-through; text-decoration-style:double; }
+.b-unsaved { background:var(--warn); color:#fff; border:1px solid var(--warn); font-weight:700; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .b-unsaved { color:#2a0808; } }
+.handline { margin-top:6px; padding:5px 8px; border-left:4px solid var(--hand); background:var(--handbg); font-size:13px; }
+.handline .bad { color:var(--warn); font-weight:700; }
+.savebanner { margin-top:6px; padding:6px 10px; border:2px solid var(--warn); color:var(--warn); font-weight:600; }
+.savebanner button { margin-left:6px; }
+.handnote { background:var(--handbg); border-left:4px solid var(--hand); padding:6px 10px; margin:8px 0; }
+.cardlayout { display:grid; grid-template-columns:minmax(0,1fr) minmax(300px,380px); grid-template-areas:"img edit" "text edit"; gap:6px 16px; align-items:start; }
+.cl-img { grid-area:img; } .cl-text { grid-area:text; min-width:0; }
+.cl-img img { width:100%; max-width:300px; display:block; border-radius:4.75% / 3.5%; background:var(--chip); aspect-ratio:488/680; }
+.editpanel { grid-area:edit; border:1px solid var(--line); background:var(--panel); padding:10px 12px; border-radius:6px; min-width:0; }
+.editpanel h3 { font-size:13px; margin:12px 0 4px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); }
+.editpanel .grow, .editpanel .srow, .editpanel .sug { padding:4px 0; border-bottom:1px solid var(--line); display:flex; flex-wrap:wrap; gap:4px 8px; align-items:baseline; }
+.editpanel .sug .why { flex-basis:100%; color:var(--muted); font-size:12px; }
+.editpanel .score { font-variant-numeric:tabular-nums; font-weight:700; min-width:34px; }
+.editpanel input[type=search], .editpanel input[type=text] { width:100%; padding:6px 8px; border:1px solid var(--line); background:var(--bg); color:var(--fg); border-radius:4px; }
+.editpanel .eb { margin-left:auto; }
+.editpanel .bad, .handline .bad { color:var(--warn); font-weight:600; }
+.editpanel .gname { flex:1 1 140px; min-width:0; overflow-wrap:anywhere; }
+.qbar { display:flex; gap:8px; align-items:center; flex-wrap:wrap; padding:6px 8px; margin:0 0 8px; background:var(--handbg); border:1px solid var(--hand); border-radius:6px; background-clip:padding-box; }
+.qbar .qn { margin-left:auto; }
+@media (max-width: 1100px) { .cardlayout { grid-template-columns:1fr; grid-template-areas:"img" "edit" "text"; } }
+@media (max-width: 800px) {
+  .qbar { position:sticky; top:0; z-index:5; }
+  .cl-img img { max-width:260px; margin:0 auto; }
+  .editpanel button, .editpanel input[type=search], .editpanel input[type=text] { min-height:44px; }
+  .editpanel .eb { flex:1 0 100%; }
+}
+/* suggested cards on a group page (reports/suggested.js): a dotted purple outline, so it is never mistaken for a member, a hand placement, a tentative or an annotation badge */
+:root { --sugg:#7a3fa0; --suggbg:#f3ebf9; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --sugg:#c9a0e8; --suggbg:#2a2133; } }
+.b-sugg { color:var(--sugg); border:1px dotted var(--sugg); background:transparent; font-weight:600; }
+.sctabs { display:flex; flex-wrap:wrap; gap:4px; margin:10px 0 8px; border-bottom:2px solid var(--line); }
+.sctabs button { border:1px solid var(--line); border-bottom:none; background:var(--chip); color:var(--fg); padding:5px 12px; border-radius:6px 6px 0 0; cursor:pointer; font:inherit; }
+.sctabs button.on { background:var(--bg); font-weight:700; box-shadow:0 2px 0 var(--bg); }
+.sctabs button[data-sctab=matches] { border-style:dotted; border-color:var(--sugg); color:var(--sugg); }
+.sc-off { display:none !important; }
+.suggsec { margin-top:6px; padding:8px 10px; border:2px dotted var(--sugg); border-radius:6px; background:var(--suggbg); }
+.suggsec h3 { margin:0 0 4px; font-size:14px; } .sgsub { margin-top:14px; }
+.sgctl { display:flex; flex-wrap:wrap; gap:6px 16px; align-items:center; margin:6px 0; }
+.sgrow { display:flex; flex-wrap:wrap; gap:4px 8px; align-items:baseline; padding:5px 0; border-bottom:1px solid var(--line); }
+.sgrow .score { font-variant-numeric:tabular-nums; font-weight:700; min-width:34px; }
+.sgrow .why { flex-basis:100%; color:var(--muted); font-size:12px; }
+.sgrow .eb { margin-left:auto; }
+@media (max-width: 800px) { .sctabs button { min-height:44px; flex:1 1 auto; } .suggsec button, .suggsec input[type=range] { min-height:44px; } .suggsec input[type=checkbox] { min-width:28px; min-height:28px; } .sgrow .eb { flex-basis:100%; margin-left:0; } }
+/* group search in the main box (reports/groupsearch.js): a group row is a link; one line of description; the match reason in italics */
+.gs-h { margin:10px 0 2px; font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+.gs-jump { margin:6px 0 0; font-size:13px; }
+.gr { display:block; padding:6px 8px; border:1px solid var(--line); border-radius:4px; margin:4px 0; background:var(--bg); color:var(--fg); text-decoration:none; overflow-wrap:anywhere; }
+.gr:hover, .gr:focus, .fr[tabindex]:focus, .gs-btn:focus { border-color:var(--accent); outline:2px solid var(--accent); outline-offset:0; }
+.gr .gn { font-weight:600; }
+.gr .gp { display:block; color:var(--muted); font-size:12px; }
+.gr .gd { display:block; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.gr .gm { display:block; font-size:12px; color:var(--muted); font-style:italic; }
+.gr .gl { display:block; font-size:12px; color:var(--broad); }
+.gs-btn { margin:4px 0; padding:6px 10px; border:1px solid var(--line); border-radius:4px; background:var(--chip); color:var(--fg); font:inherit; cursor:pointer; }
+.gs-famlist { margin-top:4px; }
+.gs-miss { margin-top:8px; }
+.gs-btn[aria-disabled="true"] { opacity:.7; cursor:default; }
+/* merged group pages (reports/mergepage.js): sections, the "merged" badge, the group picker */
+.b-merged { color:var(--accent); border:1px solid var(--accent); background:transparent; font-weight:600; }
+.msec { margin-top:14px; padding:6px 0 2px; border-top:2px solid var(--line); }
+.msec .mname { font-weight:700; font-size:14px; overflow-wrap:anywhere; }
+.mchips { margin:6px 0; font-size:13px; }
+.gap.also { font-style:italic; }
+.sgpick { margin:6px 0; }
+.sgpick select { max-width:100%; min-height:32px; }
+@media (max-width: 800px) { .mchips .chip { min-height:44px; display:inline-flex; align-items:center; } .msec .lnk { display:inline-block; min-height:44px; line-height:44px; } .sgpick select { min-height:44px; width:100%; } }
+/* card pin (reports/cardpin.js): the searched-for card pinned at the top of its group, and highlighted in the list */
+.pinwrap { margin:10px 0; padding:8px 10px; border:2px solid var(--accent); border-radius:6px; background:var(--sel); }
+.pinlabel { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--accent); }
+.pinalso { margin-top:4px; font-size:13px; }
+.pinhit { outline:3px solid var(--accent); outline-offset:-2px; background:var(--sel); }
+.fr[data-go^="pin:"] { cursor:pointer; }
+@media (max-width: 800px) { .pinalso .chip { min-height:44px; display:inline-flex; align-items:center; } }
+.sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+@media (max-width: 800px) { .gr, .gs-btn, .fr[tabindex] { min-height:44px; } .gs-jump a { display:inline-block; min-height:44px; line-height:44px; } .gr .gd { white-space:normal; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Card abilities, grouped</h1>
+  <div class="prov" id="prov">Loading…</div>
+  <div class="cov" id="cov"></div>
+  <div class="handline" id="handline" hidden></div>
+  <div class="sibline" id="sibline" hidden></div>
+  <div class="savebanner" id="savebanner" hidden></div>
+  <div class="batchbar" id="batchbar" hidden></div>
+  <div class="find">
+    <label for="q">Find a card:</label>
+    <input id="q" type="search" placeholder="type a card name" autocomplete="off">
+    <label class="prov" title="Cards that Scryfall has no picture for"><input type="checkbox" id="hidenopic" checked> hide cards with no picture</label>
+    <span class="prov" id="hidenote"></span>
+    <label class="prov" title="Groups that are tentative: grouped by effect type, not fully checked"><input type="checkbox" id="showtent" checked> show tentative placements</label>
+    <label class="prov" title="Abilities the tool held back for an unread condition (or an unread part of the card), shown in the group they would belong in. Tentative: not counted in the first three figures"><input type="checkbox" id="showann" checked> Show condition annotations</label>
+    <label class="prov" title="Cards with no readable ability, grouped by Scryfall community tag. Not checked against the parse; not counted in the first five figures"><input type="checkbox" id="showtag" checked> Show community-tag groups</label>
+    <label class="prov" id="showsiblab" title="Tentative placements for abilities that have exactly a group's signature but were held out by the grouping rule (the plain variant of a group). Not checked; counted in no figure" hidden><input type="checkbox" id="showsib" checked> Show sibling placements</label>
+    <label class="prov" id="showbatchlab" title="Batch actions: place from suggestions, confirm or reject soft placements, undo a batch. Unticked, every batch control and badge is hidden" hidden><input type="checkbox" id="showbatch" checked> Show batch actions</label>
+    <label class="prov" id="showhandlab" title="Placements made by hand in the edit panel (corrections/manual_placements.json). Unticked, every hand edit is hidden everywhere and the edit panel is off" hidden><input type="checkbox" id="showhand" checked> Show hand edits</label>
+    <span class="prov">· <a href="../archive/card-level-view-2026-10/reports/browse.html">archived card-level view</a> (its numbers do not match this view)</span>
+    <span class="prov devonly">· dev: <a href="ledger.html">coverage ledger</a> · <a href="card-explorer.html">parse-audit explorer</a> (both show the archived view)</span>
+  </div>
+  <div class="prov" id="gsnote" hidden></div>
+  <div id="findres"></div>
+</header>
+<main>
+  <nav>
+    <div class="tabs" id="tabs"><button data-mode="abilities" class="on">What abilities do</button><button data-mode="cards">Cards</button><button data-mode="queue" id="queuetab" hidden>To place</button></div>
+    <div id="tree"></div>
+    <div id="queuef" class="cf" hidden>
+      <p class="sub">Cards that still have nowhere to be found, most popular first. A card leaves this list when it is placed by hand or marked “nothing fits”.</p>
+      <label class="h">Why the card is not placed</label>
+      <div class="cols" id="qf-causes">
+        <label><input type="checkbox" value="1" checked> no readable ability</label><br>
+        <label><input type="checkbox" value="2" checked> dropped-condition hold</label><br>
+        <label><input type="checkbox" value="3" checked> gap-test hold</label><br>
+        <label><input type="checkbox" value="4" checked> only in a catch-all</label><br>
+        <label><input type="checkbox" value="5" checked> only in a held group</label><br>
+        <label><input type="checkbox" value="7" id="qf-gap"> gap-test stratum (shown as annotated while “Show condition annotations” is on)</label>
+      </div>
+      <label class="h">Also list cards that are already placed softly (to confirm or fix them)</label>
+      <div class="cols" id="qf-soft"><label><input type="checkbox" value="t"> tentative</label> <label><input type="checkbox" value="a"> annotation</label> <label><input type="checkbox" value="m"> community tag</label></div>
+      <label class="h" for="qf-top">Popularity</label>
+      <select id="qf-top"><option value="0">all</option><option value="1000">top 1,000 only</option><option value="3000">top 3,000 only</option></select>
+      <label class="h"><input type="checkbox" id="qf-sug"> only cards that have a suggestion</label>
+      <p class="sub" id="qcount"></p>
+    </div>
+    <div id="cardf" class="cf" hidden>
+      <label class="h" for="cf-name">Name contains</label>
+      <input id="cf-name" type="search" autocomplete="off" placeholder="part of a card name">
+      <label class="h">Colour (any of these)</label>
+      <div class="cols" id="cf-cols"><label><input type="checkbox" value="W"> W</label><label><input type="checkbox" value="U"> U</label><label><input type="checkbox" value="B"> B</label><label><input type="checkbox" value="R"> R</label><label><input type="checkbox" value="G"> G</label><label><input type="checkbox" value="C"> colourless</label></div>
+      <label class="h" for="cf-type">Type</label>
+      <select id="cf-type"><option value="">any</option><option>Creature</option><option>Instant</option><option>Sorcery</option><option>Artifact</option><option>Enchantment</option><option>Land</option><option>Planeswalker</option><option>Battle</option></select>
+      <label class="h">Mana value</label>
+      <div class="two"><input id="cf-mvmin" type="number" min="0" placeholder="min"><input id="cf-mvmax" type="number" min="0" placeholder="max"></div>
+      <div id="cf-kwwrap" hidden><label class="h" for="cf-kw">Keyword <span class="badge b-auto">a filter, not a placement</span></label>
+      <select id="cf-kw"><option value="">any</option></select></div>
+      <label class="h" for="cf-st">Where it is in this view</label>
+      <select id="cf-st"><option value="">any</option><option value="l">grouped by its abilities</option><option value="b">only in groups broader than they look</option><option value="u">not yet organized</option><option value="h">placed by hand</option><option value="t">tentatively placed (not fully checked)</option><option value="a">annotated: an unread condition or card part (not fully checked)</option><option value="m">grouped by community tag (not checked)</option><option value="k">keyword block</option><option value="g">replacement group</option><option value="v">no abilities</option></select>
+      <p class="sub" id="cfcount"></p>
+    </div>
+  </nav>
+  <section id="panel"><p class="explain">Pick a group on the left. Each card is listed under every group one of its abilities fits, and shows the text of that ability.</p></section>
+</main>
+<footer class="prov" style="padding:10px 16px;border-top:1px solid var(--line)" id="foot"></footer>
+<script src="abilityfind.js"></script>
+<script src="manualedit.js"></script>
+<script src="suggested.js"></script>
+<script src="groupsearch.js"></script>
+<script src="cardpin.js"></script>
+<script src="mergepage.js"></script>
+<script>
+"use strict";
+const DEV = new URLSearchParams(location.search).get("dev") === "1";
+if (DEV) document.body.classList.add("dev");
+// Tester mode (the default; ?dev=1 is this page exactly as it always was): a presentation layer over the same data. reports/tester.js is written in only when DEV is off, and the boot below waits for it.
+const TESTER = !DEV;
+const SCNAME = DEV ? "Possible matches" : "Might also fit";
+let TESTERREADY = null;
+if (TESTER) { TESTERREADY = new Promise(r => { window.__testerGo = r; }); document.write('<link rel="stylesheet" href="tester.css"><script src="tester.js" onerror="window.__testerGo()"><\/script>'); }
+const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const fmt = n => Number(n).toLocaleString("en-US");
+const PAGE = 150;
+let TAX = null, MEM = null, CARDS = null, UNORG = null, LOOK = null, LIDX = null, LOOSE = null, UNREAD = null, TENT = null, TENTTRIED = false;
+// the tentative layer (build/tentative_placements.json): loose groups promoted to tentative placements; one switch hides it all
+let SHOWT = true;
+try { if (localStorage.getItem("showTentative") === "0") SHOWT = false; } catch (e) { /* storage unavailable: keep the default */ }
+const tentOn = () => SHOWT && !!TENT && TENT.meta.enabled && TENT.meta.groups > 0;
+const isTent = oid => tentOn() && !!TENT.by_card[oid];
+const TENT_LABEL = "Tentative placement: grouped by effect type, not fully checked.";
+const tgN = g => counting() ? nvis(g.m.map(r => r[0])) : g.cards;
+const tfN = f => counting() ? nvis([].concat(...f.groups.map(gid => TENT.groups[gid].m.map(r => r[0])))) : f.cards;
+// the condition-annotation layer (build/annotation_placements.json): abilities held for a dropped condition, or by the gap test, shown in the group they would belong in. Tentative; one switch hides it all
+let ANN = null, ANNTRIED = false, SHOWA = true;
+try { if (localStorage.getItem("showAnnotations") === "0") SHOWA = false; } catch (e) { /* storage unavailable: keep the default */ }
+const annOn = () => SHOWA && !!ANN && ANN.meta.enabled;
+const hasAnn = oid => annOn() && !!ANN.by_card[oid];
+const isAnn = oid => hasAnn(oid) && !isTent(oid);           // an annotated card that leaves the pile (a tentative card keeps its tentative count)
+const isAnnC = oid => isAnn(oid) && ANN.cs[oid] === "c";
+const isAnnG = oid => isAnn(oid) && ANN.cs[oid] === "g";
+const inPile = oid => !isTent(oid) && !isAnn(oid) && !isTag(oid) && !isHandNew(oid);
+const annCounts = () => { const n = { c: 0, g: 0 }; if (annOn()) for (const o of Object.keys(ANN.by_card)) if (isAnn(o)) n[ANN.cs[o]]++; return n; };
+const agN = g => counting() ? nvis(g.m.map(r => r[0])) : g.cards;
+const afN = f => counting() ? nvis([].concat(...f.groups.map(k => ANN.groups[k].m.map(r => r[0])))) : f.cards;
+function annNote(r) {
+  const L = ANN.meta.note;
+  if (r[6] === "g") return `${esc(L.g)} ${r[7].length ? r[7].map(t => "<span class=\"clause\">“" + esc(t) + "”</span>").join("; ") : "(its text is not shown)"}. ${esc(L.tail_g)}`;
+  return `${esc(L.c)} <span class="clause">“${esc(r[2])}”</span>. ${esc(L.tail[String(r[4])])}`;
+}
+const annBadge = r => `<span class="badge b-ann">${esc(ANN.meta.labels[r[6]])}</span>`;
+function annChips(oid) {
+  if (!hasAnn(oid)) return "";
+  let h = "";
+  for (const k of ANN.by_card[oid]) {
+    const g = ANN.groups[k];
+    for (const r of g.m) if (r[0] === oid) h += `<div class="annnote">${annBadge(r)} <b>${esc(g.name)}</b> <span class="lnk chip" data-go="ag:${esc(k)}">open this group</span><div class="ab"><span class="why">${esc(r[1])}</span></div><div>${annNote(r)}</div></div>`;
+  }
+  return h + `<div class="sub">Tentative: not counted in the precise, with-broad or with-tentative figure.${isTent(oid) ? " This card is also tentatively placed; it is counted once, as tentative." : ""}</div>`;
+}
+// the community-tag layer (build/tag_placements.json): the 1,300 cards with no readable ability, grouped by Scryfall community tag. Separate and labeled; one switch hides it all
+let TAGS = null, TAGTRIED = false, SHOWTAG = true, URTAG = "";
+try { if (localStorage.getItem("showTags") === "0") SHOWTAG = false; } catch (e) { /* storage unavailable: keep the default */ }
+const tagOn = () => SHOWTAG && !!TAGS && TAGS.meta.enabled;
+const isTag = oid => tagOn() && !!TAGS.by_card[oid];
+const tgcN = g => counting() ? nvis(g.m) : g.cards;
+const ctAllN = () => counting() ? nvis(Object.keys(TAGS.by_card)) : TAGS.meta.cards;
+const TAG_STALE_DAYS = 60;
+function tagSnap() {
+  const d = TAGS.meta.snapshot.slice(0, 10), age = Math.floor((Date.now() - Date.parse(TAGS.meta.snapshot)) / 86400000);
+  return age > TAG_STALE_DAYS ? `<span class="tagstale">Tag snapshot ${esc(d)} is ${age} days old: newer cards may have no tags yet.</span>` : `Tag snapshot ${esc(d)}.`;
+}
+function tagChips(oid) {
+  if (!tagOn()) return "";
+  const gs = TAGS.by_card[oid];
+  const wide = (TAGS.wide_by_card[oid] || []).map(t => esc(TAGS.wide[t].name)).join("; ");
+  if (gs) {
+    return `<div class="tagnote"><span class="badge b-tag">${esc(TAGS.meta.badge)}</span> ${esc(TAGS.meta.label)} Not counted in the first five figures. ${tagSnap()} Groups: ` +
+      gs.map(t => `<span class="lnk chip" data-go="ct:${esc(t)}">${esc(TAGS.groups[t].name)}</span>`).join(" ") + (wide ? ` <span class="sub">(broad tags, not groups: ${wide})</span>` : "") + `</div>`;
+  }
+  if (TAGS.no_group.includes(oid)) {
+    return `<div class="tagnote"><span class="badge b-tag">${esc(TAGS.meta.badge)}</span> No community-tag group yet for this card${wide ? ` (it carries only broad tags, which are filters, not groups: ${wide})` : ""}. ${tagSnap()}</div>`;
+  }
+  return "";
+}
+const NODES = {}, NODE_FAM = {};
+const open = new Set();
+let selected = null, MODE = "abilities";
+
+async function J(name) { const r = await fetch("../build/" + name); if (!r.ok) throw new Error(name + " " + r.status); return r.json(); }
+let CPROMISE = null;
+async function loadCards() {
+  if (!MEM) MEM = (await J("ability_taxonomy_members.json")).leaves;
+  if (!CARDS) CARDS = (await J("ability_taxonomy_cards.json")).cards;
+  await needImages(); await needFlags();
+}
+// one shared load: a second caller waits for the first instead of fetching both files again; a failed load can be retried
+function needCards() { return CPROMISE || (CPROMISE = loadCards().catch(e => { CPROMISE = null; throw e; })); }
+let FLAGS = null, FLAGTRIED = false;
+async function needFlags() {
+  if (FLAGTRIED) return;
+  FLAGTRIED = true;
+  try { FLAGS = await J("card_flags.json"); } catch (e) { FLAGS = null; }
+}
+const flagged = oid => !!(FLAGS && FLAGS.cards[oid]);
+const hidden = oid => HIDE && !!IMGDOC && !IMGDOC.cards[oid];
+const visible = oid => !hidden(oid);
+// why a card is hidden right now: the first reason that applies
+function hideReason(oid) {
+  if (HIDE && IMGDOC && !IMGDOC.cards[oid]) return "no picture";
+  return "";
+}
+const counting = () => (HIDE && !!IMGDOC) && !!MEM && !!CARDS;
+function nvis(oids) { const seen = new Set(); let n = 0; for (const o of oids) if (!seen.has(o)) { seen.add(o); if (visible(o)) n++; } return n; }
+const memOids = lid => (MEM[lid] || []).map(m => m[0]);
+// group sizes with the hidden cards taken out (the totals in the header count the whole pool)
+const leafN = lid => counting() ? nvis(memOids(lid)) : TAX.leaves[lid].cards;
+const leafAb = lid => counting() ? (MEM[lid] || []).filter(m => visible(m[0])).length : TAX.leaves[lid].abilities;
+const nodeLeaves = nd => nd.leaves.concat(nd.rolled);
+const nodeN = nd => counting() ? nvis([].concat(...nodeLeaves(nd).map(memOids))) : nd.cards;
+const nodeAb = nd => counting() ? nodeLeaves(nd).reduce((a, lid) => a + leafAb(lid), 0) : nd.abilities;
+const famN = f => counting() ? nvis([].concat(...f.nodes.map(nd => [].concat(...nodeLeaves(nd).map(memOids))))) : f.cards;
+const famAb = f => counting() ? f.nodes.reduce((a, nd) => a + nodeAb(nd), 0) : f.abilities;
+const blkLeafN = (blk, lid) => counting() ? nvis(blk.leaves[lid].cards) : blk.leaves[lid].n;
+const branchN = (blk, br) => counting() ? nvis([].concat(...br.leaves.map(lid => blk.leaves[lid].cards))) : br.n_cards;
+const blockN = (blk, total) => counting() ? nvis([].concat(...Object.values(blk.leaves).map(l => l.cards))) : total;
+const unorgN = g => UNORG && (counting() || tentOn() || annOn() || handOn()) ? nvis(g.list.map(c => c.c).filter(inPile)) : g.cards;
+async function needUnorg() { if (!UNORG) UNORG = (await J("ability_taxonomy_unorganized.json")).groups; }
+// the "Loosely grouped" layer and the "couldn't read yet" list (build/loose_groups.json, build/loose_unread.json): a browse aid, never counted as organized
+async function needLoose() {
+  if (!LOOSE) { try { LOOSE = await J("loose_groups.json"); } catch (e) { LOOSE = null; } }
+  if (!UNREAD) { try { UNREAD = await J("loose_unread.json"); } catch (e) { UNREAD = null; } }
+  if (!TENTTRIED) { TENTTRIED = true; try { TENT = await J("tentative_placements.json"); } catch (e) { TENT = null; } }
+  if (!TAGTRIED) {
+    TAGTRIED = true;
+    try { TAGS = await J("tag_placements.json"); } catch (e) { TAGS = null; }
+  }
+  if (!ANNTRIED) {
+    ANNTRIED = true;
+    try {
+      ANN = await J("annotation_placements.json");
+      ANN.cs = {};                                           // the stratum of a card: "c" (condition not read) wins over "g" (card part not read)
+      for (const g of Object.values(ANN.groups)) for (const r of g.m) if (ANN.cs[r[0]] !== "c") ANN.cs[r[0]] = r[6];
+    } catch (e) { ANN = null; }
+  }
+}
+const LOOSE_LABEL = "Loosely grouped by effect. Not checked for accuracy.";
+const lgN = g => counting() ? nvis(g.m.map(r => r[0])) : g.cards;
+const lfN = f => counting() ? nvis([].concat(...f.groups.map(gid => LOOSE.groups[gid].m.map(r => r[0])))) : f.cards;
+const lAllN = () => counting() ? nvis(Object.keys(LOOSE.by_card)) : LOOSE.meta.cards_with_a_group;
+const unreadN = () => counting() ? nvis(UNREAD.rows.map(r => r[0])) : UNREAD.cards;
+// the loose groups (and the "couldn't read yet" list) a pile card is in, as links; used on the card page and in Find a card
+function tentChips(oid) {
+  if (!isTent(oid)) return "";
+  return `<div class="loosenote"><span class="badge b-tent">tentative</span> ${esc(TENT_LABEL)} Not counted in the precise or the broad figure. Tentatively grouped: ` +
+    TENT.by_card[oid].map(gid => `<span class="lnk chip" data-go="tg:${esc(gid)}">${esc(TENT.groups[gid].name)}</span>`).join(" ") + `</div>`;
+}
+function looseChips(oid) {
+  const A = annChips(oid) + tagChips(oid);
+  if (LOOSE && LOOSE.by_card[oid]) {
+    return A + tentChips(oid) + `<div class="loosenote">${esc(LOOSE_LABEL)}${isTent(oid) ? "" : " Still counted as not yet organized."} Groups: ` + LOOSE.by_card[oid].map(gid =>
+      `<span class="lnk chip" data-go="lg:${esc(gid)}">${esc(LOOSE.groups[gid].name)}</span>`).join(" ") + `</div>`;
+  }
+  if (UNREAD && UNREAD.rows.some(r => r[0] === oid)) {
+    return A + `<div class="loosenote">We couldn't read this card yet, so it has no loose group. <span class="lnk chip" data-go="UR:">Cards we couldn't read yet</span></div>`;
+  }
+  return A;
+}
+// the cards left out because they are not meant for constructed play, by reason (read from build/card_flags.json)
+function ncByReason() {
+  const by = {};
+  if (!FLAGS) return by;
+  for (const oid of Object.keys(FLAGS.cards)) {
+    const ev = FLAGS.evidence[oid];
+    if (!ev || !ev.in_card_set) continue;
+    (by[FLAGS.cards[oid]] = by[FLAGS.cards[oid]] || []).push(oid);
+  }
+  return by;
+}
+const NCWHY = {
+  silver_border: "Every printing has a silver border (Unglued, Unhinged, Unstable and similar).",
+  acorn_stamp: "Every printing carries the acorn stamp (Unfinity): not legal in tournament play.",
+  playtest_card: "Scryfall tags every printing as a playtest card (the Mystery Booster test cards, whose pictures read “TEST CARD - not for constructed play”).",
+  joke_or_test_set: "Every printing is in a joke or test set (the Un-sets, Unknown Event, Mystery Booster playtest cards, ...).",
+  memorabilia: "Every printing is a collector or memorabilia item.",
+};
+function hideNote() {
+  const el = document.getElementById("hidenote");
+  if (!el) return;
+  if (!CARDS || !HIDE) { el.textContent = ""; return; }
+  const by = {};
+  for (const oid of Object.keys(CARDS)) { const r = hideReason(oid); if (r) by[r] = (by[r] || 0) + 1; }
+  const parts = Object.entries(by).sort((a, b) => b[1] - a[1]).map(([r, n]) => `${fmt(n)} ${r}`);
+  el.textContent = parts.length ? "Hidden from lists and group counts: " + parts.join(", ") + "." : "";
+}
+// "Hide cards with no picture": on by default; remembered per viewer when the browser allows it.
+let HIDE = true;
+try { if (localStorage.getItem("hideNoPicture") === "0") HIDE = false; } catch (e) { /* storage unavailable: keep the default */ }
+const hasPicture = oid => !IMGDOC || !!IMGDOC.cards[oid];     // if the index could not be read nothing is hidden
+let HIDDEN = 0, HIDDENBY = {};
+
+// ---------------------------------------------------------------- keyword facet (build/keyword_facet.json): a filter, never a placement
+let KFAC = null, KFPROMISE = null;
+const KSETS = {};
+function needKFac() { return KFPROMISE || (KFPROMISE = (async () => { try { KFAC = await J("keyword_facet.json"); } catch (e) { KFAC = null; } })()); }
+const kwSet = n => KSETS[n] || (KSETS[n] = new Set(KFAC.keywords[n].c));
+const kwOrder = () => Object.keys(KFAC.keywords).sort((a, b) => KFAC.keywords[b].n - KFAC.keywords[a].n || (a < b ? -1 : 1));
+const KFNOTE = () => `${esc(KFAC.meta.label)} ${esc(KFAC.meta.note)} The parser lists ${fmt(KFAC.meta.parser_keywords)} keywords${KFAC.meta.scryfall_keywords ? `; Scryfall lists ${fmt(KFAC.meta.scryfall_keywords.names)} on the same cards` : ""}.`;
+// ---------------------------------------------------------------- sibling placements (build/sibling_placements.json): tentative, flagged, own switch, counted in no figure
+let SIB = null, SIBPROMISE = null, SHOWSIB = true;
+try { if (localStorage.getItem("showSibling") === "0") SHOWSIB = false; } catch (e) { /* storage unavailable: keep the default */ }
+function needSib() { return SIBPROMISE || (SIBPROMISE = (async () => { try { SIB = await J("sibling_placements.json"); } catch (e) { SIB = null; } if (SIB) document.getElementById("showsiblab").hidden = false; })()); }
+const sibOn = () => SHOWSIB && !!SIB && SIB.meta.enabled;
+const sibBadge = () => `<span class="badge b-sib" title="${esc(SIB ? SIB.meta.label : "")}">${esc(SIB ? SIB.meta.badge : "sibling")}</span>`;
+function sibLine() {
+  const el = document.getElementById("sibline");
+  if (!sibOn()) { el.hidden = true; return; }
+  const m = SIB.meta, c = m.cards_by_state;
+  el.hidden = false;
+  el.innerHTML = `${sibBadge()} <b>${fmt(m.cards)} cards</b> have a tentative sibling placement (${fmt(m.abilities)} abilities in ${fmt(m.groups)} groups): ${fmt(c.tentative || 0)} are already tentative, ${fmt(c.unorganized || 0)} are pile cards, ${fmt((c.annotation || 0) + (c.tag || 0))} are annotation or tag cards. ` +
+    `Each ability has exactly its group's signature but was held out by the grouping rule. Not checked; counted in no figure (every card stays in the figure it was in); a switch at the top hides it.`;
+}
+function sibNote(oid) {                                // a card page note
+  if (!sibOn() || !SIB.by_card[oid]) return "";
+  return `<div class="tentnote">${sibBadge()} ${esc(SIB.meta.label)} Group${SIB.by_card[oid].length > 1 ? "s" : ""}: ` + SIB.by_card[oid].map(l => `<span class="lnk chip" data-go="l:${esc(l)}">${esc(SIB.groups[l].name)}</span>`).join(" ") + `</div>`;
+}
+function sibRows(lid) {                                // cards with a sibling placement in this leaf, shown after the hand rows
+  if (!sibOn() || !CARDS || !SIB.groups[lid]) return [];
+  const rows = SIB.groups[lid].m.filter(r => CARDS[r[0]]);
+  if (!rows.length) return [];
+  return [`<div class="subhead">Tentative: same signature, held out by the grouping rule ${sibBadge()} <span class="sub">${fmt(rows.length)} card${rows.length > 1 ? "s" : ""}; not in the count above, not checked</span></div>`]
+    .concat(rows.map(r => ({ oid: r[0], extra: "", html: cardHTML(r[0], null, null).replace(`<div class="det" hidden>`, `<div class="ab"><span class="why">${esc(r[1] || "(no separate rules line)")}</span></div><div class="gap">Why it was held: ${esc(RARE_WORDS[r[2]] || r[2])}.</div><div class="det" hidden>`) })),
+      [`<div class="subhead">In the group as the tool built it <span class="sub">(the count above)</span></div>`]);
+}
+const RARE_WORDS = { rare_object: "no other ability does this to this kind of object", rare_verb_parameter: "no other ability does this with these details", rare_effect_type: "fewer than five abilities do this at all", below_minimum_size: "its exact group has fewer than five abilities" };
+// ---------------------------------------------------------------- hand-defined groups (corrections/hand_groups.json -> build/hand_group_hits.json): rules that only SUGGEST
+let HG = null, HGPROMISE = null;
+function needHG() { return HGPROMISE || (HGPROMISE = (async () => { try { HG = await J("hand_group_hits.json"); } catch (e) { HG = null; } })()); }
+const hgBadge = () => `<span class="badge b-hg" title="a group defined by hand; its rules only suggest cards">hand group</span>`;
+const layBadge = layer => layer === "hand" ? hgBadge() : `<span class="badge b-auto">${esc(Manual.LAYER_WORD[layer])}</span>`;
+// ---------------------------------------------------------------- hand placements
+// build/manual_index.json (groups and every card's generated placement), build/manual_suggestions.json, corrections/manual_placements.json (read straight from the file; written only by POST /api/manual
+// in src/serve.py). The logic is reports/manualedit.js. Never a generated file is edited. Unsaved edits are shown with a red NOT SAVED badge and are never counted in a figure.
+let MI = null, MS = null, MSTRIED = false, MDOC = null, MDOCERR = "", MRES = null, MRESV = null, MTRIED = false, MENDPOINT = null, SHOWH = true, HSET = new Set(), LASTMSG = "", CURCARD = null;
+try { if (localStorage.getItem("showHand") === "0") SHOWH = false; } catch (e) { /* storage unavailable: keep the default */ }
+const UNSAVED = {};                                   // "oid|group" -> {payload, error}
+try { for (const p of JSON.parse(localStorage.getItem("manualUnsaved") || "[]")) UNSAVED[p.oid + "|" + p.group] = { payload: p, error: "not sent yet" }; } catch (e) { /* ignore */ }
+const handOn = () => SHOWH && !!MI && !!MRES;
+const isHandNew = oid => handOn() && HSET.has(oid);
+const SRCW = Manual.SRC_WORD, LAYW = Manual.LAYER_WORD;
+const emptyDoc = () => ({ edits: {}, history: [], revision: 0 });
+let MPROMISE = null;
+function needManual() { return MPROMISE || (MPROMISE = loadManual()); }       // one shared load: a second caller waits for the first instead of seeing a half-loaded layer
+async function loadManual() {
+  try { MI = await J("manual_index.json"); } catch (e) { MI = null; return; }
+  try {
+    const r = await fetch("../corrections/manual_placements.json", { cache: "no-store" });
+    if (r.ok) { const t = await r.text(); try { MDOC = JSON.parse(t); if (!MDOC.edits) throw new Error("no edits object"); } catch (e) { MDOC = emptyDoc(); MDOCERR = "corrections/manual_placements.json cannot be read (" + e.message + "): no hand edits are shown. The file is not overwritten."; } }
+    else MDOC = emptyDoc();
+  } catch (e) { MDOC = emptyDoc(); }
+  try { const r = await fetch("../api/manual/ping", { cache: "no-store" }); const j = r.ok ? await r.json() : null; MENDPOINT = !!(j && j.ok && j.enabled); } catch (e) { MENDPOINT = false; }
+  recomputeHand();
+  document.getElementById("queuetab").hidden = false;
+  document.getElementById("showhandlab").hidden = false;
+  if (MI.batch) document.getElementById("showbatchlab").hidden = false;
+  await loadSC();
+  document.getElementById("qf-gap").checked = !SHOWA;      // "1,175 with the gap-test stratum on": the stratum is a separate filter, tied to the annotation switch to start with
+}
+// ---------------------------------------------------------------- "Possible matches": a tab on a group page (reports/suggested.js; build/suggested_cards, switched by SUGGESTED_CARDS_VIEW in src/build_suggested_cards.py; absent when it is off, and then no tab is drawn and nothing below runs)
+// Suggestions only: a card in the tab is not a member, is counted in no figure, never appears on the group's own tab, and is placed only by pressing Add (the same POST /api/manual as the edit panel; counted exactly as the resolver counts it).
+// The tab bar needs only build/suggested_cards/meta.json (the count at the current floor); a group's files are read when its tab is opened.
+let SC = null, SCFLOOR = 0.70, SCINC = false, SCCUR = null, SCGEN = 0, SCTM = null, SCTAB = "members", SCWANT = null;
+const SCSH = new Map(), SCLN = new Map(), SCLNV = new Map();
+try { SCINC = localStorage.getItem("suggPlaced") === "1"; SCTAB = localStorage.getItem("groupTab") === "matches" ? "matches" : "members"; const f = parseFloat(localStorage.getItem("suggFloor")); if (f >= 0.5 && f <= 0.9) SCFLOOR = Math.round(f * 10) / 10; } catch (e) { /* storage unavailable: keep the defaults */ }
+async function loadSC() {
+  try { SC = await J("suggested_cards/meta.json"); } catch (e) { SC = null; }
+}
+const splitTab = h => { const m = /&tab=(matches|members)$/.exec(h); return m ? [h.slice(0, m.index), m[1]] : [h, ""]; };    // a pasted link: "#l%3Aabc&tab=matches"
+const scGet = p => { if (!SCSH.has(p)) SCSH.set(p, J("suggested_cards/" + p).catch(() => [])); return SCSH.get(p); };
+async function scLines(rows) {
+  if (!SCTM) { try { SCTM = await J("text_sug/meta.json"); } catch (e) { SCTM = { line_shard: 256 }; } }
+  const per = SCTM.line_shard, ns = new Set(rows.filter(r => r.length > 6).map(r => Math.floor(r[6] / per)));
+  await Promise.all([...ns].map(n => { if (!SCLN.has(n)) SCLN.set(n, J("text_sug/l/" + n + ".json").then(a => { SCLNV.set(n, a); }, () => { SCLNV.set(n, []); })); return SCLN.get(n); }));
+}
+function scWhy(r) {                                     // r = [oid, score, sources, reason, line start, line length, member line]: the existing sources' words, then the matching line, as in the edit panel
+  let w = r[3] || "";
+  if (r.length > 6 && SCTM && CARDS && CARDS[r[0]]) {
+    const per = SCTM.line_shard, a = SCLNV.get(Math.floor(r[6] / per)), m = a && a[r[6] % per];
+    if (m) { const own = (CARDS[r[0]].t || "").substr(r[4], r[5]).replace(/\s+/g, " "), tw = `its line “${own}” is closest to “${m[0]}” (${m[1]}) in this group`; w = w ? w + "; " + tw : tw; }
+  }
+  return w;
+}
+const scBlank = gid => ({ gid: gid, q: [], p: [], lq: [], lp: [], keep: {}, nS: SC.per_view, nL: SC.per_view, msg: "", loaded: {}, tab: "members" });
+const SCHIDE = ["#panel .viewbar", "#list", "#morewrap", "#pinwrap"];                  // the group's own tab: left exactly as it was, only hidden while the other tab is open
+const scTabLabel = () => `${SCNAME} (${fmt(SCCUR.members ? SCCUR.members.reduce((a, g) => a + Suggested.count(SC, g, SCFLOOR, SCINC), 0) : Suggested.count(SC, SCCUR.gid, SCFLOOR, SCINC))})`;
+async function scAfter(k) {                              // called after every group page is drawn: a tab bar when the group has possible matches, nothing otherwise
+  for (const id of ["sctabs", "suggsec"]) { const o = document.getElementById(id); if (o) o.remove(); }
+  for (const sel of SCHIDE) for (const el of document.querySelectorAll(sel)) el.classList.remove("sc-off");
+  SCCUR = null;
+  const gen = ++SCGEN;
+  if (!SC || !MI || !SHOWH || !MRES) return;
+  const id = String(k).slice(String(k).indexOf(":") + 1), gid = Suggested.gidOfKey(String(k), !!(TENT && TENT.groups && TENT.groups[id]));
+  if (!gid || !MI.groups[gid] || !MI.groups[gid][4]) return;
+  const l = SC.lens[gid];
+  if (!Suggested.count(SC, gid, SCFLOOR, SCINC) && !(l && l[1] + l[2] > 0)) return;      // N is 0 and there is no community-tag block: no tab
+  const S = scBlank(gid);
+  S.k = k; SCCUR = S;
+  const bar = `<div id="sctabs" class="sctabs" role="tablist"><button role="tab" data-sctab="members">Cards in this group</button><button role="tab" data-sctab="matches">${esc(scTabLabel())}</button></div>`;
+  const first = document.querySelector("#panel .viewbar") || document.getElementById("list");
+  if (!first) { SCCUR = null; return; }
+  first.insertAdjacentHTML("beforebegin", bar);
+  let tab = SCTAB;
+  if (SCWANT && SCWANT.k === k) { tab = SCWANT.tab; }
+  SCWANT = null;
+  scSetTab(tab);
+}
+function scUrl() {                                       // the address carries the tab, so the link can be pasted; replaceState: no history entry and no hashchange
+  const S = SCCUR;
+  if (!S || selected !== S.k) return;
+  try { history.replaceState(null, "", "#" + encodeURIComponent(S.k) + (PINCUR ? "&card=" + PINCUR : "") + (S.tab === "matches" ? "&tab=matches" : "")); } catch (e) { /* ignore */ }
+}
+async function scSetTab(tab) {
+  const S = SCCUR, gen = SCGEN;
+  if (!S) return;
+  S.tab = tab;
+  for (const b of document.querySelectorAll("#sctabs button")) { b.classList.toggle("on", b.dataset.sctab === tab); b.setAttribute("aria-selected", b.dataset.sctab === tab ? "true" : "false"); }
+  for (const sel of SCHIDE) for (const el of document.querySelectorAll(sel)) el.classList.toggle("sc-off", tab === "matches");
+  let sec = document.getElementById("suggsec");
+  if (sec) sec.classList.toggle("sc-off", tab !== "matches");
+  scUrl();
+  if (tab !== "matches" || sec) return;
+  const host = document.getElementById("morewrap") || document.getElementById("list");
+  host.insertAdjacentHTML("afterend", `<div id="suggsec" class="suggsec">Loading possible matches…</div>`);
+  await needCards();
+  if (gen !== SCGEN || S.tab !== "matches") return;
+  await scEnsure();
+  if (gen !== SCGEN) return;
+  scRender();
+}
+async function scEnsure() {                              // the files this tab needs: the queue-card file(s) always, the already-placed file(s) only once that tick is on
+  const S = SCCUR, e = SC.groups[S.gid], l = SC.lens[S.gid], jobs = [], L = S.loaded;
+  if (e && !L.q) { L.q = 1; jobs.push(e[1][0] > 0 ? scGet("g/" + e[0] + "q.json").then(a => { S.q = a; }) : Promise.resolve()); }
+  if (e && SCINC && !L.p) { L.p = 1; jobs.push(e[2][0] > 0 ? scGet("g/" + e[0] + "p.json").then(a => { S.p = a; }) : Promise.resolve()); }
+  if (l && !L.lq) { L.lq = 1; jobs.push(l[1] > 0 ? scGet("t/" + l[0] + "q.json").then(a => { S.lq = a; }) : Promise.resolve()); }
+  if (l && SCINC && !L.lp) { L.lp = 1; jobs.push(l[2] > 0 ? scGet("t/" + l[0] + "p.json").then(a => { S.lp = a; }) : Promise.resolve()); }
+  await Promise.all(jobs);
+}
+function scRowHTML(oid, r, placed, lens) {
+  const S = SCCUR, c = MI.cards[oid], done = !!S.keep[oid], un = UNSAVED[oid + "|" + S.gid] ? ` <span class="badge b-unsaved">NOT SAVED</span>` : "";
+  const ccard = CARDS && CARDS[oid] ? costHTML(CARDS[oid]) : "";
+  const where = placed ? `<span class="sub">${esc(Manual.STATE_WORD[c[1]])}; already in ${fmt(c[3].length)} group${c[3].length === 1 ? "" : "s"}: an Add is recorded and counted nowhere</span>` : `<span class="sub">${esc(Manual.STATE_WORD[c[1]])}</span>`;
+  const act = done ? `<span class="badge b-hand">added by hand ✓</span>${un}<button class="eb" data-sact="undo" data-oid="${esc(oid)}">Undo</button>` : `<button class="eb" data-sact="add" data-oid="${esc(oid)}">Add</button>`;
+  if (lens) return `<div class="sgrow" data-oid="${esc(oid)}"><span class="lnk nm" data-go="c:${esc(oid)}">${esc(c[0])}</span> ${ccard} ${where}${act}<div class="why">${esc(S.lensWhy)}</div></div>`;
+  return `<div class="sgrow" data-oid="${esc(oid)}"><span class="score" title="how well the card and the group agree, 0 to 1; not a probability">${Number(r[1]).toFixed(2)}</span> <span class="lnk nm" data-go="c:${esc(oid)}">${esc(c[0])}</span> ${ccard} ${where}` +
+    `<span class="sub">${esc(srcWords(r[2]))}</span>${lowBadge(r[2])}${act}<div class="why">${esc(scWhy(r))}</div></div>`;
+}
+function scRender() {
+  const S = SCCUR, el = document.getElementById("suggsec");
+  if (!S || !el || !MRESV) return;
+  const e = SC.groups[S.gid], l = SC.lens[S.gid], plain = {};
+  let h = scPickerHTML(), shownRows = [];
+  const ctl = `<div class="sgctl"><label>Floor <input type="range" min="0.5" max="0.9" step="0.1" value="${SCFLOOR}" data-sctl="floor"> <b id="sgfloorv">${SCFLOOR.toFixed(2)}</b></label>` +
+    `<label><input type="checkbox" data-sctl="inc" ${SCINC ? "checked" : ""}> include already-placed cards</label></div>`;
+  if (e) {
+    const vis = Suggested.visible(MI, MRESV, S.gid, S.q, S.p, { floor: SCFLOOR, includePlaced: SCINC, keep: S.keep });
+    vis.rows = vis.rows.filter(r => visible(r.oid));
+    const hid = vis.hidden, shown = vis.rows.slice(0, S.nS), pn = SCINC ? 0 : e[2][Suggested.stepIdx(SC, SCFLOOR)];
+    shownRows = shown.map(r => r.row);
+    for (const r of vis.rows) plain[r.oid] = 1;
+    h += `<h3>Suggested cards <span class="badge b-sugg">suggestion</span></h3><div class="sub"><b>${esc(SC.label)}</b> Nothing is placed until you press Add. The number is how well the card and the group agree (0 to 1), not a probability.</div>` + ctl;
+    h += `<div class="sub">${fmt(vis.rows.length)} card${vis.rows.length === 1 ? "" : "s"} at ${SCFLOOR.toFixed(2)} or higher${vis.rows.length > shown.length ? `, showing the first ${fmt(shown.length)}` : ""}. ` +
+      (hid.handled || hid.nofit ? `Not shown: ${fmt(hid.handled)} already handled by hand, ${fmt(hid.nofit)} marked nothing fits. ` : "") +
+      (pn ? `${fmt(pn)} already-placed card${pn === 1 ? " is" : "s are"} hidden at this floor (tick “include already-placed cards”). ` : "") + `</div>`;
+    if (S.msg) h += `<div class="bad">${esc(S.msg)}</div>`;
+    h += shown.length ? shown.map(r => scRowHTML(r.oid, r.row, r.placed, false)).join("") : `<div class="sub">No suggested card for this group at this floor.</div>`;
+    if (vis.rows.length > shown.length) h += `<div class="more"><button data-sact="more" data-w="S">Show ${Math.min(SC.per_view, vis.rows.length - shown.length)} more (${fmt(vis.rows.length - shown.length)} left)</button></div>`;
+  } else {
+    h += `<h3>Suggested cards <span class="badge b-sugg">suggestion</span></h3><div class="sub"><b>${esc(SC.label)}</b> No card has this group in its top 5 at 0.50 or higher.</div>` + ctl;
+    if (S.msg) h += `<div class="bad">${esc(S.msg)}</div>`;
+  }
+  if (l) {
+    S.lensWhy = `the card carries the community tag “${l[3]}”, which this group is built from; a tag is a hint, not a placement`;
+    const lv = Suggested.lens(MI, MRESV, S.lq, S.lp, { includePlaced: SCINC, keep: S.keep, skip: plain }), lrows = lv.rows.filter(r => visible(r.oid)), lshown = lrows.slice(0, S.nL);
+    h += `<h3 class="sgsub">Community tag: ${esc(l[3])} <span class="badge b-sugg">community tag</span></h3><div class="sub"><b>${esc(SC.lens_label)}</b></div>`;
+    h += `<div class="sub">${fmt(lrows.length)} card${lrows.length === 1 ? "" : "s"}${lrows.length > lshown.length ? `, showing the first ${fmt(lshown.length)}` : ""}, most popular first. ` +
+      (lv.hidden.handled || lv.hidden.nofit ? `Not shown: ${fmt(lv.hidden.handled)} already handled by hand, ${fmt(lv.hidden.nofit)} marked nothing fits. ` : "") + (!SCINC && l[2] ? `${fmt(l[2])} already-placed cards carry this tag and are hidden. ` : "") + `</div>`;
+    h += lshown.length ? lshown.map(r => scRowHTML(r.oid, null, r.placed, true)).join("") : `<div class="sub">No other card carries this tag.</div>`;
+    if (lrows.length > lshown.length) h += `<div class="more"><button data-sact="more" data-w="L">Show ${Math.min(SC.per_view, lrows.length - lshown.length)} more (${fmt(lrows.length - lshown.length)} left)</button></div>`;
+  }
+  el.innerHTML = h;
+  const tb = document.querySelector('#sctabs button[data-sctab="matches"]');
+  if (tb) tb.textContent = scTabLabel();
+  scNeedWhy(shownRows);
+}
+async function scNeedWhy(rows) {                         // member-line shards for the rows on screen, then the reasons are drawn in place
+  const S = SCCUR;
+  if (!rows.some(r => r.length > 6)) return;
+  await scLines(rows);
+  if (SCCUR === S) { const el = document.getElementById("suggsec"); if (el) for (const r of rows) { const w = el.querySelector(`.sgrow[data-oid="${r[0]}"] .why`); if (w) w.textContent = scWhy(r); } }
+}
+document.getElementById("panel").addEventListener("click", async e => {
+  const tb = e.target.closest("button[data-sctab]");
+  if (tb && SCCUR) {
+    SCTAB = tb.dataset.sctab;                            // remembered per browser
+    try { localStorage.setItem("groupTab", SCTAB); } catch (err) { /* ignore */ }
+    scSetTab(SCTAB);
+    return;
+  }
+  const b = e.target.closest("[data-sact]");
+  if (!b || b.disabled || !SCCUR) return;
+  const S = SCCUR, a = b.dataset.sact, oid = b.dataset.oid;
+  if (a === "more") { if (b.dataset.w === "S") S.nS += SC.per_view; else S.nL += SC.per_view; scRender(); return; }
+  b.disabled = true; S.msg = "";
+  if (a === "add") {
+    S.keep[oid] = 1;
+    const ok = await sendEdit({ oid: oid, group: S.gid, action: "add", note: "" }, true);
+    if (!ok && !UNSAVED[oid + "|" + S.gid]) { delete S.keep[oid]; S.msg = LASTMSG; }
+  } else if (a === "undo") {
+    const ok = await sendEdit({ oid: oid, group: S.gid, action: "clear", note: "" }, true);
+    if (ok || !UNSAVED[oid + "|" + S.gid]) delete S.keep[oid];
+    if (!ok) S.msg = LASTMSG;
+  }
+  if (SCCUR === S) { refreshHand(); scRender(); }
+});
+document.getElementById("panel").addEventListener("input", e => { if (e.target.dataset && e.target.dataset.sctl === "floor") { const v = document.getElementById("sgfloorv"); if (v) v.textContent = (+e.target.value).toFixed(2); } });
+document.getElementById("panel").addEventListener("change", async e => {
+  const t = e.target.dataset && e.target.dataset.sctl;
+  if (!t || !SCCUR) return;
+  if (t === "member") { const S0 = SCCUR; SCCUR = Object.assign(scBlank(e.target.value), { k: S0.k, members: S0.members, tab: S0.tab }); await scEnsure(); scRender(); return; }
+  if (t === "floor") { SCFLOOR = Math.round(+e.target.value * 10) / 10; try { localStorage.setItem("suggFloor", String(SCFLOOR)); } catch (err) { /* ignore */ } SCCUR.nS = SC.per_view; }
+  if (t === "inc") { SCINC = e.target.checked; try { localStorage.setItem("suggPlaced", SCINC ? "1" : "0"); } catch (err) { /* ignore */ } SCCUR.nS = SC.per_view; SCCUR.nL = SC.per_view; await scEnsure(); }
+  scRender();
+});
+function mergedDoc() {                                  // the saved file plus the edits that could not be saved, for display only
+  const d = JSON.parse(JSON.stringify(MDOC));
+  for (const k of Object.keys(UNSAVED)) {
+    const p = UNSAVED[k].payload, c = MI.cards[p.oid];
+    if (!c) continue;
+    const e = d.edits[p.oid] || (d.edits[p.oid] = { name: c[0], groups: {} });
+    if (p.action === "clear") delete e.groups[p.group];
+    else {
+      const g = MI.groups[p.group];
+      e.groups[p.group] = { action: p.action, date: new Date().toISOString().slice(0, 19), note: p.note || "", group_name: g ? g[0] : "", source_at_edit: {} };
+      if (p.action === "add") delete e.groups[Manual.NOFIT];
+    }
+    if (!Object.keys(e.groups).length) delete d.edits[p.oid];
+  }
+  return d;
+}
+function recomputeHand() {
+  if (!MI || !MDOC) return;
+  MRES = Manual.resolve(MI, MDOC);
+  MRESV = Object.keys(UNSAVED).length ? Manual.resolve(MI, mergedDoc()) : MRES;
+  HSET = new Set(MRES.hand_new);
+}
+function persistUnsaved() { try { localStorage.setItem("manualUnsaved", JSON.stringify(Object.values(UNSAVED).map(u => u.payload))); } catch (e) { /* ignore */ } }
+let MSPROMISE = null;
+function needSuggestions() { return MSPROMISE || (MSPROMISE = (async () => { await loadText(); if (TXT) return; try { MS = await J("manual_suggestions.json"); } catch (e) { MS = { cards: {} }; } })()); }
+// ---- text suggestions (build/text_sug/*, switched by TEXT_SUGGESTIONS in src/build_text_suggestions.py; absent when it is off, and then nothing below runs). The merged rows of the queue cards come in one file; every other card's rows
+// come on demand, one small shard per card plus the few member-line shards it quotes. A row whose sources are only text / keyword name is low confidence and is never ticked for you.
+let TXT = null;
+const TXTROWS = new Map(), TSH = new Map(), TLN = new Map(), TLNV = new Map();
+async function loadText() {
+  try { const m = await J("text_sug/meta.json"), q = await J("text_sug/queue.json"); TXT = { meta: m }; MS = { cards: q.cards, label: q.label }; } catch (e) { TXT = null; }
+}
+function needLineShards(ids) {
+  const per = TXT.meta.line_shard, ps = [];
+  for (const id of new Set(ids)) { const n = Math.floor(id / per); if (!TLN.has(n)) TLN.set(n, J("text_sug/l/" + n + ".json").then(a => { TLNV.set(n, a); }, () => { TLNV.set(n, []); })); ps.push(TLN.get(n)); }
+  return Promise.all(ps);
+}
+const refsOf = rows => rows.filter(r => r.length > 6).map(r => r[6]);
+async function needTextFor(oid) {                       // rows of any card (queue cards are in MS already); shard and member lines loaded before the page draws
+  if (!TXT) return;
+  let rows = MS.cards[oid];
+  if (!rows) {
+    if (TXTROWS.has(oid)) return;
+    const k = oid.slice(0, 2);
+    if (!TSH.has(k)) TSH.set(k, J("text_sug/c/" + k + ".json").catch(() => ({})));
+    const sh = await TSH.get(k);
+    rows = (sh[oid] || []).map(r => r[2] < 0 ? [TXT.meta.groups[r[0]], r[1] / 1000, "kw", TXT.meta.engine_v2 ? r[5] : "the card carries the keyword " + r[5] + " (keyword block, exact name)"] : [TXT.meta.groups[r[0]], r[1] / 1000, "text", "", r[2], r[3], r[4]]);
+    TXTROWS.set(oid, rows);
+  }
+  await needLineShards(refsOf(rows));
+}
+const sugRowsOf = oid => (MS && MS.cards[oid]) || TXTROWS.get(oid) || [];
+function rowWhy(oid, r) {                               // the reason: the existing sources' own words, then the matching line of the text source
+  let w = r[3] || "";
+  if (r.length > 6 && CARDS && CARDS[oid]) {
+    const per = TXT.meta.line_shard, a = TLNV.get(Math.floor(r[6] / per)), m = a && a[r[6] % per];
+    if (m) { const own = (CARDS[oid].t || "").substr(r[4], r[5]).replace(/\s+/g, " "), tw = `its line “${own}” is closest to “${m[0]}” (${m[1]}) in this group`; w = w ? w + "; " + tw : tw; }
+  }
+  return w;
+}
+const SRCNAME = { sig: "signature", tag: "community tag", loose: "loose group", rule: "hand-group rule", text: "text similarity", kw: "keyword name" };
+const srcWords = s => s.split("+").map(x => SRCNAME[x] || x).join(" + ");
+const lowBadge = s => Manual.isTextOnly(s) ? ` <span class="badge b-lowc" title="found by text alone: a weak hint, never ticked for you">low confidence</span>` : "";
+async function postEdit(payload) {
+  try {
+    const r = await fetch("../api/manual", { method: "POST", headers: { "Content-Type": "application/json", "X-Manual-Edit": "1" }, body: JSON.stringify(payload) });
+    let j = null;
+    try { j = await r.json(); } catch (e) { /* not JSON: a plain static server */ }
+    if (r.ok && j && j.ok) return { ok: true, j: j };
+    if (j && j.ok === false && r.status >= 400 && r.status < 500) return { ok: false, rejected: true, error: j.error };
+    return { ok: false, rejected: false, error: (j && j.error) || ("the server answered " + r.status + (r.status === 404 || r.status === 405 || r.status === 501 ? ": this server has no /api/manual endpoint (start it with python src/serve.py)" : "")) };
+  } catch (e) { return { ok: false, rejected: false, error: "could not reach the server (" + e.message + ")" }; }
+}
+function applySaved(p, j) {
+  MDOC.revision = j.revision;
+  const e = MDOC.edits[p.oid];
+  if (p.action === "clear") { if (e) { delete e.groups[p.group]; if (!Object.keys(e.groups).length) delete MDOC.edits[p.oid]; } return; }
+  const ee = MDOC.edits[p.oid] || (MDOC.edits[p.oid] = { name: j.name, groups: {} });
+  ee.groups[p.group] = j.entry;
+  if (p.action === "add") delete ee.groups[Manual.NOFIT];
+}
+async function sendEdit(payload, quiet) {
+  const key = payload.oid + "|" + payload.group;
+  if (!quiet) setEpStatus("saving…");
+  const r = await postEdit(payload);
+  if (r.ok) { delete UNSAVED[key]; applySaved(payload, r.j); LASTMSG = "✓ saved"; }
+  else if (r.rejected) { LASTMSG = "NOT SAVED: " + r.error; }          // refused by the server's checks: nothing is applied
+  else { UNSAVED[key] = { payload: payload, error: r.error }; LASTMSG = "NOT SAVED: " + r.error; }
+  persistUnsaved(); recomputeHand();
+  if (!quiet) refreshHand();
+  return r.ok;
+}
+async function retryUnsaved() {
+  for (const k of Object.keys(UNSAVED)) { const u = UNSAVED[k]; await sendEdit(u.payload, true); }
+  refreshHand();
+}
+function setEpStatus(t) { const el = document.getElementById("epstatus"); if (el) el.textContent = t; }
+function updateBanner() {
+  const el = document.getElementById("savebanner"), n = Object.keys(UNSAVED).length;
+  let h = "";
+  if (n) h += `<div>NOT SAVED: ${fmt(n)} hand edit${n > 1 ? "s" : ""} could not be saved (${esc(Object.values(UNSAVED)[0].error)}). ${n > 1 ? "They are" : "It is"} applied on this page only and counted in no figure. <button data-act="retry">Retry saving</button><button data-act="download">Download the unsaved edits</button></div>`;
+  if (MDOCERR) h += `<div>${esc(MDOCERR)}</div>`;
+  el.innerHTML = h; el.hidden = !h;
+}
+document.getElementById("savebanner").addEventListener("click", e => {
+  const b = e.target.closest("button[data-act]");
+  if (!b) return;
+  if (b.dataset.act === "retry") retryUnsaved();
+  if (b.dataset.act === "download") {
+    const blob = new Blob([JSON.stringify(Object.values(UNSAVED).map(u => u.payload), null, 1)], { type: "application/json" }), a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = "unsaved-hand-edits.json"; a.click();
+  }
+});
+const handPileN = () => handOn() ? MRES.hand_new.filter(o => !isAnn(o)).length : 0;     // hand-placed pile cards that the page's pile count would otherwise still include
+function handLine() {
+  const el = document.getElementById("handline");
+  if (!handOn()) { el.hidden = true; return; }
+  const c = MRES.counts, r = MRES.reconciliation, of = c.confirmed_by_hand_of_which, n = Object.keys(UNSAVED).length, scope = TAX.totals.in_scope;
+  el.hidden = false;
+  el.innerHTML = `<span class="badge b-hand">placed by hand</span> <b>${fmt(c.placed_by_hand_new)} of ${fmt(scope)} (${(100 * c.placed_by_hand_new / scope).toFixed(2)}%)</b> cards the tool had nowhere to put, now in a group by hand. ` +
+    `Its own line: never added to the figures above, and not checked. ` +
+    `Confirmed by hand: ${fmt(c.confirmed_by_hand)} (tentative ${fmt(of.tentative)}, annotation ${fmt(of.annotation)}, tag ${fmt(of.tag)}); they stay in their own figure. ` +
+    (c.batches !== undefined && SHOWBATCH ? `Of these, placed in a batch: ${fmt(c.placed_by_hand_batch)}; confirmed in a batch: ${fmt(c.confirmed_by_hand_batch)} (${fmt(c.batches)} batch${c.batches === 1 ? "" : "es"}, ${fmt(c.batches_undone)} undone). ` : "") +
+    `Edits on cards that were already placed: ${fmt(c.precise_cards_with_edits_not_counted)} (counted nowhere). Marked “nothing fits”: ${fmt(c.marked_nothing_fits)} (not a placement). Removals recorded: ${fmt(c.removals_recorded)} (no generated count changes). ` +
+    `<span class="basis">Reconciliation: ${fmt(r.placed)} placed + ${fmt(r.tentative)} tentative + ${fmt(r.annotation)} annotation + ${fmt(r.tag)} tag + ${fmt(r.hand)} by hand + ${fmt(r.unorganized)} unorganized + ${fmt(r.not_cards)} not cards = ${fmt(r.sum)}. ` +
+    `The unorganized figure includes the gap-test cards.</span>` +
+    (n ? ` <span class="badge b-unsaved">${fmt(n)} NOT SAVED</span> (not counted)` : "") +
+    (c.orphans ? ` <span class="bad">${fmt(c.orphans)} hand edit${c.orphans > 1 ? "s" : ""} point${c.orphans > 1 ? "" : "s"} at a group or card that is not in this build (see reports/manual-placements.md); ${c.orphans > 1 ? "they are" : "it is"} not counted.</span>` : "") +
+    (c.renamed ? ` <span class="basis">${fmt(c.renamed)} hand-placed group${c.renamed > 1 ? "s were" : " was"} renamed since the edit.</span>` : "");
+}
+const gidHeld = (oid, gid) => !!MI.cards[oid][3].find(x => x[0] === gid);
+function handMark(oid, gid) {                          // badges for one card row inside one group's list
+  if (!handOn() || !gid || !MI.cards[oid]) return "";
+  const a = (MRESV.adds[oid] || {})[gid], r = (MRESV.removes[oid] || {})[gid];
+  if (!a && !r) return "";
+  const un = UNSAVED[oid + "|" + gid] ? ` <span class="badge b-unsaved">NOT SAVED</span>` : "";
+  return (a ? ` <span class="badge b-hand" title="${esc((a.date || "").slice(0, 10))}${a.note ? " — " + esc(a.note) : ""}">${gidHeld(oid, gid) ? "confirmed by hand" : "by hand"}${a.batch && SHOWBATCH ? ", batch" : ""}</span>` : "") + (r ? ` <span class="badge b-nofit">removed by hand</span>` : "") + un;
+}
+function handRows(gid, have) {                         // cards placed here by hand that the group's generated list does not hold; shown after the generated cards, never counted in the group's number
+  if (!handOn() || !CARDS) return [];
+  const oids = Object.keys(MRESV.adds).filter(o => MRESV.adds[o][gid] && !have.has(o) && CARDS[o]).sort((a, b) => CARDS[a].n < CARDS[b].n ? -1 : 1);
+  if (!oids.length) return [];
+  return [`<div class="subhead">Placed here by hand <span class="badge b-hand">by hand</span> <span class="sub">${fmt(oids.length)} card${oids.length > 1 ? "s" : ""}; not in the count above, not checked.</span></div>`]
+    .concat(oids.map(o => ({ oid: o, extra: "", html: cardHTML(o, null, null, gid) })), [`<div class="subhead">In the group as the tool built it <span class="sub">(the count above)</span></div>`]);
+}
+function handFor(oid) {                                // what Find a card and the card page say about a card's hand edits
+  if (!handOn() || !MI.cards[oid]) return null;
+  const c = MI.cards[oid], adds = MRESV.adds[oid] || {}, rem = MRESV.removes[oid] || {}, mk = MRESV.marks[oid], ak = Object.keys(adds);
+  if (!ak.length && !Object.keys(rem).length && !mk) return null;
+  const sr = ak.length && adds[ak[0]].source_at_edit && adds[ak[0]].source_at_edit.reason ? adds[ak[0]].source_at_edit.reason.text : (MI.causes[String(c[2])] || "");
+  return { adds: ak.map(g => ({ gid: g, name: MI.groups[g][0], layer: LAYW[MI.groups[g][3]], date: adds[g].date, note: adds[g].note, batch: SHOWBATCH ? adds[g].batch : null })), fresh: c[1] === "u" && ak.length > 0, was: sr,
+           confirmed: ak.length && "tam".includes(c[1]) ? Manual.STATE_WORD[c[1]] : "", nofit: mk ? { date: mk.date, note: mk.note } : null, removed: Object.keys(rem).map(g => ({ name: MI.groups[g] ? MI.groups[g][0] : g, batch: SHOWBATCH ? rem[g].batch : null })) };
+}
+const srcVisible = s => s === "T" ? SHOWT : s === "A" ? SHOWA : s === "M" ? SHOWTAG : s === "S" ? SHOWSIB : true;
+const offeredN = () => Object.values(MI.groups).filter(g => g[4]).length;
+function gline(gid) {
+  const g = MI.groups[gid];
+  return g ? `<span class="lnk gname" data-go="${esc(Manual.goKey(gid))}">${esc(g[0])}</span> <span class="sub">${fmt(g[1])} cards</span>` : `<span class="gname">${esc(gid)}</span>`;
+}
+function sugHTML(oid) {
+  if (!MS) return `<div class="sub">Loading suggestions…</div>`;
+  const c = MI.cards[oid], adds = MRESV.adds[oid] || {};
+  const usable = sugRowsOf(oid).filter(r => MI.groups[r[0]] && !adds[r[0]] && !c[3].some(x => x[0] === r[0] && Manual.PRECISE_SRC.indexOf(x[1]) >= 0));
+  const v2 = !!(TXT && TXT.meta.engine_v2), rows = v2 ? usable : usable.slice(0, 5);
+  if (!rows.length) return `<div class="sub">${c[1] === "v" ? "This card has no rules text, so there is nothing to suggest from: it is in the “No abilities” block (see Groups now)." : "No suggestion for this card. Use the search above."}</div>`;
+  const one = r => {
+    const g = MI.groups[r[0]], held = c[3].find(x => x[0] === r[0]);
+    return `<div class="sug"><span class="score" title="how well the card and the group agree, 0 to 1; not a probability">${Number(r[1]).toFixed(2)}</span> <span class="lnk gname" data-go="${esc(Manual.goKey(r[0]))}">${esc(g[0])}</span> ` +
+      `${layBadge(g[3])}<span class="sub">${fmt(g[1])} ${g[3] === "hand" ? "rule matches" : "cards"} · ${esc(srcWords(r[2]))}${held ? " · already shown here as " + esc(SRCW[held[1]]) + "; Add confirms it by hand" : ""}</span>${lowBadge(r[2])}` +
+      `<button class="eb" data-act="add" data-g="${esc(r[0])}">Add</button><div class="why">${esc(rowWhy(oid, r))}</div></div>`;
+  };
+  if (!v2) return rows.map(one).join("");
+  // ENGINE_V2: groups with near-identical names share one block (the best two shown, the rest behind "+N similar"); five blocks at most
+  return Manual.clusterRows(MI, rows).slice(0, 5).map(cl => `<div class="sugc">${cl.slice(0, 2).map(one).join("")}${cl.length > 2 ? `<details class="sugm"><summary>+${cl.length - 2} similar group${cl.length > 3 ? "s" : ""}</summary>${cl.slice(2).map(one).join("")}</details>` : ""}</div>`).join("");
+}
+function editPanelHTML(oid) {
+  const c = MI.cards[oid];
+  if (!c) return "";
+  if (!SHOWH) return `<aside class="editpanel"><b>Hand edits are hidden.</b><div class="sub">Tick “Show hand edits” at the top to see and make hand placements.</div></aside>`;
+  const adds = MRESV.adds[oid] || {}, rem = MRESV.removes[oid] || {}, mk = MRESV.marks[oid];
+  const un = g => UNSAVED[oid + "|" + g] ? ` <span class="badge b-unsaved">NOT SAVED</span>` : "";
+  let h = `<aside class="editpanel" id="editpanel" data-oid="${esc(oid)}"><div><b>Place by hand</b> <span id="epstatus" class="sub${/^NOT SAVED/.test(LASTMSG) ? " bad" : ""}">${esc(LASTMSG)}</span></div>`;
+  h += `<div class="sub">${esc(Manual.STATE_WORD[c[1]])}${c[2] && MI.causes[c[2]] ? ": " + esc(MI.causes[c[2]]) : ""}.</div>`;
+  if (MENDPOINT === false) h += `<div class="sub bad">Saving is not available: this server has no /api/manual endpoint, so every edit shows NOT SAVED. Start the page with python src/serve.py.</div>`;
+  h += `<h3>Groups now</h3>`;
+  const seen = new Set();
+  let n = 0;
+  for (const [gid, src] of c[3]) {
+    if (!srcVisible(src)) continue;
+    seen.add(gid); n++;
+    const isAdd = !!adds[gid], isRem = !!rem[gid];
+    h += `<div class="grow"><span class="badge b-auto">${esc(SRCW[src])}</span> ${isRem ? "<s>" : ""}${gline(gid)}${isRem ? "</s> <span class=\"badge b-nofit\">removed by hand</span>" : ""}${isAdd ? ` <span class="badge b-hand">confirmed by hand</span>` : ""}${un(gid)} ` +
+      (isRem || isAdd ? `<button class="eb" data-act="clear" data-g="${esc(gid)}">Undo</button>` : `<button class="eb" data-act="remove" data-g="${esc(gid)}">Remove</button>`) + `</div>`;
+  }
+  for (const gid of Object.keys(adds)) {
+    if (seen.has(gid)) continue;
+    n++;
+    h += `<div class="grow"><span class="badge b-hand">by hand</span> ${gline(gid)} <span class="sub">${esc((adds[gid].date || "").slice(0, 10))}${adds[gid].note ? " — “" + esc(adds[gid].note) + "”" : ""}</span>${un(gid)} <button class="eb" data-act="clear" data-g="${esc(gid)}">Undo</button></div>`;
+  }
+  if (mk) h += `<div class="grow"><span class="badge b-nofit">nothing fits</span> <span class="sub">marked ${esc((mk.date || "").slice(0, 10))}${mk.note ? " — “" + esc(mk.note) + "”" : ""}</span>${un(Manual.NOFIT)} <button class="eb" data-act="clear" data-g="${Manual.NOFIT}">Undo</button></div>`;
+  if (!n && !mk) h += `<div class="sub">None yet: the card is not in any group.</div>`;
+  h += `<h3>Add to a group</h3><input type="search" id="epsearch" placeholder="search ${fmt(offeredN())} group names" autocomplete="off"><div id="epresults"></div>`;
+  h += `<h3>Suggestions <span class="badge b-auto">not placements</span></h3><div class="sub">Nothing is placed until you press Add. The number is how well the card and the group agree (0 to 1), not a probability.</div><div id="epsug">${sugHTML(oid)}</div>`;
+  h += `<h3>Note</h3><input type="text" id="epnote" maxlength="500" placeholder="optional; kept with the edit" autocomplete="off">`;
+  if (!mk) h += `<div style="margin-top:8px"><button data-act="nofit"${Object.keys(adds).length ? " disabled" : ""}>Nothing fits: mark it</button> <span class="sub">Takes the card off the queue. Not a placement; parser work can find it later.</span></div>`;
+  return h + `</aside>`;
+}
+function renderSearch(oid, q) {
+  const el = document.getElementById("epresults");
+  if (!el || !MI.cards[oid]) return;
+  const have = new Set(Object.keys(MRESV.adds[oid] || {}));
+  for (const x of MI.cards[oid][3]) if (Manual.PRECISE_SRC.indexOf(x[1]) >= 0) have.add(x[0]);
+  const res = Manual.search(MI, q, 12, have);
+  el.innerHTML = res.length ? res.map(r => `<div class="srow">${layBadge(r.layer)} <span class="gname">${esc(r.name)}</span><span class="sub">${fmt(r.size)} cards · ${esc(r.path)}</span><button class="eb" data-act="add" data-g="${esc(r.gid)}">Add</button></div>`).join("") :
+    (q.trim() ? `<div class="sub">No group name matches.</div>` : "");
+}
+document.getElementById("panel").addEventListener("input", e => { if (e.target.id === "epsearch") renderSearch(CURCARD, e.target.value); });
+function handleAct(b) {
+  const a = b.dataset.act;
+  if (a === "qnext" || a === "qskip") { queueGo(a === "qskip"); return; }
+  const ep = document.getElementById("editpanel"), oid = ep && ep.dataset.oid;
+  if (!oid) return;
+  const note = (document.getElementById("epnote") || {}).value || "";
+  if (a === "nofit") sendEdit({ oid: oid, group: Manual.NOFIT, action: "nofit", note: note });
+  else sendEdit({ oid: oid, group: b.dataset.g, action: a, note: a === "clear" ? "" : note });
+}
+function refreshHand() {
+  header(); renderTree(); updateBanner();
+  if (CURCARD && selected === "c:" + CURCARD) showCardPage(CURCARD, true);
+  else if (selected === "Q:") show("Q:");
+}
+// ---- the work queue: pile cards first, most popular first
+const QSKIP = new Set();
+function qFilters() {
+  return { causes: new Set([...document.querySelectorAll("#qf-causes input:checked")].map(x => +x.value)), soft: new Set([...document.querySelectorAll("#qf-soft input:checked")].map(x => x.value)),
+           top: +document.getElementById("qf-top").value, sug: document.getElementById("qf-sug").checked };
+}
+function queueBase() {
+  const f = qFilters(), out = [];
+  for (const oid of Object.keys(MI.cards)) {
+    const c = MI.cards[oid], st = c[1];
+    if (st === "u") { if (!f.causes.has(c[2])) continue; } else if (!f.soft.has(st)) continue;
+    if (f.top && !(c[4] != null && c[4] <= f.top)) continue;
+    if (f.sug && !(MS && MS.cards[oid])) continue;
+    out.push(oid);
+  }
+  out.sort((a, b) => {
+    const ra = MI.cards[a][4], rb = MI.cards[b][4];
+    if ((ra == null) !== (rb == null)) return ra == null ? 1 : -1;
+    if (ra != null && ra !== rb) return ra - rb;
+    const na = MI.cards[a][0], nb = MI.cards[b][0];
+    return na < nb ? -1 : na > nb ? 1 : a < b ? -1 : 1;
+  });
+  return out;
+}
+function queueStats() {
+  const base = queueBase(), done = base.filter(o => Manual.done(MRES, o)).length, left = base.filter(o => !Manual.done(MRESV, o) && !QSKIP.has(o));
+  return { base: base, done: done, left: left };
+}
+function queueGo(skip) {
+  if (skip && CURCARD) QSKIP.add(CURCARD);
+  const st = queueStats(), i = CURCARD ? st.base.indexOf(CURCARD) : -1;
+  let nxt = null;
+  for (let k = 1; k <= st.base.length && !nxt; k++) { const o = st.base[(i + k + st.base.length) % st.base.length]; if (o !== CURCARD && st.left.indexOf(o) >= 0) nxt = o; }
+  if (!nxt) nxt = st.left[0] || null;
+  if (nxt) show("c:" + nxt); else show("Q:");
+}
+function qbarHTML() {
+  if (MODE !== "queue" || !handOn()) return "";
+  const st = queueStats();
+  return `<div class="qbar" data-oid="${esc(CURCARD || "")}"><b>To place</b><span>${fmt(st.left.length)} left · ${fmt(st.done)} done of ${fmt(st.base.length)} in this view</span><span class="lnk" data-go="Q:">queue</span>` +
+    `<span class="qn"><button data-act="qskip">Skip</button> <button data-act="qnext">Next card ▶</button></span></div>`;
+}
+
+// ---------------------------------------------------------------- batch actions (POST /api/manual/batch; src/manual_batch.py). Every request is ALL OR NOTHING. Nothing is ticked for you below the threshold, and nothing is placed without a click.
+let MFB = null, MFBPROMISE = null, SHOWBATCH = true, LASTBATCH = null, BUNSAVED = null;
+try { if (localStorage.getItem("showBatch") === "0") SHOWBATCH = false; } catch (e) { /* storage unavailable: keep the default */ }
+try { BUNSAVED = JSON.parse(localStorage.getItem("manualBatchUnsaved") || "null"); } catch (e) { BUNSAVED = null; }
+const BS = { thr: 0.90, skip: true, page: 0, ticks: new Map(), msg: "" };
+const GS = new Map();                                   // group review ticks: "gid|oid" -> bool
+const batchOn = () => handOn() && !!MI.batch && SHOWBATCH;
+function needFallback() { return MFBPROMISE || (MFBPROMISE = (async () => { try { MFB = await J("manual_fallback.json"); } catch (e) { MFB = { cards: {}, label: "" }; } })()); }
+async function reloadManualDoc() {
+  try { const r = await fetch("../corrections/manual_placements.json", { cache: "no-store" }); if (r.ok) { MDOC = await r.json(); if (!MDOC.edits) MDOC = emptyDoc(); } } catch (e) { /* keep the doc we have */ }
+  recomputeHand();
+}
+function persistBatchUnsaved() { try { if (BUNSAVED) localStorage.setItem("manualBatchUnsaved", JSON.stringify(BUNSAVED)); else localStorage.removeItem("manualBatchUnsaved"); } catch (e) { /* ignore */ } }
+async function postBatch(payload) {
+  try {
+    const r = await fetch("../api/manual/batch", { method: "POST", headers: { "Content-Type": "application/json", "X-Manual-Edit": "1" }, body: JSON.stringify(payload) });
+    let j = null;
+    try { j = await r.json(); } catch (e) { /* not JSON: a plain static server */ }
+    if (r.ok && j && j.ok) return { ok: true, j: j };
+    if (j && j.ok === false && r.status >= 400 && r.status < 500 && r.status !== 404) return { ok: false, refused: true, error: j.error, items: j.items || [] };
+    return { ok: false, refused: false, error: (j && j.error) || ("the server answered " + r.status + (r.status === 404 || r.status === 405 || r.status === 501 ? ": this server has no /api/manual/batch endpoint (start it with python src/serve.py, with batch actions switched on)" : "")) };
+  } catch (e) { return { ok: false, refused: false, error: "could not reach the server (" + e.message + ")" }; }
+}
+function batchBar() {
+  const el = document.getElementById("batchbar");
+  let h = "";
+  if (batchOn() && BUNSAVED) h += `<div class="bad"><b>NOT SAVED: batch of ${fmt(BUNSAVED.payload.items.length)} (${esc(BUNSAVED.payload.kind)})</b>: nothing was placed. ${esc(BUNSAVED.error)} <button data-bact="retry">Retry (same batch id; safe to repeat)</button> <button data-bact="discard">Discard</button></div>`;
+  if (batchOn() && BS.msg) h += `<div>${BS.msg}</div>`;
+  if (batchOn() && LASTBATCH && !LASTBATCH.undone) h += `<div>Last batch <b>${esc(LASTBATCH.id)}</b>: ${esc(LASTBATCH.what)} <button data-bact="undolast">Undo this batch</button></div>`;
+  el.innerHTML = h; el.hidden = !h;
+}
+document.getElementById("batchbar").addEventListener("click", e => {
+  const b = e.target.closest("button[data-bact]");
+  if (!b) return;
+  if (b.dataset.bact === "undolast") undoBatch(LASTBATCH.id);
+  if (b.dataset.bact === "retry" && BUNSAVED) sendBatch(BUNSAVED.payload, BUNSAVED.what, true);
+  if (b.dataset.bact === "discard") { BUNSAVED = null; persistBatchUnsaved(); batchBar(); }
+});
+async function sendBatch(payload, what, isRetry) {
+  BS.msg = `Saving batch of ${fmt(payload.items.length)}…`; batchBar();
+  const r = await postBatch(payload);
+  if (r.ok) {
+    BUNSAVED = null; persistBatchUnsaved();
+    await reloadManualDoc();
+    for (const it of payload.items) { BS.ticks.delete(it.oid + "|" + it.group); GS.delete(it.group + "|" + it.oid); }
+    LASTBATCH = { id: payload.id, what: (r.j.changed === false ? "already saved: " : "") + what, undone: false };
+    BS.msg = "";
+  } else if (r.refused) {
+    BS.msg = `<span class="bad"><b>NOT SAVED: the batch was refused, and nothing was written.</b> ${esc(r.error)}</span><ul>` + r.items.slice(0, 12).map(x => `<li>row ${x.row + 1}: ${x.oid && MI.cards[x.oid] ? esc(MI.cards[x.oid][0]) : "?"} — ${esc(x.error)}</li>`).join("") + (r.items.length > 12 ? `<li>… and ${r.items.length - 12} more</li>` : "") + `</ul>`;
+    BUNSAVED = null; persistBatchUnsaved();
+  } else {
+    BUNSAVED = { payload: payload, what: what, error: r.error }; persistBatchUnsaved(); BS.msg = "";
+  }
+  header(); renderTree(); batchBar(); refreshBatchViews();
+  return r.ok;
+}
+async function undoBatch(id) {
+  BS.msg = "Undoing…"; batchBar();
+  const r = await postBatch({ undo: id });
+  if (r.ok) {
+    await reloadManualDoc();
+    BS.msg = `Undid batch <b>${esc(r.j.batch)}</b>: ${fmt(r.j.removed)} entr${r.j.removed === 1 ? "y" : "ies"} removed${r.j.restored ? `, ${fmt(r.j.restored)} restored` : ""}${r.j.left_alone ? `, ${fmt(r.j.left_alone)} left alone because they were edited since` : ""}.`;
+    if (LASTBATCH && LASTBATCH.id === r.j.batch) LASTBATCH.undone = true;
+  } else BS.msg = `<span class="bad"><b>NOT UNDONE:</b> ${esc(r.error)}</span>`;
+  header(); renderTree(); batchBar(); refreshBatchViews();
+}
+function refreshBatchViews() { if (selected === "QB:") showBatchView(); else if (selected && (selected.startsWith("tg:") || selected.startsWith("ct:") || selected.startsWith("ag:") || selected.startsWith("l:") || selected.startsWith("Q:"))) show(selected); }
+// ---- the batch view (queue): cards with their suggestions, a checkbox each
+const tickOf = (oid, gid, dflt) => { const k = oid + "|" + gid; return BS.ticks.has(k) ? BS.ticks.get(k) : dflt; };
+function batchModel() {
+  const order = queueBase();
+  const R = Manual.batchRows(MI, MS.cards, MRESV, order, BS.thr, BS.skip, 0.70);
+  return R;
+}
+function brow(rw, handled) {
+  const c = MI.cards[rw.oid], url = imageURL(rw.oid, "small");
+  const it = (r, i) => {
+    const g = MI.groups[r[0]], dflt = !handled && rw.tier === "tick" && i === 0, on = tickOf(rw.oid, r[0], dflt);
+    return `<label class="bit"><input type="checkbox" data-bk="${esc(rw.oid)}|${esc(r[0])}" data-score="${r[1]}" ${on ? "checked" : ""}> <span class="score">${Number(r[1]).toFixed(2)}</span> <span class="lnk gname" data-go="${esc(Manual.goKey(r[0]))}">${esc(g[0])}</span> ${layBadge(g[3])} <span class="sub">${fmt(g[1])} ${g[3] === "hand" ? "rule matches" : "cards"} · ${esc(srcWords(r[2]))}</span>${lowBadge(r[2])}<span class="why">${esc(rowWhy(rw.oid, r))}</span></label>`;
+  };
+  const top = rw.items.slice(0, 1).map((r, i) => it(r, 0)).join(""), more = rw.items.slice(1);
+  return `<div class="brow${rw.tier === "review" ? " review" : ""}${handled ? " handled" : ""}" data-oid="${esc(rw.oid)}">` +
+    `<div class="bcard">${url ? `<img loading="lazy" src="${esc(url)}" alt="">` : ""}<span class="lnk nm" data-go="c:${esc(rw.oid)}">${esc(c[0])}</span>${c[4] != null ? ` <span class="sub">rank ${fmt(c[4])}</span>` : ""} <span class="sub">${esc(Manual.STATE_WORD[c[1]])}</span>` +
+    (rw.tier === "review" && !handled ? ` <span class="badge b-auto">review band: not ticked for you</span>` : "") + (handled ? ` <span class="badge b-nofit">already handled by hand: ${esc(rw.what)}; ticking overrides</span>` : "") + `</div>` +
+    `<div class="bsug">${top}${more.length ? `<details><summary>${more.length} more suggestion${more.length > 1 ? "s" : ""}</summary>${more.map((r, i) => it(r, i + 1)).join("")}</details>` : ""}</div></div>`;
+}
+function ticked() {                                       // the items ticked on the page now: [{oid, group, score, source, override}]
+  const out = [];
+  for (const el of document.querySelectorAll("#panel input[data-bk]")) if (el.checked) {
+    const [oid, gid] = el.dataset.bk.split("|"), row = el.closest(".brow"), r = (MS.cards[oid] || []).find(x => x[0] === gid);
+    if (r) out.push({ oid: oid, group: gid, action: "add", score: r[1], source: r[2], override: row.classList.contains("handled") });
+  }
+  return out;
+}
+function updateBatchCounts() {
+  const n = ticked().length, b = document.getElementById("bacc");
+  if (!b) return;
+  b.textContent = `Accept ticked (${fmt(n)})`; b.disabled = n === 0 || n > 100;
+  const w = document.getElementById("bwarn"); if (w) w.textContent = n > 100 ? `${fmt(n)} ticked: the limit is 100 per click. Untick some, or accept this page first.` : "";
+  const f = fbTicked().length, fb = document.getElementById("bfbacc");
+  if (fb) { fb.textContent = `Place ticked low-confidence (${fmt(f)})`; fb.disabled = f === 0 || f > 100; }
+}
+function fbTicked() {
+  const out = [];
+  for (const el of document.querySelectorAll("#panel input[data-fk]")) if (el.checked) { const [oid, gid] = el.dataset.fk.split("|"); out.push({ oid: oid, group: gid, action: "add" }); }
+  return out;
+}
+async function showBatchView() {
+  const P = document.getElementById("panel");
+  await needManual();
+  if (!batchOn()) { P.innerHTML = `<p class="explain">${MI && MI.batch ? "Batch actions are hidden. Tick “Show batch actions” at the top." : "Batch actions are switched off in this build (BATCH_ACTIONS)."}</p>`; return; }
+  P.innerHTML = `<p class="explain">Loading the batch view…</p>`;
+  await needSuggestions(); await needFallback(); await needCards();
+  CURCARD = null; selected = "QB:"; location.hash = encodeURIComponent("QB:");
+  const R = batchModel(), per = 100, pages = Math.max(1, Math.ceil(R.rows.length / per));
+  BS.page = Math.min(BS.page, pages - 1);
+  const pg = R.rows.slice(BS.page * per, BS.page * per + per), nt = R.rows.filter(r => r.tier === "tick").length;
+  if (TXT) await needLineShards([].concat(...pg.map(r => refsOf(r.items)), ...R.handled.slice(0, 100).map(h => refsOf(h.items))));
+  const bl = Object.entries((MDOC && MDOC.batches) || {}).sort((a, b) => (b[1].seq || 0) - (a[1].seq || 0)).slice(0, 12);
+  const fbs = R.nosug.slice(0, 100);
+  P.innerHTML = `<h2>Batch view <span class="badge b-hand">by hand</span></h2><div class="handnote">Cards with their suggestions. <b>Nothing is placed until you press Accept.</b> Rows at or above the threshold start ticked; the review band (0.70 up to the threshold) starts unticked; tick more than one suggestion per card if you want. ` +
+    `A row whose top suggestion comes from text alone (low confidence) or from a hand-group rule is always in the review band, whatever its score: it is never ticked for you. ` +
+    `Each click is one batch of at most 100 placements, all or nothing, with its own id, and “Undo this batch” takes it all back. Suggestions are not checked.</div>` +
+    `<div class="bctl"><label>Threshold <input type="range" id="bthr" min="0.70" max="1" step="0.01" value="${BS.thr}"> <b id="bthrv">${BS.thr.toFixed(2)}</b></label> <label><input type="checkbox" id="bskip" ${BS.skip ? "checked" : ""}> skip saga boilerplate (“Put lore counters on this permanent”)</label></div>` +
+    `<p class="sub">${fmt(R.rows.length)} cards listed (${fmt(nt)} at or above ${BS.thr.toFixed(2)}, the rest in the review band); ${fmt(R.below)} cards scoring below 0.70 are not listed; ${fmt(R.handled.length)} already handled by hand; ${fmt(R.nosug.length)} with no usable suggestion. This view follows the filters of the “To place” tab.</p>` +
+    `<div class="bbar"><button data-bact2="prev" ${BS.page ? "" : "disabled"}>◀</button> page ${BS.page + 1} of ${pages} <button data-bact2="next" ${BS.page < pages - 1 ? "" : "disabled"}>▶</button> <button data-bact2="all">Tick all on this page</button> <button data-bact2="none">Untick all on this page</button> ` +
+    `<span class="bgrow"><button id="bacc" data-bact2="accept">Accept ticked</button> <button data-bact2="undolast">Undo last batch</button></span> <span id="bwarn" class="bad"></span></div>` +
+    `<div id="brows">${pg.map(r => brow(r, false)).join("") || `<p class="sub">No cards at this threshold. Lower the threshold or change the filters.</p>`}</div>` +
+    (R.handled.length ? `<div class="subhead">Already handled by hand (${fmt(R.handled.length)}): never touched unless you tick an item here, which marks it as an override</div><div id="bhandled">${R.handled.slice(0, 100).filter(h => h.items.length).map(h => brow(Object.assign({ tier: "review" }, h), true)).join("")}</div>` : "") +
+    `<div class="subhead">No suggestion: possible homes <span class="badge b-auto">low confidence</span></div><p class="sub">${esc(MFB.label || "")} Never ticked for you. <b>Nothing fits</b> is one click and takes the card off the queue.</p>` +
+    `<div class="bbar"><span class="bgrow"><button id="bfbacc" data-bact2="fbaccept">Place ticked low-confidence</button></span></div><div id="bfb">${fbs.map(o => {
+      const c = MI.cards[o], cand = (MFB.cards[o] || []);
+      return `<div class="brow" data-oid="${esc(o)}"><div class="bcard"><span class="lnk nm" data-go="c:${esc(o)}">${esc(c[0])}</span>${c[4] != null ? ` <span class="sub">rank ${fmt(c[4])}</span>` : ""} <span class="badge b-auto">low confidence</span> <button class="eb" data-bact2="nofit" data-oid="${esc(o)}">Nothing fits</button></div><div class="bsug">` +
+        (cand.length ? cand.map(x => `<label class="bit"><input type="checkbox" data-fk="${esc(o)}|${esc(x[0])}"> <span class="lnk gname" data-go="${esc(Manual.goKey(x[0]))}">${esc(MI.groups[x[0]][0])}</span> ${layBadge(MI.groups[x[0]][3])} <span class="sub">${esc(x[1])}</span><span class="why">${esc(x[2])}</span></label>`).join("") : `<span class="sub">no possible home found: use the search in the card's edit panel, or Nothing fits</span>`) + `</div></div>`;
+    }).join("")}</div>` +
+    `<div class="subhead">Batches</div>` + (bl.length ? bl.map(([id, b]) => `<div class="grow"><b>${esc(id)}</b> <span class="sub">${esc(b.kind)} · ${fmt(b.count)} · ${esc((b.date || "").slice(0, 16).replace("T", " "))}${b.threshold != null ? " · threshold " + Number(b.threshold).toFixed(2) : ""}${b.undone ? " · undone" : ""}</span>${b.undone ? "" : ` <button class="eb" data-bact2="undoid" data-id="${esc(id)}">Undo this batch</button>`}</div>`).join("") : `<p class="sub">No batch yet.</p>`);
+  updateBatchCounts(); batchBar();
+}
+// ---- batch confirm / reject for the groups that hold soft placements (tentative, tag, sibling, annotation)
+function reviewRows(gid) {
+  const rows = [], [layer, id] = [gid.split(":")[0], gid.slice(gid.indexOf(":") + 1)];
+  const add = (oid, src, ev, dflt) => { if (MI.cards[oid] && MI.cards[oid][3].some(x => x[0] === gid && "TAMS".indexOf(x[1]) >= 0) && !rows.some(r => r.oid === oid && r.src === src)) rows.push({ oid, src, ev, dflt }); };
+  if (layer === "tent" && TENT && TENT.groups[id]) for (const r of TENT.groups[id].m) add(r[0], "tentative", `not a real placement because ${TENT.meta.reasons[r[2]]}`, true);
+  if (layer === "tag" && TAGS && TAGS.groups[id]) for (const o of TAGS.groups[id].m) add(o, "tag", `carries the community tag “${TAGS.groups[id].slug}”; not checked against the card's parsed text`, true);
+  if (layer === "leaf" && SIB && SIB.groups[id]) for (const r of SIB.groups[id].m) add(r[0], "sibling", `exactly this group's signature; held out because ${RARE_WORDS[r[2]] || r[2]}`, true);
+  const ak = layer === "leaf" ? "l:" + id : layer === "tent" ? "t:" + id : null;
+  if (ak && ANN && ANN.groups[ak]) for (const r of ANN.groups[ak].m) add(r[0], "annotation", r[6] === "g" ? "an ability was read but another part of the card was not: " + (r[7].length ? r[7].map(t => "“" + t + "”").join("; ") : "(text not shown)") : `a condition the tool did not read: “${r[2]}”${r[4] ? (r[4] === 2 ? " (it may change the ability to the opposite)" : " (it may make the ability do something else)") : ""}`, !r[4]);
+  return rows;
+}
+function reviewHTML(gid) {
+  if (!batchOn()) return "";
+  const rows = reviewRows(gid);
+  if (!rows.length) return "";
+  const adds = MRESV.adds, rem = MRESV.removes, per = rows.slice(0, 100);
+  const body = per.map(r => {
+    const had = (adds[r.oid] && adds[r.oid][gid]) ? "confirmed by hand" : (rem[r.oid] && rem[r.oid][gid]) ? "rejected by hand" : (adds[r.oid] || rem[r.oid] || MRESV.marks[r.oid]) ? "has another hand entry" : "";
+    const k = gid + "|" + r.oid, on = GS.has(k) ? GS.get(k) : (r.dflt && !had);
+    return `<label class="bit"><input type="checkbox" data-rk="${esc(r.oid)}" data-had="${had ? 1 : 0}" data-src="${esc(r.src)}" ${on ? "checked" : ""}> <span class="lnk nm" data-go="c:${esc(r.oid)}">${esc(MI.cards[r.oid][0])}</span> <span class="badge b-auto">${esc(r.src)}</span> ${had ? `<span class="badge b-nofit">${esc(had)}; ticking overrides</span>` : ""}<span class="why">${esc(r.ev)}</span></label>`;
+  }).join("");
+  return `<div class="breview" data-gid="${esc(gid)}"><b>Batch review</b> <span class="sub">${fmt(rows.length)} card${rows.length > 1 ? "s" : ""} hold this group as a soft placement${rows.length > 100 ? "; the first 100 are shown" : ""}. Confirm places them in this group by hand (they stay in their own figure); reject records that they do not belong. Nothing happens until you press a button; one click is one batch, all or nothing.</span>` +
+    `<div class="bbar"><button data-bact3="all">Tick all</button> <button data-bact3="none">Untick all</button> <span class="bgrow"><button id="rconf" data-bact3="confirm">Confirm ticked</button> <button id="rrej" data-bact3="reject">Reject ticked</button></span></div>${body}</div>`;
+}
+function injectReview(gid) {
+  const html = reviewHTML(gid);
+  if (!html) return;
+  const P = document.getElementById("panel"), vb = P.querySelector(".viewbar"), list = document.getElementById("list");
+  const tmp = document.createElement("div"); tmp.innerHTML = html;
+  (vb || list).before(tmp.firstChild);
+  updateReviewCounts();
+}
+function reviewTicked() { const box = document.querySelector(".breview"); return box ? [...box.querySelectorAll("input[data-rk]")].filter(e => e.checked) : []; }
+function updateReviewCounts() {
+  const n = reviewTicked().length;
+  for (const [id, t] of [["rconf", "Confirm"], ["rrej", "Reject"]]) { const b = document.getElementById(id); if (b) { b.textContent = `${t} ticked (${fmt(n)})`; b.disabled = n === 0 || n > 100; } }
+}
+function reviewBatch(kind) {
+  const box = document.querySelector(".breview"), gid = box.dataset.gid;
+  const items = reviewTicked().map(e => ({ oid: e.dataset.rk, group: gid, action: kind === "confirm" ? "add" : "remove", source: e.dataset.src, override: e.dataset.had === "1" }));
+  if (!items.length) return;
+  sendBatch({ id: Manual.newBatchId(new Date(), Math.random), kind: kind, threshold: null, note: "", items: items }, `${kind === "confirm" ? "confirmed" : "rejected"} ${fmt(items.length)} card${items.length > 1 ? "s" : ""} in “${MI.groups[gid][0]}”`);
+}
+function batchAct(a, b) {                                  // buttons inside the panel
+  if (a === "prev" || a === "next") { BS.page += a === "next" ? 1 : -1; showBatchView(); return true; }
+  if (a === "all" || a === "none") {
+    for (const row of document.querySelectorAll("#brows .brow")) [...row.querySelectorAll("input[data-bk]")].forEach((el, i) => { el.checked = a === "all" ? (i === 0 || el.checked) : false; BS.ticks.set(el.dataset.bk, el.checked); });
+    updateBatchCounts(); return true;
+  }
+  if (a === "gobatch") { show("QB:"); return true; }
+  if (a === "accept") {
+    const items = ticked();
+    if (!items.length || items.length > 100) return true;
+    sendBatch({ id: Manual.newBatchId(new Date(), Math.random), kind: "place", threshold: BS.thr, note: "", items: items }, `placed ${fmt(items.length)} suggestion${items.length > 1 ? "s" : ""} (threshold ${BS.thr.toFixed(2)})`);
+    return true;
+  }
+  if (a === "fbaccept") {
+    const items = fbTicked();
+    if (!items.length || items.length > 100) return true;
+    sendBatch({ id: Manual.newBatchId(new Date(), Math.random), kind: "fallback", threshold: BS.thr, note: "", items: items }, `placed ${fmt(items.length)} low-confidence possible home${items.length > 1 ? "s" : ""}`);
+    return true;
+  }
+  if (a === "nofit") { sendEdit({ oid: b.dataset.oid, group: Manual.NOFIT, action: "nofit", note: "" }); return true; }
+  if (a === "undolast") { if (LASTBATCH && !LASTBATCH.undone) undoBatch(LASTBATCH.id); else undoBatch("last"); return true; }
+  if (a === "undoid") { undoBatch(b.dataset.id); return true; }
+  return false;
+}
+document.getElementById("panel").addEventListener("click", e => {
+  const b = e.target.closest("button[data-bact2]");
+  if (b && !b.disabled) { batchAct(b.dataset.bact2, b); return; }
+  const r = e.target.closest("button[data-bact3]");
+  if (r && !r.disabled) {
+    const a = r.dataset.bact3, box = document.querySelector(".breview");
+    if (a === "all" || a === "none") { for (const el of box.querySelectorAll("input[data-rk]")) { el.checked = a === "all" && el.dataset.had !== "1"; GS.set(box.dataset.gid + "|" + el.dataset.rk, el.checked); } updateReviewCounts(); }
+    else reviewBatch(a);
+  }
+}, true);
+document.getElementById("panel").addEventListener("change", e => {
+  const t = e.target;
+  if (t.id === "bthr") { BS.thr = Math.round(+t.value * 100) / 100; BS.ticks.clear(); showBatchView(); }
+  else if (t.id === "bskip") { BS.skip = t.checked; BS.ticks.clear(); showBatchView(); }
+  else if (t.dataset && t.dataset.bk) { BS.ticks.set(t.dataset.bk, t.checked); updateBatchCounts(); }
+  else if (t.dataset && t.dataset.fk) updateBatchCounts();
+  else if (t.dataset && t.dataset.rk) { GS.set(t.closest(".breview").dataset.gid + "|" + t.dataset.rk, t.checked); updateReviewCounts(); }
+});
+document.getElementById("panel").addEventListener("input", e => { if (e.target.id === "bthr") document.getElementById("bthrv").textContent = (+e.target.value).toFixed(2); });
+
+// ---------------------------------------------------------------- header
+function header() {
+  const t = TAX.totals, m = TAX.meta;
+  document.getElementById("prov").innerHTML =
+    `Snapshot: ${esc(m.rules.snapshot)}. Built by <code>${esc(m.rules.source)}</code>: ${esc(m.rules.population)}; ` +
+    `rarest-field-first backoff, groups of at least ${m.rules.minimum} abilities; groups under ${m.rules.display_threshold} are shown inside their parent.`;
+  document.getElementById("cov").innerHTML =
+    `<div><b>${fmt(t.headline.cards)} of ${fmt(t.in_scope)} cards grouped (${t.headline.pct}%)</b> ` +
+    `<span class="basis">Basis: ${esc(t.headline.basis)}.</span></div>` +
+    `<div>${fmt(t.with_broad.cards)} of ${fmt(t.in_scope)} (${t.with_broad.pct}%) counting groups broader than they look. ` +
+    `<span class="basis">Basis: ${esc(t.with_broad.basis)}.</span></div>` +
+    (tentOn() ? `<div>${fmt(TENT.meta.headline.with_tentative[0])} of ${fmt(t.in_scope)} (${TENT.meta.headline.with_tentative[1]}%) counting tentative placements, which are not fully checked. ` +
+      `<span class="basis">Basis: ${esc(TENT.meta.headline.with_tentative[2])}.</span></div>` : "") +
+    (annOn() ? `<div>${fmt(ANN.meta.headline.with_annotation[0])} of ${fmt(t.in_scope)} (${ANN.meta.headline.with_annotation[1]}%) also counting condition annotations: abilities with a condition the tool did not read, tentative and not fully checked. ` +
+      `<span class="basis">Basis: ${esc(ANN.meta.headline.with_annotation[2])}.</span></div>` +
+      (ANN.meta.gap_cards_new ? `<div>${fmt(ANN.meta.headline.with_gap_stratum[0])} of ${fmt(t.in_scope)} (${ANN.meta.headline.with_gap_stratum[1]}%) on its own line, adding the unread-part stratum. ` +
+        `<span class="basis">Basis: ${esc(ANN.meta.headline.with_gap_stratum[2])}.</span></div>` : "") : "") +
+    (tagOn() ? `<div>${fmt(TAGS.meta.headline.with_tag[0])} of ${fmt(t.in_scope)} (${TAGS.meta.headline.with_tag[1]}%) on its own line, adding the cards with no readable ability that sit in a community-tag group. Not an organized figure. ` +
+      `<span class="basis">Basis: ${esc(TAGS.meta.headline.with_tag[2])}. ${tagSnap()}</span></div>` : "") +
+    `<div class="basis">Not yet organized: ${fmt(t.not_yet_organized - (tentOn() ? TENT.meta.cards : 0) - (annOn() ? annCounts().c + annCounts().g : 0) - (tagOn() ? TAGS.meta.cards : 0) - handPileN())}` +
+    (tentOn() ? `; tentatively placed: ${fmt(TENT.meta.cards)} (a derived count: the build still lists them as not yet organized)` : "") +
+    (annOn() ? `; annotated: ${fmt(annCounts().c)} (condition not read) and ${fmt(annCounts().g)} (card part not read), counted separately` : "") +
+    (tagOn() ? `; grouped by community tag: ${fmt(TAGS.meta.cards)}, counted separately` : "") +
+    `. Not cards (tokens, art cards, planes, …): ${fmt(t.not_cards)}. ` +
+    `The archived card-level view grouped ${fmt(t.archived_view.cards)} (${t.archived_view.pct}%) on a different basis (${esc(t.archived_view.basis)}).</div>`;
+  handLine(); sibLine(); updateBanner(); batchBar();
+}
+
+// ---------------------------------------------------------------- tree
+function row(cls, key, label, n, extra) {
+  const isOpen = open.has(key), hasKids = extra && extra.kids;
+  return `<div class="row ${cls}${isSel(key) ? " sel" : ""}" data-k="${esc(key)}">` +
+    `<span>${hasKids ? `<span class="tw">${isOpen ? "▾" : "▸"}</span>` : `<span class="tw"></span>`}${label}</span>` +
+    `<span class="n">${n == null ? "" : fmt(n)}</span></div>`;
+}
+function leafLabel(l, id) {
+  return esc(l.name) + (l.flags.length ? ` <span class="badge b-broad" title="${esc(l.notes.join(" "))}">broad</span>` : "") +
+    (l.auto_named ? ` <span class="badge b-auto devonly">auto name</span>` : "") + mergedBadgeFor("leaf:" + id) +
+    (DEV ? ` <span class="b-dev">${esc(id)} L${l.level}</span>` : "");
+}
+function renderTree() {
+  const h = [];
+  h.push(`<div class="blk">What abilities do</div>`);
+  for (const f of TAX.families) {
+    const fk = "f:" + f.key;
+    h.push(row("l1", fk, esc(f.name), famN(f), { kids: true }));
+    if (!open.has(fk)) continue;
+    for (const nd of f.nodes) {
+      const nk = "n:" + nd.id;
+      h.push(row("l2", nk, esc(nd.name) + (DEV ? ` <span class="b-dev">${esc(nd.id)}</span>` : ""), nodeN(nd), { kids: true }));
+      if (!open.has(nk)) continue;
+      for (const lid of nd.leaves) { const l = TAX.leaves[lid]; h.push(row("l3", "l:" + lid, leafLabel(l, lid), leafN(lid))); }
+      if (nd.rolled.length) {
+        const n = nd.rolled.reduce((a, lid) => a + leafN(lid), 0);
+        h.push(row("l3", "r:" + nd.id, `Other: ${esc(nd.name).toLowerCase()} <span class="badge b-auto">${nd.rolled.length} small groups</span>`, n));
+      }
+    }
+    const tf = tentOn() ? TENT.families.find(x => x.key === f.key) : null;
+    if (tf) {
+      const tk = "tf:" + f.key;
+      h.push(row("l2", tk, `Tentative groups <span class="badge b-tent">tentative</span>`, tfN(tf), { kids: true }));
+      if (open.has(tk)) for (const gid of tf.groups) h.push(row("l3", "tg:" + gid, esc(TENT.groups[gid].short) + ` <span class="badge b-tent">tentative</span>`, tgN(TENT.groups[gid])));
+    }
+    const af = annOn() ? ANN.families.find(x => x.key === f.key) : null;
+    if (af) {
+      const ak = "af:" + f.key;
+      h.push(row("l2", ak, `Condition annotations <span class="badge b-ann">tentative</span>`, afN(af), { kids: true }));
+      if (open.has(ak)) for (const k of af.groups) h.push(row("l3", "ag:" + k, esc(ANN.groups[k].name) + ` <span class="badge b-ann">${ANN.groups[k].m.some(r => r[6] === "c") ? "condition not read" : "card part not read"}</span>`, agN(ANN.groups[k])));
+    }
+  }
+  const kb = TAX.blocks.keyword, rb = TAX.blocks.replacement, nb = TAX.blocks.no_abilities;
+  h.push(`<div class="blk">Grouped by rule</div>`);
+  h.push(row("l1", "K", esc(kb.name), blockN(kb, TAX.totals.views.keyword_block), { kids: true }));
+  if (open.has("K")) for (const br of kb.branches) {
+    const bk = "kb:" + br.name;
+    h.push(row("l2", bk, esc(br.name), branchN(kb, br), { kids: true }));
+    if (open.has(bk)) for (const lid of br.leaves) h.push(row("l3", "kl:" + lid, esc(kb.leaves[lid].name), blkLeafN(kb, lid)));
+  }
+  h.push(row("l1", "G", esc(rb.name), blockN(rb, TAX.totals.views.replacement_group), { kids: true }));
+  if (open.has("G")) for (const br of rb.branches) {
+    const bk = "gb:" + br.name;
+    h.push(row("l2", bk, esc(br.name), branchN(rb, br), { kids: true }));
+    if (open.has(bk)) for (const lid of br.leaves) h.push(row("l3", "gl:" + lid, esc(rb.leaves[lid].name), blkLeafN(rb, lid)));
+  }
+  h.push(row("l1", "V", esc(nb.name), counting() ? nvis(nb.cards) : nb.cards.length));
+  if (KFAC) {
+    h.push(`<div class="blk">By keyword <span class="badge b-auto">filter, not a placement</span></div>`);
+    h.push(row("l1", "Y:", "Cards with a keyword", KFAC.meta.cards_with_a_keyword, { kids: true }));
+    if (open.has("Y:")) for (const n of kwOrder()) h.push(row("l2", "yk:" + n, esc(KFAC.keywords[n].d), KFAC.keywords[n].n));
+  }
+  if (HG && Object.keys(HG.groups).length) {
+    h.push(`<div class="blk">Hand-defined groups ${hgBadge()}</div>`);
+    for (const slug of Object.keys(HG.groups)) { const g = HG.groups[slug]; h.push(row("l1", "hg:" + slug, esc(g.name) + (g.retired ? ` <span class="badge b-auto">retired</span>` : ""), g.cards)); }
+  }
+  h.push(`<div class="blk">Groups broader than they look</div>`);
+  const byNote = {};
+  for (const [lid, l] of Object.entries(TAX.leaves)) if (l.flags.length) (byNote[l.notes[0]] = byNote[l.notes[0]] || []).push(lid);
+  const notes = Object.keys(byNote).sort();
+  notes.forEach((nt, i) => {
+    const k = "B:" + i, n = byNote[nt].reduce((a, lid) => a + leafN(lid), 0);
+    h.push(row("l1", k, esc(nt.split(",")[0].replace(/ isn't recorded| aren't recorded/, " not recorded")), n, { kids: true }));
+    if (open.has(k)) for (const lid of byNote[nt].sort((a, b) => leafN(b) - leafN(a)))
+      h.push(row("l2", "l:" + lid, leafLabel(TAX.leaves[lid], lid), leafN(lid)));
+  });
+  window.BROAD_NOTES = notes; window.BROAD_BY = byNote;
+  h.push(`<div class="blk">Not yet organized</div>`);
+  for (const g of TAX.unorganized) h.push(row("l1", "u:" + g.id, esc(g.name), UNORG ? unorgN(UNORG.find(x => x.id === g.id) || g) : g.cards));
+  if (LOOSE) {
+    h.push(`<div class="blk">Not yet organized, browsed loosely <span class="badge b-broad">not checked</span></div>`);
+    h.push(row("l1", "LG:", "Loosely grouped by effect", lAllN(), { kids: true }));
+    if (open.has("LG:")) for (const f of LOOSE.families) {
+      const fk = "lf:" + f.key;
+      h.push(row("l2", fk, esc(f.name), lfN(f), { kids: true }));
+      if (open.has(fk)) for (const gid of f.groups) h.push(row("l3", "lg:" + gid, esc(LOOSE.groups[gid].short) + (tentOn() && TENT.groups[gid] ? ` <span class="badge b-tent">tentative</span>` : ""), lgN(LOOSE.groups[gid])));
+    }
+    if (UNREAD) h.push(row("l1", "UR:", "Cards we couldn't read yet", unreadN()));
+    if (UNREAD && tagOn()) {
+      h.push(row("l1", "CT:", `Grouped by community tag <span class="badge b-tag">${esc(TAGS.meta.badge)}</span>`, ctAllN(), { kids: true }));
+      if (open.has("CT:")) for (const gid of TAGS.order) h.push(row("l2", "ct:" + gid, esc(TAGS.groups[gid].name) + mergedBadgeFor("tag:" + gid), tgcN(TAGS.groups[gid])));
+    }
+  }
+  if (FLAGS) {
+    const by = ncByReason();
+    h.push(`<div class="blk">Left out: not meant for constructed play</div>`);
+    h.push(row("l1", "N:all", "All of them", Object.values(by).reduce((a, l) => a + l.length, 0)));
+    for (const r of Object.keys(FLAGS.reasons)) if (by[r]) h.push(row("l2", "N:" + r, esc(FLAGS.reasons[r].charAt(0).toUpperCase() + FLAGS.reasons[r].slice(1)), by[r].length));
+  }
+  document.getElementById("tree").innerHTML = h.join("");
+}
+document.getElementById("tree").addEventListener("click", e => {
+  const r = e.target.closest(".row"); if (!r) return;
+  const k = r.dataset.k;
+  if (/^(f|n|K|G|kb|gb|B|LG|lf|tf|Y):?/.test(k) && !/^(kl|gl|l|r|u|lg|tg|yk):/.test(k)) {
+    const wasOpen = open.has(k);
+    if (wasOpen) open.delete(k); else open.add(k);
+    renderTree();
+    // show() re-opens a node it displays, so only call it when the click opened the node; a click that closes it just closes it
+    if (!wasOpen && (k.startsWith("f:") || k.startsWith("n:") || k.startsWith("B:") || k.startsWith("LG:") || k.startsWith("lf:") || k.startsWith("tf:") || k === "Y:")) show(k);
+    return;
+  }
+  PINCUR = null;
+  show(k);
+});
+
+// ---------------------------------------------------------------- panel
+function costHTML(c) {
+  const cols = c.col ? c.col.split("").join("") : "C";
+  return `<span class="cost" title="colours, mana value">${esc(cols)}${c.mv == null ? "" : " " + c.mv}</span>`;
+}
+function leafPath(lid) { const l = TAX.leaves[lid]; const nd = NODES[l.node]; return (NODE_FAM[l.node] || "") + " › " + (nd ? nd.name : ""); }
+function cardHTML(oid, abIdx, ctxLeaf, gid) {
+  const c = CARDS[oid];
+  if (!c) return `<div class="card"><span class="nm">${esc(oid)}</span></div>`;
+  let why = "", more = 0;
+  if (abIdx != null) {
+    why = c.ab[abIdx][0] || "(no separate rules line for this ability)";
+    more = c.ab.filter((a, k) => k !== abIdx && a[1] === ctxLeaf).length;
+  }
+  const others = [...new Set(c.ab.filter(a => a[1] && a[1] !== ctxLeaf && TAX.leaves[a[1]]).map(a => a[1]))];
+  const also = others.length ? `<div class="also">Also in: ${others.slice(0, 6).map(lid =>
+      `<span class="lnk" data-go="l:${esc(lid)}">${esc(TAX.leaves[lid].name)}</span>` +
+      (TAX.leaves[lid].flags.length ? ` <span class="badge b-broad">broad</span>` : "")).join(" · ")}${others.length > 6 ? " …" : ""}</div>` : "";
+  return `<div class="card" data-oid="${esc(oid)}"><div class="top"><span class="nm">${esc(c.n)}</span>${costHTML(c)}<span class="ty">${esc(c.ty)}</span><span class="lnk chip" data-go="c:${esc(oid)}">card page</span>` + (MI ? handMark(oid, gid || (ctxLeaf ? "leaf:" + ctxLeaf : "")) : "") +
+    (DEV ? `<span class="b-dev">${esc(oid)}</span>` : "") + `</div>` +
+    (abIdx != null ? `<div class="ab"><span class="why">${esc(why)}</span>${more ? ` <span class="sub">(+${more} more ability in this group)</span>` : ""}</div>` : "") +
+    also + `<div class="det" hidden></div></div>`;
+}
+function detailHTML(oid) {
+  const c = CARDS[oid];
+  const st = { p: "grouped", b: "in a broad group", h: "held back (gap card)", u: "not grouped" };
+  const lis = c.ab.map(a => `<li class="st-${a[2]}">${esc(a[0] || "(no separate rules line)")} — ` +
+    (a[1] && TAX.leaves[a[1]] ? `<span class="lnk" data-go="l:${esc(a[1])}">${esc(TAX.leaves[a[1]].name)}</span> (${st[a[2]]})` : st[a[2]]) + `</li>`).join("");
+  const gap = c.g && c.g.length ? `<div class="gap">The parser did not read part of this card's text: ${c.g.map(x => "“" + esc(x[1]) + "”").join("; ")}. ` +
+    `Its abilities that it did read are grouped on their own; this unread part is shown here, not in a group.</div>` : "";
+  return `<div class="rt">${esc(c.t)}</div>` + gap + (lis ? `<div class="subhead">Abilities</div><ul>${lis}</ul>` : "");
+}
+document.getElementById("panel").addEventListener("click", e => {
+  const act = e.target.closest("button[data-act]");
+  if (act) { if (!act.disabled) handleAct(act); return; }
+  const sc0 = e.target.closest("[data-sec]");
+  if (sc0) { gotoSection(+sc0.dataset.sec); return; }
+  const go = e.target.closest("[data-go]");
+  if (go) { if (go.dataset.alone) ALONEKEY = go.dataset.go; if (PINON && go.dataset.pin) { PINNEXT = go.dataset.pin; SCWANT = { k: go.dataset.go, tab: "members" }; } show(go.dataset.go); return; }
+  if (e.target.closest("button.morebtn")) { renderList(); return; }
+  const vb = e.target.closest("button[data-view]");
+  if (vb) { setView(vb.dataset.view); return; }
+  const tl = e.target.closest(".tile");
+  if (tl) { toggleTile(tl); return; }
+  const ps = e.target.closest("button.psbtn");
+  if (ps) { const out = ps.closest(".cardpage").querySelector(".psout"); out.innerHTML = "Loading…"; parsedStructure(ps.dataset.oid).then(h => { out.innerHTML = h; }); return; }
+  const top = e.target.closest(".card .top");
+  if (top) {
+    const card = top.parentElement, d = card.querySelector(".det");
+    if (d.hidden) d.innerHTML = detailHTML(card.dataset.oid);
+    d.hidden = !d.hidden;
+  }
+});
+
+let LIST = [], LISTN = 0;
+let VIEW = "text", IMGDOC = null, IMGTRIED = false;
+const PAGE_IMG = 60;
+// A list item is: a string (a heading or note, shown full width), [oid, abilityIndex, leafId] (a card in a group),
+// or {html, oid, extra} (a card with its own row markup, e.g. in the card list or Not yet organized).
+const itemOid = x => Array.isArray(x) ? x[0] : (x && typeof x === "object" ? x.oid : null);
+async function needImages() {
+  if (IMGTRIED) return;
+  IMGTRIED = true;
+  try { IMGDOC = await J("card_images.json"); } catch (e) { IMGDOC = null; }
+}
+function imageURL(oid, size) {
+  if (!IMGDOC) return null;
+  const rec = IMGDOC.cards[oid];
+  if (!rec) return null;
+  const cid = rec[0];
+  return IMGDOC.template.replace("{size}", size || "normal").replace("{face}", "front").replace("{a}", cid[0]).replace("{b}", cid[1])
+    .replace("{id}", cid).replace("{ts}", rec[1]);
+}
+function tileHTML(x) {
+  const oid = itemOid(x), c = CARDS[oid] || { n: oid };
+  const url = imageURL(oid, "normal");
+  const ab = Array.isArray(x) && x[1] != null ? x[1] : "";
+  return `<div class="tile" data-oid="${esc(oid)}" data-ab="${ab}">` + (url ?
+    `<img loading="lazy" src="${esc(url)}" alt="${esc(c.n)}" title="${esc(c.n)}"><div class="tname">${esc(c.n)}</div>` :
+    `<div class="noimg"><b>${esc(c.n)}</b><div>no picture in the image index for this card</div></div>`) + `</div>`;
+}
+function itemHTML(x) {
+  if (VIEW === "images") {
+    if (typeof x === "string") return `<div class="gridfull">${x}</div>`;
+    return tileHTML(x);
+  }
+  if (typeof x === "string") return x;
+  if (Array.isArray(x)) return cardHTML(x[0], x[1], x[2], x[3]);
+  return x.html;
+}
+function renderList() {
+  const el = document.getElementById("list");
+  const per = VIEW === "images" ? PAGE_IMG : PAGE;
+  const chunk = LIST.slice(LISTN, LISTN + per);
+  LISTN += chunk.length;
+  el.insertAdjacentHTML("beforeend", chunk.map(itemHTML).join(""));
+  document.getElementById("morewrap").innerHTML = LISTN < LIST.length ?
+    `<button class="morebtn">Show ${Math.min(per, LIST.length - LISTN)} more (${fmt(LIST.length - LISTN)} left)</button>` : "";
+}
+function viewBarHTML() {
+  if (!LIST.some(x => itemOid(x)) && !HIDDEN) return "";
+  return `<div class="viewbar">View: <button class="vbtn${VIEW === "text" ? " on" : ""}" data-view="text">text</button>` +
+    `<button class="vbtn${VIEW === "images" ? " on" : ""}" data-view="images">card images</button>` +
+    (HIDDEN ? ` <span class="sub" id="hiddennote">${fmt(HIDDEN)} hidden (${Object.entries(HIDDENBY).sort((a, b) => b[1] - a[1]).map(([r, n]) => fmt(n) + " " + esc(r)).join(", ")}); untick the switches at the top to list them.</span>` : "") +
+    `<span class="sub" id="viewnote"></span></div>`;
+}
+function viewNote() {
+  const el = document.getElementById("viewnote");
+  if (!el) return;
+  el.innerHTML = VIEW !== "images" ? "" : IMGDOC ?
+    `Pictures load from Scryfall's servers as you scroll; this is the only part of the page that reaches outside this computer. ` +
+    `${fmt(IMGDOC.n_matched)} of ${fmt(IMGDOC.n_ours)} cards known when the picture index was built have one; cards added since, and Alchemy cards, show a plain tile.` :
+    `Could not load build/card_images.json, so there are no pictures. Run python src/build_images.py (needs the network).`;
+}
+function setList(head, items, opts) {
+  HIDDEN = 0; HIDDENBY = {};
+  const showFlagged = !!(opts && opts.showFlagged);
+  if (HIDE) {
+    const keep = [];
+    for (const x of items) {
+      const o = itemOid(x);
+      if (o == null || visible(o) || (showFlagged && !(HIDE && IMGDOC && !IMGDOC.cards[o]))) keep.push(x);
+      else { HIDDEN++; const r = hideReason(o); HIDDENBY[r] = (HIDDENBY[r] || 0) + 1; }
+    }
+    items = keep;
+  }
+  LIST = items; LISTN = 0;
+  document.getElementById("panel").innerHTML = head + viewBarHTML() + `<div id="list"${VIEW === "images" ? ' class="grid"' : ""}></div><div class="more" id="morewrap"></div>`;
+  viewNote();
+  renderList();
+  document.getElementById("panel").scrollTop = 0;
+}
+async function setView(v) {
+  if (v === "images") await needImages();
+  VIEW = v;
+  const el = document.getElementById("list");
+  if (!el) return;
+  el.className = v === "images" ? "grid" : "";
+  el.innerHTML = ""; LISTN = 0;
+  for (const b of document.querySelectorAll(".viewbar .vbtn")) b.classList.toggle("on", b.dataset.view === v);
+  viewNote();
+  renderList();
+}
+function toggleTile(tile) {
+  const nxt = tile.nextElementSibling;
+  if (nxt && nxt.classList.contains("tiledet")) { nxt.remove(); tile.classList.remove("sel"); return; }
+  const oid = tile.dataset.oid, c = CARDS[oid];
+  const why = tile.dataset.ab !== "" && c.ab[+tile.dataset.ab] ? `<div class="ab"><span class="why">${esc(c.ab[+tile.dataset.ab][0] || "(no separate rules line for this ability)")}</span></div>` : "";
+  const it = LIST.find(x => itemOid(x) === oid && !Array.isArray(x));
+  const det = document.createElement("div");
+  det.className = "tiledet";
+  det.innerHTML = `<div class="top"><span class="nm">${esc(c.n)}</span> ${costHTML(c)} <span class="ty">${esc(c.ty)}</span> <span class="lnk chip" data-go="c:${esc(oid)}">card page</span></div>` +
+    why + (it && it.extra ? it.extra : "") + detailHTML(oid);
+  // after the last tile of this row, so the detail does not push a tile in the middle of a row
+  tile.after(det);
+  tile.classList.add("sel");
+}
+function leafItems(lid) { const base = (MEM[lid] || []).map(m => [m[0], m[1], lid]); return handRows("leaf:" + lid, new Set(base.map(x => x[0]))).concat(sibRows(lid), base); }
+
+// ---------------------------------------------------------------- card pin (reports/cardpin.js; build/card_pin/meta.json, switched by CARD_PIN in src/build_card_pin.py; absent when it is off, and then a card result opens the card page as it always did)
+// A card result opens the card IN ITS BEST GROUP: the card pinned at the top as "You searched for this card" with "Also in" chips for its other groups, and highlighted (and scrolled to) in the group's list, paged in far enough
+// to hold it. A pile card (and a card with no group the page can open) still opens the card page. The pin is in the address as "&card=<oid>" so a link carries it. Nothing here places or changes anything.
+let PINON = false, PINNEXT = null, PINCUR = null;
+async function pinBoot() { try { const m = await J("card_pin/meta.json"); PINON = !!(m && m.enabled); } catch (e) { PINON = false; } }
+const splitPin = h => { const m = /&card=([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(?=&tab=|$)/.exec(h); return m ? [h.slice(0, m.index) + h.slice(m.index + m[0].length), m[1]] : [h, ""]; };
+function pinEnv(oid) {
+  const on = handOn();
+  return { tentOk: id => tentOn() && !!TENT.groups[id], tagOk: id => tagOn() && !!TAGS.groups[id], looseHas: id => !!LOOSE && !!LOOSE.groups[id], looseName: id => LOOSE && LOOSE.groups[id] ? LOOSE.groups[id].short : "",
+    adds: on ? (MRESV.adds[oid] || {}) : null, removes: on ? (MRESV.removes[oid] || {}) : null };
+}
+async function openPin(oid) {
+  await needCardList(); await needManual(); await needLoose();
+  if (!MI || !MI.cards[oid]) { await show("c:" + oid); return; }
+  const p = CardPin.plan(MI, oid, pinEnv(oid));
+  if (p.open !== "group") { await show("c:" + oid); return; }
+  PINNEXT = oid; SCWANT = { k: p.best.key, tab: "members" };
+  await show(p.best.key);
+}
+async function pinAfter(k, oid) {
+  const old = document.getElementById("pinwrap");
+  if (old) old.remove();
+  if (selected !== k || !CARDS || !CARDS[oid] || !MI || !MI.cards[oid]) { PINCUR = null; return; }
+  const P = document.getElementById("panel"), first = P.querySelector(".viewbar") || document.getElementById("list");
+  if (!first) { PINCUR = null; return; }
+  PINCUR = oid;
+  const pgm = MERGED && MERGED.redirects[k] ? MERGED.pageBy[MERGED.redirects[k]] : null, mset = pgm ? new Set(pgm.members.map(m => m.gid)) : null;
+  const plan = CardPin.plan(MI, oid, pinEnv(oid));
+  const here = pgm ? (plan.groups.find(g => g.gid === (MSEC && MSEC[oid])) || plan.groups.find(g => mset.has(g.gid))) : plan.groups.find(g => g.key === k);
+  const others = pgm ? plan.groups.filter(g => !mset.has(g.gid)) : plan.groups.filter(g => g.key !== k);
+  const onPage = pgm ? plan.groups.filter(g => mset.has(g.gid) && (!here || g.gid !== here.gid)) : [];
+  const hk = here ? here.key : k;
+  let ctx = null, ab = null, gid = here ? here.gid : "";
+  if (hk.startsWith("l:")) { const row = (MEM[hk.slice(2)] || []).find(m => m[0] === oid); if (row) { ab = row[1]; ctx = hk.slice(2); } }
+  if (hk.startsWith("lg:") && TENT && TENT.groups[hk.slice(3)]) gid = "tent:" + hk.slice(3);
+  const idx = LIST.findIndex(x => itemOid(x) === oid);
+  const chips = others.slice(0, 8).map(g => `<span class="lnk chip" data-go="${esc(g.key)}" data-pin="${esc(oid)}" title="${esc(g.name)}">${esc(g.name.length > 48 ? g.name.slice(0, 47) + "…" : g.name)}</span>`).join(" ");
+  const more = others.length > 8 ? ` <span class="sub">+${others.length - 8} more on the card page</span>` : "";
+  const note = idx >= 0 ? "" : `<div class="sub pinnote">${hidden(oid) ? "This card is hidden from the list below by the “hide cards with no picture” switch." : "This card is not listed in this group any more (it may have been removed or moved)."}</div>`;
+  first.insertAdjacentHTML("beforebegin", `<div id="pinwrap" class="pinwrap"><div class="pinlabel">You searched for this card</div>${cardHTML(oid, ab, ctx, gid)}` +
+    `<div class="pinalso">${onPage.length ? "Also on this page: " + onPage.map(g => esc(g.name)).join("; ") + ". " : ""}${others.length ? "Also in: " + chips + more : "Not in any other group."} <span class="lnk chip" data-go="c:${esc(oid)}">card page</span></div>${note}</div>`);
+  const wrap = document.getElementById("pinwrap"), matches = !!(SCCUR && SCCUR.tab === "matches");
+  if (matches) wrap.classList.add("sc-off");
+  try { history.replaceState(null, "", "#" + encodeURIComponent(k) + "&card=" + oid + (matches ? "&tab=matches" : "")); } catch (e) { /* ignore */ }
+  if (idx >= 0) {
+    let guard = 0;
+    while (LISTN <= idx && LISTN < LIST.length && guard++ < 400) renderList();             // page in far enough that the card is in the list
+    const el = [...document.querySelectorAll("#list [data-oid]")].find(e => e.dataset.oid === oid);
+    if (el) {
+      el.classList.add("pinhit");
+      if (!matches) { if (window.innerWidth <= 800) P.scrollIntoView(); el.scrollIntoView({ block: "center" }); }
+    }
+  }
+}
+// ---------------------------------------------------------------- merged group pages (reports/mergepage.js; build/merged_groups/index.json, switched by MERGED_GROUPS in src/build_merged_groups.py; absent when it is off, and then every group opens as it always did)
+// DISPLAY ONLY: a page shows 2 to 8 groups together, one section per group, ordered by trust. Every group keeps its own id, its own count and its own placements; the number a page shows is a display figure (a card in two of its
+// groups is counted once). A card is shown once, in the highest-trust section that holds it, with an "also in" mark. The first member's key is the page's key; the other members' keys open the same page, scrolled to their section,
+// and keep &card= and &tab=. "Open on its own" shows one member by itself (the page as it was, batch review included). Add and Possible matches stay per member group (a group picker in the tab).
+let MERGED = null, MERGEDP = null, ALONEKEY = null, MSEC = null;
+function mergeBoot() {
+  return MERGEDP || (MERGEDP = (async () => {
+    try { const d = await J("merged_groups/index.json"); d.pageBy = {}; for (const p of d.pages) d.pageBy[p.slug] = p; MERGED = d; } catch (e) { MERGED = null; }
+  })());
+}
+const isSel = key => selected === key || (!!MERGED && !!selected && !!MERGED.redirects[key] && MERGED.redirects[key] === MERGED.redirects[selected]);
+function mergedBadgeFor(gid) {
+  if (!MERGED || !MERGED.by_gid[gid]) return "";
+  const p = MERGED.pageBy[MERGED.by_gid[gid]];
+  return ` <span class="badge b-merged" title="${esc("Shown with " + (p.members.length - 1) + " other group" + (p.members.length > 2 ? "s" : "") + " on the page “" + p.name + "”")}">merged</span>`;
+}
+const memberId = m => m.gid.slice(m.gid.indexOf(":") + 1);
+const memberAvail = m => m.layer === "tag" ? tagOn() && !!TAGS.groups[memberId(m)] : !!TAX.leaves[memberId(m)];
+const memberName = m => m.layer === "tag" ? TAGS.groups[memberId(m)].name : TAX.leaves[memberId(m)].name;
+const memberOidsOf = m => m.layer === "tag" ? TAGS.groups[memberId(m)].m : memOids(memberId(m));
+const memberCount = m => m.layer === "tag" ? tgcN(TAGS.groups[memberId(m)]) : leafN(memberId(m));
+function mergedUnion(pg) { const s = new Set(); for (const m of pg.members.filter(memberAvail)) for (const o of memberOidsOf(m)) s.add(o); return counting() ? nvis([...s]) : s.size; }
+function tagItems(id) {                                  // the list of a community-tag group, exactly as its own page builds it
+  const g = TAGS.groups[id];
+  const items = g.m.map(o => {
+    const others = (TAGS.by_card[o] || []).filter(t => t !== id).map(t => `<span class="lnk chip" data-go="ct:${esc(t)}">${esc(TAGS.groups[t].name)}</span>`).join(" ");
+    const extra = `<div class="tagnote"><span class="badge b-tag">${esc(TAGS.meta.badge)}</span> ${esc(TAGS.meta.label)} Tag: <b>${esc(g.slug)}</b>. ${tagSnap()}${others ? " Also in: " + others : ""}</div>`;
+    return { oid: o, extra: extra, html: cardHTML(o, null, null, "tag:" + id).replace(`<div class="det" hidden>`, extra + `<div class="det" hidden>`) };
+  });
+  items.unshift(...handRows("tag:" + id, new Set(g.m)));
+  return items;
+}
+const memberItems = m => m.layer === "tag" ? tagItems(memberId(m)) : leafItems(memberId(m));
+function alsoMark(x, names) {
+  const html = Array.isArray(x) ? cardHTML(x[0], x[1], x[2], x[3]) : x.html;
+  return { oid: itemOid(x), extra: x.extra || "", html: html.replace(`<div class="det" hidden>`, `<div class="gap also">also in: ${names.map(esc).join("; ")}</div><div class="det" hidden>`) };
+}
+function sectionHead(m, si, own, above) {
+  const tag = m.layer === "tag", l = tag ? null : TAX.leaves[memberId(m)];
+  return `<div class="subhead msec" id="msec-${si}" data-gid="${esc(m.gid)}"><span class="mname">${esc(memberName(m))}</span> ` +
+    (tag ? `<span class="badge b-tag">community tag · not checked</span>` : (l.flags.length ? `<span class="badge b-broad" title="${esc(l.notes.join(" "))}">broad</span>` : "")) +
+    ` <span class="sub">${tag ? "community tag" : esc(leafPath(memberId(m)))} · ${fmt(own)} card${own === 1 ? "" : "s"} in this group${above ? ` · ${fmt(above)} also shown above` : ""}</span> ` +
+    `<span class="lnk" data-go="${esc(m.key)}" data-alone="1">open on its own</span>` +
+    (m.note ? `<div class="note">${esc(m.note)}</div>` : "") + (l ? l.notes.map(n => `<div class="note">${esc(n)}</div>`).join("") : "") + `</div>`;
+}
+function gotoSection(i) {
+  const idx = LIST.findIndex(x => typeof x === "string" && x.includes(`id="msec-${i}"`));
+  if (idx < 0) return;
+  let guard = 0;
+  while (LISTN <= idx && LISTN < LIST.length && guard++ < 400) renderList();
+  const el = document.getElementById("msec-" + i);
+  if (el) el.scrollIntoView();
+}
+async function showMerged0(pg, reqKey, hasPin) {
+  selected = pg.key; CURCARD = null;
+  location.hash = encodeURIComponent(pg.key);
+  const P = document.getElementById("panel");
+  P.innerHTML = `<p class="explain">Loading…</p>`;
+  await needCards(); await needLoose(); await needManual();
+  const mems = pg.members.filter(memberAvail);
+  for (const m of mems) if (m.layer === "leaf") { const l = TAX.leaves[memberId(m)], nd = NODES[l.node]; if (nd) { open.add("f:" + nd.fam); open.add("n:" + l.node); } }
+  renderTree();
+  if (!mems.length) { P.innerHTML = `<p class="explain">Every group of this page is switched off (tick “Show community-tag groups” at the top).</p>`; return; }
+  const raw = mems.map(m => ({ m: m, items: memberItems(m) }));
+  const secs = raw.map(r => {
+    const oids = r.items.map(itemOid).filter(o => o), removed = {};
+    if (handOn()) for (const o of oids) if ((MRESV.removes[o] || {})[r.m.gid]) removed[o] = 1;
+    return { gid: r.m.gid, oids: oids, removed: removed };
+  });
+  const lay = MergePage.layout(secs);
+  MSEC = lay.where;
+  const nameOf = gid => memberName(mems.find(x => x.gid === gid));
+  const items = [];
+  raw.forEach((r, si) => {
+    const sec = lay.sections[si], keep = new Set(sec.show);
+    items.push(sectionHead(r.m, si, memberCount(r.m), sec.hidden));
+    for (const x of r.items) {
+      const o = itemOid(x);
+      if (o && !keep.has(o)) continue;                                           // shown in a section above
+      items.push(o && lay.also[o] && lay.where[o] === r.m.gid ? alsoMark(x, lay.also[o].map(nameOf)) : x);
+    }
+  });
+  const nU = counting() ? nvis(Object.keys(lay.where)) : lay.union;
+  const head = `<h2>${esc(pg.name)} <span class="badge b-merged">merged page</span></h2><p class="sub">${fmt(nU)} cards shown · ${mems.length} group${mems.length === 1 ? "" : "s"} together</p>` +
+    `<div class="note">${esc(pg.description)} <b>Display only.</b> The number above counts a card once even when it is in two of these groups, so it is a display figure: each group keeps its own id, its own count (in its section) and its own placements.</div>` +
+    `<div class="mchips">Groups on this page: ${mems.map((m, i) => `<span class="lnk chip" data-sec="${i}">${esc(memberName(m))}</span>`).join(" ")}</div>`;
+  setList(head, items);
+  if (!hasPin) { const i = mems.findIndex(m => m.key === reqKey); if (i > 0) gotoSection(i); }
+}
+async function showMergedPage(slug, reqKey) {
+  const pg = MERGED.pageBy[slug];
+  const pin = PINNEXT || (PINCUR && selected === pg.key ? PINCUR : null);
+  PINNEXT = null;
+  if (!pin) PINCUR = null;
+  await showMerged0(pg, reqKey, !!(PINON && pin));
+  scAfterMerged(pg);
+  if (PINON && pin) await pinAfter(pg.key, pin);
+}
+async function scAfterMerged(pg) {                       // the tab bar of a merged page: one "Possible matches" tab for the page, with a group picker inside it (Add and the floor stay per member group)
+  for (const id of ["sctabs", "suggsec"]) { const o = document.getElementById(id); if (o) o.remove(); }
+  for (const sel of SCHIDE) for (const el of document.querySelectorAll(sel)) el.classList.remove("sc-off");
+  SCCUR = null;
+  const gen = ++SCGEN;
+  if (!SC || !MI || !SHOWH || !MRES) return;
+  const mem = pg.members.filter(memberAvail).map(m => m.gid).filter(gid => MI.groups[gid] && MI.groups[gid][4] && (Suggested.count(SC, gid, SCFLOOR, SCINC) || (SC.lens[gid] && SC.lens[gid][1] + SC.lens[gid][2] > 0)));
+  if (!mem.length) return;
+  const want = SCWANT && pg.members.find(m => m.key === SCWANT.k);                 // an old link to a member's key starts the picker on that member
+  const S = scBlank(want && mem.includes(want.gid) ? want.gid : mem[0]);
+  S.k = pg.key; S.members = mem; SCCUR = S;
+  const first = document.querySelector("#panel .viewbar") || document.getElementById("list");
+  if (!first) { SCCUR = null; return; }
+  first.insertAdjacentHTML("beforebegin", `<div id="sctabs" class="sctabs" role="tablist"><button role="tab" data-sctab="members">Cards on this page</button><button role="tab" data-sctab="matches">${esc(scTabLabel())}</button></div>`);
+  let tab = SCTAB;
+  if (SCWANT && pg.members.some(m => m.key === SCWANT.k)) tab = SCWANT.tab;
+  SCWANT = null;
+  scSetTab(tab);
+}
+function scPickerHTML() {
+  const S = SCCUR;
+  if (!S || !S.members || S.members.length < 2) return "";
+  return `<div class="sgpick"><label>${SCNAME} for the group <select data-sctl="member">${S.members.map(g => `<option value="${esc(g)}"${g === S.gid ? " selected" : ""}>${esc(MI.groups[g][0])} (${fmt(Suggested.count(SC, g, SCFLOOR, SCINC))})</option>`).join("")}</select></label></div>`;
+}
+async function show(k) {
+  if (ALONEKEY && k !== ALONEKEY) ALONEKEY = null;
+  if (MERGED && k !== ALONEKEY && MERGED.redirects[k]) { await showMergedPage(MERGED.redirects[k], k); return; }
+  const pin = PINNEXT || (PINCUR && k === selected ? PINCUR : null);              // a re-draw of the same page (an edit, a switch) keeps the pin; a click in the tree does not (it clears PINCUR first)
+  PINNEXT = null;
+  if (!pin) PINCUR = null;
+  await show0(k); scAfter(k);
+  if (PINON && pin) await pinAfter(k, pin);
+}
+async function show0(k) {
+  selected = k; CURCARD = null; renderTree();
+  location.hash = encodeURIComponent(k);
+  const P = document.getElementById("panel");
+  const [kind, id] = [k.split(":")[0], k.slice(k.indexOf(":") + 1)];
+  if (kind === "f") {
+    const f = TAX.families.find(x => "f:" + x.key === k);
+    P.innerHTML = `<h2>${esc(f.name)}</h2><p class="sub">${fmt(famN(f))} cards, ${fmt(famAb(f))} abilities, ${f.nodes.length} kinds of effect.</p>` +
+      f.nodes.map(nd => `<div><span class="lnk" data-go="n:${esc(nd.id)}">${esc(nd.name)}</span> <span class="sub">${fmt(nodeN(nd))} cards · ${nd.leaves.length} groups${nd.rolled.length ? ` + ${nd.rolled.length} small` : ""}</span></div>`).join("");
+    return;
+  }
+  if (kind === "n") {
+    const nd = NODES[id];
+    open.add("f:" + nd.fam); open.add("n:" + id); renderTree();
+    P.innerHTML = `<h2>${esc(nd.name)}</h2><p class="sub">${esc(NODE_FAM[id])} · ${fmt(nodeN(nd))} cards</p>` +
+      nd.leaves.map(lid => `<div><span class="lnk" data-go="l:${esc(lid)}">${leafLabel(TAX.leaves[lid], lid)}</span> <span class="sub">${fmt(leafN(lid))} cards</span></div>`).join("") +
+      (nd.rolled.length ? `<div><span class="lnk" data-go="r:${esc(id)}">Other: ${esc(nd.name).toLowerCase()}</span> <span class="sub">${nd.rolled.length} groups of fewer than ${TAX.meta.rules.display_threshold}</span></div>` : "");
+    return;
+  }
+  if (kind === "Y" || kind === "yk") {
+    await needKFac();
+    if (!KFAC) { P.innerHTML = `<p class="explain">The keyword facet needs build/keyword_facet.json. Run python src/build_keyword_facet.py.</p>`; return; }
+    if (kind === "Y") {
+      open.add("Y:"); renderTree();
+      P.innerHTML = `<h2>By keyword <span class="badge b-auto">filter, not a placement</span></h2><div class="note">${KFNOTE()}</div>` +
+        `<p class="sub">${fmt(KFAC.meta.cards_with_a_keyword)} of ${fmt(KFAC.meta.in_scope_cards)} cards carry at least one keyword; ${fmt(KFAC.meta.keywords_5_or_more_cards)} of the ${fmt(KFAC.meta.parser_keywords)} keywords have 5 or more cards.</p>` +
+        kwOrder().map(n => `<div><span class="lnk" data-go="yk:${esc(n)}">${esc(KFAC.keywords[n].d)}</span> <span class="sub">${fmt(KFAC.keywords[n].n)} cards</span></div>`).join("");
+      return;
+    }
+    await needCardList();
+    open.add("Y:"); renderTree();
+    const kw = KFAC.keywords[id];
+    if (!kw) { P.innerHTML = `<p class="explain">No such keyword.</p>`; return; }
+    const items = kw.c.filter(o => ENT.get(o) && CARDS[o]).sort((a, b) => CARDS[a].n < CARDS[b].n ? -1 : CARDS[a].n > CARDS[b].n ? 1 : 0).map(o => {
+      const k = effKind({ kind: ENT.get(o)[3], oid: o }), extra = `<div class="sub"><span class="badge ${k === "h" ? "b-hand" : k === "t" ? "b-tent" : k === "a" ? "b-ann" : k === "m" ? "b-tag" : "b-auto"}">${esc(KINDW[k])}</span> where this card is placed; the keyword does not change it</div>`;
+      return { oid: o, extra: extra, html: cardHTML(o, null, null).replace(`<div class="det" hidden>`, extra + `<div class="det" hidden>`) };
+    });
+    setList(`<h2>Keyword: ${esc(kw.d)} <span class="badge b-auto">filter, not a placement</span></h2><div class="note">${KFNOTE()}</div><p class="sub">${fmt(kw.n)} cards carry ${esc(kw.d)} (the parser's own keyword field), each shown with its placement.</p>`, items);
+    return;
+  }
+  if (kind === "hg") {
+    await needHG(); await needManual(); await needCardList();
+    const g = HG && HG.groups[id];
+    if (!g) { P.innerHTML = `<p class="explain">No such hand-defined group.</p>`; return; }
+    const gid = "hand:" + id, mem = handOn() ? Object.keys(MRESV.adds).filter(o => MRESV.adds[o][gid] && CARDS[o]) : [], memSet = new Set(mem);
+    const nm = o => CARDS[o].n, byName = (a, b) => nm(a) < nm(b) ? -1 : nm(a) > nm(b) ? 1 : 0;
+    const items = [`<div class="subhead">Members: placed here by hand ${hgBadge()} <span class="sub">${fmt(mem.length)} card${mem.length === 1 ? "" : "s"}; counted on the "placed by hand" line, not checked</span></div>`]
+      .concat(mem.sort(byName).map(o => ({ oid: o, extra: "", html: cardHTML(o, null, null, gid) })));
+    const ms = Object.keys(g.hits).filter(o => CARDS[o] && !memSet.has(o)).sort(byName);
+    items.push(`<div class="subhead">Rule matches: suggestions, not members <span class="sub">${fmt(ms.length)} card${ms.length === 1 ? "" : "s"}; open a card and press Add to place it</span></div>`);
+    for (const o of ms) {
+      const k = effKind({ kind: ENT.get(o)[3], oid: o }), why = g.hits[o].map(h => `<span class="chip">rule ${esc(h[0])}</span> ${esc(h[1])}`).join(" ");
+      const extra = `<div class="gap">Suggested because: ${why}</div><div class="sub"><span class="badge ${k === "h" ? "b-hand" : k === "t" ? "b-tent" : k === "a" ? "b-ann" : k === "m" ? "b-tag" : "b-auto"}">${esc(KINDW[k])}</span> where this card is placed now</div>`;
+      items.push({ oid: o, extra: extra, html: cardHTML(o, null, null).replace(`<div class="det" hidden>`, extra + `<div class="det" hidden>`) });
+    }
+    open.add("HG:"); renderTree();
+    setList(`<h2>${esc(g.name)} ${hgBadge()}${g.retired ? ` <span class="badge b-auto">retired</span>` : ""}</h2><div class="note">${esc(HG.label)} ${g.note ? esc(g.note) : ""}</div>` +
+      `<p class="sub">Rules: ${g.rules.map(r => `<b>${esc(r.id)}</b> ${esc(r.words)} (confidence ${r.confidence})`).join("; ")}. Defined in corrections/hand_groups.json, edited by hand.${g.retired ? " This group is retired: no suggestions, not offered in the search; placements already made into it stay." : ""}</p>`, items);
+    return;
+  }
+  if (kind === "QB") { await showBatchView(); return; }
+  if (kind === "Q") {
+    await needManual();
+    if (!MI || !SHOWH) { P.innerHTML = `<p class="explain">${MI ? "Hand edits are hidden. Tick “Show hand edits” at the top to use the work queue." : "The work queue needs build/manual_index.json. Run python src/build_manual_layer.py."}</p>`; return; }
+    await needSuggestions();
+    const st = queueStats(), c = MRES.counts;
+    document.getElementById("qcount").textContent = `${fmt(st.base.length)} cards in this view; ${fmt(st.done)} done, ${fmt(st.left.length)} left.`;
+    P.innerHTML = `<h2>To place <span class="badge b-hand">by hand</span></h2><div class="handnote">These are cards the tool had nowhere to put (the not-yet-organized pile), most popular first. Open one, and add it to a group or mark “nothing fits”. ` +
+      `A suggestion is only a suggestion: nothing is placed until you press Add.</div>` +
+      `<p class="sub">${fmt(st.base.length)} cards in this view · ${fmt(st.done)} done · ${fmt(st.left.length)} left. In all: ${fmt(c.placed_by_hand_new)} placed by hand, ${fmt(c.confirmed_by_hand)} soft-placed cards confirmed, ${fmt(c.marked_nothing_fits)} marked “nothing fits”.</p>` +
+      `<p><button data-act="qnext">${CURCARD ? "Next card ▶" : "Start: first card ▶"}</button>${batchOn() ? ` <button data-bact2="gobatch">Batch view</button>` : ""}</p>` +
+      `<div class="subhead">Next in line</div>` + st.left.slice(0, 12).map(o => `<div class="crow card" data-go="c:${esc(o)}"><span class="nm lnk">${esc(MI.cards[o][0])}</span><span class="sub">${MI.cards[o][4] != null ? "popularity rank " + fmt(MI.cards[o][4]) : "not ranked"} · ${esc(Manual.STATE_WORD[MI.cards[o][1]])}${MI.cards[o][2] ? ": " + esc((MI.causes[MI.cards[o][2]] || "").split(":")[0]) : ""}</span></div>`).join("");
+    return;
+  }
+  if (kind === "LG" || kind === "lf" || kind === "lg" || kind === "UR" || kind === "tf" || kind === "tg" || kind === "af" || kind === "ag" || kind === "CT" || kind === "ct") { await needLoose(); }
+  if ((kind === "CT" || kind === "ct") && !tagOn()) {
+    P.innerHTML = `<p class="explain">Community-tag groups are switched off (tick “Show community-tag groups” at the top to see them).</p>`;
+    return;
+  }
+  if (kind === "CT") {
+    open.add("CT:"); renderTree();
+    const M = TAGS.meta;
+    P.innerHTML = `<h2>Grouped by community tag <span class="badge b-tag">${esc(M.badge)}</span></h2><div class="tagnote"><b>${esc(M.label)}</b> These are the ${fmt(M.scope_cards)} cards the parser produced nothing readable for. ` +
+      `Each group is one Scryfall community tag (from Tagger, the Scryfall tagging project) that ${fmt(M.rules.group_min)} to ${fmt(M.rules.group_max)} of them carry. A card is listed under every group it is in and counted once. This is not an organized placement, and no tag is checked against the card's parsed text. ${tagSnap()}</div>` +
+      `<p class="sub">${fmt(ctAllN())} cards are in a group (${fmt(M.groups)} groups). ${fmt(M.cards_without_a_usable_group)} cards have no usable group: ${fmt(M.cards_with_no_functional_tag)} carry no functional tag, ${fmt(M.cards_with_tags_but_no_usable_group)} carry only tags that are too rare (under 5 of these cards) or too broad (over 100: ${fmt(M.cards_only_in_groups_over_100)} of them carry only broad tags, which work as filters in “Cards we couldn't read yet”, not as groups). Those stay in that list and in the pile.</p>` +
+      TAGS.order.map(gid => `<div><span class="lnk" data-go="ct:${esc(gid)}">${esc(TAGS.groups[gid].name)}</span> <span class="sub">${fmt(tgcN(TAGS.groups[gid]))} cards</span></div>`).join("");
+    return;
+  }
+  if (kind === "ct") {
+    await needCards();
+    const g = TAGS.groups[id];
+    open.add("CT:"); renderTree();
+    const items = g.m.map(o => {
+      const others = (TAGS.by_card[o] || []).filter(t => t !== id).map(t => `<span class="lnk chip" data-go="ct:${esc(t)}">${esc(TAGS.groups[t].name)}</span>`).join(" ");
+      const extra = `<div class="tagnote"><span class="badge b-tag">${esc(TAGS.meta.badge)}</span> ${esc(TAGS.meta.label)} Tag: <b>${esc(g.slug)}</b>. ${tagSnap()}${others ? " Also in: " + others : ""}</div>`;
+      return { oid: o, extra: extra, html: cardHTML(o, null, null, "tag:" + id).replace(`<div class="det" hidden>`, extra + `<div class="det" hidden>`) };
+    });
+    items.unshift(...handRows("tag:" + id, new Set(g.m)));
+    setList(`<h2>${esc(g.name)} <span class="badge b-tag">${esc(TAGS.meta.badge)}</span></h2><p class="loosehead">${esc(TAGS.meta.label)}</p>` +
+      `<div class="tagnote">Tag <b>${esc(g.slug)}</b> carries ${fmt(g.all_cards)} cards in all; ${fmt(g.cards)} of them are cards we couldn't read. ${g.description ? esc(g.description) + " " : ""}` +
+      `The group name is ${g.name_source === "rule" ? "made from the tag by a fixed rule" : g.name_source === "user_edit" ? "edited by hand" : "written to say what the tag means"}, not taken from the cards. ${tagSnap()}</div><p class="sub">${fmt(tgcN(g))} cards.</p>`, items);
+    injectReview("tag:" + id);
+    return;
+  }
+  if ((kind === "af" || kind === "ag") && !annOn()) {
+    P.innerHTML = `<p class="explain">Condition annotations are switched off (tick “Show condition annotations” at the top to see them).</p>`;
+    return;
+  }
+  if (kind === "af") {
+    const f = ANN.families.find(x => x.key === id);
+    open.add("f:" + id); open.add(k); renderTree();
+    P.innerHTML = `<h2>${esc(f.name)}: condition annotations <span class="badge b-ann">tentative</span></h2><div class="annnote"><b>These abilities have a condition (or sit on a card with a part) the tool did not read.</b> Each is shown in the group it would belong in if that were ignored. They sit beside the main groups and are not counted in the precise, the broad or the tentative figure.</div>` +
+      f.groups.map(gk => `<div><span class="lnk" data-go="ag:${esc(gk)}">${esc(ANN.groups[gk].name)}</span> <span class="sub">${fmt(agN(ANN.groups[gk]))} cards</span></div>`).join("");
+    return;
+  }
+  if (kind === "ag") {
+    await needCards();
+    const g = ANN.groups[id];
+    open.add("f:" + g.fam); open.add("af:" + g.fam); renderTree();
+    const items = [];
+    for (const r of g.m) {
+      const extra = `<div class="ab"><span class="why">${esc(r[1])}</span></div><div class="annnote">${annBadge(r)} ${annNote(r)}</div>`;
+      items.push({ oid: r[0], extra: extra, html: cardHTML(r[0], null, null).replace(`<div class="det" hidden>`, extra + `<div class="det" hidden>`) });
+    }
+    setList(`<h2>${esc(g.name)} <span class="badge b-ann">tentative</span></h2><p class="loosehead">${g.kind === "leaf" ? "Shown beside the group “" + esc(g.name) + "” in the main tree." : "Shown beside the tentative group “" + esc(g.name) + "”."} Not fully checked.</p>` +
+      `<div class="annnote">Each row is an ability the tool held back; the unread text is on the row. Not counted in the precise, with-broad or with-tentative figure.</div><p class="sub">${fmt(agN(g))} cards.</p>`, items);
+    injectReview((id.charAt(0) === "l" ? "leaf:" : "tent:") + id.slice(2));
+    return;
+  }
+  if ((kind === "tf" || kind === "tg") && !tentOn()) {
+    P.innerHTML = `<p class="explain">Tentative placements are switched off (tick “show tentative placements” at the top to see them).</p>`;
+    return;
+  }
+  if (kind === "tf") {
+    const f = TENT.families.find(x => x.key === id);
+    open.add("f:" + id); open.add(k); renderTree();
+    P.innerHTML = `<h2>${esc(f.name)}: tentative groups <span class="badge b-tent">tentative</span></h2><div class="tentnote"><b>${esc(TENT_LABEL)}</b> These groups sit beside the main groups; they are not counted in the precise or the broad figure.</div>` +
+      f.groups.map(gid => `<div><span class="lnk" data-go="tg:${esc(gid)}">${esc(TENT.groups[gid].short)}</span> <span class="sub">${fmt(tgN(TENT.groups[gid]))} cards</span></div>`).join("");
+    return;
+  }
+  if (kind === "LG" && LOOSE) {
+    open.add("LG:"); renderTree();
+    P.innerHTML = `<h2>Loosely grouped by effect</h2><div class="note"><b>${esc(LOOSE_LABEL)}</b> These cards are not organized. Each one is still counted as “Not yet organized”; ` +
+      `nothing here counts toward the coverage figure at the top. A card is listed under every group one of its abilities fits, and each card says why that ability is not a real placement. ` +
+      `${fmt(lAllN())} of the ${fmt(LOOSE.meta.pile)} not-yet-organized cards have a loose group; the other ${fmt(LOOSE.meta.cards_not_read)} are under “Cards we couldn't read yet”.` +
+      (tentOn() ? ` ${fmt(TENT.meta.cards)} of the cards with a loose group are also tentatively placed (see “Tentative groups” in each family); they are counted as tentative, not as not yet organized.` : "") + `</div>` +
+      LOOSE.families.map(f => `<div><span class="lnk" data-go="lf:${esc(f.key)}">${esc(f.name)}</span> <span class="sub">${fmt(lfN(f))} cards · ${f.groups.length} groups</span></div>`).join("");
+    return;
+  }
+  if (kind === "lf" && LOOSE) {
+    const f = LOOSE.families.find(x => x.key === id);
+    open.add("LG:"); open.add(k); renderTree();
+    P.innerHTML = `<h2>${esc(f.name)}</h2><p class="sub">${esc(LOOSE_LABEL)} ${fmt(lfN(f))} cards.</p>` +
+      f.groups.map(gid => `<div><span class="lnk" data-go="lg:${esc(gid)}">${esc(LOOSE.groups[gid].short)}</span> <span class="sub">${fmt(lgN(LOOSE.groups[gid]))} cards</span></div>`).join("");
+    return;
+  }
+  P.innerHTML = `<p class="explain">Loading…</p>`;
+  if (kind === "tg" && TENT && TENT.groups[id]) {
+    await needCards();
+    const g = TENT.groups[id], fam = TENT.families.find(x => x.groups.includes(id));
+    open.add("f:" + fam.key); open.add("tf:" + fam.key); renderTree();
+    const items = [];
+    for (const r of g.m) {
+      const extra = `<div class="ab"><span class="why">${esc(r[1] || "(no separate rules line for this ability)")}</span>${r[3] ? ` <span class="sub">(+${r[3]} more ability in this group)</span>` : ""}</div>` +
+        `<div class="gap">Not a real placement because ${esc(TENT.meta.reasons[r[2]])}.</div>`;
+      items.push({ oid: r[0], extra: extra, html: cardHTML(r[0], null, null, "tent:" + id).replace(`<div class="det" hidden>`, extra + `<div class="det" hidden>`) });
+    }
+    items.unshift(...handRows("tent:" + id, new Set(g.m.map(r => r[0]))));
+    setList(`<h2>${esc(g.name)} <span class="badge b-tent">tentative</span></h2><p class="loosehead">${esc(TENT_LABEL)}</p>` +
+      `<div class="tentnote">Not counted in the precise or the broad figure. These cards come from the Not-yet-organized pile and are listed here instead of there; ${LOOSE && LOOSE.groups[id] ? `the loose group “${esc(LOOSE.groups[id].short)}” has ${fmt(g.loose_cards)} cards, ${fmt(g.cards)} of them tentative.` : ""}</div>` +
+      `<p class="sub">${fmt(tgN(g))} cards, most popular first.</p>`, items);
+    injectReview("tent:" + id);
+    return;
+  }
+  if (kind === "lg" && LOOSE && LOOSE.groups[id]) {
+    await needCards();
+    const g = LOOSE.groups[id], fam = LOOSE.families.find(x => x.groups.includes(id));
+    open.add("LG:"); open.add("lf:" + fam.key); renderTree();
+    const items = [];
+    let last = -1;
+    const visN = {};
+    for (const r of g.m) if (visible(r[0])) visN[r[3]] = (visN[r[3]] || 0) + 1;
+    for (const r of g.m) {
+      if (g.subs && r[3] !== last && visible(r[0])) {
+        last = r[3];
+        items.push(`<div class="subhead">${esc(g.subs[r[3]].name)} <span class="sub">${fmt(HIDE ? visN[r[3]] : g.subs[r[3]].cards)} cards</span></div>`);
+      }
+      const others = (LOOSE.by_card[r[0]] || []).filter(x => x !== id).slice(0, 4);
+      const extra = `<div class="ab"><span class="why">${esc(r[1] || "(no separate rules line for this ability)")}</span>${r[4] ? ` <span class="sub">(+${r[4]} more ability in this group)</span>` : ""}</div>` +
+        `<div class="gap">Not a real placement because ${esc(LOOSE.meta.reasons[r[2]])}.</div>` +
+        (others.length ? `<div class="also">Also loosely in: ${others.map(x => `<span class="lnk" data-go="lg:${esc(x)}">${esc(LOOSE.groups[x].name)}</span>`).join(" · ")}</div>` : "");
+      items.push({ oid: r[0], extra: extra, html: cardHTML(r[0], null, null, TENT && TENT.groups[id] ? "tent:" + id : "loose:" + id).replace(`<div class="det" hidden>`, extra + `<div class="det" hidden>`) });
+    }
+    items.unshift(...handRows(TENT && TENT.groups[id] ? "tent:" + id : "loose:" + id, new Set(g.m.map(r => r[0]))));
+    setList(`<h2>${esc(g.name)}${tentOn() && TENT.groups[id] ? ` <span class="badge b-tent">tentative</span>` : ""}</h2><p class="loosehead">${esc(LOOSE_LABEL)}</p>` + (g.note ? `<div class="note">${esc(g.note)}</div>` : "") +
+      (tentOn() && TENT.groups[id] ? `<div class="tentnote">This group is also a tentative group (${esc(TENT_LABEL)}) for the cards with an eligible ability. <span class="lnk" data-go="tg:${esc(id)}">open the tentative group</span></div>` : "") +
+      `<p class="sub">${fmt(lgN(g))} cards, most popular first. ${tentOn() ? "Cards that are also tentatively placed are counted as tentative; the others are" : "These cards are still counted as"} not yet organized.</p>`, items);
+    return;
+  }
+  if (kind === "UR" && UNREAD) {
+    await needCards();
+    const tagHas = o => !URTAG || (URTAG.startsWith("w:") ? (TAGS.wide[URTAG.slice(2)].m.includes(o)) : (TAGS.groups[URTAG] && TAGS.groups[URTAG].m.includes(o)));
+    const rows = UNREAD.rows.filter(r => !tagOn() || tagHas(r[0]));
+    const items = rows.map(r => {
+      const c = UNREAD.causes[r[2]];
+      const extra = `<div class="gap">Why: ${esc(c.name)}.${r[3] ? ` Not understood: “${esc(r[3])}”.` : ""}${r[1] != null ? ` Popularity rank ${fmt(r[1])}.` : ""}</div>` + tagChips(r[0]);
+      return { oid: r[0], extra: extra, html: cardHTML(r[0], null, null).replace(`<div class="det" hidden>`, extra + `<div class="det" hidden>`) };
+    });
+    const filt = tagOn() ? `<p class="sub"><label>Filter by community tag <select id="urtag"><option value="">any (${fmt(unreadN())} cards)</option>` +
+      TAGS.order.slice().sort((a, b) => TAGS.groups[a].name.localeCompare(TAGS.groups[b].name)).map(t => `<option value="${esc(t)}">${esc(TAGS.groups[t].name)} (${TAGS.groups[t].cards})</option>`).join("") +
+      Object.keys(TAGS.wide).map(t => `<option value="w:${esc(t)}">${esc(TAGS.wide[t].name)} (broad tag, ${TAGS.wide[t].cards})</option>`).join("") + `</select></label></p>` : "";
+    setList(`<h2>Cards we couldn't read yet</h2><div class="note">The parser produced nothing we can group these cards on. They are not in any group above, and each is still counted as not yet organized` +
+      `${tagOn() ? ", unless it sits in a community-tag group (counted on its own line)" : ""}. Most popular first; the reason is shown on each card.</div>${filt}<p class="sub">${fmt(items.length)} cards${URTAG && tagOn() ? " carry the chosen tag" : ""}.</p>`, items);
+    const sel = document.getElementById("urtag");
+    if (sel) { sel.value = URTAG; sel.onchange = () => { URTAG = sel.value; show("UR:"); }; }
+    return;
+  }
+  if (kind === "l") {
+    await needCards();
+    const l = TAX.leaves[id], nd = NODES[l.node];
+    if (nd) { open.add("f:" + nd.fam); open.add("n:" + l.node); renderTree(); }
+    const head = `<h2>${esc(l.name)}${l.auto_named ? ` <span class="badge b-auto" title="Generated from the group's signature; may be edited in corrections/ability_taxonomy_names.json">auto name</span>` : ""}</h2>` +
+      `<p class="sub">${esc(leafPath(id))} · ${fmt(leafN(id))} cards · ${fmt(leafAb(id))} abilities${l.gap_abilities ? ` (+${fmt(l.gap_abilities)} placed from cards with a part the parser did not read)` : ""}</p>` +
+      l.notes.map(n => `<div class="note">${esc(n)} Cards here are not counted in the main coverage figure unless another ability groups them.</div>`).join("") +
+      (DEV ? `<p class="b-dev">${esc(l.sig)} · level ${l.level} · ${esc(id)}</p>` : "");
+    setList(head, leafItems(id));
+    injectReview("leaf:" + id);
+  } else if (kind === "r") {
+    await needCards();
+    const nd = NODES[id];
+    const items = [];
+    for (const lid of nd.rolled) {
+      const l = TAX.leaves[lid];
+      items.push(`<div class="subhead">${leafLabel(l, lid)} <span class="sub">${fmt(leafN(lid))} cards</span></div>` +
+        l.notes.map(n => `<div class="note">${esc(n)}</div>`).join(""));
+      items.push(...leafItems(lid));
+    }
+    setList(`<h2>Other: ${esc(nd.name).toLowerCase()}</h2><p class="sub">${esc(NODE_FAM[id])} · groups of fewer than ${TAX.meta.rules.display_threshold} cards, shown together under their parent.</p>`, items);
+  } else if (kind === "kl" || kind === "gl") {
+    await needCards();
+    const blk = kind === "kl" ? TAX.blocks.keyword : TAX.blocks.replacement, l = blk.leaves[id];
+    const why = kind === "kl" ? "Rules text is only keywords; grouped by an exact match on them." :
+      "Grouped by an exact match on the replacement effect or cost." + (l.basis ? " Name: " + l.basis + "." : l.coined ? " The name is ours (coined)." : "");
+    setList(`<h2>${esc(blk.name)} › ${esc(l.name)}</h2><p class="sub">${fmt(blkLeafN(blk, id))} cards. ${esc(why)}</p>`, handRows(kind === "kl" ? id : "rp:" + id, new Set(l.cards)).concat(l.cards.map(o => [o, null, null, kind === "kl" ? id : "rp:" + id])));
+  } else if (kind === "V") {
+    await needCards();
+    setList(`<h2>No abilities</h2><p class="sub">Cards with no rules text.</p>`, TAX.blocks.no_abilities.cards.map(o => [o, null, null]));
+  } else if (kind === "B") {
+    await needCards();
+    const nt = window.BROAD_NOTES[+id], items = [];
+    for (const lid of window.BROAD_BY[nt]) {
+      items.push(`<div class="subhead">${leafLabel(TAX.leaves[lid], lid)} <span class="sub">${fmt(leafN(lid))} cards</span></div>`);
+      items.push(...leafItems(lid));
+    }
+    setList(`<h2>Groups broader than they look</h2><div class="note">${esc(nt)}</div>`, items);
+  } else if (kind === "N") {
+    await needFlags();
+    const by = ncByReason();
+    const oids = id === "all" ? Object.values(by).flat() : (by[id] || []);
+    const lab = id === "all" ? "All of them" : FLAGS.reasons[id].charAt(0).toUpperCase() + FLAGS.reasons[id].slice(1);
+    const items = oids.slice().sort((a, b) => FLAGS.evidence[a].name.toLowerCase() < FLAGS.evidence[b].name.toLowerCase() ? -1 : 1).map(oid => {
+      const ev = FLAGS.evidence[oid];
+      return `<div class="card"><div class="top"><span class="nm">${esc(ev.name)}</span><span class="badge b-auto">${esc(FLAGS.reasons[FLAGS.cards[oid]])}</span></div>` +
+        `<div class="gap">Printed only in: ${esc(ev.sets.join(", "))}${ev.promo_types.length ? " · promo tags: " + esc(ev.promo_types.join(", ")) : ""} · legal in no format</div></div>`;
+    });
+    setList(`<h2>Left out: not meant for constructed play › ${esc(lab)}</h2><p class="sub">${fmt(items.length)} cards. ${id === "all" ? esc(FLAGS.rule) + "." : esc(NCWHY[id] || "")} ` +
+      `These cards are not part of this tool's card set: they are not counted, not grouped, and not found by name in the lists. Find a card tells you why one is left out.</p>`, items);
+  } else if (kind === "C") {
+    setMode("cards", true);
+    await showCardList();
+  } else if (kind === "c") {
+    await showCardPage(id);
+  } else if (kind === "u") {
+    await needCards();
+    await needUnorg();
+    const g = UNORG.find(x => String(x.id) === id);
+    const items = g.list.filter(c => inPile(c.c)).map(c => {
+      let extra = "";
+      if (c.g) extra += `<div class="gap">Not understood: ${c.g.map(x => "“" + esc(x[1]) + "”").join("; ")}</div>`;
+      if (c.held) extra += `<div class="gap">${c.held} of its abilities would fit a group; they are held back while gap cards are checked.</div>`;
+      if (c.why) extra += `<div class="gap">${c.why.map(esc).join("; ")}</div>`;
+      if (c.clause) extra += `<div class="gap">Possibly missing condition: “${esc(c.clause)}”</div>`;
+      if (c.note) extra += `<div class="gap">${esc(c.note)}</div>`;
+      return { oid: c.c, extra: extra, html: cardHTML(c.c, null, null).replace(`<div class="det" hidden>`, extra + `<div class="det" hidden>`) };
+    });
+    setList(`<h2>Not yet organized › ${esc(g.name)}</h2><p class="explain">${esc(g.explain)}</p><p class="sub">${fmt(unorgN(g))} cards. This is about the tool, not the card.${tentOn() && g.list.some(c => isTent(c.c)) ? ` ${fmt(g.list.filter(c => isTent(c.c)).length)} more are tentatively placed and listed under “Tentative groups”.` : ""}${annOn() && g.list.some(c => isAnn(c.c)) ? ` ${fmt(g.list.filter(c => isAnn(c.c)).length)} more have an annotated ability and are listed under “Condition annotations”.` : ""}${handOn() && g.list.some(c => isHandNew(c.c)) ? ` ${fmt(g.list.filter(c => isHandNew(c.c)).length)} more were placed by hand and are listed in the group they were placed in.` : ""}</p>`, items);
+  }
+}
+
+// ---------------------------------------------------------------- cards mode
+const KINDW = { h: "placed by hand (not checked)", m: "grouped by community tag (not checked)", t: "tentatively placed (not fully checked)", a: "annotated: an unread condition or card part (not fully checked)", l: "grouped by its abilities", b: "only in groups broader than they look", u: "not yet organized", k: "keyword block", g: "replacement group", v: "no abilities" };
+let CLIST = null, ENT = null, PIDX = null;
+const PCH = new Map();
+async function needLookup() {
+  if (!LOOK) { LOOK = await J("ability_taxonomy_lookup.json"); LIDX = AbilityFind.build(LOOK); }
+}
+async function needCardList() {
+  await needCards(); await needLookup(); await needLoose();
+  if (CLIST) return;
+  CLIST = []; ENT = new Map();
+  for (const e of LOOK.entries) {
+    ENT.set(e[0], e);
+    if (e[3] === "o") continue;
+    const c = CARDS[e[0]];
+    if (c) CLIST.push({ oid: e[0], n: c.n, k: LIDX.norm(c.n), ty: c.ty, col: c.col || "", mv: c.mv == null ? 0 : c.mv, kind: e[3] });
+  }
+  CLIST.sort((a, b) => a.k < b.k ? -1 : a.k > b.k ? 1 : 0);
+}
+function setMode(m, quiet) {
+  MODE = m;
+  for (const b of document.querySelectorAll("#tabs button")) b.classList.toggle("on", b.dataset.mode === m);
+  document.getElementById("tree").hidden = m !== "abilities";
+  document.getElementById("cardf").hidden = m !== "cards";
+  document.getElementById("queuef").hidden = m !== "queue";
+  if (quiet) return;
+  if (m === "queue") show("Q:");
+  else if (m === "cards") show("C:");
+  else { document.getElementById("panel").innerHTML = `<p class="explain">Pick a group on the left. Each card is listed under every group one of its abilities fits, and shows the text of that ability.</p>`; location.hash = ""; selected = null; renderTree(); }
+}
+document.getElementById("hidenopic").checked = HIDE;
+document.getElementById("showtent").checked = SHOWT;
+document.getElementById("showtent").addEventListener("change", e => {
+  SHOWT = e.target.checked;
+  try { localStorage.setItem("showTentative", SHOWT ? "1" : "0"); } catch (err) { /* ignore */ }
+  header(); renderTree(); gsRefresh();
+  if (selected && (selected.startsWith("tf:") || selected.startsWith("tg:"))) show(selected);
+  else if (selected && (selected.startsWith("u:") || selected === "LG:" || selected.startsWith("lg:") || selected.startsWith("lf:"))) show(selected);
+  else if (MODE === "cards") showCardList();
+});
+document.getElementById("showsib").checked = SHOWSIB;
+document.getElementById("showsib").addEventListener("change", e => {
+  SHOWSIB = e.target.checked;
+  try { localStorage.setItem("showSibling", SHOWSIB ? "1" : "0"); } catch (err) { /* ignore */ }
+  header(); renderTree();
+  if (selected) show(selected);
+});
+document.getElementById("showbatch").checked = SHOWBATCH;
+document.getElementById("showbatch").addEventListener("change", e => {
+  SHOWBATCH = e.target.checked;
+  try { localStorage.setItem("showBatch", SHOWBATCH ? "1" : "0"); } catch (err) { /* ignore */ }
+  header(); renderTree(); batchBar();
+  if (selected) show(selected);
+});
+document.getElementById("showhand").checked = SHOWH;
+document.getElementById("showhand").addEventListener("change", e => {
+  SHOWH = e.target.checked;
+  try { localStorage.setItem("showHand", SHOWH ? "1" : "0"); } catch (err) { /* ignore */ }
+  header(); renderTree();
+  if (selected) show(selected);
+  else if (MODE === "cards") showCardList();
+});
+document.getElementById("queuef").addEventListener("change", () => { if (MODE === "queue") show("Q:"); });
+document.getElementById("showtag").checked = SHOWTAG;
+document.getElementById("showtag").addEventListener("change", e => {
+  SHOWTAG = e.target.checked;
+  try { localStorage.setItem("showTags", SHOWTAG ? "1" : "0"); } catch (err) { /* ignore */ }
+  header(); renderTree(); gsRefresh();
+  if (selected && (selected === "CT:" || selected.startsWith("ct:") || selected.startsWith("u:") || selected === "UR:" || selected === "LG:" || selected.startsWith("lg:") || selected.startsWith("lf:"))) show(selected);
+  else if (MODE === "cards") showCardList();
+});
+document.getElementById("showann").checked = SHOWA;
+document.getElementById("showann").addEventListener("change", e => {
+  SHOWA = e.target.checked;
+  try { localStorage.setItem("showAnnotations", SHOWA ? "1" : "0"); } catch (err) { /* ignore */ }
+  header(); renderTree();
+  if (selected && (selected.startsWith("af:") || selected.startsWith("ag:") || selected.startsWith("u:") || selected === "LG:" || selected.startsWith("lg:") || selected.startsWith("lf:"))) show(selected);
+  else if (MODE === "cards") showCardList();
+});
+function hideChanged() {
+  try { localStorage.setItem("hideNoPicture", HIDE ? "1" : "0"); } catch (err) { /* ignore */ }
+  hideNote(); renderTree();
+  if (selected) show(selected);
+}
+document.getElementById("hidenopic").addEventListener("change", e => { HIDE = e.target.checked; hideChanged(); });
+document.getElementById("tabs").addEventListener("click", e => { const b = e.target.closest("button[data-mode]"); if (b && b.dataset.mode !== MODE) setMode(b.dataset.mode); });
+const effKind = c => c.kind === "u" && isHandNew(c.oid) ? "h" : c.kind === "u" && isTent(c.oid) ? "t" : (c.kind === "u" && isAnn(c.oid) ? "a" : (c.kind === "u" && isTag(c.oid) ? "m" : c.kind));
+function cardMatches() {
+  const q = LIDX.norm(document.getElementById("cf-name").value);
+  const cols = [...document.querySelectorAll("#cf-cols input:checked")].map(x => x.value);
+  const ty = document.getElementById("cf-type").value.toLowerCase();
+  const lo = document.getElementById("cf-mvmin").value, hi = document.getElementById("cf-mvmax").value;
+  const st = document.getElementById("cf-st").value;
+  return CLIST.filter(c => {
+    if (hidden(c.oid)) return false;
+    if (q && c.k.indexOf(q) < 0) return false;
+    if (cols.length && !cols.some(x => x === "C" ? c.col === "" : c.col.indexOf(x) >= 0)) return false;
+    if (ty && c.ty.toLowerCase().indexOf(ty) < 0) return false;
+    if (lo !== "" && c.mv < +lo) return false;
+    if (hi !== "" && c.mv > +hi) return false;
+    if (st && effKind(c) !== st) return false;
+    const kwv = document.getElementById("cf-kw").value;
+    if (kwv && !kwSet(kwv).has(c.oid)) return false;
+    return true;
+  });
+}
+async function showCardList() {
+  const P = document.getElementById("panel");
+  P.innerHTML = `<p class="explain">Loading the card list…</p>`;
+  await needCardList();
+  await needKFac();
+  const ks = document.getElementById("cf-kw");
+  if (KFAC && ks.options.length === 1) { for (const n of kwOrder()) ks.add(new Option(`${KFAC.keywords[n].d} (${KFAC.keywords[n].n})`, n)); document.getElementById("cf-kwwrap").hidden = false; }
+  const hits = cardMatches();
+  const nopic = CLIST.filter(c => hidden(c.oid)).length;
+  document.getElementById("cfcount").textContent = `${fmt(hits.length)} of ${fmt(CLIST.length - nopic)} cards match` + (nopic ? ` (${fmt(nopic)} hidden).` : ".");
+  setList(`<h2>Cards</h2><p class="sub">${fmt(hits.length)} of ${fmt(CLIST.length - nopic)} cards. Pick one to see which group each of its abilities is in. Tokens, art cards and other non-cards are not listed.</p>`,
+    hits.map(c => ({ oid: c.oid, html: `<div class="card crow" data-go="c:${esc(c.oid)}"><span class="nm lnk">${esc(c.n)}</span>${costHTML(CARDS[c.oid])}<span class="ty">${esc(c.ty)}</span><span class="badge ${effKind(c) === "h" ? "b-hand" : effKind(c) === "t" ? "b-tent" : (effKind(c) === "a" ? "b-ann" : (effKind(c) === "m" ? "b-tag" : "b-auto"))}">${esc(KINDW[effKind(c)])}</span></div>`, extra: `<div class="sub">${esc(KINDW[effKind(c)])}</div>` })));
+}
+let cfTimer = null;
+document.getElementById("cardf").addEventListener("input", () => { clearTimeout(cfTimer); cfTimer = setTimeout(() => { if (MODE === "cards") showCardList(); }, 200); });
+function answerCtx() {
+  return {
+    leafName: id => TAX.leaves[id].name, leafPath: leafPath, leafNote: id => TAX.leaves[id].notes.join(" "),
+    kwLeaf: id => TAX.blocks.keyword.leaves[id], sgLeaf: id => TAX.blocks.replacement.leaves[id], sgBlock: TAX.blocks.replacement.name,
+    group: id => TAX.unorganized.find(g => g.id === id),
+    hand: handFor,
+  };
+}
+function answerLinks(a) {
+  let links = "";
+  if (a.leaves && a.leaves.length) links = " " + a.leaves.slice(0, 6).map(id => `<span class="lnk chip" data-go="l:${esc(id)}">${esc(TAX.leaves[id].name)}</span>`).join("");
+  if (a.kind === "keyword") links = ` <span class="lnk chip" data-go="kl:${esc(a.leaf)}">open</span>`;
+  if (a.kind === "replacement") links = ` <span class="lnk chip" data-go="gl:${esc(a.leaf)}">open</span>`;
+  if (a.kind === "unorganized") links = ` <span class="lnk chip" data-go="u:${a.group}">open</span>`;
+  if (a.kind === "norules") links = ` <span class="lnk chip" data-go="V:">open</span>`;
+  if (a.hand && a.hand.adds) links += " " + a.hand.adds.map(x => `<span class="lnk chip" data-go="${esc(Manual.goKey(x.gid))}">${esc(x.name)}</span>`).join(" ");
+  return links;
+}
+async function showCardPage(oid, keep) {
+  const P = document.getElementById("panel");
+  const kq = keep ? (document.getElementById("epsearch") || {}).value : "", kn = keep ? (document.getElementById("epnote") || {}).value : "", ks = keep ? P.scrollTop : 0;
+  if (!keep) P.innerHTML = `<p class="explain">Loading…</p>`;
+  await needCardList();
+  await needManual();
+  if (MI && SHOWH) { await needSuggestions(); await needCards(); await needTextFor(oid); }
+  const c = CARDS[oid], e = ENT.get(oid);
+  if (!c || !e) { P.innerHTML = `<p class="explain">No such card.</p>`; return; }
+  if (e[3] === "u") await needLoose();
+  CURCARD = oid;
+  const a = AbilityFind.describe(LIDX, e, answerCtx());
+  const head = (MODE === "cards" ? `<p class="sub"><span class="lnk" data-go="C:">← back to the card list</span></p>` : "") + qbarHTML() + `<h2>${esc(c.n)} ${costHTML(c)} <span class="ty">${esc(c.ty)}</span></h2>`;
+  await needSib();
+  const body = `<p>${esc(a.text)}${answerLinks(a)}</p>` + sibNote(oid) + (e[3] === "u" ? looseChips(oid) : "") + detailHTML(oid) +
+    (DEV ? `<p class="subhead">Parsed structure (dev)</p><p><button class="psbtn" data-oid="${esc(oid)}">Show what the parser read</button></p><div class="psout"></div>` : "");
+  if (!MI || !MI.cards[oid]) { P.innerHTML = `<div class="cardpage">` + head + body + `</div>`; return; }
+  const url = imageURL(oid, "normal");
+  const img = url ? `<img src="${esc(url)}" alt="${esc(c.n)}">` : `<div class="noimg"><b>${esc(c.n)}</b><div>no picture in the image index for this card</div></div>`;
+  P.innerHTML = `<div class="cardpage">` + head + `<div class="cardlayout"><div class="cl-img">${img}</div><div class="cl-text">${body}</div>${editPanelHTML(oid)}</div></div>`;
+  if (keep) {
+    const si = document.getElementById("epsearch"), ni = document.getElementById("epnote");
+    if (si && kq) { si.value = kq; renderSearch(oid, kq); }
+    if (ni && kn) ni.value = kn;
+    P.scrollTop = ks;
+  } else if (window.innerWidth <= 800) P.scrollIntoView();          // one column on a phone: bring the card (image, then the edit panel) into view
+}
+async function parsedStructure(oid) {
+  if (!PIDX) { PIDX = new Map((await J("index.json")).rows.map(r => [r.id, r.ch])); }
+  const ch = PIDX.get(oid);
+  if (ch == null) return "No parsed structure on file for this card.";
+  if (!PCH.has(ch)) PCH.set(ch, J("chunks/" + ch + ".json"));
+  const d = (await PCH.get(ch))[oid];
+  if (!d) return "No parsed structure on file for this card.";
+  let h = "";
+  for (const k of ["abilities", "triggers", "static_abilities", "replacements"]) {
+    const v = d[k] || [];
+    h += `<p class="subhead">${k} (${v.length})</p>` + (v.length ? `<pre>${esc(JSON.stringify(v, null, 1))}</pre>` : `<span class="sub">none</span>`);
+  }
+  if (d.parse_warnings && d.parse_warnings.length) h += `<p class="subhead">parse_warnings</p><pre>${esc(JSON.stringify(d.parse_warnings, null, 1))}</pre>`;
+  return h;
+}
+
+// ---------------------------------------------------------------- find a card (and, with GROUP_SEARCH on, a group)
+// build/group_search/ (src/build_group_search.py, reports/groupsearch.js): names, aliases and short descriptions of groups, never card text. Off (the meta file answers 404): this section is exactly the card search it always was.
+let GSON = false, GSIDX = null, GSWORDS = null, GSLOGOK = false, FINDSEQ = 0;
+const GSCAP = 30, GSFIRST = 5, GSCARDS_FIRST = 4;
+async function gsBoot() {
+  try { const m = await J("group_search/meta.json"); GSON = !!(m && m.enabled); } catch (e) { GSON = false; }
+  if (!GSON) return;
+  document.querySelector(".find label[for=q]").textContent = "Find a card or group:";
+  document.getElementById("q").placeholder = "a card name, or a group such as “board wipe”";
+  const note = document.getElementById("gsnote");
+  note.hidden = false;
+  note.textContent = "Searches in this box are logged…";
+  try {
+    const r = await fetch("../api/groupsearch/ping");
+    const j = r.ok ? await r.json() : null;
+    GSLOGOK = !!(j && j.enabled);
+  } catch (e) { GSLOGOK = false; }
+  note.textContent = GSLOGOK ? "Searches in this box are logged on this computer (the words typed, how many results, and whether one was opened) in build/group_search_log.json, to improve the groups."
+    : "Searches in this box are not logged (this page is not running under src/serve.py).";
+}
+async function gsLoad() { if (!GSIDX) GSIDX = GroupSearch.build(await J("group_search/index.json")); }
+async function gsWords() {
+  if (GSWORDS) return;
+  const t = await (await fetch("../build/group_search/words.txt")).text(), o = {};
+  for (const w of t.split("\n")) if (w) o[w] = 1;
+  GSWORDS = o;
+}
+// the page key the group opens with right now, or "" when the page would not open it (a switched-off layer)
+function gsAllow(e) {
+  if (e.layer === "t") return tentOn() ? e.key : (e.twin || "");
+  if (e.layer === "c") return tagOn() ? e.key : "";
+  if (e.layer === "m") return e.members.some(g => g.startsWith("leaf:") || (g.startsWith("tag:") && tagOn())) ? e.key : "";
+  return e.key;
+}
+function gsCount(r) {
+  const e = r.e, id = e.gid.slice(e.gid.indexOf(":") + 1);
+  try {
+    if (e.layer === "m") return mergedUnion(MERGED.pageBy[id]);
+    if (r.key.startsWith("lg:")) return lgN(LOOSE.groups[r.key.slice(3)]);
+    if (e.layer === "l" && MEM && CARDS) return leafN(id);
+    if (e.layer === "k" && TAX) return blkLeafN(TAX.blocks.keyword, e.gid);
+    if (e.layer === "r" && TAX) return blkLeafN(TAX.blocks.replacement, id);
+    if (e.layer === "t" && TENT && TENT.groups[id]) return tgN(TENT.groups[id]);
+    if (e.layer === "o" && LOOSE) return lgN(LOOSE.groups[id]);
+    if (e.layer === "c" && TAGS) return tgcN(TAGS.groups[id]);
+    if (e.layer === "h" && HG) return HG.groups[id].cards;
+    if (e.layer === "y" && KFAC) return KFAC.keywords[id].n;
+  } catch (err) { /* the data is not loaded yet: the built size */ }
+  return e.size;
+}
+function gsBadge(r) {
+  const e = r.e;
+  if (r.key.startsWith("lg:") && e.layer === "t") return `<span class="badge b-broad">loose · not checked</span>`;
+  return { m: `<span class="badge b-merged">merged page</span>`, l: "", k: `<span class="badge b-auto">keyword block</span>`, r: `<span class="badge b-auto">replacement group</span>`, t: `<span class="badge b-tent">tentative</span>`,
+    o: `<span class="badge b-broad">loose · not checked</span>`, c: `<span class="badge b-tag">community tag · not checked</span>`, h: hgBadge(),
+    y: `<span class="badge b-auto">keyword filter, not a placement</span>` }[e.layer];
+}
+function gsRow(r) {
+  const e = r.e, n = gsCount(r);
+  const why = r.dym ? `did you mean “${esc(r.dym)}”` : r.why === "alias" ? (r.drafted ? `suggested alias “${esc(r.via)}” (drafted from Scryfall’s tags)` : `via alias “${esc(r.via)}”`) : r.why === "most" ? "matched: most of your words" : r.why === "slug" ? "matched: tag name" : r.why === "description" ? "matched: description" : r.why === "family" ? "matched: family" : "";
+  const noun = e.layer === "h" ? "rule matches" : "cards";
+  return `<a class="gr" data-nav data-go="${esc(r.key)}" href="#${esc(encodeURIComponent(r.key))}"${r.note && r.why === "alias" ? ` title="${esc(r.note)}"` : ""}>` +
+    `<span class="gn">${esc(e.name)}</span>${gsBadge(r)}<span class="sub">${fmt(n)} ${noun}</span>` +
+    `<span class="gp">${esc(e.path)}</span>` +
+    (e.desc ? `<span class="gd" title="${esc(e.desc)}">${esc(e.desc)}</span>` : "") +
+    (why ? `<span class="gm">${why}</span>` : "") +
+    (r.why === "alias" && r.fit === "partial" && r.note ? `<span class="gl">Note: ${esc(r.note)}</span>` : "") + `</a>`;
+}
+function gsMore(rows, first, kind) {
+  const hid = rows.slice(first);
+  return rows.slice(0, first).join("") + hid.map(h => h.replace(/^<(a|div) /, "<$1 hidden data-gsx=\"" + kind + "\" ")).join("") +
+    (hid.length ? `<button class="gs-btn" data-nav data-gsmore="${kind}">Show ${hid.length} more</button>` : "");
+}
+// "Didn't find it?": one click records the query in its own field of the log (t "miss"); only offered when the log endpoint answered, so it never promises something that is not kept
+let gsMissed = [];
+try { gsMissed = JSON.parse(localStorage.getItem("gsMissed") || "[]"); } catch (e) { gsMissed = []; }
+function gsMissHTML(q, g, c) {
+  if (!GSLOGOK) return "";
+  const k = LIDX.norm(q), done = gsMissed.includes(k);
+  if (k.length < 2) return "";
+  return `<div class="gs-miss"><button class="gs-btn" data-nav data-gsmiss="${esc(q)}" data-g="${g}" data-c="${c}"${done ? ' aria-disabled="true"' : ""}>${done ? "Noted, thanks" : "Didn’t find it?"}</button> ` +
+    `<span class="sub" aria-live="polite">${done ? "We will look at “" + esc(q) + "”." : "One click tells us what you were looking for."}</span></div>`;
+}
+function gsSection(q, cardRows, cardTotal, res) {
+  const gr = res.groups.slice(0, GSCAP).map(gsRow), fam = res.family.slice(0, GSCAP).map(gsRow);
+  const nG = res.groups.length;
+  let h = `<div class="gs-jump" id="gs-jump"><a href="#" data-gsjump="gs-cards">Cards (${fmt(cardTotal)})</a> · <a href="#" data-gsjump="gs-groups">Groups (${fmt(nG)}${res.family.length ? " + " + fmt(res.family.length) + " by family" : ""})</a></div>`;
+  h += `<div id="gs-cards"><h3 class="gs-h">Cards</h3>` + (cardTotal ? gsMore(cardRows, GSCARDS_FIRST, "cards") + (cardTotal > 12 ? `<div class="sub">${fmt(cardTotal)} cards match; showing 12.</div>` : "") : `<div class="sub gs-none">No card name matches.</div>`) + `</div>`;
+  h += `<div id="gs-groups"><h3 class="gs-h">Groups</h3>`;
+  if (res.dym) h += `<div class="sub gs-dym">Nothing matched “${esc(res.dym.from)}” as typed. Did you mean “${esc(res.dym.to)}”? Those groups are listed with that label.</div>`;
+  if (nG) h += gsMore(gr, GSFIRST, "groups") + (nG > GSCAP ? `<div class="sub">${fmt(nG)} groups match; showing ${GSCAP}.</div>` : "");
+  else h += `<div class="sub gs-none">No group matches “${esc(q)}”.</div>`;
+  if (res.family.length) h += `<div class="gs-fam"><button class="gs-btn gs-famb" data-nav data-gsfam aria-expanded="false">${fmt(res.family.length)} more group${res.family.length === 1 ? "" : "s"} matched only by family or kind ▸</button><div class="gs-famlist" hidden>${fam.join("")}${res.family.length > GSCAP ? `<div class="sub">showing ${GSCAP} of ${fmt(res.family.length)}</div>` : ""}</div></div>`;
+  return h + gsMissHTML(q, nG, cardTotal) + `</div><div class="sr-only" aria-live="polite" id="gs-live">${nG} group${nG === 1 ? "" : "s"}, ${cardTotal} card${cardTotal === 1 ? "" : "s"}</div>`;
+}
+// the search log: one "search" event once the query has stood for a moment, one "open" event per result opened. The page says so beside the box.
+let gsLogTimer = null, gsPending = null, gsLogged = "";
+function gsPost(body) {
+  if (!GSLOGOK) return;
+  fetch("../api/groupsearch/log", { method: "POST", headers: { "Content-Type": "application/json", "X-Manual-Edit": "1" }, body: JSON.stringify(body) }).catch(() => { /* the log is a convenience */ });
+}
+function gsFlush() {
+  clearTimeout(gsLogTimer);
+  if (gsPending && gsPending.q !== gsLogged) { gsPost({ q: gsPending.q, t: "search", groups: gsPending.g, cards: gsPending.c }); gsLogged = gsPending.q; }
+}
+function gsLogSearch(q, g, c) {
+  if (LIDX.norm(q).length < 3) { gsPending = null; return; }
+  gsPending = { q: q, g: g, c: c };
+  clearTimeout(gsLogTimer);
+  gsLogTimer = setTimeout(gsFlush, 900);
+}
+let findTimer = null;
+document.getElementById("q").addEventListener("input", e => {
+  clearTimeout(findTimer);
+  findTimer = setTimeout(() => find(e.target.value), 200);
+});
+async function find(q) {
+  const out = document.getElementById("findres");
+  if (!q.trim()) { out.innerHTML = ""; gsPending = null; return; }
+  const seq = ++FINDSEQ;
+  if (!LOOK) { out.innerHTML = `<div class="sub">Loading the card list…</div>`; await needLookup(); }
+  await needManual();
+  const ctx = answerCtx();
+  const r = AbilityFind.search(LIDX, q, 12);
+  if (r.matches.some(en => en[3] === "u")) await needLoose();
+  const rows = r.matches.map(en => {
+    const a = AbilityFind.describe(LIDX, en, ctx);
+    let links = answerLinks(a);
+    if (en[3] !== "o") links += ` <span class="lnk chip" data-go="c:${esc(en[0])}">card page</span>`;
+    return `<div class="fr"${PINON && en[3] !== "o" ? ` tabindex="0"${GSON ? " data-nav" : ""} data-go="pin:${esc(en[0])}"` : (GSON && en[3] !== "o" ? ` tabindex="0" data-nav data-go="c:${esc(en[0])}"` : "")}><span class="nm">${esc(a.name)}</span>${a.others.length ? ` <span class="sub">(${a.others.map(esc).join(" / ")})</span>` : ""}: ${esc(a.text)}${links}${a.hand && a.hand.fresh ? ` <span class="badge b-hand">placed by hand</span>` : ""}${en[3] === "u" && !(a.hand && a.hand.fresh) ? looseChips(en[0]) : ""}</div>`;
+  });
+  if (!GSON) {
+    out.innerHTML = (r.total ? "" : `<div class="sub">No card or catalogue entry matches.</div>`) + rows.join("") + (r.total > 12 ? `<div class="sub">${fmt(r.total)} matches; showing 12.</div>` : "");
+    return;
+  }
+  try {
+    await gsLoad(); await needLoose();
+    let res = GroupSearch.search(GSIDX, q, { allow: gsAllow, words: GSWORDS });
+    if (res.needWords) { await gsWords(); res = GroupSearch.search(GSIDX, q, { allow: gsAllow, words: GSWORDS }); }
+    if (seq !== FINDSEQ) return;                      // a newer query has started
+    if (!r.total && !res.groups.length && !res.family.length) out.innerHTML = `<div class="sub">No card or group matches “${esc(q)}”. Try a card name, or a common term such as “board wipe”.</div>` + gsMissHTML(q, 0, 0);
+    else out.innerHTML = gsSection(q, rows, r.total, res);
+    gsLogSearch(q, res.groups.length, r.total);
+  } catch (err) {                                     // the group files are missing or broken: the card search, as it always was
+    out.innerHTML = (r.total ? "" : `<div class="sub">No card or catalogue entry matches.</div>`) + rows.join("") + (r.total > 12 ? `<div class="sub">${fmt(r.total)} matches; showing 12.</div>` : "");
+  }
+}
+function gsRefresh() { if (GSON) { const q = document.getElementById("q").value; if (q.trim()) find(q); } }
+document.getElementById("findres").addEventListener("click", e => {
+  if (GSON) {
+    const ms = e.target.closest("[data-gsmiss]");
+    if (ms) {
+      if (ms.getAttribute("aria-disabled") !== "true") {
+        const k = LIDX.norm(ms.dataset.gsmiss);
+        gsPost({ q: ms.dataset.gsmiss, t: "miss", groups: +ms.dataset.g, cards: +ms.dataset.c });
+        gsMissed = gsMissed.filter(x => x !== k).concat(k).slice(-50);
+        try { localStorage.setItem("gsMissed", JSON.stringify(gsMissed)); } catch (err) { /* storage unavailable: the button just offers itself again */ }
+        ms.setAttribute("aria-disabled", "true"); ms.textContent = "Noted, thanks";
+        ms.nextElementSibling.textContent = "We will look at “" + ms.dataset.gsmiss + "”.";
+      }
+      return;
+    }
+    const mb = e.target.closest("[data-gsmore]");
+    if (mb) { for (const el of document.querySelectorAll("#findres [data-gsx=" + mb.dataset.gsmore + "]")) { el.hidden = false; } mb.remove(); return; }
+    const fb = e.target.closest("[data-gsfam]");
+    if (fb) { const l = fb.parentElement.querySelector(".gs-famlist"); l.hidden = !l.hidden; fb.setAttribute("aria-expanded", l.hidden ? "false" : "true"); return; }
+    const jp = e.target.closest("[data-gsjump]");
+    if (jp) { e.preventDefault(); document.getElementById(jp.dataset.gsjump).scrollIntoView(); return; }
+  }
+  const go = e.target.closest("[data-go]");
+  if (go) {
+    if (GSON) { e.preventDefault(); gsFlush(); if (gsPending) gsPost({ q: gsPending.q, t: "open", groups: gsPending.g, cards: gsPending.c }); }
+    (go.dataset.go.startsWith("pin:") ? openPin(go.dataset.go.slice(4)) : show(go.dataset.go)).then(() => { if (GSON && window.innerWidth <= 800) document.getElementById("panel").scrollIntoView(); });
+  }
+});
+// keyboard: ArrowDown (or Enter) in the box goes to the first result; Up/Down move through the results; Enter opens; Escape returns to the box, and in the box clears it
+const gsNav = () => [...document.querySelectorAll("#findres [data-nav]")].filter(el => !el.closest("[hidden]"));
+document.getElementById("q").addEventListener("keydown", async e => {
+  if (!GSON) return;
+  if (e.key === "Escape") { e.target.value = ""; clearTimeout(findTimer); document.getElementById("findres").innerHTML = ""; gsPending = null; return; }
+  if (e.key === "ArrowDown" || e.key === "Enter") {
+    e.preventDefault();
+    if (e.key === "Enter") { clearTimeout(findTimer); await find(e.target.value); }
+    const n = gsNav();
+    if (n.length) n[0].focus();
+  }
+});
+document.getElementById("findres").addEventListener("keydown", e => {
+  if (!GSON) return;
+  const n = gsNav(), i = n.indexOf(document.activeElement);
+  if (e.key === "ArrowDown" && i >= 0) { e.preventDefault(); if (i + 1 < n.length) n[i + 1].focus(); }
+  else if (e.key === "ArrowUp" && i >= 0) { e.preventDefault(); if (i > 0) n[i - 1].focus(); else document.getElementById("q").focus(); }
+  else if (e.key === "Escape") { e.preventDefault(); document.getElementById("q").focus(); }
+  else if (e.key === "Enter" && i >= 0 && n[i].tagName === "DIV") { e.preventDefault(); n[i].click(); }
+});
+
+// back / forward and pasted links: follow the hash when something other than show() changed it
+window.addEventListener("hashchange", () => {
+  const [h1, tab] = splitTab(decodeURIComponent(location.hash.slice(1))), [h, card] = splitPin(h1);
+  if (tab) SCWANT = { k: h, tab: tab };
+  if (TAX && h && h === selected) { if (tab && SCCUR && SCCUR.k === h) { SCWANT = null; scSetTab(tab); } return; }
+  if (!TAX || !h) return;
+  if (h.startsWith("C:")) setMode("cards", true);
+  if (h.startsWith("Q:") || h.startsWith("QB:")) setMode("queue", true);
+  if (PINON && card) { PINNEXT = card; if (!tab) SCWANT = { k: h, tab: "members" }; }
+  show(h);
+});
+
+// ---------------------------------------------------------------- boot
+(async () => {
+  if (TESTER) await TESTERREADY;
+  try {
+    TAX = await J("ability_taxonomy.json");
+  } catch (err) {
+    document.getElementById("prov").textContent = "Could not load build/ability_taxonomy.json. Run python src/build_ability_taxonomy.py, then serve with python src/serve.py.";
+    return;
+  }
+  for (const f of TAX.families) for (const nd of f.nodes) { NODES[nd.id] = Object.assign({ fam: f.key }, nd); NODE_FAM[nd.id] = f.name; }
+  header(); renderTree(); gsBoot(); mergeBoot().then(() => renderTree());
+  needCards().then(needUnorg).then(needLoose).then(needManual).then(needKFac).then(needHG).then(needSib).then(() => { hideNote(); header(); renderTree(); if (selected && !SCCUR) scAfter(selected); });
+  document.getElementById("foot").innerHTML =
+    `Data: ${esc(TAX.meta.rules.snapshot)}. Method: ${esc(TAX.meta.rules.backoff)}, minimum ${TAX.meta.rules.minimum}; ` +
+    `names are generated (edits: corrections/ability_taxonomy_names.json); no tag data is used to place anything. ` +
+    `"Tentative groups" are loose groups promoted by hand-read rules; they are not fully checked and are never part of the precise or the broad figure (switch them off at the top). The "Loosely grouped" browse layer is a finding aid: it is not checked and is never counted as organized. The coverage figure here and the archived view's 74.8% are measured on different bases. ` +
+    `<a href="ability-taxonomy-report.md">Results and limits</a> · <a href="ability-taxonomy-design.md">Design</a> · <a href="../KNOWN_LIMITATIONS.md">Known limitations §12</a>.`;
+  await pinBoot(); await mergeBoot();
+  const [h1, tab] = splitTab(decodeURIComponent(location.hash.slice(1))), [h, card] = splitPin(h1);
+  if (h && (tab || card)) { await needManual(); if (tab) SCWANT = { k: h, tab: tab }; }
+  if (PINON && card && h) { await needManual(); await needLoose(); PINNEXT = card; if (!tab) SCWANT = { k: h, tab: "members" }; }              // a link to a tab needs the hand layer and the meta file before the page is drawn
+  if (h) { if (h.startsWith("C:")) setMode("cards", true); if (h.startsWith("Q:") || h.startsWith("QB:")) { await needManual(); setMode("queue", true); } show(h); }
+})();
+</script>
+</body>
+</html>

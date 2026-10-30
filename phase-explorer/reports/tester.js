@@ -6,7 +6,7 @@
  */
 "use strict";
 (function () {
-  const CFG = { feedbackUrl: "", prefill: "clipboard", titleParam: "title", bodyParam: "body", TESTER_FILTERS: false, TYPE_GROUPS: false, FLIP_FACES: false, DEFAULT_POPULARITY: false, ACTIVE_GROUP_HIGHLIGHT: false, QUERY_MATCH_BLOCK: false, ABILITY_TYPE_PAGES: false, ABILITY_TYPE_FILTERS: false };
+  const CFG = { feedbackUrl: "", prefill: "clipboard", titleParam: "title", bodyParam: "body", TESTER_FILTERS: false, TYPE_GROUPS: false, FLIP_FACES: false, DEFAULT_POPULARITY: false, ACTIVE_GROUP_HIGHLIGHT: false, QUERY_MATCH_BLOCK: false, ABILITY_TYPE_PAGES: false, ABILITY_TYPE_FILTERS: false, MODAL_ABILITIES: false };
   const $ = id => document.getElementById(id);
   const mobile = () => window.matchMedia("(max-width: 800px)").matches;
   const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
@@ -80,7 +80,7 @@
     const go = e.target.closest("[data-go]");
     if (go) {
       const oid = MODALFOR; closeModal();
-      if (oid && PINON) { PINNEXT = oid; SCWANT = { k: go.dataset.go, tab: "members" }; }
+      if (oid && PINON && !/^(ab|yk):/.test(go.dataset.go)) { PINNEXT = oid; SCWANT = { k: go.dataset.go, tab: "members" }; }       // an ability or keyword page (feature MODAL_ABILITIES) has no pin and no tab: nothing is left set for a later page
       show(go.dataset.go);
     }
   });
@@ -172,9 +172,9 @@
       try { Object.assign(CFG, window.APP_CONFIG || {}); } catch (e) { /* defaults */ }
       applyConfig();
       // feature TESTER_FILTERS: the filter and sort bar and "Narrow by group" (reports/testerfilters.js, .css); off: nothing is requested
-      // features TYPE_GROUPS (typegroups.js, .css) and FLIP_FACES (flipfaces.js, .css) load after it, one after the other; each off: nothing is requested. NARROW_NO_CUT and COLOUR_MODES live in testerfilters.js.
+      // features TYPE_GROUPS (typegroups.js, .css), FLIP_FACES (flipfaces.js, .css), ABILITY_TYPE_PAGES and MODAL_ABILITIES (modalabilities.js, .css) load after it, one after the other; each off: nothing is requested. NARROW_NO_CUT and COLOUR_MODES live in testerfilters.js.
       const extras = () => {
-        const chain = ["TYPE_GROUPS", "FLIP_FACES", "ABILITY_TYPE_PAGES"].filter(n => CFG[n] === true).map(n => n === "TYPE_GROUPS" ? "typegroups" : n === "FLIP_FACES" ? "flipfaces" : "abilitypages");
+        const chain = ["TYPE_GROUPS", "FLIP_FACES", "ABILITY_TYPE_PAGES", "MODAL_ABILITIES"].filter(n => CFG[n] === true).map(n => n === "TYPE_GROUPS" ? "typegroups" : n === "FLIP_FACES" ? "flipfaces" : n === "MODAL_ABILITIES" ? "modalabilities" : "abilitypages");
         const next = () => {
           const n = chain.shift();
           if (!n) { res(); return; }
@@ -415,6 +415,7 @@
       `<h3>In these groups</h3><div>${chips}</div><p style="margin-top:12px"><a data-report="card" data-oid="${esc(oid)}" target="_blank" rel="noopener noreferrer" href="${esc(CFG.feedbackUrl || "#")}">Report a problem with this card</a></p></div>`);
     MODALFOR = oid;
     if (window.FL) FL.attach(oid, modal);                       // feature FLIP_FACES
+    if (window.MA) MA.attach(oid, modal);                       // feature MODAL_ABILITIES
   }
   showCardPage = function (oid) { return openCard(oid); };
   PANEL.addEventListener("click", e => {                      // a tile or a card row opens the modal; its chips and links still do what they did
@@ -470,11 +471,24 @@
 
   // ---------------------------------------------------------------- search results: a card shows the groups it is in, a group shows name, count, one line and why it matched; no logging, no "Didn't find it?" POST
   const looseGroup = e => e.layer === "t" || e.layer === "o" || e.layer === "c" || e.layer === "h" || (e.layer === "l" && !!TAX.leaves[e.gid.slice(5)] && TAX.leaves[e.gid.slice(5)].flags.length > 0);
+  // ---------------------------------------------------------------- feature SEARCH_FIXES (reports/config.js): search ranking and layout fixes. Off: none of this code runs and groupsearch.js is called exactly as before.
+  // A hand-defined group's row says how many cards are placed in it by hand (its count is the rule matches, which are suggestions); a memberless one ranks after groups that have members unless the query is its
+  // name or alias; a longer word that only begins with a typed whole word ranks after whole-word matches; descriptions that are one member's quoted card line sit in one collapsed row; a long list is two or
+  // three headed blocks of 10 with an honest count. Presentation and ranking only: no group, id, placement, count or figure changes, and nothing new is fetched.
+  const SFX = () => CFG.SEARCH_FIXES === true;
+  let HPN = null;                                                                            // hand group id -> cards placed in it by hand (the same count as the group page's Members list), rebuilt for each search
+  const handPlacedN = e => {
+    if (!HPN) {
+      HPN = {};
+      if (handOn() && MRESV && MRESV.adds && MI) for (const o of Object.keys(MRESV.adds)) { if (!MI.cards[o]) continue; for (const g of Object.keys(MRESV.adds[o])) if (MRESV.adds[o][g]) HPN[g] = (HPN[g] || 0) + 1; }
+    }
+    return HPN[e.gid] || 0;
+  };
   gsRow = function (r) {
     const e = r.e, n = gsCount(r), noun = e.layer === "h" ? "possible cards" : "cards";
     const why = r.dym ? `did you mean “${esc(r.dym)}”` : r.why === "alias" ? (r.drafted ? `suggested alias “${esc(r.via)}”` : `via “${esc(r.via)}”`) : r.why === "most" ? "matched: most of your words" : r.why === "slug" ? "matched: tag name" : r.why === "description" ? "matched: description" : r.why === "family" ? "matched: family" : "";
     return `<a class="gr" data-nav data-go="${esc(r.key)}" href="#${esc(encodeURIComponent(r.key))}"${r.note && r.why === "alias" ? ` title="${esc(r.note)}"` : ""}>` +
-      `<span class="gc">${fmt(n)} ${noun}</span><span class="gn">${esc(e.name)}</span>` +
+      `<span class="gc">${fmt(n)} ${noun}${SFX() && e.layer === "h" ? `, ${fmt(handPlacedN(e))} placed by hand` : ""}</span><span class="gn">${esc(e.name)}</span>` +
       (e.desc ? `<span class="gd" title="${esc(e.desc)}">${esc(e.desc)}</span>` : "") +
       (why ? `<span class="gm">${why}</span>` : "") +
       (looseGroup(e) ? `<span class="tl">Grouped loosely</span>` : "") +
@@ -503,15 +517,52 @@
     });
     try {
       await gsLoad(); await needLoose();
-      let res = GroupSearch.search(GSIDX, q, { allow: gsAllow, words: GSWORDS });
-      if (res.needWords) { await gsWords(); res = GroupSearch.search(GSIDX, q, { allow: gsAllow, words: GSWORDS }); }
+      const so = { allow: gsAllow, words: GSWORDS };
+      if (SFX()) { HPN = null; so.fixes = true; so.placed = handPlacedN; }
+      let res = GroupSearch.search(GSIDX, q, so);
+      if (res.needWords) { await gsWords(); so.words = GSWORDS; res = GroupSearch.search(GSIDX, q, so); }
       if (seq !== FINDSEQ) return;
-      if (!r.total && !res.groups.length && !res.family.length) out.innerHTML = `<div class="sub">No card or group matches “${esc(q)}”. Try a card name, or a common term such as “board wipe”.</div>` + gsMissHTML(q);
+      if (!r.total && !res.groups.length && !res.family.length && !(res.example && res.example.length)) out.innerHTML = `<div class="sub">No card or group matches “${esc(q)}”. Try a card name, or a common term such as “board wipe”.</div>` + gsMissHTML(q);
       else out.innerHTML = gsSection(q, rows, r.total, res);
     } catch (err) {
       out.innerHTML = (r.total ? "" : `<div class="sub">No card matches.</div>`) + rows.join("") + (r.total > 12 ? `<div class="sub">${fmt(r.total)} matches; showing 12.</div>` : "");
     }
   };
+
+  // SEARCH_FIXES: the results layout. Up to 10 groups (and no example-line row) is today's markup; more is two or three headed blocks (Named, Contains the word, Related) of 10 with "Show 10 more" up to 30 each.
+  const _gsSectionBase = gsSection;
+  gsSection = function (q, cardRows, cardTotal, res) {
+    const ex = res.example || [], nG = res.groups.length;
+    if (!SFX() || (nG <= 10 && !ex.length)) return _gsSectionBase(q, cardRows, cardTotal, res);
+    let h = `<div class="gs-jump" id="gs-jump"><a href="#" data-gsjump="gs-cards">Cards (${fmt(cardTotal)})</a> · <a href="#" data-gsjump="gs-groups">Groups (${fmt(nG)}${res.family.length ? " + " + fmt(res.family.length) + " by family" : ""}${ex.length ? " + " + fmt(ex.length) + " in an example line" : ""})</a></div>`;
+    h += `<div id="gs-cards"><h3 class="gs-h">Cards</h3>` + (cardTotal ? gsMore(cardRows, GSCARDS_FIRST, "cards") + (cardTotal > 12 ? `<div class="sub">${fmt(cardTotal)} cards match; showing 12.</div>` : "") : `<div class="sub gs-none">No card name matches.</div>`) + `</div>`;
+    h += `<div id="gs-groups"><h3 class="gs-h">Groups</h3>`;
+    if (res.dym) h += `<div class="sub gs-dym">Nothing matched “${esc(res.dym.from)}” as typed. Did you mean “${esc(res.dym.to)}”? Those groups are listed with that label.</div>`;
+    if (!nG) h += `<div class="sub gs-none">No group matches “${esc(q)}”.</div>`;
+    else if (nG <= 10) h += gsMore(res.groups.map(gsRow), GSFIRST, "groups");
+    else {
+      h += `<div class="sub">${fmt(nG)} groups match.</div>`;
+      for (const [id, label, f] of [["named", "Named", t => t <= 2], ["contains", "Contains the word", t => t > 2 && t < 4], ["related", "Related", t => t >= 4]]) {
+        const list = res.groups.filter(g => f(g.tier));
+        if (!list.length) continue;
+        const rows = list.slice(0, GSCAP).map(gsRow);
+        h += `<p class="subhead" data-gsb="${id}">${label} (${fmt(list.length)})</p>` + rows.slice(0, 10).join("") + rows.slice(10).map(x => x.replace(/^<(a|div) /, `<$1 hidden data-gsfx="${id}" `)).join("") +
+          (rows.length > 10 ? `<button class="gs-btn" data-nav data-gsfxmore="${id}">Show ${Math.min(10, rows.length - 10)} more</button>` : "") +
+          (list.length > GSCAP ? `<div class="sub">${fmt(list.length)} in this block; at most ${GSCAP} can be shown.</div>` : "");
+      }
+    }
+    if (res.family.length) h += `<div class="gs-fam"><button class="gs-btn gs-famb" data-nav data-gsfam aria-expanded="false">${fmt(res.family.length)} more group${res.family.length === 1 ? "" : "s"} matched only by family or kind ▸</button><div class="gs-famlist" hidden>${res.family.slice(0, GSCAP).map(gsRow).join("")}${res.family.length > GSCAP ? `<div class="sub">showing ${GSCAP} of ${fmt(res.family.length)}</div>` : ""}</div></div>`;
+    if (ex.length) h += `<div class="gs-fam"><button class="gs-btn gs-famb" data-nav data-gsfam aria-expanded="false">${fmt(ex.length)} more group${ex.length === 1 ? "" : "s"} matched only in an example card line ▸</button><div class="gs-famlist" hidden>${ex.slice(0, GSCAP).map(gsRow).join("").replace(/matched: description/g, "matched: an example card line")}${ex.length > GSCAP ? `<div class="sub">showing ${GSCAP} of ${fmt(ex.length)}</div>` : ""}</div></div>`;
+    return h + gsMissHTML(q, nG, cardTotal) + `</div><div class="sr-only" aria-live="polite" id="gs-live">${nG} group${nG === 1 ? "" : "s"}, ${cardTotal} card${cardTotal === 1 ? "" : "s"}</div>`;
+  };
+  FR.addEventListener("click", e => {
+    const b = e.target.closest("[data-gsfxmore]");
+    if (!b) return;
+    const hid = [...FR.querySelectorAll(`[data-gsfx="${b.dataset.gsfxmore}"][hidden]`)];
+    for (const el of hid.slice(0, 10)) el.hidden = false;
+    if (hid.length > 10) b.textContent = `Show ${Math.min(10, hid.length - 10)} more`;
+    else { b.remove(); if (hid[0]) hid[0].focus(); }
+  });
 
   // ---------------------------------------------------------------- landing
   function landing() {

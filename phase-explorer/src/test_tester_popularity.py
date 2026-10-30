@@ -72,7 +72,7 @@ def files_of(root):
     return {os.path.relpath(p, root).replace("\\", "/"): T.sha(p) for p in T.walk(root)}
 
 
-ABILITY_FLAGS = ("ABILITY_TYPE_PAGES", "ABILITY_TYPE_FILTERS")      # the ability-type pages and filters (src/test_ability_pages.py tests them); this file tests the page without them, as it was
+ABILITY_FLAGS = ("ABILITY_TYPE_PAGES", "ABILITY_TYPE_FILTERS", "MODAL_ABILITIES", "BROAD_NARROWING", "PERSIST_FILTERS", "COLOUR_IDENTITY", "SEARCH_FIXES")      # the ability-type pages and filters (src/test_ability_pages.py tests them) and the card view's Abilities block (src/test_modal_abilities.py); this file tests the page without them, as it was
 
 
 def ability_off_config():
@@ -207,7 +207,7 @@ def main():
     base_all = dict(base); base_all["manifest.json"] = None
     check("flags off: the file list is exactly the one before the flags (%d files)" % len(offf), set(offf) == set(base_all), sorted(set(offf) ^ set(base_all))[:5])
     differ = sorted(k for k in base if offf.get(k) != base[k])
-    check("flags off: every file is byte-identical to the pre-change export except tester.js, testerfilters.js and config.js %s" % differ, differ == ["reports/config.js", "reports/tester.js", "reports/testerfilters.js"], differ)
+    check("flags off: every file is byte-identical to the pre-change export except tester.js, testerfilters.js, config.js and groupsearch.js (SEARCH_FIXES; src/test_search_fixes.py proves its flag-off behaviour) %s" % differ, differ == ["reports/config.js", "reports/groupsearch.js", "reports/tester.js", "reports/testerfilters.js"], differ)
     check("flags on adds no file", sorted(set(a) - set(offf)) == [], sorted(set(a) - set(offf)))
     other = sorted(k for k in offf if k in a and offf[k] != a[k] and k != "manifest.json")
     check("flags on, against flags off, changes no file but config.js %s (the scripts are the same files)" % other, other == ["reports/config.js"], other)
@@ -629,7 +629,7 @@ def main():
             break
         if not done:
             check("a merged-page member with a description match was found for the merged-page block test", False)
-        check("no console error, no failed request in the block tests", not s.console() and not [x for x in s.net() if x["failed"] or (x["status"] or 0) >= 400], s.console()[:3])
+        check("no console error, no failed request in the block tests", not s.console() and not [x for x in s.net() if x["failed"] or (x["status"] or 0) >= 400], (s.console()[:3], [x for x in s.net() if x["failed"] or (x["status"] or 0) >= 400][:3]))
     finally:
         s.close()
 

@@ -191,32 +191,34 @@ def main():
     check("tag rules use the slug and name only: tag_buckets takes no description", re.search(r"def tag_buckets\(slug, name, otag_map\)", src) and "description" not in src.split("def tag_buckets")[1].split("BR2B")[0])
 
     # ------------------------------------------------------------ 2. exports
-    rc, out = export_to(DIRS["a"]); rc2, out2 = export_to(DIRS["b"])
+    cfg_nm = tempfile.NamedTemporaryFile("w", suffix=".js", delete=False, encoding="utf-8")                 # the flags on, except the card view's Abilities block (src/test_modal_abilities.py tests it)
+    cfg_nm.write(re.sub(r"\b(MODAL_ABILITIES|PERSIST_FILTERS|COLOUR_IDENTITY|SEARCH_FIXES)\s*:\s*true", r"\1: false", open(os.path.join(HERE, "reports", "config.js"), encoding="utf-8").read())); cfg_nm.close()      # PERSIST_FILTERS and COLOUR_IDENTITY (src/test_persist_identity.py) are off here too
+    rc, out = export_to(DIRS["a"], cfg_nm.name); rc2, out2 = export_to(DIRS["b"], cfg_nm.name)
     check("exports with the flag on succeed (twice)", rc == 0 and rc2 == 0, (out + out2)[-300:])
     fa, fb = files_of(DIRS["a"]), files_of(DIRS["b"])
     check("two flag-on exports: every file byte-identical (%d files)" % len(fa), fa == fb)
     check("flag on: build/buckets/map.json is exported and is the build file", "build/buckets/map.json" in fa and fa["build/buckets/map.json"] == T.sha(MAP))
-    r = subprocess.run([sys.executable, "-I", os.path.join(HERE, "src", "export_static.py"), "--check", "--out", os.path.relpath(DIRS["a"], HERE)], capture_output=True, text=True, encoding="utf-8", cwd=HERE)
+    r = subprocess.run([sys.executable, "-I", os.path.join(HERE, "src", "export_static.py"), "--check", "--config", cfg_nm.name, "--out", os.path.relpath(DIRS["a"], HERE)], capture_output=True, text=True, encoding="utf-8", cwd=HERE)
     check("whitelist check passes on the flag-on export", r.returncode == 0, r.stdout + r.stderr)
     for plant in ("build/buckets/extra.json.bak", "build/buckets/notes.txt", "corrections/group_aliases.json"):
         p = os.path.join(DIRS["a"], *plant.split("/"))
         os.makedirs(os.path.dirname(p), exist_ok=True); open(p, "w").write("{}")
-        r = subprocess.run([sys.executable, "-I", os.path.join(HERE, "src", "export_static.py"), "--check", "--out", os.path.relpath(DIRS["a"], HERE)], capture_output=True, text=True, encoding="utf-8", cwd=HERE)
+        r = subprocess.run([sys.executable, "-I", os.path.join(HERE, "src", "export_static.py"), "--check", "--config", cfg_nm.name, "--out", os.path.relpath(DIRS["a"], HERE)], capture_output=True, text=True, encoding="utf-8", cwd=HERE)
         check("planted %s is refused" % plant, r.returncode != 0)
         os.remove(p)
         if plant.startswith("corrections"):
             shutil.rmtree(os.path.dirname(p))
     cfg_txt = open(os.path.join(HERE, "reports", "config.js"), encoding="utf-8").read()
     f = tempfile.NamedTemporaryFile("w", suffix=".js", delete=False, encoding="utf-8")
-    f.write(re.sub(r"\bBROAD_NARROWING\s*:\s*true", "BROAD_NARROWING: false", cfg_txt)); f.close()
+    f.write(re.sub(r"\b(MODAL_ABILITIES|PERSIST_FILTERS|COLOUR_IDENTITY|SEARCH_FIXES)\s*:\s*true", r"\1: false", re.sub(r"\bBROAD_NARROWING\s*:\s*true", "BROAD_NARROWING: false", cfg_txt))); f.close()      # the card view's Abilities block (src/test_modal_abilities.py) is off here too
     rc, out = export_to(DIRS["off"], f.name)
     check("export with the flag off succeeds", rc == 0, out[-300:])
     old = json.load(open(os.path.join(BEFORE, "manifest.json"), encoding="utf-8"))
     oldf = {x["path"]: x["sha256"] for x in old["files"]}
     offf = files_of(DIRS["off"])
     check("flag off: the same file list as the export made before this work (%d files)" % len(oldf), set(offf) - {"manifest.json"} == set(oldf), sorted(set(offf) ^ set(oldf))[:4])
-    diff = [k for k in oldf if k not in ("reports/testerfilters.js", "reports/config.js") and offf.get(k) != oldf[k]]
-    check("flag off: every file but testerfilters.js and config.js is byte-identical to that export (all data files, tester.js, browse.html, the other scripts)", not diff, diff[:4])
+    diff = [k for k in oldf if k not in ("reports/testerfilters.js", "reports/config.js", "reports/tester.js", "reports/groupsearch.js") and offf.get(k) != oldf[k]]
+    check("flag off: every file but testerfilters.js, config.js, tester.js and groupsearch.js (SEARCH_FIXES; src/test_search_fixes.py proves its flag-off behaviour) is byte-identical to that export (all data files, browse.html, the other scripts; tester.js gained the card view's hook for MODAL_ABILITIES, which src/test_modal_abilities.py checks)", not diff, diff[:4])
     check("flag off: no buckets file is exported or listed", not [k for k in offf if "buckets" in k] and not [x for x in json.load(open(os.path.join(DIRS["off"], "manifest.json")))["files"] if "buckets" in x["path"]])
     shutil.copytree(DIRS["off"], DIRS["old"])
     shutil.copyfile(os.path.join(BEFORE, "testerfilters.js"), os.path.join(DIRS["old"], "reports", "testerfilters.js"))
